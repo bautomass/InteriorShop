@@ -1,3 +1,4 @@
+// /lib/shopify/queries/collection.ts
 import productFragment from '../fragments/product';
 import seoFragment from '../fragments/seo';
 
@@ -59,4 +60,17 @@ export const getCollectionProductsQuery = /* GraphQL */ `
     }
   }
   ${productFragment}
+`;
+
+export const searchCollectionsQuery = /* GraphQL */ `
+  query searchCollections($query: String!) {
+    collections(first: 100, query: $query) {
+      edges {
+        node {
+          ...collection
+        }
+      }
+    }
+  }
+  ${collectionFragment}
 `;

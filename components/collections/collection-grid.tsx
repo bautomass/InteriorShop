@@ -1,7 +1,8 @@
 // components/collections/collection-grid.tsx
 'use client';
 
-import { Collection } from '@/types/shopify';
+import { ClientOnlyDate } from '@/components/ui/client-only-date';
+import { Collection } from '@/lib/shopify/types';
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import CollectionCard from './collection-card';
@@ -79,7 +80,7 @@ export function CollectionGrid({ collections, layout }: CollectionGridProps) {
                     --
                   </td>
                   <td className="p-4 text-primary-600 dark:text-primary-300">
-                    {new Date(collection.updatedAt).toLocaleDateString()}
+                    <ClientOnlyDate date={collection.updatedAt} />
                   </td>
                   <td className="p-4 text-right">
                     <Link

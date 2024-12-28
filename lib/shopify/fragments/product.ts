@@ -1,7 +1,7 @@
+// lib/shopify/fragments/product.ts
 import imageFragment from './image';
 import seoFragment from './seo';
-
-const productFragment = /* GraphQL */ `
+const productFragment =`
   fragment product on Product {
     id
     handle
@@ -24,17 +24,32 @@ const productFragment = /* GraphQL */ `
         currencyCode
       }
     }
+    compareAtPriceRange {
+      maxVariantPrice {
+        amount
+        currencyCode
+      }
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
     variants(first: 250) {
       edges {
         node {
           id
           title
+          sku
           availableForSale
           selectedOptions {
             name
             value
           }
           price {
+            amount
+            currencyCode
+          }
+          compareAtPrice {
             amount
             currencyCode
           }
@@ -56,9 +71,14 @@ const productFragment = /* GraphQL */ `
     }
     tags
     updatedAt
+    createdAt
   }
   ${imageFragment}
   ${seoFragment}
 `;
 
 export default productFragment;
+
+
+
+

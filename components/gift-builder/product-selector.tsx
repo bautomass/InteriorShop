@@ -2,12 +2,17 @@
 'use client';
 
 import { useDebounce } from '@/hooks/use-debounce';
-import { Collection } from '@/types/shopify';
+import { Collection } from '@/lib/shopify/queries/collection';
 import { motion } from 'framer-motion';
 import { Check, Minus, Package, Plus, Search } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useGiftBuilder } from './context';
+
+interface Collection {
+  id: string;
+  title: string;
+}
 
 interface Product {
   id: string;
@@ -27,6 +32,42 @@ export function ProductSelector() {
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   const [products, setProducts] = useState<Product[]>([]); // This would be fetched from your API
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch collections on mount
+  useEffect(() => {
+    async function fetchCollections() {
+      try {
+        const response = await fetch('/api/collections');
+        const data = await response.json();
+        setCollections(data.collections);
+      } catch (error) {
+        console.error('Failed to fetch collections:', error);
+      }
+    }
+    fetchCollections();
+  }, []);
+
+  // Update product fetching logic
+  useEffect(() => {
+    async function fetchProducts() {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (debouncedSearch) params.append('search', debouncedSearch);
+        if (selectedCollection) params.append('collection', selectedCollection);
+
+        const response = await fetch(`/api/products?${params}`);
+        const data = await response.json();
+        setProducts(data.products);
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      }
+      setIsLoading(false);
+    }
+    fetchProducts();
+  }, [debouncedSearch, selectedCollection]);
 
   const handleSearch = useCallback((term: string) => {
     setSearchQuery(term);
@@ -90,7 +131,11 @@ export function ProductSelector() {
           className="rounded-lg border border-primary-200 bg-white px-4 py-3 dark:border-primary-700 dark:bg-primary-800"
         >
           <option value="">All Collections</option>
-          {/* Add your collections here */}
+          {collections.map((collection) => (
+            <option key={collection.id} value={collection.id}>
+              {collection.title}
+            </option>
+          ))}
         </select>
       </div>
 

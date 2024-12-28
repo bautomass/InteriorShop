@@ -7,12 +7,16 @@ type UpdateType = 'plus' | 'minus' | 'delete';
 
 type CartAction =
   | { type: 'UPDATE_ITEM'; payload: { merchandiseId: string; updateType: UpdateType } }
-  | { type: 'ADD_ITEM'; payload: { variant: ProductVariant; product: Product } };
+  | { type: 'ADD_ITEM'; payload: { variant: ProductVariant; product: Product; quantity?: number } };
 
 type CartContextType = {
   cart: Cart | undefined;
   updateCartItem: (merchandiseId: string, updateType: UpdateType) => void;
-  addCartItem: (variant: ProductVariant, product: Product) => void;
+  addCartItem: (params: { 
+    variant: ProductVariant; 
+    product: Product;
+    quantity: number;
+  }) => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -46,14 +50,15 @@ function updateCartItem(item: CartItem, updateType: UpdateType): CartItem | null
 function createOrUpdateCartItem(
   existingItem: CartItem | undefined,
   variant: ProductVariant,
-  product: Product
+  product: Product,
+  quantity: number = 1
 ): CartItem {
-  const quantity = existingItem ? existingItem.quantity + 1 : 1;
-  const totalAmount = calculateItemCost(quantity, variant.price.amount);
+  const newQuantity = existingItem ? existingItem.quantity + quantity : quantity;
+  const totalAmount = calculateItemCost(newQuantity, variant.price.amount);
 
   return {
     id: existingItem?.id,
-    quantity,
+    quantity: newQuantity,
     cost: {
       totalAmount: {
         amount: totalAmount,
@@ -130,15 +135,22 @@ function cartReducer(state: Cart | undefined, action: CartAction): Cart {
       return { ...currentCart, ...updateCartTotals(updatedLines), lines: updatedLines };
     }
     case 'ADD_ITEM': {
-      const { variant, product } = action.payload;
+      const { variant, product, quantity = 1 } = action.payload;
       const existingItem = currentCart.lines.find((item) => item.merchandise.id === variant.id);
-      const updatedItem = createOrUpdateCartItem(existingItem, variant, product);
+      
+      const updatedItem = createOrUpdateCartItem(existingItem, variant, product, quantity);
 
       const updatedLines = existingItem
-        ? currentCart.lines.map((item) => (item.merchandise.id === variant.id ? updatedItem : item))
+        ? currentCart.lines.map((item) => 
+            item.merchandise.id === variant.id ? updatedItem : item
+          )
         : [...currentCart.lines, updatedItem];
 
-      return { ...currentCart, ...updateCartTotals(updatedLines), lines: updatedLines };
+      return {
+        ...currentCart,
+        ...updateCartTotals(updatedLines),
+        lines: updatedLines
+      };
     }
     default:
       return currentCart;
@@ -159,8 +171,24 @@ export function CartProvider({
     updateOptimisticCart({ type: 'UPDATE_ITEM', payload: { merchandiseId, updateType } });
   };
 
-  const addCartItem = (variant: ProductVariant, product: Product) => {
-    updateOptimisticCart({ type: 'ADD_ITEM', payload: { variant, product } });
+  const addCartItem = (params: { 
+    variant: ProductVariant; 
+    product: Product;
+    quantity: number;
+  }) => {
+    try {
+      if (!params.variant || !params.product) {
+        throw new Error('Invalid product or variant data');
+      }
+      
+      console.log('Adding item to cart:', { variant: params.variant, product: params.product });
+      updateOptimisticCart({ 
+        type: 'ADD_ITEM', 
+        payload: { variant: params.variant, product: params.product, quantity: params.quantity } 
+      });
+    } catch (error) {
+      console.error('Failed to add item to cart:', error);
+    }
   };
 
   const value = useMemo(

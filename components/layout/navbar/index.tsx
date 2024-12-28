@@ -22,7 +22,7 @@ export function Navbar({ menu = [] }: NavbarProps) {
       <motion.nav
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
         className="bg-primary-50/80 after:via-primary-200/80 dark:bg-primary-900/80 dark:after:via-primary-700/50 sticky top-0 z-50 shadow-[0_1px_3px_0_rgb(0,0,0,0.05)] backdrop-blur-lg after:absolute after:bottom-0 after:left-0 after:h-[1px] after:w-full after:bg-gradient-to-r after:from-transparent after:to-transparent dark:shadow-[0_1px_3px_0_rgb(0,0,0,0.2)]"
       >
         <div className="mx-auto max-w-[90vw] px-4 py-4">

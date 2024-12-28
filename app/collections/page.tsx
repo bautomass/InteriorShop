@@ -1,3 +1,4 @@
+// /app/collections/page.tsx
 import { CollectionGrid } from '@/components/collections/collection-grid';
 import { CollectionsHero } from '@/components/collections/hero-section';
 import { RecentlyViewed } from '@/components/collections/recently-viewed';
@@ -97,13 +98,15 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
       if (searchParams.sort) {
         switch (searchParams.sort) {
           case 'date-desc':
-            collections.sort(
-              (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            collections.sort((a, b) => 
+              // Compare timestamps directly instead of converting to locale-specific strings
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
             );
             break;
           case 'date-asc':
-            collections.sort(
-              (a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+            collections.sort((a, b) => 
+              // Compare timestamps directly instead of converting to locale-specific strings
+              new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
             );
             break;
           case 'title-asc':

@@ -1,14 +1,20 @@
 // app/page.tsx
-import Carousel from 'components/carousel';
-import ThreeItemGrid from 'components/grid/three-items';
-import { Categories } from 'components/home/categories';
-import { DesignShowcase } from 'components/home/design-showcase';
-import FeaturedCollection from 'components/home/featured-collection';
-import { Hero } from 'components/home/hero';
-import { InstagramFeed } from 'components/home/instagram-feed';
-import { MaterialStory } from 'components/home/material-story';
-import { Newsletter } from 'components/home/newsletter';
-import { Testimonials } from 'components/home/testimonials';
+import AboutHero from '@/components/home/about-hero';
+import AnturamStoolsCollection from '@/components/home/AnturamStoolsCollection';
+import CanvasCollection from '@/components/home/CanvasCollection';
+import CeramicVaseSection from '@/components/home/CeramicVaseSection';
+import { GiftBuilderSection } from '@/components/home/gift-builder-section';
+import InfiniteProductBanner from '@/components/home/InfiniteProductBanner';
+import NewArrivalsCollection from '@/components/home/NewArrivalsCollection';
+import PendantLightSection from '@/components/home/PendantLightSection';
+// import SaleProductsSection from '@/components/home/SaleProductsSection';
+import { Footer } from '@/components/layout/site-footer';
+import Hero from 'components/home/hero';
+import LampsCollection from 'components/home/LampsCollection';
+import WishboneChairSection from 'components/home/WishboneChairSection';
+import { TopHeader } from 'components/layout/navbar/top-header';
+
+import InteriorTipsSection from '@/components/home/InteriorTipsSection';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -34,29 +40,52 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
+      <TopHeader />
       <Hero />
+      <AboutHero />
       <div className="space-y-8 md:space-y-16">
-        {/* @ts-expect-error Async Server Component */}
-        <ThreeItemGrid />
-        <MaterialStory />
-        {/* @ts-expect-error Async Server Component */}
-        <FeaturedCollection />
-        <DesignShowcase />
-        <Categories />
-        {/* @ts-expect-error Async Server Component */}
-        <Carousel />
-        <Testimonials />
-        <InstagramFeed />
-        <Newsletter />
+        <PendantLightSection />
+        <InfiniteProductBanner/>
+        <LampsCollection />
+        <GiftBuilderSection />
+        <NewArrivalsCollection />
+        <AnturamStoolsCollection />
+        <CanvasCollection />
+        <CeramicVaseSection />
+        <WishboneChairSection/>
+        <InteriorTipsSection/>
+        {/* <SaleProductsSection/> */}
+        <Footer/>
       </div>
     </>
   );
 }
 
-// import Carousel from 'components/carousel';
-// import ThreeItemGrid from 'components/grid/three-items';
-// import FeaturedCollection from 'components/home/featured-collection';
-// import { Newsletter } from 'components/home/newsletter';
+
+
+
+
+
+
+
+
+// // app/page.tsx
+// // import DesignConsultation from '@/components/home/DesignConsultation';
+// // import FurnitureCollection from 'components/home/FurnitureCollection';
+// // import WishboneChairSection from 'components/home/WishboneChairSection';
+
+// // import SeasonalRhythm from '@/components/home/SeasonalRhythm';
+// import AboutHero from '@/components/home/about-hero';
+// import { GiftBuilderSection } from '@/components/home/gift-builder-section';
+// import PendantLightSection from '@/components/home/PendantLightSection';
+// import Hero from 'components/home/hero';
+// import LampsCollection from 'components/home/LampsCollection';
+// import { TopHeader } from 'components/layout/navbar/top-header';
+// // import { InfiniteImageBanner } from '@/components/shared/InfiniteImageBanner';
+// // import StoolsCollection from 'components/home/StoolsCollection';
+
+
+
 // import type { Metadata } from 'next';
 
 // export const metadata: Metadata = {
@@ -81,14 +110,30 @@ export default function HomePage() {
 
 // export default function HomePage() {
 //   return (
-//     <div className="space-y-8">
-//       {/* @ts-expect-error Async Server Component */}
-//       <ThreeItemGrid />
-//       {/* @ts-expect-error Async Server Component */}
-//       <FeaturedCollection />
-//       {/* @ts-expect-error Async Server Component */}
-//       <Carousel />
-//       <Newsletter />
-//     </div>
+//     <>
+//     <TopHeader/>
+//       <Hero />
+//     <AboutHero/>
+//       <div className="space-y-8 md:space-y-16">
+//       {/* <StoolsCollection /> */}
+//         {/* <MaterialStory /> */}
+//         <PendantLightSection />
+//         {/* <InfiniteImageBanner /> */}
+//         <LampsCollection />
+//         <GiftBuilderSection />
+//         {/* <FurnitureCollection/> */}
+//         {/* <WishboneChairSection/> */}
+//         {/* <DesignShowcase /> */}
+//         {/* <DesignConsultation/> */}
+//         {/* <Categories /> */}
+//         {/* <CraftStory /> */}
+//         {/* <SeasonalRhythm /> */}
+//         {/* <MaterialExperience /> */}
+//         {/* <Testimonials /> */}
+//         {/* <InstagramFeed /> */}
+//         {/* <Footer /> */}
+//       </div>
+//     </>
 //   );
 // }
+

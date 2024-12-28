@@ -40,6 +40,10 @@ export type CartItem = {
 
 export type Collection = ShopifyCollection & {
   path: string;
+  image?: {
+    url: string;
+    altText?: string;
+  };
 };
 
 export type Image = {
@@ -73,6 +77,7 @@ export type Page = {
 export type Product = Omit<ShopifyProduct, 'variants' | 'images'> & {
   variants: ProductVariant[];
   images: Image[];
+  createdAt: string;
 };
 
 export type ProductOption = {
@@ -90,6 +95,7 @@ export type ProductVariant = {
     value: string;
   }[];
   price: Money;
+  compareAtPrice?: Money | null;
 };
 
 export type SEO = {
@@ -117,6 +123,7 @@ export type ShopifyCollection = {
   updatedAt: string;
 };
 
+
 export type ShopifyProduct = {
   id: string;
   handle: string;
@@ -129,6 +136,10 @@ export type ShopifyProduct = {
     maxVariantPrice: Money;
     minVariantPrice: Money;
   };
+  compareAtPriceRange?: {
+    maxVariantPrice: Money;
+    minVariantPrice: Money;
+  };
   variants: Connection<ProductVariant>;
   featuredImage: Image;
   images: Connection<Image>;
@@ -136,6 +147,7 @@ export type ShopifyProduct = {
   tags: string[];
   updatedAt: string;
 };
+
 
 export type ShopifyCartOperation = {
   data: {
@@ -270,5 +282,53 @@ export type ShopifyProductsOperation = {
     query?: string;
     reverse?: boolean;
     sortKey?: string;
+  };
+};
+
+export interface Article {
+  id: string;
+  handle: string;
+  title: string;
+  excerpt?: string;
+  content: string;
+  publishedAt: string;
+  author?: {
+    name: string;
+  };
+  image?: {
+    url: string;
+    altText?: string;
+    width: number;
+    height: number;
+  };
+  seo?: {
+    title: string;
+    description: string;
+  };
+}
+
+export interface Blog {
+  id: string;
+  handle: string;
+  title: string;
+  articles: Connection<Article>;
+}
+
+export type ShopifyArticleOperation = {
+  data: {
+    articleByHandle: Article;
+  };
+  variables: {
+    handle: string;
+  };
+};
+
+export type ShopifyBlogOperation = {
+  data: {
+    blog: Blog;
+  };
+  variables: {
+    handle: string;
+    first?: number;
   };
 };

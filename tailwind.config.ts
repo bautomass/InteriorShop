@@ -48,12 +48,49 @@ const config: Config = {
           '0%': { opacity: '0.2' },
           '20%': { opacity: '1' },
           '100%': { opacity: '0.2' }
+        },
+        wiggle: {
+          '0%, 100%': { transform: 'rotate(-1deg)' },
+          '50%': { transform: 'rotate(1deg)' }
+        },
+        'text-shimmer': {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center'
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center'
+          }
+        },
+        ping: {
+          '75%, 100%': {
+            transform: 'scale(2)',
+            opacity: '0',
+          },
+        },
+        slideIn: {
+          '0%': { 
+            opacity: '0', 
+            transform: 'translate(-20px, -50%) scale(0.95)'
+          },
+          '100%': { 
+            opacity: '1', 
+            transform: 'translate(0, -50%) scale(1)'
+          },
         }
       },
       animation: {
         fadeIn: 'fadeIn .3s ease-in-out',
         carousel: 'marquee 60s linear infinite',
-        blink: 'blink 1.4s both infinite'
+        blink: 'blink 1.4s both infinite',
+        wiggle: 'wiggle 1s ease-in-out infinite',
+        'text-shimmer': 'text-shimmer 3s ease infinite',
+        ping: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+        slideIn: 'slideIn 0.3s ease-out forwards'
+      },
+      transitionTimingFunction: {
+        'out-expo': 'cubic-bezier(0.23, 1, 0.32, 1)',
       }
     }
   },
@@ -76,7 +113,8 @@ const config: Config = {
           values: theme('transitionDelay')
         }
       );
-    })
+    }),
+    require('tailwind-scrollbar-hide')
   ]
 };
 

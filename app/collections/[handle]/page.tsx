@@ -1,10 +1,13 @@
-import { GridTileImage } from 'components/grid/tile';
+// /app/collections/[handle]/page.tsx
+import PaginatedProductGrid from '@/components/collections/PaginatedProductGrid';
+import { SortOptions } from '@/components/collections/sort-options';
+import { NavigationHeader } from '@/components/layout/navigation-header';
+import { Footer } from '@/components/layout/site-footer';
 import { defaultSort, sorting } from 'lib/constants';
 import { getCollectionProductsQuery, getCollectionQuery } from 'lib/shopify/queries/collection';
 import { shopifyFetch } from 'lib/utils';
 import { Metadata } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
@@ -20,16 +23,22 @@ interface Product {
       currencyCode: string;
     };
   };
-  images: {
-    edges: Array<{
-      node: {
-        url: string;
-        altText: string;
-        width: number;
-        height: number;
-      };
-    }>;
+  compareAtPriceRange?: {
+    minVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
   };
+  images: Array<{
+    url: string;
+    altText?: string;
+  }>;
+  featuredImage?: {
+    url: string;
+    altText?: string;
+  };
+  productType?: string;
+  tags?: string[];
 }
 
 interface Collection {
@@ -64,158 +73,193 @@ interface CollectionPageProps {
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: CollectionPageProps): Promise<Metadata> {
-  const { data } = await shopifyFetch({
-    query: getCollectionQuery,
-    variables: {
-      handle: params.handle
+  const resolvedParams = await params;
+
+  try {
+    const response = await shopifyFetch({
+      query: getCollectionQuery,
+      variables: {
+        handle: resolvedParams.handle
+      },
+      tags: ['collections'],
+      cache: 'force-cache'
+    }) as { body: { data: { collection: Collection | null } } };
+
+    const collection = response.body.data.collection;
+
+    if (!collection) {
+      return {
+        title: 'Collection Not Found',
+        description: 'The collection you are looking for does not exist.'
+      };
     }
-  });
 
-  const collection = data.collection;
-
-  if (!collection) {
     return {
-      title: 'Collection Not Found',
-      description: 'The collection you are looking for does not exist.'
+      title: collection.seo.title || collection.title,
+      description: collection.seo.description || collection.description
+    };
+  } catch (error) {
+    console.error('Error generating metadata:', error);
+    return {
+      title: 'Error',
+      description: 'There was an error loading the collection.'
     };
   }
-
-  return {
-    title: collection.seo.title || collection.title,
-    description: collection.seo.description || collection.description
-  };
 }
 
-export default async function CollectionPage({ params, searchParams }: CollectionPageProps) {
-  const { sort } = searchParams;
-  const { handle } = params;
+export default async function CollectionPage({
+  params,
+  searchParams,
+}: CollectionPageProps) {
+  // Use Promise.all to await all params concurrently
+  const [resolvedParams, resolvedSearchParams] = await Promise.all([
+    params,
+    searchParams
+  ]);
+
+  const sort = resolvedSearchParams.sort;
+  const handle = resolvedParams.handle;
 
   const sortKey = sorting.find((item) => item.slug === sort)?.sortKey || defaultSort.sortKey;
   const reverse = sorting.find((item) => item.slug === sort)?.reverse || defaultSort.reverse;
 
-  // Fetch collection data
-  const { data } = await shopifyFetch({
-    query: getCollectionProductsQuery,
-    variables: {
-      handle,
-      sortKey,
-      reverse
+  try {
+    // Fetch collection data with proper error handling
+    const response = await shopifyFetch({
+      query: getCollectionProductsQuery,
+      variables: {
+        handle,
+        sortKey,
+        reverse
+      },
+      tags: ['collections', 'products'], // Add cache tags
+      cache: 'force-cache' // Ensure consistent caching
+    }) as { body: { data: { collection: Collection | null } } };
+
+    const collection = response.body.data.collection;
+    
+    if (!collection) {
+      console.error("Collection not found:", handle);
+      notFound();
     }
-  });
 
-  const collection = data.collection;
+    const products = collection.products.edges.map(({ node }) => ({
+      ...node,
+      images: node.images.edges.map(edge => ({
+        url: edge.node.url,
+        altText: edge.node.altText
+      }))
+    }));
 
-  if (!collection) {
+    return (
+      <>
+        <NavigationHeader />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'CollectionPage',
+              name: collection.title,
+              description: collection.description
+            })
+          }}
+        />
+        <main className="relative min-h-screen bg-primary-50 pb-20 dark:bg-primary-900">
+          {/* Background Gradient */}
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-gradient-to-b from-primary-100/50 to-transparent dark:from-primary-900/50" />
+          </div>
+
+          <div className="relative mx-auto max-w-[90rem] px-4 py-12 sm:px-6 lg:px-8">
+            {/* Collection Header - Updated styling */}
+            <div className="mb-12">
+              {collection.image ? (
+                <div className="relative mb-8 aspect-[21/9] overflow-hidden rounded-3xl">
+                  <div className="absolute inset-0 bg-black/20" />
+                  <Image
+                    src={collection.image.url}
+                    alt={collection.image.altText || collection.title}
+                    width={collection.image.width || 2100}
+                    height={collection.image.height || 900}
+                    className="h-full w-full object-cover"
+                    priority
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 p-8 text-white">
+                    <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+                      {collection.title}
+                    </h1>
+                    {collection.description && (
+                      <p className="mx-auto max-w-2xl text-lg text-primary-100">
+                        {collection.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <h1 className="mb-4 text-4xl font-bold tracking-tight text-primary-900 dark:text-primary-50 sm:text-5xl">
+                    {collection.title}
+                  </h1>
+                  {collection.description && (
+                    <p className="mx-auto max-w-2xl text-lg text-primary-700 dark:text-primary-200">
+                      {collection.description}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Sort and Filter Section */}
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-primary-600 dark:text-primary-300">
+                  {products.length} Products
+                </span>
+              </div>
+              <SortOptions currentValue={sort} />
+            </div>
+
+            {/* Products Grid - Updated styling */}
+            <Suspense
+              fallback={
+                <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="group relative animate-pulse">
+                      <div className="aspect-square w-full overflow-hidden rounded-2xl bg-primary-100 dark:bg-primary-800" />
+                      <div className="mt-4 h-4 w-3/4 rounded bg-primary-100 dark:bg-primary-800" />
+                      <div className="mt-2 h-4 w-1/2 rounded bg-primary-100 dark:bg-primary-800" />
+                    </div>
+                  ))}
+                </div>
+              }
+            >
+              {products.length > 0 ? (
+                <PaginatedProductGrid
+                  products={products}
+                  initialProductCount={8}
+                  productsPerLoad={8}
+                />
+              ) : (
+                <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-dashed border-primary-300 bg-white/50 backdrop-blur-sm dark:border-primary-700 dark:bg-primary-800/50">
+                  <div className="text-center">
+                    <h2 className="mb-2 text-xl font-medium text-primary-900 dark:text-primary-50">
+                      No Products Found
+                    </h2>
+                    <p className="text-primary-700 dark:text-primary-200">
+                      This collection is currently empty. Please check back later.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </Suspense>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  } catch (error) {
+    console.error('Error loading collection:', error);
     notFound();
   }
-
-  const products = collection.products.edges.map(({ node }: { node: Product }) => node);
-
-  return (
-    <div className="mx-auto max-w-[90rem] px-4 py-8 sm:px-6 lg:px-8">
-      {/* Collection Header */}
-      <div className="mb-8">
-        {collection.image && (
-          <div className="relative mb-6 aspect-[21/9] overflow-hidden rounded-2xl">
-            <Image
-              src={collection.image.url}
-              alt={collection.image.altText || collection.title}
-              width={collection.image.width || 2100}
-              height={collection.image.height || 900}
-              className="h-full w-full object-cover"
-              priority
-            />
-          </div>
-        )}
-
-        <div className="text-center">
-          <h1 className="mb-4 text-4xl font-bold tracking-tight text-primary-900 dark:text-primary-50 sm:text-5xl">
-            {collection.title}
-          </h1>
-          {collection.description && (
-            <p className="mx-auto max-w-2xl text-lg text-primary-700 dark:text-primary-200">
-              {collection.description}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Sort Options */}
-      <div className="mb-8 flex items-center justify-end">
-        <div className="flex items-center gap-2">
-          <label htmlFor="sort" className="text-sm text-primary-700 dark:text-primary-200">
-            Sort by:
-          </label>
-          <select
-            id="sort"
-            name="sort"
-            defaultValue={sort || defaultSort.slug}
-            className="rounded-md border border-primary-200 bg-primary-50 px-3 py-1.5 text-sm dark:border-primary-700 dark:bg-primary-800"
-            onChange={(e) => {
-              const url = new URL(window.location.href);
-              url.searchParams.set('sort', e.target.value);
-              window.location.href = url.toString();
-            }}
-          >
-            {sorting.map((option) => (
-              <option key={option.slug || 'default'} value={option.slug || ''}>
-                {option.title}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Products Grid */}
-      <Suspense
-        fallback={
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[...Array(8)].map((_, i) => (
-              <div
-                key={i}
-                className="aspect-square animate-pulse rounded-lg bg-primary-100 dark:bg-primary-800"
-              />
-            ))}
-          </div>
-        }
-      >
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {products.map((product) => {
-            const firstImage = product.images.edges[0]?.node;
-
-            return (
-              <Link key={product.handle} href={`/products/${product.handle}`}>
-                <GridTileImage
-                  src={firstImage?.url || ''}
-                  alt={firstImage?.altText || product.title}
-                  width={600}
-                  height={600}
-                  label={{
-                    title: product.title,
-                    amount: product.priceRange.minVariantPrice.amount,
-                    currencyCode: product.priceRange.minVariantPrice.currencyCode,
-                    position: 'bottom'
-                  }}
-                />
-              </Link>
-            );
-          })}
-        </div>
-      </Suspense>
-
-      {/* Empty State */}
-      {products.length === 0 && (
-        <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-dashed border-primary-300 bg-primary-50/50 dark:border-primary-700 dark:bg-primary-800/50">
-          <div className="text-center">
-            <h2 className="mb-2 text-lg font-medium text-primary-900 dark:text-primary-50">
-              No Products Found
-            </h2>
-            <p className="text-primary-700 dark:text-primary-200">
-              This collection is currently empty. Please check back later.
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }

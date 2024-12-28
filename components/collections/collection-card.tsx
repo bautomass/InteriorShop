@@ -1,7 +1,6 @@
 // components/collections/collection-card.tsx
 'use client';
-
-import { Collection } from '@/types/shopify';
+import { Collection } from '@/lib/shopify/types';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Clock, Eye } from 'lucide-react';
 import Image from 'next/image';

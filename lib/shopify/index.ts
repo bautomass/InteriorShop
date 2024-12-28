@@ -15,13 +15,15 @@ import { getCartQuery } from './queries/cart';
 import {
   getCollectionProductsQuery,
   getCollectionQuery,
-  getCollectionsQuery
+  getCollectionsQuery,
+  searchCollectionsQuery
 } from './queries/collection';
 import { getMenuQuery } from './queries/menu';
 import { getPageQuery, getPagesQuery } from './queries/page';
 import {
   getProductQuery,
   getProductRecommendationsQuery,
+  getProductsByTagQuery,
   getProductsQuery
 } from './queries/product';
 import {
@@ -140,7 +142,8 @@ const reshapeCollection = (collection: ShopifyCollection): Collection | undefine
 
   return {
     ...collection,
-    path: `/search/${collection.handle}`
+    path: `/collections/${collection.handle}`
+    // path: `/search/${collection.handle}`
   };
 };
 
@@ -328,7 +331,8 @@ export async function getCollections(): Promise<Collection[]> {
         title: 'All',
         description: 'All products'
       },
-      path: '/search',
+      // path: '/search',
+      path: '/collections',
       updatedAt: new Date().toISOString()
     },
     // Filter out the `hidden` collections.
@@ -353,10 +357,17 @@ export async function getMenu(handle: string): Promise<Menu[]> {
   return (
     res.body?.data?.menu?.items.map((item: { title: string; url: string }) => ({
       title: item.title,
-      path: item.url.replace(domain, '').replace('/collections', '/search').replace('/pages', '')
+      path: item.url.replace(domain, '').replace('/pages', '')
     })) || []
   );
-}
+
+//   return (
+//     res.body?.data?.menu?.items.map((item: { title: string; url: string }) => ({
+//       title: item.title,
+//       path: item.url.replace(domain, '').replace('/collections', '/search').replace('/pages', '')
+//     })) || []
+//   );
+ }
 
 export async function getPage(handle: string): Promise<Page> {
   const res = await shopifyFetch<ShopifyPageOperation>({
@@ -421,6 +432,51 @@ export async function getProducts({
   });
 
   return reshapeProducts(removeEdgesAndNodes(res.body.data.products));
+}
+
+export async function searchCollections({
+  query
+}: {
+  query?: string;
+}): Promise<Collection[]> {
+  const res = await shopifyFetch<ShopifyCollectionsOperation>({
+    query: searchCollectionsQuery,
+    variables: {
+      query
+    },
+    tags: [TAGS.collections]
+  });
+
+  return reshapeCollections(removeEdgesAndNodes(res.body.data.collections));
+}
+
+export async function getProductsByTag(tag: string): Promise<Product[]> {
+  console.log('Executing Shopify query for tag:', tag);
+  
+  try {
+    const res = await shopifyFetch<ShopifyProductsOperation>({
+      query: getProductsByTagQuery,
+      tags: [TAGS.products],
+      variables: {
+        tag: `tag:${tag}`
+      }
+    });
+
+    console.log('Raw Shopify response:', res.body);
+
+    if (!res.body.data?.products?.edges) {
+      console.error('Unexpected response structure:', res.body);
+      return [];
+    }
+
+    const products = reshapeProducts(removeEdgesAndNodes(res.body.data.products));
+    console.log('Reshaped products:', products);
+
+    return products;
+  } catch (error) {
+    console.error('Error in getProductsByTag:', error);
+    return [];
+  }
 }
 
 // This is called from `app/api/revalidate.ts` so providers can control revalidation logic.

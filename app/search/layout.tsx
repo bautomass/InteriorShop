@@ -1,4 +1,4 @@
-import Footer from 'components/layout/footer';
+import Footer from '@/components/layout/footer-default';
 import Collections from 'components/layout/search/collections';
 import FilterList from 'components/layout/search/filter';
 import { sorting } from 'lib/constants';

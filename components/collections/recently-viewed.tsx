@@ -1,6 +1,7 @@
 // components/collections/recently-viewed.tsx
 'use client';
 
+import { ClientOnlyDate } from '@/components/ui/client-only-date';
 import { motion } from 'framer-motion';
 import { Clock, X } from 'lucide-react';
 import Image from 'next/image';
@@ -101,7 +102,7 @@ export function RecentlyViewed() {
               {collection.title}
             </p>
             <p className="text-xs text-primary-500">
-              {new Date(collection.timestamp).toLocaleDateString()}
+              <ClientOnlyDate date={collection.timestamp} />
             </p>
           </Link>
         ))}

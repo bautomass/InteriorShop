@@ -1,0 +1,407 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import { Award, ChevronLeft, ChevronRight, Clock, Globe2, HeartHandshake, Shield, Ship, Sparkles, Star } from 'lucide-react';
+import Image from 'next/image';
+import { useCallback, useRef, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
+import { CareInstructions } from './care-instructions';
+
+const tabs = [
+  {
+    id: 'shipping',
+    label: 'Shipping Process',
+    icon: Ship,
+    content: {
+      title: 'Our Unique Shipping Journey',
+      description: `We believe in transparency about our 25-40 day shipping timeline. Here's why it takes this long:`,
+      points: [
+        {
+          icon: Globe2,
+          title: 'Artisanal Production',
+          description: 'Each piece is carefully crafted to order, ensuring the highest quality and reducing waste.'
+        },
+        {
+          icon: Clock,
+          title: 'Quality Control',
+          description: 'Multiple inspection points guarantee that only perfect items leave our facility.'
+        },
+        {
+          icon: Ship,
+          title: 'Eco-Conscious Shipping',
+          description: 'We use cost-effective sea freight to reduce our carbon footprint and keep prices affordable.'
+        }
+      ]
+    }
+  },
+  {
+    id: 'quality',
+    label: 'Quality Guarantee',
+    icon: Award,
+    content: {
+      title: 'Our Quality Promise',
+      description: 'Every product meets our strict quality standards:',
+      points: [
+        {
+          icon: Shield,
+          title: 'Premium Materials',
+          description: 'We source only the finest materials from trusted suppliers.'
+        },
+        {
+          icon: Sparkles,
+          title: 'Expert Craftsmanship',
+          description: 'Each piece is crafted by skilled artisans with years of experience.'
+        },
+        {
+          icon: HeartHandshake,
+          title: 'Lifetime Warranty',
+          description: 'We stand behind our products with a comprehensive lifetime warranty.'
+        }
+      ]
+    }
+  },
+  {
+    id: 'reviews',
+    label: 'Customer Reviews',
+    icon: Star,
+    content: {
+      title: 'What Our Customers Say',
+      testimonials: [
+        {
+          id: 1,
+          rating: 5,
+          name: 'Sarah Mitchell',
+          location: 'United States',
+          date: '2 weeks ago',
+          title: 'Exceptional Quality & Service',
+          text: "I've been consistently impressed with the quality of products and attention to detail. The sustainable packaging and personal touch make every purchase special. Their customer service is outstanding!",
+          verified: true
+        },
+        {
+          id: 2,
+          rating: 5,
+          name: 'James Wilson',
+          location: 'United Kingdom',
+          date: '1 month ago',
+          title: 'Worth Every Penny',
+          text: "The craftsmanship is extraordinary. Yes, shipping takes a bit longer, but the wait is absolutely worth it. Each piece feels unique and special. Will definitely order again!",
+          verified: true
+        },
+        {
+          id: 3,
+          rating: 5,
+          name: 'Emma Rodriguez',
+          location: 'Canada',
+          date: '2 months ago',
+          title: 'Sustainable Luxury',
+          text: "Love their commitment to sustainability! The eco-friendly packaging and materials show they really care about the environment. The products are beautiful and well-made.",
+          verified: true
+        },
+        {
+          id: 4,
+          rating: 5,
+          name: 'Michael Chen',
+          location: 'Singapore',
+          date: '3 weeks ago',
+          title: 'Outstanding Global Service',
+          text: "Impressed by their international shipping service. The package arrived perfectly wrapped, and the product quality exceeded my expectations. Their attention to detail is remarkable!",
+          verified: true
+        },
+        {
+          id: 5,
+          rating: 5,
+          name: 'Sophie Laurent',
+          location: 'France',
+          date: '1 month ago',
+          title: 'Elegant & Sustainable',
+          text: "The perfect blend of luxury and sustainability. Each piece tells a story of craftsmanship and environmental consciousness. The packaging was plastic-free and beautiful!",
+          verified: true
+        },
+        {
+          id: 6,
+          rating: 5,
+          name: 'David Thompson',
+          location: 'Australia',
+          date: '6 weeks ago',
+          title: 'Worth the Wait',
+          text: "Although shipping to Australia took some time, the quality of the products made it absolutely worth the wait. Their customer service kept me updated throughout the process.",
+          verified: true
+        },
+        {
+          id: 7,
+          rating: 5,
+          name: 'Isabella Martinez',
+          location: 'Spain',
+          date: '2 months ago',
+          title: 'Exceptional Quality',
+          text: "Every detail shows their commitment to quality. From the moment you open the package to using the product, you can feel the dedication to excellence. Highly recommended!",
+          verified: true
+        },
+        {
+          id: 8,
+          rating: 5,
+          name: 'Oliver Schmidt',
+          location: 'Germany',
+          date: '2.5 months ago',
+          title: 'Perfect Gift Choice',
+          text: "Ordered as a gift and couldn't be happier. The presentation was beautiful, and the recipient was thrilled with the quality. The sustainable packaging made it even more special.",
+          verified: true
+        },
+        {
+          id: 9,
+          rating: 5,
+          name: 'Anna Kowalski',
+          location: 'Poland',
+          date: '3 months ago',
+          title: 'Superb Customer Service',
+          text: "Had a question about my order and their response was quick and helpful. The product arrived exactly as described, and the quality is outstanding. Will definitely shop here again!",
+          verified: true
+        },
+        {
+          id: 10,
+          rating: 5,
+          name: "Liam O'Connor",
+          location: 'Ireland',
+          date: '3.5 months ago',
+          title: 'Fantastic Experience',
+          text: "From browsing to delivery, everything was perfect. The website is easy to navigate, and the product quality is exceptional. Love their commitment to sustainable practices!",
+          verified: true
+        }
+      ]
+    }
+  },
+  {
+    id: 'care',
+    label: 'Care Instructions',
+    icon: Sparkles,
+    content: {
+      title: 'Product Care Guide',
+      description: 'Select a category to view specific care instructions:'
+    }
+  }
+];
+
+export function ProductTabs() {
+  const [activeTab, setActiveTab] = useState(tabs[0].id);
+  const { ref, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: true
+  });
+  const reviewsRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScrollability = useCallback(() => {
+    if (reviewsRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = reviewsRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  }, []);
+
+  const scroll = useCallback((direction: 'left' | 'right') => {
+    if (reviewsRef.current) {
+      const scrollAmount = direction === 'left' ? -400 : 400;
+      reviewsRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  }, []);
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+      transition={{ duration: 0.5 }}
+      className="w-full max-w-[1400px] mx-auto mt-12 px-4 sm:px-6 lg:px-8 relative z-10"
+    >
+      {/* Tabs Navigation */}
+      <div className="flex flex-wrap gap-2 sm:gap-4 justify-center">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <motion.button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`
+                flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm sm:text-base
+                transition-all duration-300 relative
+                ${isActive 
+                  ? 'bg-white text-[#6B5E4C] border border-[#B5A48B]/20 border-b-0' 
+                  : 'bg-[#6B5E4C]/5 text-[#6B5E4C] hover:bg-[#6B5E4C]/10'
+                }
+                ${isActive ? 'z-10' : 'z-0'}
+              `}
+            >
+              <Icon className="w-4 h-4" />
+              <span className="hidden sm:inline">{tab.label}</span>
+              {isActive && (
+                <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-white" />
+              )}
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Tab Content */}
+      <div className="bg-white rounded-lg rounded-tl-none border border-[#B5A48B]/20 p-6 sm:p-8 -mt-[1px]">
+        {activeTab === 'shipping' && (
+          <div className="space-y-6">
+            <h3 className="text-xl sm:text-2xl font-light text-[#6B5E4C]">
+              {tabs[0].content.title}
+            </h3>
+            <p className="text-[#8C7E6A]">{tabs[0].content.description}</p>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {tabs[0].content.points.map((point, index) => {
+                const PointIcon = point.icon;
+                return (
+                  <div
+                    key={index}
+                    className="bg-white/80 rounded-xl p-4 sm:p-6 shadow-sm"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-8 h-8 rounded-full bg-[#6B5E4C]/10 flex items-center justify-center">
+                        <PointIcon className="w-4 h-4 text-[#6B5E4C]" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-[#6B5E4C] font-medium mb-2">{point.title}</h4>
+                        <p className="text-sm text-[#8C7E6A]">{point.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'quality' && (
+          <div className="space-y-6">
+            <h3 className="text-xl sm:text-2xl font-light text-[#6B5E4C]">
+              {tabs[1].content.title}
+            </h3>
+            <p className="text-[#8C7E6A]">{tabs[1].content.description}</p>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {tabs[1].content.points.map((point, index) => {
+                const PointIcon = point.icon;
+                return (
+                  <div
+                    key={index}
+                    className="bg-white/80 rounded-xl p-4 sm:p-6 shadow-sm"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-8 h-8 rounded-full bg-[#6B5E4C]/10 flex items-center justify-center">
+                        <PointIcon className="w-4 h-4 text-[#6B5E4C]" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-[#6B5E4C] font-medium mb-2">{point.title}</h4>
+                        <p className="text-sm text-[#8C7E6A]">{point.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'reviews' && (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl sm:text-2xl font-light text-[#6B5E4C]">
+                {tabs[2].content.title}
+              </h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => scroll('left')}
+                  disabled={!canScrollLeft}
+                  className={`p-2 rounded-full border border-[#B5A48B]/20 transition-all duration-200
+                            ${canScrollLeft 
+                              ? 'hover:bg-[#6B5E4C]/5 text-[#6B5E4C]' 
+                              : 'text-[#6B5E4C]/30 cursor-not-allowed'}`}
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => scroll('right')}
+                  disabled={!canScrollRight}
+                  className={`p-2 rounded-full border border-[#B5A48B]/20 transition-all duration-200
+                            ${canScrollRight 
+                              ? 'hover:bg-[#6B5E4C]/5 text-[#6B5E4C]' 
+                              : 'text-[#6B5E4C]/30 cursor-not-allowed'}`}
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div
+                ref={reviewsRef}
+                onScroll={checkScrollability}
+                className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4
+                          [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-[#B5A48B]/10
+                          [&::-webkit-scrollbar-thumb]:bg-[#B5A48B]/20 [&::-webkit-scrollbar-thumb]:rounded-full"
+              >
+                {tabs[2].content.testimonials.map((review) => (
+                  <motion.div
+                    key={review.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex-none w-[300px] sm:w-[350px] snap-start"
+                  >
+                    <div className="bg-white rounded-xl p-6 border border-[#B5A48B]/20 h-full flex flex-col">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <div className="flex items-center gap-1 mb-1">
+                            {[...Array(review.rating)].map((_, i) => (
+                              <Star 
+                                key={i} 
+                                className="w-4 h-4 fill-yellow-400 text-yellow-400" 
+                              />
+                            ))}
+                          </div>
+                          <h4 className="text-[#6B5E4C] font-medium">{review.title}</h4>
+                        </div>
+                        {review.verified && (
+                          <span className="text-xs text-[#4A8B4A] bg-[#4A8B4A]/10 px-2 py-1 rounded-full">
+                            Verified
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-[#8C7E6A] text-sm mb-4 flex-grow">
+                        "{review.text}"
+                      </p>
+
+                      <div className="flex items-center justify-between text-sm text-[#8C7E6A]">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-[#6B5E4C]">{review.name}</span>
+                          <span className="text-xs">{review.location}</span>
+                        </div>
+                        <span className="text-xs">{review.date}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'care' && (
+          <div className="space-y-6">
+            <h3 className="text-xl sm:text-2xl font-light text-[#6B5E4C]">
+              {tabs[3].content.title}
+            </h3>
+            <p className="text-[#8C7E6A]">{tabs[3].content.description}</p>
+            <CareInstructions />
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
