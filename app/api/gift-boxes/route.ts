@@ -37,6 +37,9 @@ interface GiftBox {
   };
 }
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
+
 export async function GET() {
   try {
     const products = await getCollectionProducts({
@@ -132,11 +135,3 @@ export async function GET() {
     );
   }
 }
-
-// Add rate limiting if needed
-export const config = {
-  api: {
-    bodyParser: false,
-    externalResolver: true
-  }
-};
