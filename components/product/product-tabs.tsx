@@ -1,10 +1,11 @@
 // components/product/product-tabs.tsx
 'use client';
 
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import {
   Award,
+  Check,
   CheckCircle,
   ChevronLeft,
   ChevronRight,
@@ -389,123 +390,155 @@ interface ReviewCardProps {
 }
 
 // Replace existing ReviewCard component
-const ReviewCard = memo(({ review, helpfulCount, onHelpful }: ReviewCardProps) => (
-  <div className="flex h-full flex-col rounded-xl bg-white p-6 shadow-md">
-    <div className="mb-4 flex items-start justify-between">
-      <div className="flex gap-3">
-        <div className="h-10 w-10 rounded-full bg-[#6B5E4C]/10 flex items-center justify-center">
-          <span className="text-lg font-medium text-[#6B5E4C]">
-            {review.name[0]}
-          </span>
-        </div>
-        <div>
-          <h4 className="font-medium text-[#6B5E4C]">{review.name}</h4>
-          <p className="text-sm text-[#8C7E6A]">{review.location}</p>
-        </div>
-      </div>
-      <div className="flex items-center">
-        <ReviewStars rating={review.rating} />
-        {review.verified && (
-          <span className="ml-2">
-            <VerifiedBadge />
-          </span>
-        )}
-      </div>
-    </div>
-
-    <div className="flex-grow">
-      <h5 className="mb-2 text-lg font-medium text-[#6B5E4C]">
-        {review.title}
-      </h5>
-      <p className="text-[#8C7E6A] line-clamp-4">{review.text}</p>
-    </div>
-
-    <div className="mt-4 flex items-center justify-between border-t border-[#6B5E4C]/10 pt-4">
-      <div className="flex items-center gap-2">
-        <button
-          onClick={onHelpful}
-          className="flex items-center gap-1 rounded-full bg-[#6B5E4C]/5 px-3 py-1 text-sm text-[#6B5E4C] transition-all hover:bg-[#6B5E4C]/10"
-        >
-          <ThumbsUp className={`h-4 w-4 ${helpfulCount > 0 ? 'text-blue-500' : ''}`} />
-          <span>{helpfulCount > 0 ? helpfulCount : 'Helpful'}</span>
-        </button>
-      </div>
-      <time className="text-sm text-[#8C7E6A]">{review.date}</time>
-    </div>
-  </div>
-));
-
-// Replace existing ReviewsContainer component
-const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [currentReviews, setCurrentReviews] = useState(0);
-  const reviewsPerPage = 3;
-
-  const [helpfulCounts, setHelpfulCounts] = useState<Record<number, number>>(() => {
+const ReviewCard = memo(({ review }: { review: Testimonial }) => {
+  const [helpfulCount, setHelpfulCount] = useState(() => {
+    const initialCount = Math.floor(Math.random() * 4) + 1;
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('helpfulCounts');
-      return saved ? JSON.parse(saved) : {};
+      const saved = localStorage.getItem(`helpful-${review.id}`);
+      return saved ? JSON.parse(saved) : initialCount;
     }
-    return {};
+    return initialCount;
+  });
+  
+  const [hasVoted, setHasVoted] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(`voted-${review.id}`) === 'true';
+    }
+    return false;
   });
 
-  const handleHelpful = (reviewId: number) => {
-    setHelpfulCounts(prev => {
-      const newCounts = {
-        ...prev,
-        [reviewId]: (prev[reviewId] || 0) + 1
-      };
-      localStorage.setItem('helpfulCounts', JSON.stringify(newCounts));
-      return newCounts;
-    });
-  };
-
-  const currentVisibleReviews = testimonials.slice(
-    currentReviews,
-    currentReviews + reviewsPerPage
-  );
-
-  const isLastPage = currentReviews + reviewsPerPage >= testimonials.length;
-
-  const handleNext = () => {
-    if (!isLastPage) {
-      setCurrentReviews(prev => prev + reviewsPerPage);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentReviews > 0) {
-      setCurrentReviews(prev => prev - reviewsPerPage);
+  const handleHelpfulClick = () => {
+    if (!hasVoted) {
+      const newCount = helpfulCount + 1;
+      setHelpfulCount(newCount);
+      setHasVoted(true);
+      localStorage.setItem(`helpful-${review.id}`, JSON.stringify(newCount));
+      localStorage.setItem(`voted-${review.id}`, 'true');
     }
   };
 
   return (
-    <div className="relative w-full">
-      <button 
-        onClick={handlePrevious}
-        className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-3 shadow-lg transition-all hover:bg-gray-50 disabled:opacity-0"
-        disabled={currentReviews === 0}
-      >
-        <ChevronLeft className="h-5 w-5 text-[#6B5E4C]" />
-      </button>
-
-      <div className="grid grid-cols-3 gap-6 overflow-hidden">
-        {currentVisibleReviews.map((review) => (
-          <ReviewCard 
-            key={review.id}
-            review={review}
-            helpfulCount={helpfulCounts[review.id] || 0}
-            onHelpful={() => handleHelpful(review.id)}
-          />
-        ))}
+    <motion.div 
+      layout
+      className="flex h-full flex-col rounded-xl bg-white p-6 shadow-md"
+    >
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-gray-900">{review.name}</span>
+              <span className="text-gray-500">•</span>
+              <span className="text-gray-500">{review.location}</span>
+            </div>
+          </div>
+          <ReviewStars rating={review.rating} />
+        </div>
+        
+        {review.verified && (
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
+              <Check className="w-3 h-3 mr-1" />
+              Verified Purchase
+            </span>
+            <span className="text-xs text-gray-500">{review.date}</span>
+          </div>
+        )}
       </div>
 
+      <div className="mt-4 flex-grow">
+        <h4 className="font-medium text-gray-900 mb-2">{review.title}</h4>
+        <p className="text-gray-600 text-sm line-clamp-4">{review.text}</p>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-gray-100">
+        <button
+          onClick={handleHelpfulClick}
+          disabled={hasVoted}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors
+            ${hasVoted 
+              ? 'bg-gray-50 text-gray-500 cursor-not-allowed' 
+              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+            }`}
+        >
+          <ThumbsUp className={`w-4 h-4 ${hasVoted ? 'fill-gray-500' : ''}`} />
+          <span>Helpful</span>
+          <span className="text-gray-400">({helpfulCount})</span>
+        </button>
+      </div>
+    </motion.div>
+  );
+});
+
+// Replace existing ReviewsContainer component
+const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }) => {
+  const [[page, direction], setPage] = useState([0, 0]);
+  const reviewsPerPage = 3;
+  const pageCount = Math.ceil(testimonials.length / reviewsPerPage);
+
+  const variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 1000 : -1000,
+      opacity: 0
+    })
+  };
+
+  const paginate = (newDirection: number) => {
+    const newPage = page + newDirection;
+    if (newPage >= 0 && newPage < pageCount) {
+      setPage([newPage, newDirection]);
+    }
+  };
+
+  return (
+    <div className="relative w-full px-4">
       <button 
-        onClick={handleNext}
-        className="absolute -right-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-3 shadow-lg transition-all hover:bg-gray-50 disabled:opacity-0"
-        disabled={isLastPage}
+        onClick={() => paginate(-1)}
+        className={`absolute -left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-lg backdrop-blur transition-all 
+          hover:bg-gray-50 disabled:opacity-0 disabled:pointer-events-none`}
+        disabled={page === 0}
       >
-        <ChevronRight className="h-5 w-5 text-[#6B5E4C]" />
+        <ChevronLeft className="h-5 w-5 text-gray-600" />
+      </button>
+
+      <AnimatePresence initial={false} custom={direction} mode="popLayout">
+        <motion.div
+          key={page}
+          custom={direction}
+          variants={variants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{
+            x: { type: "spring", stiffness: 300, damping: 30 },
+            opacity: { duration: 0.2 }
+          }}
+          className="grid grid-cols-3 gap-6"
+        >
+          {testimonials
+            .slice(page * reviewsPerPage, (page + 1) * reviewsPerPage)
+            .map((review) => (
+              <ReviewCard key={review.id} review={review} />
+            ))}
+        </motion.div>
+      </AnimatePresence>
+
+      <button 
+        onClick={() => paginate(1)}
+        className={`absolute -right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-lg backdrop-blur transition-all 
+          hover:bg-gray-50 disabled:opacity-0 disabled:pointer-events-none`}
+        disabled={page === pageCount - 1}
+      >
+        <ChevronRight className="h-5 w-5 text-gray-600" />
       </button>
     </div>
   );
