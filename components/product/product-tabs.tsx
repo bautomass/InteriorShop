@@ -296,24 +296,22 @@ const ReviewStars = memo(({ rating }: { rating: number }) => (
   </div>
 ));
 
-const TabButton = memo(
-  ({ tab, isActive, onClick }: { tab: Tab; isActive: boolean; onClick: () => void }) => (
-    <motion.button
-      onClick={onClick}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      className={`relative flex items-center gap-2 rounded-t-lg px-4 py-2 text-sm transition-all duration-300 sm:text-base ${
-        isActive
-          ? 'border border-b-0 border-[#B5A48B]/20 bg-white text-[#6B5E4C]'
-          : 'bg-[#6B5E4C]/5 text-[#6B5E4C] hover:bg-[#6B5E4C]/10'
-      } ${isActive ? 'z-10' : 'z-0'} `}
-    >
-      <tab.icon className="h-4 w-4" />
-      <span className="hidden sm:inline">{tab.label}</span>
-      {isActive && <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-white" />}
-    </motion.button>
-  )
-);
+const TabButton = memo(({ tab, isActive, onClick }: { tab: Tab; isActive: boolean; onClick: () => void }) => (
+  <motion.button
+    onClick={onClick}
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    className={`relative flex items-center gap-2 rounded-t-lg px-3 py-2 text-sm transition-all duration-300
+      ${isActive
+        ? 'border border-b-0 border-[#B5A48B]/20 bg-white text-[#6B5E4C]'
+        : 'bg-[#6B5E4C]/5 text-[#6B5E4C] hover:bg-[#6B5E4C]/10'
+      } ${isActive ? 'z-10' : 'z-0'}`}
+  >
+    <tab.icon className="h-4 w-4" />
+    <span className="text-xs md:text-sm">{tab.label}</span>
+    {isActive && <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-white" />}
+  </motion.button>
+));
 
 TabButton.displayName = 'TabButton';
 ReviewStars.displayName = 'ReviewStars';
@@ -373,145 +371,175 @@ const VerifiedBadge = memo(() => (
 ));
 VerifiedBadge.displayName = 'VerifiedBadge';
 
-// Add ReviewCardProps interface
-interface ReviewCardProps {
-  review: {
-    id: number;
-    name: string;
-    location: string;
-    rating: number;
-    title: string;
-    text: string;
-    date: string;
-    verified: boolean;
-  };
-  helpfulCount: number;
-  onHelpful: () => void;
-}
+// Add custom hook for handling helpful votes
+const useHelpfulVotes = (reviewId: number) => {
+  const storageKey = `helpful-${reviewId}`;
+  const votedKey = `voted-${reviewId}`;
+  
+  const [helpfulCount, setHelpfulCount] = useState(() => {
+    if (typeof window === 'undefined') return Math.floor(Math.random() * 4) + 1;
+    
+    const saved = localStorage.getItem(storageKey);
+    return saved ? JSON.parse(saved) : Math.floor(Math.random() * 4) + 1;
+  });
+
+  const [hasVoted, setHasVoted] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem(votedKey) === 'true';
+  });
+
+  const handleVote = useCallback(() => {
+    if (hasVoted) return;
+    
+    const newCount = helpfulCount + 1;
+    setHelpfulCount(newCount);
+    setHasVoted(true);
+    
+    localStorage.setItem(storageKey, JSON.stringify(newCount));
+    localStorage.setItem(votedKey, 'true');
+  }, [helpfulCount, hasVoted, storageKey, votedKey]);
+
+  return [helpfulCount, hasVoted, handleVote] as const;
+};
 
 // Replace existing ReviewCard component
 const ReviewCard = memo(({ review }: { review: Testimonial }) => {
-  const [helpfulCount, setHelpfulCount] = useState(() => {
-    const initialCount = Math.floor(Math.random() * 4) + 1;
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`helpful-${review.id}`);
-      return saved ? JSON.parse(saved) : initialCount;
-    }
-    return initialCount;
-  });
-  
-  const [hasVoted, setHasVoted] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(`voted-${review.id}`) === 'true';
-    }
-    return false;
-  });
-
-  const handleHelpfulClick = () => {
-    if (!hasVoted) {
-      const newCount = helpfulCount + 1;
-      setHelpfulCount(newCount);
-      setHasVoted(true);
-      localStorage.setItem(`helpful-${review.id}`, JSON.stringify(newCount));
-      localStorage.setItem(`voted-${review.id}`, 'true');
-    }
-  };
+  const [helpfulCount, hasVoted, handleVote] = useHelpfulVotes(review.id);
 
   return (
     <motion.div 
       layout
-      className="flex h-full flex-col rounded-xl bg-white p-6 shadow-md"
+      className="flex h-full flex-col rounded-xl bg-white p-4 shadow-md transition-shadow duration-300 hover:shadow-lg sm:p-6"
     >
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-gray-900">{review.name}</span>
-              <span className="text-gray-500">•</span>
-              <span className="text-gray-500">{review.location}</span>
+      {/* Header Section */}
+      <div className="flex flex-col gap-3">
+        {/* User Info and Rating */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <h4 className="font-medium text-gray-900 truncate">
+                {review.name}
+              </h4>
+              <span className="text-gray-400">•</span>
+              <span className="text-sm text-gray-500 truncate">
+                {review.location}
+              </span>
             </div>
+            <time className="text-xs text-gray-400 block mt-0.5">
+              {review.date}
+            </time>
           </div>
           <ReviewStars rating={review.rating} />
         </div>
-        
+
+        {/* Verification Badge */}
         {review.verified && (
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
-              <Check className="w-3 h-3 mr-1" />
+            <span 
+              className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 
+                text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/10"
+            >
+              <Check className="w-3 h-3" />
               Verified Purchase
             </span>
-            <span className="text-xs text-gray-500">{review.date}</span>
           </div>
         )}
       </div>
 
+      {/* Review Content */}
       <div className="mt-4 flex-grow">
-        <h4 className="font-medium text-gray-900 mb-2">{review.title}</h4>
-        <p className="text-gray-600 text-sm line-clamp-4">{review.text}</p>
+        <h5 className="font-medium text-gray-900 mb-2 line-clamp-1">
+          {review.title}
+        </h5>
+        <p className="text-gray-600 text-sm leading-relaxed line-clamp-4">
+          {review.text}
+        </p>
       </div>
 
+      {/* Footer Section */}
       <div className="mt-4 pt-4 border-t border-gray-100">
         <button
-          onClick={handleHelpfulClick}
+          onClick={() => !hasVoted && handleVote()}
           disabled={hasVoted}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors
+          className={`group inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm 
+            transition-all duration-200
             ${hasVoted 
-              ? 'bg-gray-50 text-gray-500 cursor-not-allowed' 
-              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              ? 'bg-gray-50 text-gray-400 cursor-not-allowed' 
+              : 'bg-gray-50 text-gray-600 hover:bg-gray-100 active:scale-95'
             }`}
+          aria-label={hasVoted ? 'Already marked as helpful' : 'Mark as helpful'}
         >
-          <ThumbsUp className={`w-4 h-4 ${hasVoted ? 'fill-gray-500' : ''}`} />
+          <ThumbsUp 
+            className={`w-4 h-4 transition-colors duration-200
+              ${hasVoted ? 'fill-gray-400' : 'group-hover:fill-gray-600'}`} 
+          />
           <span>Helpful</span>
-          <span className="text-gray-400">({helpfulCount})</span>
+          {helpfulCount > 0 && (
+            <span className="text-gray-400">({helpfulCount})</span>
+          )}
         </button>
       </div>
     </motion.div>
   );
 });
 
+ReviewCard.displayName = 'ReviewCard';
+
 // Replace existing ReviewsContainer component
 const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }) => {
   const [[page, direction], setPage] = useState([0, 0]);
-  const reviewsPerPage = 3;
+  // Since useBreakpointValue isn't available, we'll use a simpler approach with window.innerWidth
+  const [reviewsPerPage, setReviewsPerPage] = useState(3);
   const pageCount = Math.ceil(testimonials.length / reviewsPerPage);
+
+  // Add responsive handling
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setReviewsPerPage(1);
+      } else if (window.innerWidth < 1024) {
+        setReviewsPerPage(2);
+      } else {
+        setReviewsPerPage(3);
+      }
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const variants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 500 : -500,
-      opacity: 0
+      x: direction > 0 ? '100%' : '-100%',
+      opacity: 1
     }),
     center: {
-      zIndex: 1,
       x: 0,
       opacity: 1
     },
     exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? 500 : -500,
-      opacity: 0
+      x: direction < 0 ? '100%' : '-100%',
+      opacity: 1
     })
   };
 
-  const paginate = (newDirection: number) => {
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
+  };
+
+  const paginate = useCallback((newDirection: number) => {
     const newPage = page + newDirection;
     if (newPage >= 0 && newPage < pageCount) {
       setPage([newPage, newDirection]);
     }
-  };
+  }, [page, pageCount]);
 
   return (
-    <div className="relative w-full px-4">
-      <button 
-        onClick={() => paginate(-1)}
-        className={`absolute -left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-lg backdrop-blur transition-all 
-          hover:bg-gray-50 disabled:opacity-0 disabled:pointer-events-none`}
-        disabled={page === 0}
-      >
-        <ChevronLeft className="h-5 w-5 text-gray-600" />
-      </button>
-
-      <div className="overflow-hidden">
-        <AnimatePresence initial={false} custom={direction} mode="wait">
+    <div className="relative w-full">
+      <div className="overflow-hidden rounded-lg">
+        <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.div
             key={page}
             custom={direction}
@@ -520,10 +548,25 @@ const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }
             animate="center"
             exit="exit"
             transition={{
-              x: { type: "spring", stiffness: 100, damping: 20, duration: 0.6 },
-              opacity: { duration: 0.4 }
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0 }
             }}
-            className="grid grid-cols-3 gap-6"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={1}
+            onDragEnd={(_, { offset, velocity }) => {
+              const swipe = swipePower(offset.x, velocity.x);
+              if (swipe < -swipeConfidenceThreshold) {
+                paginate(1);
+              } else if (swipe > swipeConfidenceThreshold) {
+                paginate(-1);
+              }
+            }}
+            className={`grid gap-4 md:gap-6 ${
+              reviewsPerPage === 1 ? 'grid-cols-1' : 
+              reviewsPerPage === 2 ? 'grid-cols-2' : 
+              'grid-cols-3'
+            }`}
           >
             {testimonials
               .slice(page * reviewsPerPage, (page + 1) * reviewsPerPage)
@@ -534,20 +577,44 @@ const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }
         </AnimatePresence>
       </div>
 
-      <button 
-        onClick={() => paginate(1)}
-        className={`absolute -right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-lg backdrop-blur transition-all 
-          hover:bg-gray-50 disabled:opacity-0 disabled:pointer-events-none`}
-        disabled={page === pageCount - 1}
-      >
-        <ChevronRight className="h-5 w-5 text-gray-600" />
-      </button>
+      {/* Navigation Controls */}
+      <div className="mt-6 flex items-center justify-center gap-4">
+        <button
+          onClick={() => paginate(-1)}
+          disabled={page === 0}
+          className="group relative rounded-full p-2 transition-all hover:bg-gray-100 disabled:opacity-50"
+          aria-label="Previous reviews"
+        >
+          <ChevronLeft className="h-5 w-5 text-gray-600" />
+        </button>
+
+        <div className="flex gap-2">
+          {Array.from({ length: pageCount }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setPage([i, i > page ? 1 : -1])}
+              className={`h-2 rounded-full transition-all
+                ${i === page ? 'w-6 bg-[#6B5E4C]' : 'w-2 bg-gray-300 hover:bg-gray-400'}
+              `}
+              aria-label={`Go to page ${i + 1}`}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={() => paginate(1)}
+          disabled={page === pageCount - 1}
+          className="group relative rounded-full p-2 transition-all hover:bg-gray-100 disabled:opacity-50"
+          aria-label="Next reviews"
+        >
+          <ChevronRight className="h-5 w-5 text-gray-600" />
+        </button>
+      </div>
     </div>
   );
 });
 
 ReviewsContainer.displayName = 'ReviewsContainer';
-ReviewCard.displayName = 'ReviewCard';
 
 export function ProductTabs() {
   const [activeTab, setActiveTab] = useState<Tab['id']>(INITIAL_TAB_ID);
