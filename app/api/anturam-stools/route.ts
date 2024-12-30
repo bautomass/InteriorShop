@@ -6,7 +6,7 @@ export async function GET() {
   console.log('API: Starting anturam-stools fetch');
   try {
     const products = await getCollectionProducts({
-      collection: 'nordic-pine-stool-11-styles', // This should match your Shopify collection handle
+      collection: 'anturam-eco-wooden-stools',
       sortKey: 'CREATED_AT',
       reverse: true
     });
