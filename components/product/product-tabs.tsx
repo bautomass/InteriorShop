@@ -1,3 +1,4 @@
+// components/product/product-tabs.tsx
 'use client';
 
 import { motion } from 'framer-motion';
@@ -5,6 +6,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Award, Clock, Globe2, HeartHandshake, Shield, Ship, Sparkles, Star } from 'lucide-react';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
+import { CareInstructions } from './care-instructions';
 
 interface TabBase {
   id: string;
@@ -378,31 +380,70 @@ export function ProductTabs() {
 
     return (
       <TabErrorBoundary>
-        {isShippingTab(tab) && (
-          <div className="space-y-6">
-            <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
-            <p className="text-[#8C7E6A]">{tab.content.description}</p>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {tab.content.points.map((point, index) => {
-                const PointIcon = point.icon;
-                return (
-                  <div key={index} className="rounded-xl bg-white/80 p-4 shadow-sm sm:p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6B5E4C]/10">
-                        <PointIcon className="h-4 w-4 text-[#6B5E4C]" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="mb-2 font-medium text-[#6B5E4C]">{point.title}</h4>
-                        <p className="text-sm text-[#8C7E6A]">{point.description}</p>
-                      </div>
-                    </div>
+      {isShippingTab(tab) && (
+        <div className="space-y-6">
+          <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
+          <p className="text-[#8C7E6A]">{tab.content.description}</p>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {tab.content.points.map((point, index) => (
+              <div key={index} className="rounded-xl bg-white/80 p-4 shadow-sm sm:p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6B5E4C]/10">
+                    <point.icon className="h-4 w-4 text-[#6B5E4C]" />
                   </div>
-                );
-              })}
-            </div>
+                  <div className="flex-1">
+                    <h4 className="mb-2 font-medium text-[#6B5E4C]">{point.title}</h4>
+                    <p className="text-sm text-[#8C7E6A]">{point.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
-        {/* Similar patterns for other tab types */}
+        </div>
+      )}
+
+      {isQualityTab(tab) && (
+        <div className="space-y-6">
+          <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
+          <p className="text-[#8C7E6A]">{tab.content.description}</p>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {tab.content.points.map((point, index) => (
+              <div key={index} className="rounded-xl bg-white/80 p-4 shadow-sm sm:p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6B5E4C]/10">
+                    <point.icon className="h-4 w-4 text-[#6B5E4C]" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="mb-2 font-medium text-[#6B5E4C]">{point.title}</h4>
+                    <p className="text-sm text-[#8C7E6A]">{point.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {isReviewsTab(tab) && (
+        <div className="space-y-8">
+          <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {tab.content.testimonials.map((testimonial) => (
+              <div key={testimonial.id} className="rounded-xl bg-white/80 p-6 shadow-sm">
+                <ReviewStars rating={testimonial.rating} />
+                <h4 className="mt-4 font-medium text-[#6B5E4C]">{testimonial.title}</h4>
+                <p className="mt-2 text-sm text-[#8C7E6A]">{testimonial.text}</p>
+                <div className="mt-4 flex items-center justify-between text-xs text-[#8C7E6A]">
+                  <span>{testimonial.name}, {testimonial.location}</span>
+                  <span>{testimonial.date}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {isCareTab(tab) && <CareInstructions />}
       </TabErrorBoundary>
     );
   };

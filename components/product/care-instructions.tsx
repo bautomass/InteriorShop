@@ -1,3 +1,4 @@
+// components/product/care-instructions.tsx
 'use client';
 
 import { motion } from 'framer-motion';
