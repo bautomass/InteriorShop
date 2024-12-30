@@ -488,7 +488,7 @@ ReviewCard.displayName = 'ReviewCard';
 // Replace existing ReviewsContainer component
 const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }) => {
   const [[page, direction], setPage] = useState([0, 0]);
-  // Since useBreakpointValue isn't available, we'll use a simpler approach with window.innerWidth
+  // Since useBreakpointValue isn't available, we'll use window.innerWidth
   const [reviewsPerPage, setReviewsPerPage] = useState(3);
   const pageCount = Math.ceil(testimonials.length / reviewsPerPage);
 
@@ -524,11 +524,6 @@ const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }
     })
   };
 
-  const swipeConfidenceThreshold = 10000;
-  const swipePower = (offset: number, velocity: number) => {
-    return Math.abs(offset) * velocity;
-  };
-
   const paginate = useCallback((newDirection: number) => {
     const newPage = page + newDirection;
     if (newPage >= 0 && newPage < pageCount) {
@@ -538,7 +533,7 @@ const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }
 
   return (
     <div className="relative w-full">
-      <div className="overflow-hidden rounded-lg">
+      <div className="relative overflow-hidden">
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.div
             key={page}
@@ -551,22 +546,11 @@ const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }
               x: { type: "spring", stiffness: 300, damping: 30 },
               opacity: { duration: 0 }
             }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
-            onDragEnd={(_: MouseEvent | TouchEvent | PointerEvent, { offset, velocity }: { offset: { x: number }; velocity: { x: number } }) => {
-              const swipe = swipePower(offset.x, velocity.x);
-              if (swipe < -swipeConfidenceThreshold) {
-                paginate(1);
-              } else if (swipe > swipeConfidenceThreshold) {
-                paginate(-1);
-              }
-            }}
-            className={`grid gap-4 md:gap-6 ${
-              reviewsPerPage === 1 ? 'grid-cols-1' : 
-              reviewsPerPage === 2 ? 'grid-cols-2' : 
-              'grid-cols-3'
-            }`}
+            className={`relative grid gap-4 md:gap-6
+              ${reviewsPerPage === 1 ? 'grid-cols-1' : ''}
+              ${reviewsPerPage === 2 ? 'grid-cols-2' : ''}
+              ${reviewsPerPage === 3 ? 'grid-cols-3' : ''}
+            `}
           >
             {testimonials
               .slice(page * reviewsPerPage, (page + 1) * reviewsPerPage)
