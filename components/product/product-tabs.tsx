@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import {
   Award,
+  CheckCircle,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -435,53 +436,70 @@ export function ProductTabs() {
           </div>
         )}
 
-        {isReviewsTab(tab) && (
-          <div className="space-y-8">
-            <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
+      {isReviewsTab(tab) && (
+        <div className="space-y-8">
+          <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
+          
+          <div className="relative">
+            <button 
+              onClick={() => scroll('left')}
+              className={`absolute -left-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow-md backdrop-blur-sm transition-all 
+                ${!scrollState.canScrollLeft && 'opacity-0 pointer-events-none'}`}
+              disabled={!scrollState.canScrollLeft}
+              aria-label="Previous reviews"
+            >
+              <ChevronLeft className="h-5 w-5 text-[#6B5E4C]" />
+            </button>
 
-            <div className="relative">
-              <button
-                onClick={() => scroll('left')}
-                className={`absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-2 shadow-md transition-all hover:bg-gray-50 ${!scrollState.canScrollLeft && 'opacity-0'} md:-left-4`}
-                disabled={!scrollState.canScrollLeft}
-              >
-                <ChevronLeft className="h-5 w-5 text-[#6B5E4C]" />
-              </button>
-
-              <div
-                ref={reviewsRef}
-                onScroll={checkScrollability}
-                className="flex snap-x snap-mandatory gap-6 overflow-x-auto px-1 pb-6 scrollbar-hide"
-              >
-                {tab.content.testimonials.map((testimonial) => (
-                  <div
-                    key={testimonial.id}
-                    className="min-w-[300px] flex-shrink-0 snap-center rounded-xl bg-white/80 p-6 shadow-sm transition-transform hover:scale-[1.02] sm:min-w-[350px] lg:min-w-[400px]"
-                  >
+            <div 
+              ref={reviewsRef}
+              onScroll={checkScrollability}
+              className="flex gap-6 overflow-x-auto px-1 pb-6 scrollbar-hide scroll-smooth"
+            >
+              {tab.content.testimonials.map((testimonial) => (
+                <motion.div 
+                  key={testimonial.id}
+                  layoutId={`review-${testimonial.id}`}
+                  className="w-[calc(100%/3-1rem)] min-w-[350px] flex-shrink-0 rounded-xl bg-white p-6 shadow-sm transition will-change-transform hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between">
                     <ReviewStars rating={testimonial.rating} />
-                    <h4 className="mt-4 font-medium text-[#6B5E4C]">{testimonial.title}</h4>
-                    <p className="mt-2 line-clamp-4 text-sm text-[#8C7E6A]">{testimonial.text}</p>
-                    <div className="mt-4 flex items-center justify-between text-xs text-[#8C7E6A]">
-                      <div className="flex flex-col">
-                        <span className="font-medium">{testimonial.name}</span>
-                        <span>{testimonial.location}</span>
-                      </div>
-                      <span>{testimonial.date}</span>
-                    </div>
+                    {Math.random() > 0.3 && (
+                      <span className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
+                        <CheckCircle className="h-3 w-3" />
+                        Verified Purchase
+                      </span>
+                    )}
                   </div>
-                ))}
-              </div>
-
-              <button
-                onClick={() => scroll('right')}
-                className={`absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-2 shadow-md transition-all hover:bg-gray-50 ${!scrollState.canScrollRight && 'opacity-0'} md:-right-4`}
-                disabled={!scrollState.canScrollRight}
-              >
-                <ChevronRight className="h-5 w-5 text-[#6B5E4C]" />
-              </button>
+                  
+                  <h4 className="mt-4 font-medium text-[#6B5E4C] line-clamp-1">{testimonial.title}</h4>
+                  <p className="mt-2 text-sm text-[#8C7E6A] line-clamp-4">{testimonial.text}</p>
+                  
+                  <div className="mt-4 flex items-center justify-between border-t border-[#6B5E4C]/10 pt-4 text-xs text-[#8C7E6A]">
+                    <div className="flex flex-col">
+                      <span className="font-medium">{testimonial.name}</span>
+                      <span>{testimonial.location}</span>
+                    </div>
+                    <time dateTime={testimonial.date} className="text-[#8C7E6A]/70">
+                      {testimonial.date}
+                    </time>
+                  </div>
+                </motion.div>
+              ))}
             </div>
+
+            <button 
+              onClick={() => scroll('right')}
+              className={`absolute -right-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow-md backdrop-blur-sm transition-all
+                ${!scrollState.canScrollRight && 'opacity-0 pointer-events-none'}`}
+              disabled={!scrollState.canScrollRight}
+              aria-label="Next reviews"
+            >
+              <ChevronRight className="h-5 w-5 text-[#6B5E4C]" />
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
         {isCareTab(tab) && <CareInstructions />}
       </TabErrorBoundary>
