@@ -6,6 +6,7 @@ import type { Product } from '@/lib/shopify/types';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, LayoutGrid, LayoutList, X } from 'lucide-react';
+import Link from 'next/link';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import type { Swiper as SwiperType } from 'swiper';
@@ -13,7 +14,6 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import { Autoplay, Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import Link from 'next/link';
 
 // Reuse the same components from LampsCollection
 import { ProductCard } from '@/components/shared/ProductCard';
@@ -224,7 +224,7 @@ export default function NewArrivalsCollection() {
   const viewSettings: ViewSettings = {
     minCards: 4,
     maxCards: 6,
-    defaultCards: 5
+    defaultCards: 4
   }
 
   const { cardsToShow, handleViewChange } = useCardsView(viewSettings)

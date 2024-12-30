@@ -609,7 +609,7 @@ export default function LampsCollection() {
   const viewSettings: ViewSettings = {
     minCards: 4,
     maxCards: 6,
-    defaultCards: 5
+    defaultCards: 4
   };
 
   const { cardsToShow, handleViewChange } = useCardsView(viewSettings);

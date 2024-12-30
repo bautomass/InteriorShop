@@ -1,7 +1,7 @@
 "use client"
 import { PriceSortFilter } from '@/components/filter/PriceSortFilter';
 import { ProductQuickView } from '@/components/quickview/ProductQuickView';
-import  CanvaProductCard  from '@/components/shared/CanvaProductCard';
+import CanvaProductCard from '@/components/shared/CanvaProductCard';
 import { useQuickView } from '@/hooks/useQuickView';
 import type { Product } from '@/lib/shopify/types';
 import { cn } from '@/lib/utils';
@@ -231,7 +231,7 @@ export default function CanvasCollection() {
   const viewSettings: ViewSettings = {
     minCards: 4,
     maxCards: 6,
-    defaultCards: 5
+    defaultCards: 4
   }
 
   const { cardsToShow, handleViewChange } = useCardsView(viewSettings)
