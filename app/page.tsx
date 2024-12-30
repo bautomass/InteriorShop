@@ -16,7 +16,6 @@ import { TopHeader } from 'components/layout/navbar/top-header';
 
 import InteriorTipsSection from '@/components/home/InteriorTipsSection';
 import type { Metadata } from 'next';
-import { useEffect } from 'react';
 
 export const metadata: Metadata = {
   title: 'Modern Interior Design & Home Decor',
@@ -39,10 +38,6 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  useEffect(() => {
-    console.log('HomePage: Rendering');
-  }, []);
-
   return (
     <>
       <TopHeader />
@@ -59,6 +54,7 @@ export default function HomePage() {
         <CeramicVaseSection />
         <WishboneChairSection/>
         <InteriorTipsSection/>
+        {/* <SaleProductsSection/> */}
         <Footer/>
       </div>
     </>
