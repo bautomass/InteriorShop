@@ -1,7 +1,6 @@
-// app/api/anturam-stools/route.ts
+// // app/api/anturam-stools/route.ts
 import { getCollectionProducts } from '@/lib/shopify';
 import { NextResponse } from 'next/server';
-
 export async function GET() {
   console.log('API: Starting anturam-stools fetch');
   try {
@@ -11,7 +10,7 @@ export async function GET() {
       reverse: true
     });
     
-    console.log('API: Products fetched:', products?.length);
+    console.log('API: Products fetched:', products?.length || 0);
     
     if (!products || products.length === 0) {
       console.log('API: No products found');
@@ -33,52 +32,6 @@ export async function GET() {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-// // // app/api/anturam-stools/route.ts
-// import { getCollectionProducts } from '@/lib/shopify';
-// import { NextResponse } from 'next/server';
-
-// // app/api/anturam-stools/route.ts
-// export async function GET() {
-//   console.log('API: Starting anturam-stools fetch');
-//   try {
-//     const products = await getCollectionProducts({
-//       collection: 'anturam-eco-wooden-stools',
-//       sortKey: 'CREATED_AT',
-//       reverse: true
-//     });
-    
-//     console.log('API: Products fetched:', products?.length || 0);
-    
-//     if (!products || products.length === 0) {
-//       console.log('API: No products found');
-//       return NextResponse.json({ 
-//         products: [],
-//         message: 'No products found in collection' 
-//       });
-//     }
-
-//     return NextResponse.json({ products });
-//   } catch (error) {
-//     console.error('API: Error in anturam-stools route:', error);
-//     return NextResponse.json(
-//       { 
-//         error: 'Error fetching products',
-//         details: error instanceof Error ? error.message : 'Unknown error'
-//       },
-//       { status: 500 }
-//     );
-//   }
-// }
 
 
 
