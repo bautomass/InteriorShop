@@ -1,8 +1,14 @@
+// hooks/useProducts.ts
 import type { Product } from '@/lib/shopify/types';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export function useProducts(initialProducts: Product[]) {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>(initialProducts || []);
+
+  // Add this effect to update products when initialProducts changes
+  useEffect(() => {
+    setProducts(initialProducts || []);
+  }, [initialProducts]);
 
   const sortProducts = useCallback((direction: 'asc' | 'desc') => {
     setProducts(prevProducts => 
@@ -19,4 +25,4 @@ export function useProducts(initialProducts: Product[]) {
     setProducts,
     sortProducts
   };
-} 
+}
