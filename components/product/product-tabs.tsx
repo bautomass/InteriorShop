@@ -625,17 +625,25 @@ const useProductsFetch = () => {
     let mounted = true;
 
     const fetchProducts = async () => {
-      console.log('Component: Starting anturam-stools fetch');
+      console.log('Starting to fetch products...');
       try {
         const response = await fetch('/api/anturam-stools');
-        console.log('Component: Response status:', response.status);
-        const data = await response.json();
-        console.log('Component: Fetched data:', data);
+        console.log('API Response Status:', response.status);
         
-        if (!response.ok) throw new Error(data.error || ERROR_MESSAGES.FETCH_ERROR);
-        if (!data.products) throw new Error(ERROR_MESSAGES.NO_DATA);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('API Response Data:', data);
+
+        if (!data.products) {
+          console.error('No products in response:', data);
+          throw new Error(ERROR_MESSAGES.NO_DATA);
+        }
         
         if (mounted) {
+          console.log('Setting products:', data.products.length);
           setState({
             products: data.products,
             loading: false,
@@ -643,7 +651,7 @@ const useProductsFetch = () => {
           });
         }
       } catch (err) {
-        console.error('Component: Fetch error:', err);
+        console.error('Fetch error details:', err);
         if (mounted) {
           setState(prev => ({
             ...prev,
@@ -662,6 +670,12 @@ const useProductsFetch = () => {
 };
 
 export function ProductTabs() {
+  const { products, loading, error } = useProductsFetch();
+  
+  useEffect(() => {
+    console.log('ProductTabs:', { products, loading, error });
+  }, [products, loading, error]);
+
   const [activeTab, setActiveTab] = useState<Tab['id']>(INITIAL_TAB_ID);
   const { ref, inView } = useInView({
     threshold: 0.1,
