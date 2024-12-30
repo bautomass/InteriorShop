@@ -5,19 +5,18 @@ import { motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import {
   Award,
-  Check,
   CheckCircle,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Globe2,
   HeartHandshake,
-  MessageCircle,
   Shield,
   Ship,
   Sparkles,
   Star,
   ThumbsUp
 } from 'lucide-react';
-import Image from 'next/image';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { CareInstructions } from './care-instructions';
@@ -373,91 +372,147 @@ const VerifiedBadge = memo(() => (
 ));
 VerifiedBadge.displayName = 'VerifiedBadge';
 
-const ReviewCard = memo(({ testimonial }: { testimonial: Testimonial }) => (
-  <motion.div 
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="relative w-full min-w-[350px] rounded-xl bg-white p-6 shadow-md transition-all duration-300"
-  >
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-2">
-        <div className="relative w-12 h-12 rounded-full bg-[#6B5E4C]/10 flex items-center justify-center">
+// Add ReviewCardProps interface
+interface ReviewCardProps {
+  review: {
+    id: number;
+    name: string;
+    location: string;
+    rating: number;
+    title: string;
+    text: string;
+    date: string;
+    verified: boolean;
+  };
+  helpfulCount: number;
+  onHelpful: () => void;
+}
+
+// Replace existing ReviewCard component
+const ReviewCard = memo(({ review, helpfulCount, onHelpful }: ReviewCardProps) => (
+  <div className="flex h-full flex-col rounded-xl bg-white p-6 shadow-md">
+    <div className="mb-4 flex items-start justify-between">
+      <div className="flex gap-3">
+        <div className="h-10 w-10 rounded-full bg-[#6B5E4C]/10 flex items-center justify-center">
           <span className="text-lg font-medium text-[#6B5E4C]">
-            {testimonial.name.charAt(0)}
+            {review.name[0]}
           </span>
-          {testimonial.verified && (
-            <motion.div 
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="absolute -bottom-1 -right-1"
-            >
-              <div className="bg-green-500 rounded-full p-1">
-                <Check className="w-3 h-3 text-white" />
-              </div>
-            </motion.div>
-          )}
         </div>
         <div>
-          <p className="font-medium text-[#6B5E4C]">{testimonial.name}</p>
-          <div className="flex items-center gap-2 text-xs text-[#8C7E6A]">
-            <span>{testimonial.location}</span>
-            <span>•</span>
-            <time dateTime={testimonial.date}>{testimonial.date}</time>
-          </div>
+          <h4 className="font-medium text-[#6B5E4C]">{review.name}</h4>
+          <p className="text-sm text-[#8C7E6A]">{review.location}</p>
         </div>
       </div>
-      <ReviewStars rating={testimonial.rating} />
-    </div>
-
-    <h4 className="text-lg font-medium text-[#6B5E4C] mb-2">{testimonial.title}</h4>
-    <p className="text-[#8C7E6A] line-clamp-4 mb-4">{testimonial.text}</p>
-
-    {testimonial.images && testimonial.images.length > 0 && (
-      <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide">
-        {testimonial.images.map((image, idx) => (
-          <div key={idx} className="relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden">
-            <Image
-              src={image}
-              alt={`Review image ${idx + 1}`}
-              fill
-              className="object-cover"
-            />
-          </div>
-        ))}
-      </div>
-    )}
-
-    <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#6B5E4C]/10">
-      <div className="flex items-center gap-4">
-        <button className="flex items-center gap-1 text-sm text-[#8C7E6A] hover:text-[#6B5E4C] transition-colors">
-          <ThumbsUp className="w-4 h-4" />
-          <span>Helpful ({testimonial.helpfulCount || 0})</span>
-        </button>
-        <button className="flex items-center gap-1 text-sm text-[#8C7E6A] hover:text-[#6B5E4C] transition-colors">
-          <MessageCircle className="w-4 h-4" />
-          <span>Reply ({testimonial.replyCount || 0})</span>
-        </button>
+      <div className="flex items-center">
+        <ReviewStars rating={review.rating} />
+        {review.verified && (
+          <span className="ml-2">
+            <VerifiedBadge />
+          </span>
+        )}
       </div>
     </div>
-  </motion.div>
+
+    <div className="flex-grow">
+      <h5 className="mb-2 text-lg font-medium text-[#6B5E4C]">
+        {review.title}
+      </h5>
+      <p className="text-[#8C7E6A] line-clamp-4">{review.text}</p>
+    </div>
+
+    <div className="mt-4 flex items-center justify-between border-t border-[#6B5E4C]/10 pt-4">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onHelpful}
+          className="flex items-center gap-1 rounded-full bg-[#6B5E4C]/5 px-3 py-1 text-sm text-[#6B5E4C] transition-all hover:bg-[#6B5E4C]/10"
+        >
+          <ThumbsUp className={`h-4 w-4 ${helpfulCount > 0 ? 'text-blue-500' : ''}`} />
+          <span>{helpfulCount > 0 ? helpfulCount : 'Helpful'}</span>
+        </button>
+      </div>
+      <time className="text-sm text-[#8C7E6A]">{review.date}</time>
+    </div>
+  </div>
 ));
 
+// Replace existing ReviewsContainer component
 const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }) => {
-  const [currentPage, setCurrentPage] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [currentReviews, setCurrentReviews] = useState(0);
   const reviewsPerPage = 3;
-  const totalPages = Math.ceil(testimonials.length / reviewsPerPage);
+
+  const [helpfulCounts, setHelpfulCounts] = useState<Record<number, number>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('helpfulCounts');
+      return saved ? JSON.parse(saved) : {};
+    }
+    return {};
+  });
+
+  const handleHelpful = (reviewId: number) => {
+    setHelpfulCounts(prev => {
+      const newCounts = {
+        ...prev,
+        [reviewId]: (prev[reviewId] || 0) + 1
+      };
+      localStorage.setItem('helpfulCounts', JSON.stringify(newCounts));
+      return newCounts;
+    });
+  };
+
+  const currentVisibleReviews = testimonials.slice(
+    currentReviews,
+    currentReviews + reviewsPerPage
+  );
+
+  const isLastPage = currentReviews + reviewsPerPage >= testimonials.length;
+
+  const handleNext = () => {
+    if (!isLastPage) {
+      setCurrentReviews(prev => prev + reviewsPerPage);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentReviews > 0) {
+      setCurrentReviews(prev => prev - reviewsPerPage);
+    }
+  };
 
   return (
-    <div className="flex overflow-x-auto gap-4">
-      {testimonials.map((testimonial) => (
-        <ReviewCard key={testimonial.id} testimonial={testimonial} />
-      ))}
+    <div className="relative w-full">
+      <button 
+        onClick={handlePrevious}
+        className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-3 shadow-lg transition-all hover:bg-gray-50 disabled:opacity-0"
+        disabled={currentReviews === 0}
+      >
+        <ChevronLeft className="h-5 w-5 text-[#6B5E4C]" />
+      </button>
+
+      <div className="grid grid-cols-3 gap-6 overflow-hidden">
+        {currentVisibleReviews.map((review) => (
+          <ReviewCard 
+            key={review.id}
+            review={review}
+            helpfulCount={helpfulCounts[review.id] || 0}
+            onHelpful={() => handleHelpful(review.id)}
+          />
+        ))}
+      </div>
+
+      <button 
+        onClick={handleNext}
+        className="absolute -right-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-3 shadow-lg transition-all hover:bg-gray-50 disabled:opacity-0"
+        disabled={isLastPage}
+      >
+        <ChevronRight className="h-5 w-5 text-[#6B5E4C]" />
+      </button>
     </div>
   );
 });
+
 ReviewsContainer.displayName = 'ReviewsContainer';
+ReviewCard.displayName = 'ReviewCard';
 
 export function ProductTabs() {
   const [activeTab, setActiveTab] = useState<Tab['id']>(INITIAL_TAB_ID);
