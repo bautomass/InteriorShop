@@ -5,15 +5,19 @@ import { motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import {
   Award,
+  Check,
   CheckCircle,
   Clock,
   Globe2,
   HeartHandshake,
+  MessageCircle,
   Shield,
   Ship,
   Sparkles,
-  Star
+  Star,
+  ThumbsUp
 } from 'lucide-react';
+import Image from 'next/image';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { CareInstructions } from './care-instructions';
@@ -64,6 +68,10 @@ interface ReviewsTab extends TabBase {
       title: string;
       text: string;
       verified: boolean;
+      purchaseDate?: string;
+      helpfulCount?: number;
+      replyCount?: number;
+      images?: string[];
     }>;
   };
 }
@@ -351,6 +359,10 @@ interface Testimonial {
   title: string;
   text: string;
   verified: boolean;
+  purchaseDate?: string;
+  helpfulCount?: number;
+  replyCount?: number;
+  images?: string[];
 }
 
 const VerifiedBadge = memo(() => (
@@ -362,29 +374,81 @@ const VerifiedBadge = memo(() => (
 VerifiedBadge.displayName = 'VerifiedBadge';
 
 const ReviewCard = memo(({ testimonial }: { testimonial: Testimonial }) => (
-  <div className="w-[calc(33.333%-16px)] min-w-[350px] flex-shrink-0 rounded-xl bg-white p-6 shadow-sm transition-shadow duration-300 ease-in-out hover:shadow-md">
-    <div className="flex items-center justify-between">
-      <ReviewStars rating={testimonial.rating} />
-      {testimonial.verified && <VerifiedBadge />}
-    </div>
-    
-    <h4 className="mt-4 font-medium text-[#6B5E4C] line-clamp-1">{testimonial.title}</h4>
-    <p className="mt-2 text-sm text-[#8C7E6A] line-clamp-4">{testimonial.text}</p>
-    
-    <div className="mt-4 flex items-center justify-between border-t border-[#6B5E4C]/10 pt-4 text-xs text-[#8C7E6A]">
-      <div className="flex flex-col">
-        <span className="font-medium">{testimonial.name}</span>
-        <span>{testimonial.location}</span>
+  <motion.div 
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="relative w-full min-w-[350px] rounded-xl bg-white p-6 shadow-md transition-all duration-300"
+  >
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-2">
+        <div className="relative w-12 h-12 rounded-full bg-[#6B5E4C]/10 flex items-center justify-center">
+          <span className="text-lg font-medium text-[#6B5E4C]">
+            {testimonial.name.charAt(0)}
+          </span>
+          {testimonial.verified && (
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute -bottom-1 -right-1"
+            >
+              <div className="bg-green-500 rounded-full p-1">
+                <Check className="w-3 h-3 text-white" />
+              </div>
+            </motion.div>
+          )}
+        </div>
+        <div>
+          <p className="font-medium text-[#6B5E4C]">{testimonial.name}</p>
+          <div className="flex items-center gap-2 text-xs text-[#8C7E6A]">
+            <span>{testimonial.location}</span>
+            <span>•</span>
+            <time dateTime={testimonial.date}>{testimonial.date}</time>
+          </div>
+        </div>
       </div>
-      <time dateTime={testimonial.date} className="text-[#8C7E6A]/70">
-        {testimonial.date}
-      </time>
+      <ReviewStars rating={testimonial.rating} />
     </div>
-  </div>
+
+    <h4 className="text-lg font-medium text-[#6B5E4C] mb-2">{testimonial.title}</h4>
+    <p className="text-[#8C7E6A] line-clamp-4 mb-4">{testimonial.text}</p>
+
+    {testimonial.images && testimonial.images.length > 0 && (
+      <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide">
+        {testimonial.images.map((image, idx) => (
+          <div key={idx} className="relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden">
+            <Image
+              src={image}
+              alt={`Review image ${idx + 1}`}
+              fill
+              className="object-cover"
+            />
+          </div>
+        ))}
+      </div>
+    )}
+
+    <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#6B5E4C]/10">
+      <div className="flex items-center gap-4">
+        <button className="flex items-center gap-1 text-sm text-[#8C7E6A] hover:text-[#6B5E4C] transition-colors">
+          <ThumbsUp className="w-4 h-4" />
+          <span>Helpful ({testimonial.helpfulCount || 0})</span>
+        </button>
+        <button className="flex items-center gap-1 text-sm text-[#8C7E6A] hover:text-[#6B5E4C] transition-colors">
+          <MessageCircle className="w-4 h-4" />
+          <span>Reply ({testimonial.replyCount || 0})</span>
+        </button>
+      </div>
+    </div>
+  </motion.div>
 ));
-ReviewCard.displayName = 'ReviewCard';
 
 const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }) => {
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const reviewsPerPage = 3;
+  const totalPages = Math.ceil(testimonials.length / reviewsPerPage);
+
   return (
     <div className="flex overflow-x-auto gap-4">
       {testimonials.map((testimonial) => (
