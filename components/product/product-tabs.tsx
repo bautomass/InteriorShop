@@ -625,12 +625,12 @@ const useProductsFetch = () => {
     let mounted = true;
 
     const fetchProducts = async () => {
-      console.log('Starting products fetch...');
+      console.log('Component: Starting anturam-stools fetch');
       try {
         const response = await fetch('/api/anturam-stools');
+        console.log('Component: Response status:', response.status);
         const data = await response.json();
-        
-        console.log('API Response:', data);
+        console.log('Component: Fetched data:', data);
         
         if (!response.ok) throw new Error(data.error || ERROR_MESSAGES.FETCH_ERROR);
         if (!data.products) throw new Error(ERROR_MESSAGES.NO_DATA);
@@ -643,7 +643,7 @@ const useProductsFetch = () => {
           });
         }
       } catch (err) {
-        console.error('Fetch error:', err);
+        console.error('Component: Fetch error:', err);
         if (mounted) {
           setState(prev => ({
             ...prev,
