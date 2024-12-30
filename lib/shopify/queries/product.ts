@@ -1,3 +1,4 @@
+//lib/shopify/queries/product.ts
 import productFragment from '../fragments/product';
 
 export const getProductQuery = /* GraphQL */ `

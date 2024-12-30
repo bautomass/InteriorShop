@@ -1,3 +1,4 @@
+//hooks/useSearch.ts
 import { useCallback, useRef, useState } from 'react';
 
 interface Product {
