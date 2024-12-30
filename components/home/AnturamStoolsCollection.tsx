@@ -315,13 +315,17 @@ export default function AnturamStoolsCollection() {
     console.log('Error:', error);
   }, [fetchedProducts, loading, error]);
 
-  console.log('AnturamStoolsCollection: Rendering');
-  
+  console.log('Final rendered products length:', products?.length);
+  console.log('Loading state:', loading);
+  console.log('Error state:', error);
+
   if (loading) {
+    console.log('Returning loading skeleton');
     return <LoadingSkeleton />
   }
   
   if (error) {
+    console.log('Returning error state');
     return (
       <div className="w-full py-12 bg-primary-50 dark:bg-primary-900">
         <div className="container mx-auto px-4 text-center">
@@ -331,9 +335,14 @@ export default function AnturamStoolsCollection() {
     )
   }
 
-  if (!products.length) {
+  if (!products?.length) {
+    console.log('No products to display, returning null');
+    console.log('Products array:', products);
+    console.log('Fetched products:', fetchedProducts);
     return null
   }
+
+  console.log('Rendering full component with products:', products?.length);
 
   return (
     <>
