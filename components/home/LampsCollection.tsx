@@ -54,8 +54,8 @@ const ImageGallery = memo(({ product }: { product: Product }) => {
 
   if (!images.length) {
     return (
-      <div className="relative flex aspect-square items-center justify-center bg-primary-100 dark:bg-primary-800">
-        <span className="text-primary-400 dark:text-primary-500">No image available</span>
+      <div className="relative flex aspect-square items-center justify-center bg-primary-100">
+        <span className="text-primary-400">No image available</span>
       </div>
     );
   }
@@ -214,17 +214,17 @@ const ProductCard = memo(
     return (
       <motion.div
         whileHover={{ y: -8 }}
-        className="group relative h-full w-full min-w-[200px] rounded-sm bg-white shadow-lg backdrop-blur-sm transition-all duration-500 hover:shadow-xl hover:shadow-primary-900/10 dark:bg-primary-800/50 dark:hover:shadow-primary-100/10"
+        className="group relative h-full w-full min-w-[200px] rounded-sm bg-white shadow-lg backdrop-blur-sm transition-all duration-500 hover:shadow-xl hover:shadow-primary-900/10"
       >
         <div className="relative">
           <ImageGallery product={product} />
           <div className="p-4">
             {/* Category Tag */}
-            <div className="inline-flex rounded-full bg-primary-100/80 px-2 py-1 text-xs font-medium tracking-wide text-primary-800 dark:bg-primary-700/80 dark:text-primary-100">
+            <div className="inline-flex rounded-full bg-primary-100/80 px-2 py-1 text-xs font-medium tracking-wide text-primary-800">
               {category}
             </div>
 
-            <h3 className="mt-2 line-clamp-1 text-base font-semibold tracking-tight text-primary-900 dark:text-primary-100">
+            <h3 className="mt-2 line-clamp-1 text-base font-semibold tracking-tight text-primary-900">
               {product.title}
             </h3>
 
@@ -251,7 +251,7 @@ const ProductCard = memo(
                       Sale
                     </motion.div>
                   )}
-                <p className="text-lg font-bold tracking-tight text-accent-500 dark:text-accent-400">
+                <p className="text-lg font-bold tracking-tight text-accent-500">
                   ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
                 </p>
               </div>
@@ -276,7 +276,7 @@ const ProductCard = memo(
                 )}
             </div>
 
-            <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm leading-relaxed text-primary-600/90 dark:text-primary-300/90">
+            <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm leading-relaxed text-primary-600/90">
               {product.description}
             </p>
 
@@ -392,12 +392,12 @@ const ViewControls = ({
       onClick={() => onViewChange(!isGridView)}
       className={cn(
         'rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200',
-        'hover:bg-primary-800/10 dark:hover:bg-primary-100/10',
+        'hover:bg-primary-800/10',
         'focus:outline-none focus:ring-2 focus:ring-primary-500',
-        'border border-primary-900/20 dark:border-primary-100/20',
+        'border border-primary-900/20',
         isGridView
-          ? 'border-transparent bg-primary-900 text-white dark:bg-primary-100 dark:text-primary-900'
-          : 'bg-primary-100/50 text-primary-900 dark:bg-primary-800/50 dark:text-primary-100'
+          ? 'border-transparent bg-primary-900 text-white'
+          : 'bg-primary-100/50 text-primary-900'
       )}
     >
       <div className="flex items-center gap-2">
@@ -416,7 +416,7 @@ const ViewControls = ({
     </button>
 
     {/* Vertical Divider */}
-    <div className="h-8 w-px bg-primary-900/20 dark:bg-primary-100/20" />
+    <div className="h-8 w-px bg-primary-900/20" />
 
     {/* Card Count Buttons */}
     {[...Array(max - min + 1)].map((_, idx) => {
@@ -427,12 +427,12 @@ const ViewControls = ({
           onClick={() => onChange(value)}
           className={cn(
             'rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200',
-            'hover:bg-primary-800/10 dark:hover:bg-primary-100/10',
+            'hover:bg-primary-800/10',
             'focus:outline-none focus:ring-2 focus:ring-primary-500',
-            'border border-primary-900/20 dark:border-primary-100/20',
+            'border border-primary-900/20',
             value === current
-              ? 'border-transparent bg-primary-900 text-white dark:bg-primary-100 dark:text-primary-900'
-              : 'bg-primary-100/50 text-primary-900 dark:bg-primary-800/50 dark:text-primary-100'
+              ? 'border-transparent bg-primary-900 text-white'
+              : 'bg-primary-100/50 text-primary-900'
           )}
         >
           {value}
@@ -497,10 +497,10 @@ const GridView = memo(({ products, cardsToShow, onQuickView }: GridViewProps) =>
             className={cn(
               'inline-flex items-center justify-center gap-2',
               'px-8 py-3 text-base font-medium',
-              'bg-primary-900 dark:bg-primary-100',
-              'text-white dark:text-primary-900',
+              'bg-primary-900',
+              'text-white',
               'rounded-md shadow-lg',
-              'hover:bg-primary-800 dark:hover:bg-primary-200',
+              'hover:bg-primary-800',
               'transition-colors duration-200',
               'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2'
             )}
@@ -627,13 +627,13 @@ export default function LampsCollection() {
   const memoizedProducts = useMemo(() => products, [products]);
 
   const LoadingSkeleton = () => (
-    <div className="w-full bg-primary-50 py-12 dark:bg-primary-900">
+    <div className="w-full bg-primary-50 py-12">
       <div className="container mx-auto px-4">
         <div className="animate-pulse space-y-12">
           {/* Header Skeleton */}
           <div className="flex items-center justify-center gap-3">
-            <div className="h-6 w-6 rounded bg-primary-200 dark:bg-primary-700" />
-            <div className="h-8 w-64 rounded bg-primary-200 dark:bg-primary-700" />
+            <div className="h-6 w-6 rounded bg-primary-200" />
+            <div className="h-8 w-64 rounded bg-primary-200" />
           </div>
 
           {/* Banner Images Skeleton */}
@@ -641,7 +641,7 @@ export default function LampsCollection() {
             {[1, 2, 3].map((index) => (
               <div
                 key={index}
-                className="relative aspect-[16/9] rounded-lg bg-primary-200 dark:bg-primary-700"
+                className="relative aspect-[16/9] rounded-lg bg-primary-200"
               />
             ))}
           </div>
@@ -651,7 +651,7 @@ export default function LampsCollection() {
             {[...Array(3)].map((_, index) => (
               <div
                 key={index}
-                className="aspect-[3/4] rounded-lg bg-primary-200 dark:bg-primary-700"
+                className="aspect-[3/4] rounded-lg bg-primary-200"
               />
             ))}
           </div>
@@ -687,7 +687,7 @@ export default function LampsCollection() {
   if (loading) return <LoadingSkeleton />;
   if (error)
     return (
-      <div className="w-full bg-primary-50 py-12 dark:bg-primary-900">
+      <div className="w-full bg-primary-50 py-12">
         <div className="container mx-auto px-4 text-center">
           <p className="text-red-500">{error}</p>
         </div>
@@ -699,7 +699,7 @@ export default function LampsCollection() {
     <>
       <section
         ref={ref}
-        className="relative w-full overflow-hidden bg-primary-50 py-0 dark:bg-primary-900"
+        className="relative w-full overflow-hidden bg-primary-50 py-0"
         aria-label="Lamps Collection"
       >
         <div className="container relative mx-auto px-4">
@@ -713,10 +713,10 @@ export default function LampsCollection() {
               >
                 {/* Title and Line */}
                 <div className="relative">
-                  <h2 className="text-3xl font-bold text-primary-900 dark:text-primary-100 md:text-4xl">
+                  <h2 className="text-3xl font-bold text-primary-900 md:text-4xl">
                     Lamps
                   </h2>
-                  <div className="absolute bottom-0 left-0 mt-4 h-px w-full bg-gradient-to-r from-primary-900/20 via-primary-900/40 to-primary-900/20 dark:from-primary-100/20 dark:via-primary-100/40 dark:to-primary-100/20" />
+                  <div className="absolute bottom-0 left-0 mt-4 h-px w-full bg-gradient-to-r from-primary-900/20 via-primary-900/40 to-primary-900/20" />
                 </div>
               </motion.div>
             </div>
@@ -946,18 +946,18 @@ export default function LampsCollection() {
 
                   {/* Navigation Buttons */}
                   <button
-                    className="custom-swiper-button-prev group absolute left-0 top-1/2 isolate z-20 flex h-14 w-10 -translate-x-full -translate-y-1/2 cursor-pointer items-center justify-center overflow-hidden rounded-l-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50 dark:bg-primary-100/95"
+                    className="custom-swiper-button-prev group absolute left-0 top-1/2 isolate z-20 flex h-14 w-10 -translate-x-full -translate-y-1/2 cursor-pointer items-center justify-center overflow-hidden rounded-l-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50"
                     aria-label="Previous slide"
                     disabled={isBeginning}
                   >
                     <div className="relative z-20 transition-all duration-300 group-hover:-translate-x-0.5 group-hover:drop-shadow-[0_0_8px_rgba(199,186,168,0.5)] group-active:scale-90">
                       {isBeginning ? (
                         <div className="relative">
-                          <ChevronLeft className="h-6 w-6 text-primary-100 transition-opacity duration-200 group-hover:opacity-0 dark:text-primary-900" />
-                          <X className="absolute inset-0 h-6 w-6 scale-110 stroke-[2.5] text-red-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:text-red-400" />
+                          <ChevronLeft className="h-6 w-6 text-primary-100 transition-opacity duration-200 group-hover:opacity-0" />
+                          <X className="absolute inset-0 h-6 w-6 scale-110 stroke-[2.5] text-red-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
                         </div>
                       ) : (
-                        <ChevronLeft className="h-6 w-6 text-primary-100 dark:text-primary-900" />
+                        <ChevronLeft className="h-6 w-6 text-primary-100" />
                       )}
                     </div>
 
@@ -969,18 +969,18 @@ export default function LampsCollection() {
                   </button>
 
                   <button
-                    className="custom-swiper-button-next group absolute right-0 top-1/2 isolate z-20 flex h-14 w-10 -translate-y-1/2 translate-x-full cursor-pointer items-center justify-center overflow-hidden rounded-r-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50 dark:bg-primary-100/95"
+                    className="custom-swiper-button-next group absolute right-0 top-1/2 isolate z-20 flex h-14 w-10 -translate-y-1/2 translate-x-full cursor-pointer items-center justify-center overflow-hidden rounded-r-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50"
                     aria-label="Next slide"
                     disabled={isEnd}
                   >
                     <div className="relative z-20 transition-all duration-300 group-hover:translate-x-0.5 group-hover:drop-shadow-[0_0_8px_rgba(199,186,168,0.5)] group-active:scale-90">
                       {isEnd ? (
                         <div className="relative">
-                          <ChevronRight className="h-6 w-6 text-primary-100 transition-opacity duration-200 group-hover:opacity-0 dark:text-primary-900" />
-                          <X className="absolute inset-0 h-6 w-6 scale-110 stroke-[2.5] text-red-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:text-red-400" />
+                          <ChevronRight className="h-6 w-6 text-primary-100 transition-opacity duration-200 group-hover:opacity-0" />
+                          <X className="absolute inset-0 h-6 w-6 scale-110 stroke-[2.5] text-red-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
                         </div>
                       ) : (
-                        <ChevronRight className="h-6 w-6 text-primary-100 dark:text-primary-900" />
+                        <ChevronRight className="h-6 w-6 text-primary-100" />
                       )}
                     </div>
 
