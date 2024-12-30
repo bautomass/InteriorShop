@@ -206,7 +206,7 @@ const useProductsFetch = () => {
 
     const fetchProducts = async () => {
       try {
-        const response = await fetch('/api/anturam-stools');
+        const response = await fetch('/api/stools');
         const data = await response.json();
         
         if (!response.ok) throw new Error(data.error || ERROR_MESSAGES.FETCH_ERROR);
