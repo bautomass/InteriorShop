@@ -554,7 +554,7 @@ const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={1}
-            onDragEnd={(_, { offset, velocity }) => {
+            onDragEnd={(_: MouseEvent | TouchEvent | PointerEvent, { offset, velocity }: { offset: { x: number }; velocity: { x: number } }) => {
               const swipe = swipePower(offset.x, velocity.x);
               if (swipe < -swipeConfidenceThreshold) {
                 paginate(1);
