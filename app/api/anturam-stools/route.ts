@@ -1,16 +1,17 @@
 // // app/api/anturam-stools/route.ts
 import { getCollectionProducts } from '@/lib/shopify';
 import { NextResponse } from 'next/server';
+
 export async function GET() {
   console.log('API: Starting anturam-stools fetch');
   try {
     const products = await getCollectionProducts({
-      collection: 'anturam-eco-wooden-stools',
+      collection: 'anturam-eco-wooden-stools',  // This is the correct handle from Shopify
       sortKey: 'CREATED_AT',
       reverse: true
     });
     
-    console.log('API: Products fetched:', products?.length || 0);
+    console.log('API: Products fetched:', products?.length);
     
     if (!products || products.length === 0) {
       console.log('API: No products found');
