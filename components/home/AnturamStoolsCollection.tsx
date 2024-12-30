@@ -296,6 +296,13 @@ export default function AnturamStoolsCollection() {
     }
   }, [swiper, products]);
 
+  useEffect(() => {
+    console.log('AnturamStoolsCollection: Client Component Mounted');
+    return () => console.log('AnturamStoolsCollection: Client Component Unmounted');
+  }, []);
+
+  console.log('AnturamStoolsCollection: Rendering');
+  
   if (loading) {
     return <LoadingSkeleton />
   }
