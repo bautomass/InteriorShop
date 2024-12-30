@@ -1,9 +1,11 @@
 'use client';
 
+import { useActionState } from '@/hooks/useActionState';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { removeItem } from 'components/cart/actions';
 import type { CartItem } from 'lib/shopify/types';
-import { useActionState } from 'react';
+// Remove useFormStatus for now as it's causing build issues
+// We'll handle loading state through our custom hook
 
 export function DeleteItemButton({
   item,
@@ -16,19 +18,25 @@ export function DeleteItemButton({
   const merchandiseId = item.merchandise.id;
   const actionWithVariant = formAction.bind(null, merchandiseId);
 
+  const clientAction = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      optimisticUpdate(merchandiseId, 'delete');
+      await actionWithVariant();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
+  };
+
   return (
-    <form
-      action={async () => {
-        optimisticUpdate(merchandiseId, 'delete');
-        await actionWithVariant();
-      }}
-    >
+    <form>
       <button
+        onClick={clientAction}
         type="submit"
         aria-label="Remove cart item"
-        className="bg-primary-400 hover:bg-primary-500 dark:bg-primary-600 dark:hover:bg-primary-500 flex h-[24px] w-[24px] items-center justify-center rounded-full"
+        className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-primary-400 hover:bg-primary-500 dark:bg-primary-600 dark:hover:bg-primary-500"
       >
-        <XMarkIcon className="text-primary-50 mx-[1px] h-4 w-4" />
+        <XMarkIcon className="mx-[1px] h-4 w-4 text-primary-50" />
       </button>
       <p aria-live="polite" className="sr-only" role="status">
         {message}
@@ -36,3 +44,47 @@ export function DeleteItemButton({
     </form>
   );
 }
+
+// 'use client';
+
+// import { useActionState } from '@/hooks/useActionState';
+// import { XMarkIcon } from '@heroicons/react/24/outline';
+// import { removeItem } from 'components/cart/actions';
+// import type { CartItem } from 'lib/shopify/types';
+// import { useFormStatus } from 'react-dom';
+
+// export function DeleteItemButton({
+//   item,
+//   optimisticUpdate
+// }: {
+//   item: CartItem;
+//   optimisticUpdate: any;
+// }) {
+//   const { pending } = useFormStatus();
+//   const [message, formAction] = useActionState(removeItem, null);
+//   const merchandiseId = item.merchandise.id;
+//   const actionWithVariant = formAction.bind(null, merchandiseId);
+
+//   const clientAction = (e: React.MouseEvent) => {
+//     e.preventDefault();
+//     optimisticUpdate(merchandiseId, 'delete');
+//     actionWithVariant();
+//   };
+
+//   return (
+//     <form>
+//       <button
+//         onClick={clientAction}
+//         type="submit"
+//         aria-label="Remove cart item"
+//         disabled={pending}
+//         className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-primary-400 hover:bg-primary-500 dark:bg-primary-600 dark:hover:bg-primary-500"
+//       >
+//         <XMarkIcon className="mx-[1px] h-4 w-4 text-primary-50" />
+//       </button>
+//       <p aria-live="polite" className="sr-only" role="status">
+//         {message}
+//       </p>
+//     </form>
+//   );
+// }

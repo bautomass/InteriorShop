@@ -11,6 +11,24 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
+// Add shopifyFetch types
+interface ShopifyFetchParams {
+  query: string;
+  variables?: any;
+  cache?: RequestCache;
+  tags?: string[];
+}
+
+// Updated Image types
+interface ShopifyImage {
+  url: string;
+  altText?: string;
+}
+
+interface ImageEdge {
+  node: ShopifyImage;
+}
+
 // Types
 interface Product {
   id: string;
@@ -29,14 +47,10 @@ interface Product {
       currencyCode: string;
     };
   };
-  images: Array<{
-    url: string;
-    altText?: string;
-  }>;
-  featuredImage?: {
-    url: string;
-    altText?: string;
+  images: {
+    edges: ImageEdge[];
   };
+  featuredImage?: ShopifyImage;
   productType?: string;
   tags?: string[];
 }
@@ -76,14 +90,14 @@ export async function generateMetadata({ params }: CollectionPageProps): Promise
   const resolvedParams = await params;
 
   try {
-    const response = await shopifyFetch({
+    const response = (await shopifyFetch({
       query: getCollectionQuery,
       variables: {
         handle: resolvedParams.handle
       },
       tags: ['collections'],
       cache: 'force-cache'
-    }) as { body: { data: { collection: Collection | null } } };
+    } as ShopifyFetchParams)) as { body: { data: { collection: Collection | null } } };
 
     const collection = response.body.data.collection;
 
@@ -107,15 +121,9 @@ export async function generateMetadata({ params }: CollectionPageProps): Promise
   }
 }
 
-export default async function CollectionPage({
-  params,
-  searchParams,
-}: CollectionPageProps) {
+export default async function CollectionPage({ params, searchParams }: CollectionPageProps) {
   // Use Promise.all to await all params concurrently
-  const [resolvedParams, resolvedSearchParams] = await Promise.all([
-    params,
-    searchParams
-  ]);
+  const [resolvedParams, resolvedSearchParams] = await Promise.all([params, searchParams]);
 
   const sort = resolvedSearchParams.sort;
   const handle = resolvedParams.handle;
@@ -125,27 +133,27 @@ export default async function CollectionPage({
 
   try {
     // Fetch collection data with proper error handling
-    const response = await shopifyFetch({
+    const response = (await shopifyFetch({
       query: getCollectionProductsQuery,
       variables: {
         handle,
         sortKey,
         reverse
       },
-      tags: ['collections', 'products'], // Add cache tags
-      cache: 'force-cache' // Ensure consistent caching
-    }) as { body: { data: { collection: Collection | null } } };
+      tags: ['collections', 'products'],
+      cache: 'force-cache'
+    } as ShopifyFetchParams)) as { body: { data: { collection: Collection | null } } };
 
     const collection = response.body.data.collection;
-    
+
     if (!collection) {
-      console.error("Collection not found:", handle);
+      console.error('Collection not found:', handle);
       notFound();
     }
 
     const products = collection.products.edges.map(({ node }) => ({
       ...node,
-      images: node.images.edges.map(edge => ({
+      images: node.images.edges.map((edge: ImageEdge) => ({
         url: edge.node.url,
         altText: edge.node.altText
       }))

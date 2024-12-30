@@ -1,12 +1,13 @@
 "use client"
 
-import PriceRangeFilter from '@/components/filter/PriceRangeFilter';
+import { PriceRangeFilter } from '@/components/filter/PriceRangeFilter';
 import { ProductQuickView } from '@/components/quickview/ProductQuickView';
 import { useQuickView } from '@/hooks/useQuickView';
 import type { Product } from '@/lib/shopify/types';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -15,6 +16,48 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import { Autoplay, Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
+
+// Constants
+const CONSTANTS = {
+  ANIMATION: {
+    DURATION: 300,
+    SWIPER_SPEED: 1000,
+    AUTOPLAY_DELAY: 6000
+  },
+  CARDS: {
+    MIN: 4,
+    MAX: 6,
+    DEFAULT: 5
+  },
+  RETRY_ATTEMPTS: 3
+} as const
+
+// Types
+interface ProductState {
+  products: Product[]
+  sortedProducts: Product[]
+  loading: boolean
+  error: string | null
+}
+
+interface StoolsCollectionProps {
+  // Empty for now, but available for future props
+}
+
+interface HandlePriceSortProps {
+  direction: 'asc' | 'desc'
+  onSort: (direction: 'asc' | 'desc') => void
+}
+
+// Type Guards
+function isProduct(value: unknown): value is Product {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    'title' in value
+  )
+}
 
 type ViewSettings = {
   minCards: number
@@ -31,6 +74,81 @@ const useCardsView = (settings: ViewSettings) => {
 
   return { cardsToShow, handleViewChange }
 }
+
+const ImageComponent = memo(function ImageComponent({ 
+  src, 
+  alt,
+  priority = false 
+}: { 
+  src: string
+  alt: string
+  priority?: boolean
+}) {
+  const [error, setError] = useState(false)
+  
+  const handleError = useCallback(() => {
+    setError(true)
+  }, [])
+
+  if (error) {
+    return (
+      <div className="relative aspect-square bg-primary-100 dark:bg-primary-800 
+                    flex items-center justify-center">
+        <span className="text-primary-400 dark:text-primary-500">
+          Image not available
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      quality={85}
+      priority={priority}
+      onError={handleError}
+      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 25vw"
+      className="object-cover"
+      loading={priority ? 'eager' : 'lazy'}
+    />
+  )
+})
+
+const NavigationButton = memo(function NavigationButton({
+  direction,
+  disabled,
+  onClick
+}: {
+  direction: 'prev' | 'next'
+  disabled: boolean
+  onClick: () => void
+}) {
+  const Icon = direction === 'prev' ? ChevronLeft : ChevronRight
+  
+  return (
+    <button 
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={`${direction === 'prev' ? 'Previous' : 'Next'} slide`}
+      className={cn(
+        "absolute top-1/2 -translate-y-1/2 z-20",
+        "w-10 h-14 bg-primary-800/95 dark:bg-primary-100/95",
+        "flex items-center justify-center",
+        "transition-all duration-300",
+        direction === 'prev' ? "-translate-x-full rounded-l-md" : "translate-x-full rounded-r-md"
+      )}
+    >
+      <div className="relative">
+        <Icon className="h-6 w-6 text-primary-100 dark:text-primary-900" />
+        {disabled && (
+          <X className="h-6 w-6 text-red-400 dark:text-red-400 absolute inset-0 opacity-0 group-hover:opacity-100" />
+        )}
+      </div>
+    </button>
+  )
+})
 
 const ImageGallery = memo(({ product }: { product: Product }) => {
   const [activeImage, setActiveImage] = useState(0)
@@ -139,32 +257,69 @@ const ImageGallery = memo(({ product }: { product: Product }) => {
 
 ImageGallery.displayName = 'ImageGallery'
 
+// Type for category patterns
+type CategoryPatterns = Record<string, {
+  keywords: string[]
+  weight: number
+}>
+
+const CATEGORY_PATTERNS: CategoryPatterns = {
+  'Bar Stool': {
+    keywords: ['bar stool', 'counter stool', 'high stool', 'bar height'],
+    weight: 2
+  },
+  'Dining Stool': {
+    keywords: ['dining stool', 'kitchen stool', 'low stool', 'dining height'],
+    weight: 1.5
+  },
+  'Counter Stool': {
+    keywords: ['counter height', 'counter seating', 'kitchen counter'],
+    weight: 1.5
+  },
+  'Decorative Stool': {
+    keywords: ['decorative', 'accent stool', 'vanity stool', 'accent piece'],
+    weight: 1
+  },
+  'Industrial Stool': {
+    keywords: ['industrial', 'metal stool', 'workshop stool', 'factory'],
+    weight: 1
+  }
+} as const;
+
 const determineProductCategory = (product: Product): string => {
-  const title = product.title?.toLowerCase() || ''
-  const type = product.productType?.toLowerCase() || ''
+  const title = product.title?.toLowerCase() || '';
   const tags = Array.isArray(product.tags) 
     ? product.tags.map(tag => tag.toLowerCase()) 
-    : []
-  const description = product.description?.toLowerCase() || ''
+    : [];
+  const description = product.description?.toLowerCase() || '';
 
-  const searchText = `${title} ${type} ${tags.join(' ')} ${description}`
+  // Combine all text for searching
+  const searchText = `${title} ${tags.join(' ')} ${description}`;
 
-  const patterns = {
-    'Bar Stool': ['bar stool', 'counter stool', 'high stool'],
-    'Dining Stool': ['dining stool', 'kitchen stool', 'low stool'],
-    'Counter Stool': ['counter height', 'counter seating'],
-    'Decorative Stool': ['decorative', 'accent stool', 'vanity stool'],
-    'Industrial Stool': ['industrial', 'metal stool', 'workshop stool']
-  }
+  // Calculate scores for each category
+  const scores = Object.entries(CATEGORY_PATTERNS).map(([category, { keywords, weight }]) => ({
+    category,
+    score: keywords.reduce((score, keyword) => 
+      score + (searchText.includes(keyword) ? weight : 0), 0)
+  }));
 
-  for (const [category, keywords] of Object.entries(patterns)) {
-    if (keywords.some(keyword => searchText.includes(keyword))) {
-      return category
-    }
-  }
+  // Find category with highest score
+  const bestMatch = scores.reduce((best, current) => 
+    current.score > best.score ? current : best,
+    { category: 'Stool', score: 0 }
+  );
 
-  return 'Stool'
-}
+  return bestMatch.category;
+};
+
+// Custom hook for memoized category determination
+const useCategoryDetermination = (product: Product): string => {
+  return useMemo(() => determineProductCategory(product), [
+    product.title,
+    product.tags,
+    product.description
+  ]);
+};
 
 const ProductCard = memo(({ 
   product, 
@@ -181,7 +336,7 @@ const ProductCard = memo(({
     onQuickView(product)
   }, [product, onQuickView])
 
-  const category = useMemo(() => determineProductCategory(product), [product])
+  const category = useCategoryDetermination(product);
 
   return (
     <motion.div
@@ -280,12 +435,58 @@ const ViewControls = ({ current, min, max, onChange }: {
   </div>
 );
 
-export default function StoolsCollection() {
+const SWIPER_CONFIG = {
+  spaceBetween: 16,
+  speed: CONSTANTS.ANIMATION.SWIPER_SPEED,
+  autoplay: {
+    delay: CONSTANTS.ANIMATION.AUTOPLAY_DELAY,
+    disableOnInteraction: false,
+    pauseOnMouseEnter: true
+  }
+} as const
+
+const BREAKPOINTS = {
+  0: { slidesPerView: 1 },
+  480: { slidesPerView: 2 },
+  768: { slidesPerView: 3 },
+  1024: { slidesPerView: 'auto' as const }
+} as const
+
+export default function StoolsCollection({}: StoolsCollectionProps) {
   const quickView = useQuickView()
+  const [error, setError] = useState<Error | null>(null)
+  const [loading, setLoading] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
   const [sortedProducts, setSortedProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/stools')
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      if (!data.products?.length) {
+        throw new Error('No products found in response')
+      }
+
+      setProducts(data.products)
+      setSortedProducts(data.products)
+      setLoading(false)
+    } catch (error) {
+      setError(error instanceof Error ? error : new Error('An unknown error occurred'))
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchProducts()
+  }, [fetchProducts])
+
   const [isSlideHovered, setIsSlideHovered] = useState(false)
   const { ref, inView } = useInView({
     threshold: 0.1,
@@ -302,29 +503,6 @@ export default function StoolsCollection() {
       alt: "Modern stools collection showcase"
     }
   ]
-
-  useEffect(() => {
-    async function fetchStoolProducts() {
-      try {
-        setLoading(true)
-        const response = await fetch('/api/stools')
-        if (!response.ok) throw new Error('Failed to fetch products')
-        const data = await response.json()
-        setProducts(data.products)
-      } catch (err) {
-        console.error('Error fetching stool products:', err)
-        setError('Failed to load products. Please try again later.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchStoolProducts()
-  }, [])
-
-  useEffect(() => {
-    setSortedProducts(products)
-  }, [products])
 
   const handlePriceSort = useCallback((direction: 'asc' | 'desc') => {
     const sorted = [...sortedProducts].sort((a, b) => {
@@ -383,11 +561,16 @@ export default function StoolsCollection() {
     </div>
   )
 
-  const handleSwiperInit = (swiperInstance: SwiperType) => {
-    setSwiper(swiperInstance);
-    setIsBeginning(swiperInstance.isBeginning);
-    setIsEnd(swiperInstance.isEnd);
-  };
+  const handleSwiperInit = useCallback((swiperInstance: SwiperType) => {
+    setSwiper(swiperInstance)
+    setIsBeginning(swiperInstance.isBeginning)
+    setIsEnd(swiperInstance.isEnd)
+  }, [])
+
+  const handleSlideChange = useCallback((swiper: SwiperType) => {
+    setIsBeginning(swiper.isBeginning)
+    setIsEnd(swiper.isEnd)
+  }, [])
 
   useEffect(() => {
     if (swiper) {
@@ -396,14 +579,18 @@ export default function StoolsCollection() {
     }
   }, [swiper, products]);
 
-  if (loading) return <LoadingSkeleton />
-  if (error) return (
-    <div className="w-full py-12 bg-primary-50 dark:bg-primary-900">
-      <div className="container mx-auto px-4 text-center">
-        <p className="text-red-500">{error}</p>
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500">Error: {error.message}</p>
       </div>
-    </div>
-  )
+    )
+  }
+
+  if (loading) {
+    return <LoadingSkeleton />
+  }
+
   if (!products.length) return null
 
   return (
@@ -605,110 +792,106 @@ export default function StoolsCollection() {
                               border-white/20 rounded-bl-lg" />
             </div>
 
+            {/* New Arrivals Banner */}
+            <div className="relative h-[400px] overflow-hidden rounded-lg group 
+                            bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900
+                            dark:from-primary-100 dark:via-primary-50 dark:to-primary-100">
+                {/* Decorative Pattern - kept as is */}
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" 
+                        style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1'/%3E%3C/svg%3E")`,
+                        }}
+                    />
+                </div>
 
-
-
-{/* New Arrivals Banner */}
-<div className="relative h-[400px] overflow-hidden rounded-lg group 
-                bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900
-                dark:from-primary-100 dark:via-primary-50 dark:to-primary-100">
-    {/* Decorative Pattern - kept as is */}
-    <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0" 
-            style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1'/%3E%3C/svg%3E")`,
-            }}
-        />
-    </div>
-
-    {/* Content Container */}
-    <div className="relative h-full p-6 sm:p-8 flex flex-col">
-        {/* Header Section */}
-        <div className="mb-6">
-            <div className="inline-flex items-center px-3 py-1.5 
-                        bg-white/10 dark:bg-primary-900/10 backdrop-blur-sm
-                        rounded-full border border-white/20 dark:border-primary-900/20
-                        mb-3">
-                <span className="text-white dark:text-primary-900 text-sm font-medium">
-                    New Collection
-                </span>
-            </div>
-            <h3 className="text-3xl sm:text-4xl font-bold text-white dark:text-primary-900 
-                          leading-tight mb-2">
-                Just Arrived
-            </h3>
-            <p className="text-white/70 dark:text-primary-900/70 text-sm sm:text-base">
-                Discover our latest additions
-            </p>
-        </div>
-
-        {/* Featured Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            {[
-                {
-                    name: "Nordic Bar Stool",
-                    price: "$299",
-                    tag: "New Design"
-                },
-                {
-                    name: "Artisan Counter Stool",
-                    price: "$249",
-                    tag: "Bestseller"
-                },
-                {
-                    name: "Modern Swivel Stool",
-                    price: "$329",
-                    tag: "Limited Edition"
-                }
-            ].map((product, index) => (
-                <div key={index} 
-                     className="bg-white/10 dark:bg-primary-900/10 
-                                backdrop-blur-sm rounded-lg p-4
-                                border border-white/10 dark:border-primary-900/10">
-                    <div className="flex flex-col h-full">
-                        <span className="text-xs font-medium px-2 py-1 rounded-full
-                                       bg-white/20 dark:bg-primary-900/20 
-                                       text-white dark:text-primary-900 
-                                       inline-flex items-center justify-center w-fit mb-2">
-                            {product.tag}
-                        </span>
-                        <h4 className="text-white dark:text-primary-900 font-medium mb-1">
-                            {product.name}
-                        </h4>
-                        <p className="text-white/70 dark:text-primary-900/70 text-sm">
-                            From {product.price}
+                {/* Content Container */}
+                <div className="relative h-full p-6 sm:p-8 flex flex-col">
+                    {/* Header Section */}
+                    <div className="mb-6">
+                        <div className="inline-flex items-center px-3 py-1.5 
+                                    bg-white/10 dark:bg-primary-900/10 backdrop-blur-sm
+                                    rounded-full border border-white/20 dark:border-primary-900/20
+                                    mb-3">
+                            <span className="text-white dark:text-primary-900 text-sm font-medium">
+                                New Collection
+                            </span>
+                        </div>
+                        <h3 className="text-3xl sm:text-4xl font-bold text-white dark:text-primary-900 
+                                      leading-tight mb-2">
+                            Just Arrived
+                        </h3>
+                        <p className="text-white/70 dark:text-primary-900/70 text-sm sm:text-base">
+                            Discover our latest additions
                         </p>
                     </div>
+
+                    {/* Featured Products Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                        {[
+                            {
+                                name: "Nordic Bar Stool",
+                                price: "$299",
+                                tag: "New Design"
+                            },
+                            {
+                                name: "Artisan Counter Stool",
+                                price: "$249",
+                                tag: "Bestseller"
+                            },
+                            {
+                                name: "Modern Swivel Stool",
+                                price: "$329",
+                                tag: "Limited Edition"
+                            }
+                        ].map((product, index) => (
+                            <div key={index} 
+                                 className="bg-white/10 dark:bg-primary-900/10 
+                                            backdrop-blur-sm rounded-lg p-4
+                                            border border-white/10 dark:border-primary-900/10">
+                                <div className="flex flex-col h-full">
+                                    <span className="text-xs font-medium px-2 py-1 rounded-full
+                                                   bg-white/20 dark:bg-primary-900/20 
+                                                   text-white dark:text-primary-900 
+                                                   inline-flex items-center justify-center w-fit mb-2">
+                                        {product.tag}
+                                    </span>
+                                    <h4 className="text-white dark:text-primary-900 font-medium mb-1">
+                                        {product.name}
+                                    </h4>
+                                    <p className="text-white/70 dark:text-primary-900/70 text-sm">
+                                        From {product.price}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* CTA Button */}
+                    <div className="mt-auto text-center">
+                        <motion.a
+                            href="/collections/new-arrivals"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="inline-flex items-center px-6 py-2.5
+                                    bg-white dark:bg-primary-900
+                                    text-primary-900 dark:text-white
+                                    rounded-md font-medium text-sm sm:text-base
+                                    hover:bg-white/90 dark:hover:bg-primary-800
+                                    transition-colors duration-200"
+                        >
+                            Shop New Arrivals
+                            <ChevronRight className="ml-2 h-5 w-5" />
+                        </motion.a>
+                    </div>
                 </div>
-            ))}
-        </div>
 
-        {/* CTA Button */}
-        <div className="mt-auto text-center">
-            <motion.a
-                href="/collections/new-arrivals"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="inline-flex items-center px-6 py-2.5
-                        bg-white dark:bg-primary-900
-                        text-primary-900 dark:text-white
-                        rounded-md font-medium text-sm sm:text-base
-                        hover:bg-white/90 dark:hover:bg-primary-800
-                        transition-colors duration-200"
-            >
-                Shop New Arrivals
-                <ChevronRight className="ml-2 h-5 w-5" />
-            </motion.a>
-        </div>
-    </div>
-
-    {/* Decorative Corners */}
-    <div className="absolute top-0 right-0 w-24 h-24 
-                    bg-gradient-to-bl from-white/10 to-transparent" />
-    <div className="absolute bottom-0 left-0 w-24 h-24 
-                    bg-gradient-to-tr from-white/10 to-transparent" />
-
-                </div>
+                {/* Decorative Corners */}
+                <div className="absolute top-0 right-0 w-24 h-24 
+                                bg-gradient-to-bl from-white/10 to-transparent" />
+                <div className="absolute bottom-0 left-0 w-24 h-24 
+                                bg-gradient-to-tr from-white/10 to-transparent" />
+            </div>
           </motion.div>
 
           {/* Products Carousel Section */}
@@ -755,7 +938,13 @@ export default function StoolsCollection() {
               {/* View Controls - Desktop only */}
               <div className="hidden lg:block relative h-12">
                 <div className="flex items-center justify-between">
-                  <PriceRangeFilter onSort={handlePriceSort} />
+                  <PriceRangeFilter 
+                    selectedRange={null} 
+                    onChange={(range: string | null) => {
+                      if (range === 'high-to-low') handlePriceSort('desc');
+                      else if (range === 'low-to-high') handlePriceSort('asc');
+                    }} 
+                  />
                   <ViewControls
                     current={cardsToShow}
                     min={viewSettings.minCards}
@@ -807,10 +996,7 @@ export default function StoolsCollection() {
                   }}
                   className="px-0"
                   onSwiper={handleSwiperInit}
-                  onSlideChange={(swiper) => {
-                    setIsBeginning(swiper.isBeginning);
-                    setIsEnd(swiper.isEnd);
-                  }}
+                  onSlideChange={handleSlideChange}
                 >
                   {sortedProducts.map((product, index) => (
                     <SwiperSlide key={product.id}>
@@ -929,4 +1115,21 @@ export default function StoolsCollection() {
       </AnimatePresence>
     </>
   )
+}
+
+export const metadata: Metadata = {
+  title: 'Stools Collection | Your Store Name',
+  description: 'Discover our exclusive collection of artisan-crafted stools.',
+  openGraph: {
+    title: 'Stools Collection | Your Store Name',
+    description: 'Discover our exclusive collection of artisan-crafted stools.',
+    images: [
+      {
+        url: 'https://your-domain.com/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Stools Collection'
+      }
+    ]
+  }
 }

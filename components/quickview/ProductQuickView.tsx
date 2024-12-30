@@ -3,7 +3,7 @@ import type { Product, ProductVariant } from '@/lib/shopify/types'
 import { cn } from '@/lib/utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, ChevronUp, CreditCard, ShoppingCart, Star, X } from 'lucide-react'
-import { memo, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import { ProductGallery } from './ProductGallery'
 import { TrustBadges } from './TrustBadges'
 
@@ -13,7 +13,15 @@ interface ProductQuickViewProps {
   onClose: () => void
 }
 
+interface ExtendedProductVariant extends ProductVariant {
+  image?: {
+    url: string
+  }
+}
+
 const getProductRating = (productId: string): number => {
+  if (typeof window === 'undefined') return 4.7
+  
   const storageKey = `product_rating_${productId}`
   const storedRating = localStorage.getItem(storageKey)
   
@@ -30,7 +38,7 @@ const getProductRating = (productId: string): number => {
 export const ProductQuickView = memo(({ product, isOpen, onClose }: ProductQuickViewProps) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
+  const [selectedVariant, setSelectedVariant] = useState<ExtendedProductVariant | null>(null)
   const [rating, setRating] = useState<number>(0)
   const shortDescription = product.description.slice(0, 200)
   const hasLongDescription = product.description.length > 200
@@ -38,23 +46,24 @@ export const ProductQuickView = memo(({ product, isOpen, onClose }: ProductQuick
   useEffect(() => {
     const defaultOptions: Record<string, string> = {}
     product.options?.forEach(option => {
-      if (option.values.length > 0) {
-        defaultOptions[option.name] = option.values[0]
+      if (option.values.length > 0 && option.name) {
+        defaultOptions[option.name] = option.values[0] ?? ''
       }
     })
     setSelectedOptions(defaultOptions)
   }, [product])
 
-  useEffect(() => {
-    const findMatchingVariant = () => {
-      return product.variants.find(variant => {
-        return variant.selectedOptions.every(
-          option => selectedOptions[option.name] === option.value
-        )
-      }) || null
-    }
-    setSelectedVariant(findMatchingVariant())
+  const findMatchingVariant = useCallback(() => {
+    return (product.variants as ExtendedProductVariant[]).find(variant => {
+      return variant.selectedOptions.every(
+        option => selectedOptions[option.name] === option.value
+      )
+    }) || null
   }, [selectedOptions, product.variants])
+
+  useEffect(() => {
+    setSelectedVariant(findMatchingVariant())
+  }, [findMatchingVariant])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -62,12 +71,12 @@ export const ProductQuickView = memo(({ product, isOpen, onClose }: ProductQuick
     }
   }, [product.id])
 
-  const handleOptionChange = (optionName: string, value: string) => {
+  const handleOptionChange = useCallback((optionName: string, value: string) => {
     setSelectedOptions(prev => ({
       ...prev,
       [optionName]: value
     }))
-  }
+  }, [])
 
   useEffect(() => {
     if (isOpen) {
@@ -87,38 +96,46 @@ export const ProductQuickView = memo(({ product, isOpen, onClose }: ProductQuick
     // Buy now logic
   }
 
-  const findVariantByImage = (imageUrl: string) => {
-    return product.variants.find(variant => 
+  const findVariantByImage = useCallback((imageUrl: string) => {
+    return (product.variants as ExtendedProductVariant[]).find(variant => 
       variant.image?.url === imageUrl || 
       product.images.findIndex(img => img.url === imageUrl) === 0
     )
-  }
+  }, [product.variants, product.images])
 
-  const handleImageClick = (imageUrl: string) => {
+  const handleImageClick = useCallback((imageUrl: string) => {
     const matchingVariant = findVariantByImage(imageUrl)
     if (matchingVariant) {
       const newOptions: Record<string, string> = {}
       matchingVariant.selectedOptions.forEach(option => {
-        newOptions[option.name] = option.value
+        if (option.name) {
+          newOptions[option.name] = option.value
+        }
       })
       setSelectedOptions(newOptions)
     }
-  }
+  }, [findVariantByImage])
+
+  const handleBackdropClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) onClose()
+  }, [onClose])
+
+  const toggleDescription = useCallback(() => {
+    setIsDescriptionExpanded(prev => !prev)
+  }, [])
 
   return (
     <AnimatePresence>
       {isOpen && (
         <div 
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-y-auto py-4 sm:py-8"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) onClose()
-          }}
+          onClick={handleBackdropClick}
         >
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
             className="bg-white dark:bg-primary-950 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative mx-2 sm:mx-4"
           >
             <motion.button
@@ -197,7 +214,7 @@ export const ProductQuickView = memo(({ product, isOpen, onClose }: ProductQuick
                     </motion.p>
                     {hasLongDescription && (
                       <motion.button
-                        onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                        onClick={toggleDescription}
                         className="flex items-center gap-1 text-sm text-accent-500 hover:text-accent-600 mt-2"
                       >
                         {isDescriptionExpanded ? (

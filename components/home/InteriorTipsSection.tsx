@@ -2,9 +2,52 @@
 import { motion } from 'framer-motion';
 import { Bookmark, BookmarkPlus, Box, ChevronLeft, ChevronRight, Flower, Lightbulb, Maximize, Palette, Search, Share2, Sofa } from 'lucide-react';
 import Image from 'next/image';
-import { useRef, useState } from 'react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
-const interiorTips = {
+enum CategoryId {
+  Lighting = 'lighting',
+  Color = 'color',
+  Space = 'space',
+  Furniture = 'furniture',
+  Accessories = 'accessories',
+  Organization = 'organization'
+}
+
+interface Tip {
+  id: string;
+  title: string;
+  image: string;
+  description: string;
+  category: string;
+  readTime: string;
+  authorTip: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  impact: 'High' | 'Medium' | 'Low';
+}
+
+interface InteriorTipsData {
+  [CategoryId.Lighting]: Tip[];
+  [CategoryId.Color]: Tip[];
+  [CategoryId.Space]: Tip[];
+  [CategoryId.Furniture]: Tip[];
+  [CategoryId.Accessories]: Tip[];
+  [CategoryId.Organization]: Tip[];
+}
+
+interface Category {
+  id: CategoryId;
+  name: string;
+  icon: React.FC<{ className?: string }>;
+}
+
+interface TipCardProps {
+  tip: Tip;
+  onSave: (tipId: string) => void;
+  isSaved: boolean;
+  onShare: (tip: Tip) => Promise<void>;
+}
+
+const interiorTips: InteriorTipsData = {
     lighting: [
       {
         id: "l1",
@@ -272,98 +315,101 @@ const interiorTips = {
     ]
   };
 
-  const categories = [
-    { id: 'lighting', name: 'Lighting', icon: Lightbulb },
-    { id: 'color', name: 'Color & Paint', icon: Palette },
-    { id: 'space', name: 'Space Planning', icon: Maximize },
-    { id: 'furniture', name: 'Furniture', icon: Sofa },
-    { id: 'accessories', name: 'Accessories', icon: Flower },
-    { id: 'organization', name: 'Organization', icon: Box }
+  const categories: Category[] = [
+    { id: CategoryId.Lighting, name: 'Lighting', icon: Lightbulb },
+    { id: CategoryId.Color, name: 'Color & Paint', icon: Palette },
+    { id: CategoryId.Space, name: 'Space Planning', icon: Maximize },
+    { id: CategoryId.Furniture, name: 'Furniture', icon: Sofa },
+    { id: CategoryId.Accessories, name: 'Accessories', icon: Flower },
+    { id: CategoryId.Organization, name: 'Organization', icon: Box }
   ];
 
-const TipCard = ({ tip, onSave, isSaved, onShare }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="bg-white dark:bg-stone-800 rounded-xl shadow-lg overflow-hidden"
-  >
-    <div className="relative h-48">
-      <Image
-        src={tip.image}
-        alt={tip.title}
-        fill
-        className="object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-      <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-        <h3 className="text-white text-xl font-medium">{tip.title}</h3>
-        <div className="flex gap-2">
-          <button
-            onClick={() => onShare(tip)}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
-          >
-            <Share2 className="w-4 h-4 text-white" />
-          </button>
-          <button
-            onClick={() => onSave(tip.id)}
-            className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
-          >
-            {isSaved ? (
-              <BookmarkPlus className="w-4 h-4 text-blue-400" />
-            ) : (
-              <Bookmark className="w-4 h-4 text-white" />
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-    <div className="p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="px-3 py-1 rounded-full bg-stone-100 dark:bg-stone-700 text-sm text-stone-600 dark:text-stone-300">
-          {tip.category}
-        </span>
-        <span className="text-sm text-stone-500 dark:text-stone-400">
-          {tip.readTime}
-        </span>
-      </div>
-      <p className="text-stone-600 dark:text-stone-300 mb-4">
-        {tip.description}
-      </p>
-      <div className="bg-stone-50 dark:bg-stone-700/50 p-4 rounded-lg">
-        <div className="flex items-start gap-2">
-          <Lightbulb className="w-5 h-5 text-amber-500 mt-1" />
-          <div>
-            <p className="font-medium text-stone-900 dark:text-stone-100 mb-1">Pro Tip</p>
-            <p className="text-sm text-stone-600 dark:text-stone-300">
-              {tip.authorTip}
-            </p>
+const TipCard = memo(function TipCard({ tip, onSave, isSaved, onShare }: TipCardProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white dark:bg-stone-800 rounded-xl shadow-lg overflow-hidden"
+    >
+      <div className="relative h-48">
+        <Image
+          src={tip.image}
+          alt={tip.title}
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+        <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+          <h3 className="text-white text-xl font-medium">{tip.title}</h3>
+          <div className="flex gap-2">
+            <button
+              onClick={() => onShare(tip)}
+              className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
+            >
+              <Share2 className="w-4 h-4 text-white" />
+            </button>
+            <button
+              onClick={() => onSave(tip.id)}
+              className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
+            >
+              {isSaved ? (
+                <BookmarkPlus className="w-4 h-4 text-blue-400" />
+              ) : (
+                <Bookmark className="w-4 h-4 text-white" />
+              )}
+            </button>
           </div>
         </div>
       </div>
-      <div className="mt-4 flex justify-between items-center text-sm">
-        <div className="flex items-center gap-4">
-          <div>
-            <span className="text-stone-500 dark:text-stone-400">Difficulty: </span>
-            <span className="text-stone-700 dark:text-stone-200">{tip.difficulty}</span>
+      <div className="p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="px-3 py-1 rounded-full bg-stone-100 dark:bg-stone-700 text-sm text-stone-600 dark:text-stone-300">
+            {tip.category}
+          </span>
+          <span className="text-sm text-stone-500 dark:text-stone-400">
+            {tip.readTime}
+          </span>
+        </div>
+        <p className="text-stone-600 dark:text-stone-300 mb-4">
+          {tip.description}
+        </p>
+        <div className="bg-stone-50 dark:bg-stone-700/50 p-4 rounded-lg">
+          <div className="flex items-start gap-2">
+            <Lightbulb className="w-5 h-5 text-amber-500 mt-1" />
+            <div>
+              <p className="font-medium text-stone-900 dark:text-stone-100 mb-1">Pro Tip</p>
+              <p className="text-sm text-stone-600 dark:text-stone-300">
+                {tip.authorTip}
+              </p>
+            </div>
           </div>
-          <div>
-            <span className="text-stone-500 dark:text-stone-400">Impact: </span>
-            <span className="text-stone-700 dark:text-stone-200">{tip.impact}</span>
+        </div>
+        <div className="mt-4 flex justify-between items-center text-sm">
+          <div className="flex items-center gap-4">
+            <div>
+              <span className="text-stone-500 dark:text-stone-400">Difficulty: </span>
+              <span className="text-stone-700 dark:text-stone-200">{tip.difficulty}</span>
+            </div>
+            <div>
+              <span className="text-stone-500 dark:text-stone-400">Impact: </span>
+              <span className="text-stone-700 dark:text-stone-200">{tip.impact}</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+});
 
 const InteriorTipsSection = () => {
-  const [selectedCategory, setSelectedCategory] = useState('lighting');
-  const [savedTips, setSavedTips] = useState(new Set());
-  const [searchTerm, setSearchTerm] = useState('');
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const categoriesRef = useRef(null);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId>(CategoryId.Lighting);
+  const [savedTips, setSavedTips] = useState<Set<string>>(new Set());
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [scrollPosition, setScrollPosition] = useState<number>(0);
+  
+  const categoriesRef = useRef<HTMLDivElement>(null);
 
-  const handleShare = async (tip) => {
+  const handleShare = useCallback(async (tip: Tip): Promise<void> => {
     try {
       if (navigator.share) {
         await navigator.share({
@@ -375,9 +421,9 @@ const InteriorTipsSection = () => {
     } catch (error) {
       console.error('Error sharing:', error);
     }
-  };
+  }, []);
 
-  const toggleSave = (tipId) => {
+  const toggleSave = useCallback((tipId: string): void => {
     setSavedTips(prev => {
       const newSaved = new Set(prev);
       if (newSaved.has(tipId)) {
@@ -387,14 +433,23 @@ const InteriorTipsSection = () => {
       }
       return newSaved;
     });
-  };
+  }, []);
 
-  const filteredTips = interiorTips[selectedCategory].filter(tip =>
-    tip.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tip.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTips = useMemo(() => {
+    const tips = interiorTips[selectedCategory] ?? [];
+    const searchLower = searchTerm.toLowerCase();
+    
+    return tips.filter(tip =>
+      tip.title.toLowerCase().includes(searchLower) ||
+      tip.description.toLowerCase().includes(searchLower)
+    );
+  }, [selectedCategory, searchTerm]);
 
-  const scroll = (direction) => {
+  const handleCategoryChange = useCallback((categoryId: CategoryId): void => {
+    setSelectedCategory(categoryId);
+  }, []);
+
+  const scroll = (direction: 'left' | 'right') => {
     const container = categoriesRef.current;
     if (container) {
       const scrollAmount = 200; // Adjust this value as needed
@@ -457,7 +512,7 @@ const InteriorTipsSection = () => {
               return (
                 <button
                   key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
+                  onClick={() => handleCategoryChange(category.id)}
                   className={`flex items-center gap-2 px-6 py-3 rounded-full whitespace-nowrap transition-colors ${
                     selectedCategory === category.id
                       ? 'bg-blue-500 text-white'

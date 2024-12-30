@@ -141,7 +141,7 @@ export function ProgressBar({ steps, currentStep }: ProgressBarProps) {
               <motion.button
                 disabled={!isAccessible || isCurrent}
                 onClick={() => handleStepClick(step.id)}
-                onKeyPress={(e) => handleKeyPress(e, step.id)}
+                onKeyPress={(e: React.KeyboardEvent<HTMLButtonElement>) => handleKeyPress(e, step.id)}
                 onHoverStart={() => setHoveredStep(step.id)}
                 onHoverEnd={() => setHoveredStep(null)}
                 variants={stepVariants}

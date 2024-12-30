@@ -9,6 +9,31 @@ import { Suspense } from 'react';
 import { BlogGrid } from '../../components/blog/blog-grid';
 import { BlogHero } from '../../components/blog/hero-section';
 import { SearchBar } from '../../components/blog/search-bar';
+import { Article } from '@/lib/shopify/types';
+
+// Add interfaces for Shopify response types
+interface ShopifyArticle {
+  title: string;
+  excerpt?: string;
+  publishedAt: string;
+  // Add other article properties as needed
+}
+
+interface ShopifyEdge {
+  node: ShopifyArticle;
+}
+
+interface ShopifyResponse {
+  body: {
+    data: {
+      blog: {
+        articles: {
+          edges: ShopifyEdge[];
+        };
+      };
+    };
+  };
+}
 
 export const metadata: Metadata = {
   title: 'Blog | Modern Living',
@@ -41,27 +66,25 @@ interface PageProps {
 }
 
 export default async function BlogPage({ searchParams }: PageProps) {
-  // Properly resolve searchParams
   const resolvedSearchParams = await Promise.resolve(searchParams);
   const searchQuery = resolvedSearchParams?.q ?? '';
   const sortOption = resolvedSearchParams?.sort ?? '';
-  
-  let articles = [];
+
+  let articles: ShopifyArticle[] = [];
 
   try {
-    const response = await shopifyFetch({
+    const response = (await shopifyFetch({
       query: getBlogQuery,
       variables: {
-        handle: 'news', // Your blog handle
-        first: 20 // Number of articles to fetch
+        handle: 'news',
+        first: 20
       },
       cache: 'no-store'
-    });
+    })) as ShopifyResponse;
 
     if (response?.body?.data?.blog?.articles?.edges) {
       articles = response.body.data.blog.articles.edges.map(({ node }) => node);
 
-      // Apply search filter if query exists
       if (searchQuery) {
         const searchTerm = searchQuery.toLowerCase();
         articles = articles.filter(
@@ -71,17 +94,16 @@ export default async function BlogPage({ searchParams }: PageProps) {
         );
       }
 
-      // Apply sorting if specified
       if (sortOption) {
         switch (sortOption) {
           case 'date-desc':
-            articles.sort((a, b) => 
-              new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+            articles.sort(
+              (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
             );
             break;
           case 'date-asc':
-            articles.sort((a, b) => 
-              new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime()
+            articles.sort(
+              (a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime()
             );
             break;
           case 'title-asc':
@@ -101,7 +123,6 @@ export default async function BlogPage({ searchParams }: PageProps) {
   return (
     <main className="relative min-h-screen bg-primary-50 pb-20 dark:bg-primary-900">
       <NavigationHeader />
-      {/* Gradient Background */}
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-gradient-to-b from-primary-100/50 to-transparent dark:from-primary-900/50"
@@ -109,18 +130,15 @@ export default async function BlogPage({ searchParams }: PageProps) {
         />
       </div>
 
-      <div className="relative mx-auto max-w-[90rem] px-4 pt-24 sm:pt-28 lg:pt-32 pb-12 sm:px-6 lg:px-8">
-        {/* Hero Section */}
+      <div className="relative mx-auto max-w-[90rem] px-4 pb-12 pt-24 sm:px-6 sm:pt-28 lg:px-8 lg:pt-32">
         <Suspense>
           <BlogHero />
         </Suspense>
 
-        {/* Search Bar */}
         <Suspense>
           <SearchBar />
         </Suspense>
 
-        {/* Results Info */}
         <div className="mb-8">
           <p className="text-sm text-primary-600 dark:text-primary-300">
             Showing {articles.length} article{articles.length !== 1 ? 's' : ''}
@@ -132,12 +150,10 @@ export default async function BlogPage({ searchParams }: PageProps) {
           </p>
         </div>
 
-        {/* Blog Grid */}
         <section aria-label="Blog Articles">
-          <BlogGrid articles={articles} />
+          <BlogGrid articles={articles as Article[]} />
         </section>
 
-        {/* Empty State */}
         {articles.length === 0 && (
           <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-dashed border-primary-300 bg-white/50 backdrop-blur-sm dark:border-primary-700 dark:bg-primary-800/50">
             <div className="text-center">

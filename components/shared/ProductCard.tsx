@@ -113,46 +113,72 @@ const ImageGallery = memo(({ product }: { product: Product }) => {
 
 ImageGallery.displayName = 'ImageGallery'
 
+interface ExtendedProduct extends Product {
+  productType?: string;
+}
+
 const determineProductCategory = (product: Product): string => {
-  const title = product.title?.toLowerCase() || ''
-  const type = product.productType?.toLowerCase() || ''
+  const title = product.title?.toLowerCase() || '';
   const tags = Array.isArray(product.tags) 
     ? product.tags.map(tag => tag.toLowerCase()) 
-    : []
-  const description = product.description?.toLowerCase() || ''
+    : [];
+  const description = product.description?.toLowerCase() || '';
 
-  const searchText = `${title} ${type} ${tags.join(' ')} ${description}`
+  // Combined text for search
+  const searchText = `${title} ${tags.join(' ')} ${description}`;
 
+  // Predefined lighting category patterns with weighted keywords
   const patterns = {
-    'Chandelier': ['chandelier', 'hanging light', 'pendant light', 'ceiling light'],
-    'Wall Lamp': ['wall lamp', 'sconce', 'wall light', 'wall mount'],
-    'Floor Lamp': ['floor lamp', 'standing lamp', 'floor light', 'standing light'],
-    'Table Lamp': ['table lamp', 'desk lamp', 'bedside lamp', 'desk light'],
-    'Pendant Light': ['pendant', 'hanging lamp', 'suspended', 'drop light']
-  }
+    'Chandelier': [
+      'chandelier', 'hanging light', 'pendant light', 
+      'ceiling light', 'hanging chandelier', 'crystal chandelier'
+    ],
+    'Wall Lamp': [
+      'wall lamp', 'sconce', 'wall light', 
+      'wall mount', 'wall fixture', 'wall-mounted'
+    ],
+    'Floor Lamp': [
+      'floor lamp', 'standing lamp', 'floor light', 
+      'standing light', 'floor fixture', 'tripod lamp'
+    ],
+    'Table Lamp': [
+      'table lamp', 'desk lamp', 'bedside lamp', 
+      'desk light', 'reading lamp', 'accent lamp'
+    ],
+    'Pendant Light': [
+      'pendant', 'hanging lamp', 'suspended', 
+      'drop light', 'pendant fixture', 'suspended light'
+    ]
+  } as const;
 
+  // Try to find the most relevant category
   for (const [category, keywords] of Object.entries(patterns)) {
+    // Check for exact matches first
     if (keywords.some(keyword => searchText.includes(keyword))) {
-      return category
+      return category;
     }
   }
 
-  return 'Lamp'
-}
+  // Look for partial matches if no exact match found
+  for (const [category, keywords] of Object.entries(patterns)) {
+    if (keywords.some(keyword => 
+      keyword.split(' ').some(word => searchText.includes(word))
+    )) {
+      return category;
+    }
+  }
+
+  // Default category
+  return 'Lamp';
+};
 
 interface ProductCardProps {
   product: Product;
-  onQuickView: (e: React.MouseEvent) => void;
-  isPriority?: boolean;
-  cardsToShow?: number;
+  cardsToShow: number;
+  onQuickView: (e: React.MouseEvent<Element>) => void;
 }
 
-export const ProductCard = memo(({ 
-  product, 
-  onQuickView,
-  isPriority = false,
-  cardsToShow = 4
-}: ProductCardProps) => {
+export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardProps) => {
   const handleQuickView = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -323,6 +349,6 @@ export const ProductCard = memo(({
       </div>
     </motion.div>
   )
-})
+}
 
 ProductCard.displayName = 'ProductCard' 

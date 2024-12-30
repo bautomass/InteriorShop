@@ -5,8 +5,13 @@ import { Calendar, Clock, Tag, User } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+// Extend the Article type to include tags
+interface ExtendedArticle extends Article {
+  tags?: string[];
+}
+
 interface BlogGridProps {
-  articles: Article[];
+  articles: ExtendedArticle[];
 }
 
 export function BlogGrid({ articles }: BlogGridProps) {
@@ -27,7 +32,7 @@ export function BlogGrid({ articles }: BlogGridProps) {
                   alt={featuredArticle.image.altText || featuredArticle.title}
                   width={600}
                   height={400}
-                  className="h-full w-full object-cover transition-all duration-500 group-hover:scale-105 group-hover:rotate-1"
+                  className="h-full w-full object-cover transition-all duration-500 group-hover:rotate-1 group-hover:scale-105"
                   priority
                 />
               ) : (
@@ -40,7 +45,10 @@ export function BlogGrid({ articles }: BlogGridProps) {
               </div>
             </div>
             <div className="flex flex-col justify-center p-6 md:col-span-3">
-              <Link href={`/blog/${featuredArticle.handle}`} className="group-hover:text-accent-500">
+              <Link
+                href={`/blog/${featuredArticle.handle}`}
+                className="group-hover:text-accent-500"
+              >
                 <h2 className="mb-3 text-2xl font-bold tracking-tight text-primary-900 transition-all group-hover:text-accent-500 dark:text-primary-50">
                   {featuredArticle.title}
                 </h2>
@@ -92,7 +100,7 @@ export function BlogGrid({ articles }: BlogGridProps) {
             href={`/blog/${article.handle}`}
             className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition-all hover:-translate-y-1 hover:shadow-xl dark:bg-primary-800"
             style={{
-              animationDelay: `${index * 100}ms`,
+              animationDelay: `${index * 100}ms`
             }}
           >
             <div className="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-accent-500/10 to-primary-500/10">
@@ -102,7 +110,7 @@ export function BlogGrid({ articles }: BlogGridProps) {
                   alt={article.image.altText || article.title}
                   width={600}
                   height={400}
-                  className="h-full w-full object-cover transition-all duration-500 group-hover:scale-105 group-hover:rotate-1"
+                  className="h-full w-full object-cover transition-all duration-500 group-hover:rotate-1 group-hover:scale-105"
                 />
               ) : (
                 <div className="h-full w-full bg-primary-100 dark:bg-primary-700" />
@@ -133,9 +141,7 @@ export function BlogGrid({ articles }: BlogGridProps) {
                 )}
                 <div className="flex items-center gap-1">
                   <Clock size={14} />
-                  <time dateTime={article.publishedAt}>
-                    {formatDate(article.publishedAt)}
-                  </time>
+                  <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
                 </div>
               </div>
             </div>

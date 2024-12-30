@@ -1,20 +1,51 @@
 "use client"
 
 import {
-    ArrowRight,
-    Facebook,
-    Headphones as HeadphonesIcon,
-    Instagram,
-    Linkedin,
-    Lock as LockIcon,
-    Mail,
-    MapPin,
-    RefreshCcw as RefreshCcwIcon,
-    Star as StarIcon,
-    Twitter
+  ArrowRight,
+  Facebook,
+  Headphones as HeadphonesIcon,
+  Instagram,
+  Linkedin,
+  Lock as LockIcon,
+  Mail,
+  MapPin,
+  RefreshCcw as RefreshCcwIcon,
+  Star as StarIcon,
+  Twitter
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+
+interface SocialLink {
+  icon: React.ReactNode;
+  href: string;
+  name: string;
+}
+
+interface TrustElement {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  ariaLabel: string;
+}
+
+interface FooterLink {
+  name: string;
+  href: string;
+}
+
+interface FooterSection {
+  title: string;
+  links: FooterLink[];
+}
+
+const CURRENT_YEAR = new Date().getFullYear();
+
+const LEGAL_LINKS = [
+  { name: 'Privacy Policy', href: '/privacy-policy' },
+  { name: 'Terms of Service', href: '/terms-of-service' },
+  { name: 'Cookie Policy', href: '/cookie-policy' }
+] as const;
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -63,11 +94,27 @@ const Footer = () => {
     }
   ];
 
-  const socialLinks = [
-    { icon: <Instagram className="h-5 w-5" />, href: 'https://instagram.com' },
-    { icon: <Facebook className="h-5 w-5" />, href: 'https://facebook.com' },
-    { icon: <Twitter className="h-5 w-5" />, href: 'https://twitter.com' },
-    { icon: <Linkedin className="h-5 w-5" />, href: 'https://linkedin.com' },
+  const socialLinks: SocialLink[] = [
+    { 
+      icon: <Instagram className="h-5 w-5" />, 
+      href: 'https://instagram.com',
+      name: 'Instagram'
+    },
+    { 
+      icon: <Facebook className="h-5 w-5" />, 
+      href: 'https://facebook.com',
+      name: 'Facebook'
+    },
+    { 
+      icon: <Twitter className="h-5 w-5" />, 
+      href: 'https://twitter.com',
+      name: 'Twitter'
+    },
+    { 
+      icon: <Linkedin className="h-5 w-5" />, 
+      href: 'https://linkedin.com',
+      name: 'LinkedIn'
+    },
   ];
 
   const trustElements = [
@@ -198,14 +245,14 @@ const Footer = () => {
               className="flex items-center gap-6"
               aria-label="Social media links"
             >
-              {socialLinks.map((social, index) => (
+              {socialLinks.map((social) => (
                 <a
-                  key={index}
+                  key={social.name}
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary-400 transition-colors hover:text-accent-500 dark:text-primary-500 dark:hover:text-accent-400"
-                  aria-label={`Visit our ${social.href.split('.com')[0].split('//')[1]} page`}
+                  aria-label={`Visit our ${social.name} page`}
                 >
                   {social.icon}
                 </a>
@@ -214,16 +261,16 @@ const Footer = () => {
             
             {/* Legal Links */}
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-primary-600 dark:text-primary-300">
-              {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((text) => (
+              {LEGAL_LINKS.map((link) => (
                 <Link
-                  key={text}
-                  href={`/${text.toLowerCase().replace(/\s+/g, '-')}`}
+                  key={link.name}
+                  href={link.href}
                   className="transition-colors hover:text-accent-500 dark:hover:text-accent-400"
                 >
-                  {text}
+                  {link.name}
                 </Link>
               ))}
-              <span>© {new Date().getFullYear()} Simple Interior Ideas. All rights reserved.</span>
+              <span>© {CURRENT_YEAR} Simple Interior Ideas. All rights reserved.</span>
             </div>
           </div>
         </div>

@@ -2,12 +2,65 @@
 
 import { motion } from 'framer-motion';
 import { Cloud, Leaf, Snowflake, Sun } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
+
+interface Product {
+  name: string;
+  price: string;
+  image: string;
+}
+
+interface Season {
+  icon: React.ReactNode;
+  title: string;
+  accent: string;
+  description: string;
+  products: Product[];
+}
+
+type SeasonKey = 'spring' | 'summer' | 'autumn' | 'winter';
+
+const ProductCard = memo(function ProductCard({ 
+  product, 
+  index 
+}: { 
+  product: Product; 
+  index: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="group cursor-pointer overflow-hidden rounded-xl bg-primary-50"
+    >
+      <div className="aspect-[3/4] overflow-hidden">
+        <Image
+          src={product.image}
+          alt={product.name}
+          width={300}
+          height={400}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading={index < 2 ? "eager" : "lazy"}
+        />
+      </div>
+      <div className="p-4">
+        <h4 className="text-primary-900">{product.name}</h4>
+        <p className="text-accent-500">{product.price}</p>
+      </div>
+    </motion.div>
+  );
+});
 
 const SeasonalRhythm = () => {
-  const [activeSeason, setActiveSeason] = useState('summer');
+  const [activeSeason, setActiveSeason] = useState<SeasonKey>('summer');
   
+  const handleSeasonChange = useCallback((season: SeasonKey) => {
+    setActiveSeason(season);
+  }, []);
+
   const seasons = {
     spring: {
       icon: <Cloud className="h-6 w-6" />,
@@ -71,7 +124,7 @@ const SeasonalRhythm = () => {
           {Object.entries(seasons).map(([season, data]) => (
             <button
               key={season}
-              onClick={() => setActiveSeason(season)}
+              onClick={() => handleSeasonChange(season as SeasonKey)}
               className={`flex items-center gap-2 rounded-full px-6 py-3 transition-all ${
                 activeSeason === season
                   ? `${data.accent} text-primary-900`
@@ -108,26 +161,11 @@ const SeasonalRhythm = () => {
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {seasons[activeSeason].products.map((product, index) => (
-                <motion.div
+                <ProductCard
                   key={product.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="group cursor-pointer overflow-hidden rounded-xl bg-primary-50"
-                >
-                  <div className="aspect-[3/4] overflow-hidden">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h4 className="text-primary-900">{product.name}</h4>
-                    <p className="text-accent-500">{product.price}</p>
-                  </div>
-                </motion.div>
+                  product={product}
+                  index={index}
+                />
               ))}
             </div>
           </div>
@@ -137,4 +175,4 @@ const SeasonalRhythm = () => {
   );
 };
 
-export default SeasonalRhythm;
+export default memo(SeasonalRhythm);

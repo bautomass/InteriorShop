@@ -1,13 +1,13 @@
 // app/api/gift-boxes/route.ts
 import { getCollectionProducts } from 'lib/shopify';
-import { Product, ProductImage, ProductOption } from 'lib/shopify/types';
+import { Image, Product, ProductOption, ProductVariant } from 'lib/shopify/types';
 import { NextResponse } from 'next/server';
 
 interface GiftBoxImage {
   url: string;
-  altText: string;
-  width?: number;
-  height?: number;
+  altText: string | null;
+  width: number;
+  height: number;
 }
 
 interface GiftBoxVariant {
@@ -37,6 +37,13 @@ interface GiftBox {
   };
 }
 
+const DEFAULT_IMAGE: GiftBoxImage = {
+  url: '/default-image.jpg',
+  altText: 'Default Product Image',
+  width: 800,
+  height: 800
+};
+
 export const dynamic = 'force-dynamic';
 export const runtime = 'edge';
 
@@ -50,58 +57,53 @@ export async function GET() {
       return NextResponse.json({ error: 'No gift boxes found' }, { status: 404 });
     }
 
-    const giftBoxes: GiftBox[] = products.map((product: Product) => {
-      // Process all images with proper formatting
-      const processedImages = product.images.map((image: ProductImage) => ({
-        url: image.url,
-        altText: image.altText || product.title,
-        width: image.width,
-        height: image.height
-      }));
+    const giftBoxes = products.map((product: Product): GiftBox => {
+      const processedImages: GiftBoxImage[] = product.images.map(
+        (image: Image): GiftBoxImage => ({
+          url: image.url,
+          altText: image.altText,
+          width: image.width,
+          height: image.height
+        })
+      );
 
-      // Process variants with their specific images
-      const processedVariants = product.variants.map((variant) => ({
-        id: variant.id,
-        title: variant.title,
-        price: parseFloat(variant.price.amount),
-        selectedOptions: variant.selectedOptions,
-        image: variant.image
-          ? {
-              url: variant.image.url,
-              altText: variant.image.altText || `${product.title} - ${variant.title}`,
-              width: variant.image.width,
-              height: variant.image.height
-            }
-          : undefined
-      }));
+      const processedVariants = product.variants.map(
+        (variant: ProductVariant): GiftBoxVariant => ({
+          id: variant.id,
+          title: variant.title,
+          price: parseFloat(variant.price.amount),
+          selectedOptions: variant.selectedOptions
+        })
+      );
+
+      const featuredImage = (() => {
+        if (product.featuredImage) {
+          return {
+            url: product.featuredImage.url,
+            altText: product.featuredImage.altText,
+            width: product.featuredImage.width,
+            height: product.featuredImage.height
+          };
+        }
+        if (processedImages.length > 0) {
+          return processedImages[0];
+        }
+        return DEFAULT_IMAGE;
+      })() as GiftBoxImage;
 
       return {
         id: product.id,
         handle: product.handle,
         title: product.title,
         description: product.description,
-        featuredImage: product.featuredImage
-          ? {
-              url: product.featuredImage.url,
-              altText: product.featuredImage.altText || product.title,
-              width: product.featuredImage.width,
-              height: product.featuredImage.height
-            }
-          : processedImages[0], // Fallback to first image if no featured image
+        featuredImage,
         images: processedImages,
         variants: processedVariants,
         options: product.options,
-        selectedVariant: product.selectedVariant
-          ? {
-              id: product.selectedVariant.id,
-              price: parseFloat(product.selectedVariant.price.amount),
-              title: product.selectedVariant.title
-            }
-          : undefined
+        selectedVariant: undefined
       };
     });
 
-    // Add cache control headers for better performance
     const headers = {
       'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
     };
@@ -113,7 +115,6 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching gift boxes:', error);
 
-    // Enhanced error handling with more specific error messages
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error occurred while fetching gift boxes';
 

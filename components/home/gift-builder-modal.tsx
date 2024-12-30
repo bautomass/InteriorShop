@@ -1,7 +1,21 @@
 'use client';
 
 import { ArrowLeft, ArrowRight, X } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
+
+interface Step {
+  icon: React.FC;
+  title: string;
+  description: string;
+  details: string[];
+  color: string;
+  Scene: React.FC<{ className?: string }>;
+}
+
+interface GiftBuilderModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
 const StepIcons = {
   Box: () => (
@@ -122,7 +136,7 @@ const SlideScenes = {
   )
 };
 
-const steps = [
+const steps: Step[] = [
   {
     icon: StepIcons.Box,
     title: '1. Choose Your Box',
@@ -173,13 +187,7 @@ const steps = [
   }
 ];
 
-export function GiftBuilderModal({
-  isOpen,
-  onClose
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) {
+export function GiftBuilderModal({ isOpen, onClose }: GiftBuilderModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
   const nextStep = () => {
@@ -193,6 +201,7 @@ export function GiftBuilderModal({
   if (!isOpen) return null;
 
   const currentStepData = steps[currentStep];
+  if (!currentStepData) return null;
 
   return React.createElement('div',
     { className: "fixed inset-0 z-50 overflow-y-auto" },
@@ -280,64 +289,17 @@ export function GiftBuilderModal({
                           },
                           currentStepData.description
                         ),
-                        React.createElement('ul',
-                          {
-                            key: "details",
-                            className: "mt-4 space-y-2"
-                          },
-                          currentStepData.details.map((detail, index) =>
-                            React.createElement('li',
-                              {
-                                key: index,
-                                className: "flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300"
-                              },
-                              [
-                                React.createElement('div',
-                                  {
-                                    key: "bullet",
-                                    className: "h-1.5 w-1.5 rounded-full bg-accent-500"
-                                  }
-                                ),
-                                detail
-                              ]
-                            )
-                          )
-                        )
+                        React.createElement(StepDetails, { details: currentStepData.details })
                       ]
                     ),
 
                     // Navigation Buttons
-                    React.createElement('div',
-                      {
-                        key: "navigation",
-                        className: "mt-8 flex justify-between gap-4"
-                      },
-                      [
-                        React.createElement('button',
-                          {
-                            key: "prev-button",
-                            onClick: prevStep,
-                            disabled: currentStep === 0,
-                            className: "flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                          },
-                          [
-                            React.createElement(ArrowLeft, { key: "prev-icon", size: 16 }),
-                            "Previous"
-                          ]
-                        ),
-                        React.createElement('button',
-                          {
-                            key: "next-button",
-                            onClick: currentStep === steps.length - 1 ? onClose : nextStep,
-                            className: "flex items-center gap-2 rounded-lg bg-accent-500 px-4 py-2 text-sm font-medium text-white hover:bg-accent-600"
-                          },
-                          [
-                            currentStep === steps.length - 1 ? "Complete" : "Next",
-                            React.createElement(ArrowRight, { key: "next-icon", size: 16 })
-                          ]
-                        )
-                      ]
-                    )
+                    React.createElement(NavigationButtons, {
+                      currentStep,
+                      onPrev: prevStep,
+                      onNext: nextStep,
+                      onClose
+                    })
                   ]
                 )
               ]
@@ -348,3 +310,50 @@ export function GiftBuilderModal({
     ]
   );
 }
+
+const StepDetails = memo(function StepDetails({ details }: { details: string[] }) {
+  return (
+    <ul className="mt-4 space-y-2">
+      {details.map((detail, index) => (
+        <li key={index} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+          <div className="h-1.5 w-1.5 rounded-full bg-accent-500" />
+          {detail}
+        </li>
+      ))}
+    </ul>
+  );
+});
+
+const NavigationButtons = memo(function NavigationButtons({ 
+  currentStep,
+  onPrev,
+  onNext,
+  onClose 
+}: {
+  currentStep: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onClose: () => void;
+}) {
+  const isLastStep = currentStep === steps.length - 1;
+  
+  return (
+    <div className="mt-8 flex justify-between gap-4">
+      <button
+        onClick={onPrev}
+        disabled={currentStep === 0}
+        className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+      >
+        <ArrowLeft size={16} />
+        Previous
+      </button>
+      <button
+        onClick={isLastStep ? onClose : onNext}
+        className="flex items-center gap-2 rounded-lg bg-accent-500 px-4 py-2 text-sm font-medium text-white hover:bg-accent-600"
+      >
+        {isLastStep ? "Complete" : "Next"}
+        <ArrowRight size={16} />
+      </button>
+    </div>
+  );
+});

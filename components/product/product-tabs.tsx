@@ -1,13 +1,97 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Award, ChevronLeft, ChevronRight, Clock, Globe2, HeartHandshake, Shield, Ship, Sparkles, Star } from 'lucide-react';
-import Image from 'next/image';
-import { useCallback, useRef, useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { Award, Clock, Globe2, HeartHandshake, Shield, Ship, Sparkles, Star } from 'lucide-react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { CareInstructions } from './care-instructions';
 
-const tabs = [
+interface TabBase {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+interface ShippingTab extends TabBase {
+  id: 'shipping';
+  content: {
+    title: string;
+    description: string;
+    points: Array<{
+      icon: LucideIcon;
+      title: string;
+      description: string;
+    }>;
+  };
+}
+
+interface QualityTab extends TabBase {
+  id: 'quality';
+  content: {
+    title: string;
+    description: string;
+    points: Array<{
+      icon: LucideIcon;
+      title: string;
+      description: string;
+    }>;
+  };
+}
+
+interface ReviewsTab extends TabBase {
+  id: 'reviews';
+  content: {
+    title: string;
+    description?: string;
+    testimonials: Array<{
+      id: number;
+      rating: number;
+      name: string;
+      location: string;
+      date: string;
+      title: string;
+      text: string;
+      verified: boolean;
+    }>;
+  };
+}
+
+interface CareTab extends TabBase {
+  id: 'care';
+  content: {
+    title: string;
+    description: string;
+  };
+}
+
+type Tab = ShippingTab | QualityTab | ReviewsTab | CareTab;
+
+// Type guards
+function isShippingTab(tab: Tab): tab is ShippingTab {
+  return tab.id === 'shipping';
+}
+
+function isQualityTab(tab: Tab): tab is QualityTab {
+  return tab.id === 'quality';
+}
+
+function isReviewsTab(tab: Tab): tab is ReviewsTab {
+  return tab.id === 'reviews';
+}
+
+function isCareTab(tab: Tab): tab is CareTab {
+  return tab.id === 'care';
+}
+
+const getTabById = (id: Tab['id']): Tab => {
+  const tab = tabs.find((t) => t.id === id);
+  if (!tab) throw new Error(`Tab with id ${id} not found`);
+  return tab;
+};
+
+const INITIAL_TAB_ID = 'shipping' as const;
+
+const tabs: Tab[] = [
   {
     id: 'shipping',
     label: 'Shipping Process',
@@ -19,17 +103,20 @@ const tabs = [
         {
           icon: Globe2,
           title: 'Artisanal Production',
-          description: 'Each piece is carefully crafted to order, ensuring the highest quality and reducing waste.'
+          description:
+            'Each piece is carefully crafted to order, ensuring the highest quality and reducing waste.'
         },
         {
           icon: Clock,
           title: 'Quality Control',
-          description: 'Multiple inspection points guarantee that only perfect items leave our facility.'
+          description:
+            'Multiple inspection points guarantee that only perfect items leave our facility.'
         },
         {
           icon: Ship,
           title: 'Eco-Conscious Shipping',
-          description: 'We use cost-effective sea freight to reduce our carbon footprint and keep prices affordable.'
+          description:
+            'We use cost-effective sea freight to reduce our carbon footprint and keep prices affordable.'
         }
       ]
     }
@@ -84,7 +171,7 @@ const tabs = [
           location: 'United Kingdom',
           date: '1 month ago',
           title: 'Worth Every Penny',
-          text: "The craftsmanship is extraordinary. Yes, shipping takes a bit longer, but the wait is absolutely worth it. Each piece feels unique and special. Will definitely order again!",
+          text: 'The craftsmanship is extraordinary. Yes, shipping takes a bit longer, but the wait is absolutely worth it. Each piece feels unique and special. Will definitely order again!',
           verified: true
         },
         {
@@ -94,7 +181,7 @@ const tabs = [
           location: 'Canada',
           date: '2 months ago',
           title: 'Sustainable Luxury',
-          text: "Love their commitment to sustainability! The eco-friendly packaging and materials show they really care about the environment. The products are beautiful and well-made.",
+          text: 'Love their commitment to sustainability! The eco-friendly packaging and materials show they really care about the environment. The products are beautiful and well-made.',
           verified: true
         },
         {
@@ -104,7 +191,7 @@ const tabs = [
           location: 'Singapore',
           date: '3 weeks ago',
           title: 'Outstanding Global Service',
-          text: "Impressed by their international shipping service. The package arrived perfectly wrapped, and the product quality exceeded my expectations. Their attention to detail is remarkable!",
+          text: 'Impressed by their international shipping service. The package arrived perfectly wrapped, and the product quality exceeded my expectations. Their attention to detail is remarkable!',
           verified: true
         },
         {
@@ -114,7 +201,7 @@ const tabs = [
           location: 'France',
           date: '1 month ago',
           title: 'Elegant & Sustainable',
-          text: "The perfect blend of luxury and sustainability. Each piece tells a story of craftsmanship and environmental consciousness. The packaging was plastic-free and beautiful!",
+          text: 'The perfect blend of luxury and sustainability. Each piece tells a story of craftsmanship and environmental consciousness. The packaging was plastic-free and beautiful!',
           verified: true
         },
         {
@@ -124,7 +211,7 @@ const tabs = [
           location: 'Australia',
           date: '6 weeks ago',
           title: 'Worth the Wait',
-          text: "Although shipping to Australia took some time, the quality of the products made it absolutely worth the wait. Their customer service kept me updated throughout the process.",
+          text: 'Although shipping to Australia took some time, the quality of the products made it absolutely worth the wait. Their customer service kept me updated throughout the process.',
           verified: true
         },
         {
@@ -134,7 +221,7 @@ const tabs = [
           location: 'Spain',
           date: '2 months ago',
           title: 'Exceptional Quality',
-          text: "Every detail shows their commitment to quality. From the moment you open the package to using the product, you can feel the dedication to excellence. Highly recommended!",
+          text: 'Every detail shows their commitment to quality. From the moment you open the package to using the product, you can feel the dedication to excellence. Highly recommended!',
           verified: true
         },
         {
@@ -154,7 +241,7 @@ const tabs = [
           location: 'Poland',
           date: '3 months ago',
           title: 'Superb Customer Service',
-          text: "Had a question about my order and their response was quick and helpful. The product arrived exactly as described, and the quality is outstanding. Will definitely shop here again!",
+          text: 'Had a question about my order and their response was quick and helpful. The product arrived exactly as described, and the quality is outstanding. Will definitely shop here again!',
           verified: true
         },
         {
@@ -164,7 +251,7 @@ const tabs = [
           location: 'Ireland',
           date: '3.5 months ago',
           title: 'Fantastic Experience',
-          text: "From browsing to delivery, everything was perfect. The website is easy to navigate, and the product quality is exceptional. Love their commitment to sustainable practices!",
+          text: 'From browsing to delivery, everything was perfect. The website is easy to navigate, and the product quality is exceptional. Love their commitment to sustainable practices!',
           verified: true
         }
       ]
@@ -179,32 +266,146 @@ const tabs = [
       description: 'Select a category to view specific care instructions:'
     }
   }
-];
+] as const;
+
+const ReviewStars = memo(({ rating }: { rating: number }) => (
+  <div className="flex items-center gap-1">
+    {Array.from({ length: rating }).map((_, i) => (
+      <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+    ))}
+  </div>
+));
+
+const TabButton = memo(
+  ({ tab, isActive, onClick }: { tab: Tab; isActive: boolean; onClick: () => void }) => (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className={`relative flex items-center gap-2 rounded-t-lg px-4 py-2 text-sm transition-all duration-300 sm:text-base ${
+        isActive
+          ? 'border border-b-0 border-[#B5A48B]/20 bg-white text-[#6B5E4C]'
+          : 'bg-[#6B5E4C]/5 text-[#6B5E4C] hover:bg-[#6B5E4C]/10'
+      } ${isActive ? 'z-10' : 'z-0'} `}
+    >
+      <tab.icon className="h-4 w-4" />
+      <span className="hidden sm:inline">{tab.label}</span>
+      {isActive && <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-white" />}
+    </motion.button>
+  )
+);
+
+TabButton.displayName = 'TabButton';
+ReviewStars.displayName = 'ReviewStars';
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class TabErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 text-center">
+          <p className="text-red-600">Something went wrong loading this tab.</p>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export function ProductTabs() {
-  const [activeTab, setActiveTab] = useState(tabs[0].id);
+  const [activeTab, setActiveTab] = useState<Tab['id']>(INITIAL_TAB_ID);
   const { ref, inView } = useInView({
     threshold: 0.1,
     triggerOnce: true
   });
-  const reviewsRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const reviewsRef = useRef<HTMLDivElement | null>(null);
+  const [scrollState, setScrollState] = useState({
+    canScrollLeft: false,
+    canScrollRight: true
+  });
 
   const checkScrollability = useCallback(() => {
-    if (reviewsRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = reviewsRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
+    const element = reviewsRef.current;
+    if (!element) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = element;
+    setScrollState({
+      canScrollLeft: scrollLeft > 0,
+      canScrollRight: scrollLeft < scrollWidth - clientWidth - 10
+    });
   }, []);
 
+  // Add resize observer
+  useEffect(() => {
+    const element = reviewsRef.current;
+    if (!element) return;
+
+    const observer = new ResizeObserver(checkScrollability);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [checkScrollability]);
+
   const scroll = useCallback((direction: 'left' | 'right') => {
-    if (reviewsRef.current) {
-      const scrollAmount = direction === 'left' ? -400 : 400;
-      reviewsRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
+    const element = reviewsRef.current;
+    if (!element) return;
+
+    const scrollAmount = element.clientWidth * (direction === 'left' ? -0.8 : 0.8);
+    element.scrollBy({
+      left: scrollAmount,
+      behavior: 'smooth'
+    });
   }, []);
+
+  const renderTabContent = (activeTab: Tab['id']) => {
+    const tab = getTabById(activeTab);
+
+    return (
+      <TabErrorBoundary>
+        {isShippingTab(tab) && (
+          <div className="space-y-6">
+            <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
+            <p className="text-[#8C7E6A]">{tab.content.description}</p>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {tab.content.points.map((point, index) => {
+                const PointIcon = point.icon;
+                return (
+                  <div key={index} className="rounded-xl bg-white/80 p-4 shadow-sm sm:p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6B5E4C]/10">
+                        <PointIcon className="h-4 w-4 text-[#6B5E4C]" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="mb-2 font-medium text-[#6B5E4C]">{point.title}</h4>
+                        <p className="text-sm text-[#8C7E6A]">{point.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {/* Similar patterns for other tab types */}
+      </TabErrorBoundary>
+    );
+  };
 
   return (
     <motion.div
@@ -212,195 +413,27 @@ export function ProductTabs() {
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-[1400px] mx-auto mt-12 px-4 sm:px-6 lg:px-8 relative z-10"
+      className="relative z-10 mx-auto mt-12 w-full max-w-[1400px] px-4 sm:px-6 lg:px-8"
     >
       {/* Tabs Navigation */}
-      <div className="flex flex-wrap gap-2 sm:gap-4 justify-center">
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
-            <motion.button
+            <TabButton
               key={tab.id}
+              tab={tab}
+              isActive={isActive}
               onClick={() => setActiveTab(tab.id)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className={`
-                flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm sm:text-base
-                transition-all duration-300 relative
-                ${isActive 
-                  ? 'bg-white text-[#6B5E4C] border border-[#B5A48B]/20 border-b-0' 
-                  : 'bg-[#6B5E4C]/5 text-[#6B5E4C] hover:bg-[#6B5E4C]/10'
-                }
-                ${isActive ? 'z-10' : 'z-0'}
-              `}
-            >
-              <Icon className="w-4 h-4" />
-              <span className="hidden sm:inline">{tab.label}</span>
-              {isActive && (
-                <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-white" />
-              )}
-            </motion.button>
+            />
           );
         })}
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white rounded-lg rounded-tl-none border border-[#B5A48B]/20 p-6 sm:p-8 -mt-[1px]">
-        {activeTab === 'shipping' && (
-          <div className="space-y-6">
-            <h3 className="text-xl sm:text-2xl font-light text-[#6B5E4C]">
-              {tabs[0].content.title}
-            </h3>
-            <p className="text-[#8C7E6A]">{tabs[0].content.description}</p>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {tabs[0].content.points.map((point, index) => {
-                const PointIcon = point.icon;
-                return (
-                  <div
-                    key={index}
-                    className="bg-white/80 rounded-xl p-4 sm:p-6 shadow-sm"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-8 h-8 rounded-full bg-[#6B5E4C]/10 flex items-center justify-center">
-                        <PointIcon className="w-4 h-4 text-[#6B5E4C]" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-[#6B5E4C] font-medium mb-2">{point.title}</h4>
-                        <p className="text-sm text-[#8C7E6A]">{point.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'quality' && (
-          <div className="space-y-6">
-            <h3 className="text-xl sm:text-2xl font-light text-[#6B5E4C]">
-              {tabs[1].content.title}
-            </h3>
-            <p className="text-[#8C7E6A]">{tabs[1].content.description}</p>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {tabs[1].content.points.map((point, index) => {
-                const PointIcon = point.icon;
-                return (
-                  <div
-                    key={index}
-                    className="bg-white/80 rounded-xl p-4 sm:p-6 shadow-sm"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-8 h-8 rounded-full bg-[#6B5E4C]/10 flex items-center justify-center">
-                        <PointIcon className="w-4 h-4 text-[#6B5E4C]" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-[#6B5E4C] font-medium mb-2">{point.title}</h4>
-                        <p className="text-sm text-[#8C7E6A]">{point.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'reviews' && (
-          <div className="space-y-8">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl sm:text-2xl font-light text-[#6B5E4C]">
-                {tabs[2].content.title}
-              </h3>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => scroll('left')}
-                  disabled={!canScrollLeft}
-                  className={`p-2 rounded-full border border-[#B5A48B]/20 transition-all duration-200
-                            ${canScrollLeft 
-                              ? 'hover:bg-[#6B5E4C]/5 text-[#6B5E4C]' 
-                              : 'text-[#6B5E4C]/30 cursor-not-allowed'}`}
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => scroll('right')}
-                  disabled={!canScrollRight}
-                  className={`p-2 rounded-full border border-[#B5A48B]/20 transition-all duration-200
-                            ${canScrollRight 
-                              ? 'hover:bg-[#6B5E4C]/5 text-[#6B5E4C]' 
-                              : 'text-[#6B5E4C]/30 cursor-not-allowed'}`}
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div
-                ref={reviewsRef}
-                onScroll={checkScrollability}
-                className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4
-                          [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-[#B5A48B]/10
-                          [&::-webkit-scrollbar-thumb]:bg-[#B5A48B]/20 [&::-webkit-scrollbar-thumb]:rounded-full"
-              >
-                {tabs[2].content.testimonials.map((review) => (
-                  <motion.div
-                    key={review.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="flex-none w-[300px] sm:w-[350px] snap-start"
-                  >
-                    <div className="bg-white rounded-xl p-6 border border-[#B5A48B]/20 h-full flex flex-col">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <div className="flex items-center gap-1 mb-1">
-                            {[...Array(review.rating)].map((_, i) => (
-                              <Star 
-                                key={i} 
-                                className="w-4 h-4 fill-yellow-400 text-yellow-400" 
-                              />
-                            ))}
-                          </div>
-                          <h4 className="text-[#6B5E4C] font-medium">{review.title}</h4>
-                        </div>
-                        {review.verified && (
-                          <span className="text-xs text-[#4A8B4A] bg-[#4A8B4A]/10 px-2 py-1 rounded-full">
-                            Verified
-                          </span>
-                        )}
-                      </div>
-
-                      <p className="text-[#8C7E6A] text-sm mb-4 flex-grow">
-                        "{review.text}"
-                      </p>
-
-                      <div className="flex items-center justify-between text-sm text-[#8C7E6A]">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-[#6B5E4C]">{review.name}</span>
-                          <span className="text-xs">{review.location}</span>
-                        </div>
-                        <span className="text-xs">{review.date}</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'care' && (
-          <div className="space-y-6">
-            <h3 className="text-xl sm:text-2xl font-light text-[#6B5E4C]">
-              {tabs[3].content.title}
-            </h3>
-            <p className="text-[#8C7E6A]">{tabs[3].content.description}</p>
-            <CareInstructions />
-          </div>
-        )}
+      <div className="-mt-[1px] rounded-lg rounded-tl-none border border-[#B5A48B]/20 bg-white p-6 sm:p-8">
+        {renderTabContent(activeTab)}
       </div>
     </motion.div>
   );

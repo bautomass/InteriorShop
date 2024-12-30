@@ -77,7 +77,7 @@ export type Page = {
 export type Product = Omit<ShopifyProduct, 'variants' | 'images'> & {
   variants: ProductVariant[];
   images: Image[];
-  createdAt: string;
+  createdAt?: string;
 };
 
 export type ProductOption = {
@@ -96,6 +96,7 @@ export type ProductVariant = {
   }[];
   price: Money;
   compareAtPrice?: Money | null;
+  sku: string | null;
 };
 
 export type SEO = {
@@ -123,7 +124,6 @@ export type ShopifyCollection = {
   updatedAt: string;
 };
 
-
 export type ShopifyProduct = {
   id: string;
   handle: string;
@@ -147,7 +147,6 @@ export type ShopifyProduct = {
   tags: string[];
   updatedAt: string;
 };
-
 
 export type ShopifyCartOperation = {
   data: {
@@ -230,6 +229,10 @@ export type ShopifyCollectionProductsOperation = {
 export type ShopifyCollectionsOperation = {
   data: {
     collections: Connection<ShopifyCollection>;
+  };
+  variables?: {
+    // Make variables optional
+    query?: string;
   };
 };
 

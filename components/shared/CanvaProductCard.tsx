@@ -15,6 +15,28 @@ interface ImageModalProps {
   product: Product;
 }
 
+// Add new type definitions
+type SafeImageProps = {
+  src: string;
+  alt: string;
+  fill?: boolean;
+  className?: string;
+  sizes?: string;
+  quality?: number;
+  priority?: boolean;
+  loading?: "lazy" | "eager";
+  onLoadingComplete?: () => void;
+};
+
+interface ExtendedProduct extends Product {
+  productType?: string;
+}
+
+const SafeImage = ({ src, alt, ...props }: SafeImageProps) => {
+  if (!src) return null;
+  return <Image src={src} alt={alt} {...props} />;
+};
+
 const ImageModal = ({ images, onClose, product }: ImageModalProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -38,11 +60,16 @@ const ImageModal = ({ images, onClose, product }: ImageModalProps) => {
 
   // Preload adjacent images for smoother transitions
   useEffect(() => {
+    if (!images.length) return;
+
     const preloadImages = () => {
       const nextIdx = (currentIndex + 1) % images.length;
       const prevIdx = (currentIndex - 1 + images.length) % images.length;
       
-      [images[prevIdx], images[nextIdx]].forEach(src => {
+      const imagesToPreload = [images[prevIdx], images[nextIdx]].filter(Boolean);
+      
+      imagesToPreload.forEach(src => {
+        if (!src) return;
         const img = document.createElement('img');
         img.src = src;
       });
@@ -53,18 +80,26 @@ const ImageModal = ({ images, onClose, product }: ImageModalProps) => {
 
   // Handle keyboard navigation with debounce
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: NodeJS.Timeout | undefined;
     
     const handleKeyDown = (e: KeyboardEvent) => {
       if (timeoutId) return; // Debounce
 
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowRight') handleNext();
-      if (e.key === 'ArrowLeft') handlePrev();
+      switch (e.key) {
+        case 'Escape':
+          onClose();
+          break;
+        case 'ArrowRight':
+          handleNext();
+          break;
+        case 'ArrowLeft':
+          handlePrev();
+          break;
+      }
 
       timeoutId = setTimeout(() => {
-        timeoutId = undefined!;
-      }, 150); // Debounce time
+        timeoutId = undefined;
+      }, 150);
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -78,43 +113,48 @@ const ImageModal = ({ images, onClose, product }: ImageModalProps) => {
   }, [onClose]);
 
   const handleImageTransition = useCallback((newIndex: number, newDirection: number) => {
-    if (isTransitioning) return;
+    if (isTransitioning || !slideContainerRef.current) return;
     
     setIsTransitioning(true);
     setDirection(newDirection);
 
-    // Create and position the next image
-    if (slideContainerRef.current) {
-      const container = slideContainerRef.current;
-      container.style.transform = `translateX(${newDirection > 0 ? '100%' : '-100%'})`;
-      
-      // Trigger the transition after a frame
-      requestAnimationFrame(() => {
-        container.style.transition = 'transform 400ms cubic-bezier(0.4, 0, 0.2, 1)';
-        container.style.transform = 'translateX(0)';
-      });
-    }
+    const container = slideContainerRef.current;
+    container.style.transform = `translateX(${newDirection > 0 ? '100%' : '-100%'})`;
+    
+    requestAnimationFrame(() => {
+      container.style.transition = 'transform 400ms cubic-bezier(0.4, 0, 0.2, 1)';
+      container.style.transform = 'translateX(0)';
+    });
 
     setCurrentIndex(newIndex);
     
-    // Reset transition state after animation
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setIsTransitioning(false);
       if (slideContainerRef.current) {
         slideContainerRef.current.style.transition = 'none';
       }
     }, 400);
+
+    return () => clearTimeout(timer);
   }, [isTransitioning]);
 
   const handleNext = useCallback(() => {
+    if (images.length <= 1) return;
     const newIndex = (currentIndex + 1) % images.length;
     handleImageTransition(newIndex, 1);
   }, [currentIndex, images.length, handleImageTransition]);
 
   const handlePrev = useCallback(() => {
+    if (images.length <= 1) return;
     const newIndex = (currentIndex - 1 + images.length) % images.length;
     handleImageTransition(newIndex, -1);
   }, [currentIndex, images.length, handleImageTransition]);
+
+  const handleThumbnailClick = useCallback((index: number) => {
+    if (index === currentIndex || isTransitioning) return;
+    const direction = index > currentIndex ? 1 : -1;
+    handleImageTransition(index, direction);
+  }, [currentIndex, isTransitioning, handleImageTransition]);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-sm
@@ -133,8 +173,8 @@ const ImageModal = ({ images, onClose, product }: ImageModalProps) => {
               transform: 'translateX(0)',
             }}
           >
-            <Image
-              src={images[currentIndex]}
+            <SafeImage
+              src={images[currentIndex] ?? ''}
               alt={`Gallery image ${currentIndex + 1}`}
               fill
               className={cn(
@@ -286,246 +326,228 @@ interface Review {
   verified: boolean;
 }
 
-const generateProductReviews = (product: Product): ReviewData => {
+// Define review templates with proper typing
+interface ReviewTemplates {
+  abstract: readonly string[];
+  landscape: readonly string[];
+  original: readonly string[];
+  floral: readonly string[];
+  modern: readonly string[];
+  seascape: readonly string[];
+  cityscape: readonly string[];
+  abstract_modern: readonly string[];
+  impressionist: readonly string[];
+}
+
+const reviewTemplates: ReviewTemplates = {
+  abstract: [
+    'Stunning colors that completely transformed my living room space',
+    'Bold and energetic piece - exactly what my office needed',
+    'Modern masterpiece, creates the perfect focal point in our home',
+    'Vibrant and eye-catching. Everyone asks about this piece!',
+    'Adds such perfect energy to my space. Really happy with this purchase',
+    'Absolute conversation starter. The colors are even better in person',
+    'Better than expected - the colors really pop against my wall',
+    'Sophisticated and bold. Perfect size for my dining room',
+    'Amazing abstract composition that ties the whole room together',
+    'Perfect statement piece for our entryway. Very impressed',
+    'Dramatic and beautiful. The quality is outstanding',
+    'Love how this expresses such powerful artistic emotion',
+    'Exactly what I wanted for my new apartment',
+    'High-quality abstract work with incredible depth and movement',
+    'Completely transforms the room. Worth every penny'
+  ],
+  landscape: [
+    'Peaceful and serene view that brings calm to our bedroom',
+    'Colors are true to nature and absolutely breathtaking in person',
+    'Brings the outdoors in. Perfect for my mountain home',
+    'Creates such a calming presence in my living room space',
+    'Beautiful natural scene that makes the room feel bigger',
+    'Perfect landscape capture. The light effects are amazing',
+    'Exceptional detail work in every part of this piece',
+    'Makes the room feel larger and more connected to nature',
+    'Like looking through a window to another world',
+    'Stunning vista with incredible depth. Very satisfied customer',
+    'Natural beauty at its finest. Shipping was quick too',
+    'Creates such a relaxing atmosphere in my office',
+    'Rich, vibrant scenery that catches the morning light perfectly',
+    'Perfect perspective and composition. Really well done',
+    'Breathtaking view to enjoy every single day'
+  ],
+  original: [
+    'Can see every brushstroke. The texture is absolutely incredible',
+    'True artistic talent shines through in this beautiful piece',
+    'Worth the investment - this is genuine museum quality',
+    'Unique and beautiful. The colors are even better in person',
+    'Amazing texture and depth that photos cannot capture',
+    'Gallery quality piece that makes a stunning impression',
+    'Exceptional craftsmanship from a clearly talented artist',
+    'One-of-a-kind beauty that exceeded my expectations completely',
+    'Artist\'s skill shines through in every detail. Simply magnificent',
+    'Museum worthy artwork at a reasonable price point',
+    'Incredible original piece with amazing attention to detail',
+    'Love the personal touch and the artist\'s unique style',
+    'Masterfully executed with stunning use of color and form',
+    'Rich in detail and color. A true investment piece',
+    'Outstanding original work that arrived perfectly packaged'
+  ],
+  floral: [
+    'Delicate and beautiful flowers that brighten our entire dining room',
+    'Brings spring year-round to my bedroom wall',
+    'Lovely floral arrangement with such incredible detail work',
+    'Perfect botanical piece for my reading nook. Colors are amazing',
+    'Fresh and vibrant look that works perfectly with our decor',
+    'Garden-inspired beauty that makes me smile every morning',
+    'Elegant flower study with remarkable attention to detail',
+    'Brightens up the room instantly. The colors are so vivid',
+    'Natural grace captured in every petal. Simply stunning',
+    'These flowers never fade! Absolutely beautiful piece',
+    'Like having fresh flowers that last forever. Great investment',
+    'Beautiful botanical art that works in any season',
+    'Cheerful addition to my kitchen. Everyone loves it',
+    'Perfectly captured petals with amazing depth and shadows',
+    'Timeless floral beauty that works with any style'
+  ],
+  modern: [
+    'Clean, contemporary look that defines our living space',
+    'Perfect modern aesthetic for my minimalist apartment',
+    'Sleek and sophisticated with incredible visual impact',
+    'Bold geometric beauty that makes a statement',
+    'Minimalist perfection for my office wall',
+    'Contemporary masterpiece at a reasonable price point',
+    'Stylish modern piece that ties the room together',
+    'Perfect design element for our newly renovated space',
+    'Cutting-edge artwork that feels timeless',
+    'Fresh and innovative take on modern design',
+    'Modern classic feel with outstanding execution',
+    'Architectural beauty that commands attention',
+    'Striking modern work with perfect proportions',
+    'Contemporary elegance that exceeded expectations',
+    'Perfect modern touch for our loft space'
+  ],
+  seascape: [
+    'Ocean vibes are perfect for my coastal-themed room',
+    'Captures water movement beautifully. Almost feels real',
+    'Coastal charm at its best. The colors are perfect',
+    'Like a window to the sea in our beach house',
+    'Peaceful ocean scene that helps me relax',
+    'Beautiful maritime piece with incredible light effects',
+    'Serene water views that transport you instantly',
+    'Perfect beach house art. The quality is outstanding',
+    'Coastal beauty captured in stunning detail',
+    'Ocean colors are stunning in morning light'
+  ],
+  cityscape: [
+    'Urban energy captured perfectly in this stunning piece',
+    'City lights sparkle like real diamonds on the wall',
+    'Metropolitan beauty that makes a bold statement',
+    'Perfect city perspective for my downtown apartment',
+    'Urban sophistication with incredible detail',
+    'Captures city life perfectly in every detail',
+    'Amazing architectural detail in every building',
+    'City rhythm in art form. Simply magnificent',
+    'Urban landscape mastery at its finest',
+    'Metropolitan elegance for my office wall'
+  ],
+  abstract_modern: [
+    'Perfect blend of color and form. Makes a statement',
+    'Contemporary masterpiece that transforms our space',
+    'Bold shapes and colors create amazing energy',
+    'Sophisticated abstract piece with perfect balance',
+    'Modern art that speaks to the soul',
+    'Dynamic composition that catches every eye',
+    'Perfect harmony of colors and movement',
+    'Makes such a powerful statement in our home',
+    'Contemporary elegance with a bold twist',
+    'The perfect focal point for any modern space'
+  ],
+  impressionist: [
+    'Light and color dance beautifully in this piece',
+    'Reminds me of Monet\'s garden. Simply beautiful',
+    'Soft, dreamy quality that soothes the soul',
+    'Perfect impressionist style for our home',
+    'Captures light and atmosphere brilliantly',
+    'Beautiful brushwork with amazing depth',
+    'Colors blend together like a dream',
+    'Creates such a peaceful atmosphere',
+    'The technique is absolutely masterful',
+    'Every viewing reveals new details'
+  ]
+} as const;
+
+// Type for the review handling functions
+type ReviewCategory = keyof typeof reviewTemplates;
+type ReviewTemplate = typeof reviewTemplates[ReviewCategory];
+type ReviewContent = string;
+
+// Helper function with proper typing
+const getRandomReviews = (pool: ReadonlyArray<ReviewContent>, count: number): ReviewContent[] => {
+  return [...pool]
+    .sort(() => 0.5 - Math.random())
+    .slice(0, count);
+};
+
+const generateProductReviews = (product: ExtendedProduct): ReviewData => {
   const reviewCount = Math.floor(Math.random() * (17 - 4 + 1)) + 4;
   const baseRating = 4.7;
   const maxVariation = 0.3;
   const rating = Math.min(5, baseRating + (Math.random() * maxVariation));
 
-  // Analyze product description for contextual reviews
   const description = product.description?.toLowerCase() || '';
   const title = product.title?.toLowerCase() || '';
   
-  const reviews: Review[] = [];
-  const names = ['Sarah M.', 'Michael R.', 'Emma L.', 'David K.', 'Jennifer W.', 'Robert P.', 'Lisa T.', 'Amy H.', 'John B.', 'Rachel S.'];
-  const months = ['January', 'February', 'March', 'April', 'May', 'June'];
-
   // Analyze product characteristics
   const isAbstract = description.includes('abstract') || title.includes('abstract');
   const isLandscape = description.includes('landscape') || title.includes('landscape');
   const isOriginal = description.includes('original') || description.includes('hand-painted');
   const isFloral = description.includes('floral') || description.includes('flower') || title.includes('flower');
-  const isModern = description.includes('modern') || description.includes('modern');
-  const isImpressionist = description.includes('impressionist') || description.includes('impressionist');
-  const isSeascape = description.includes('sea') || description.includes('ocean') || description.includes('sea');
-  const isCityscape = description.includes('city') || description.includes('urban') || description.includes('city');
+  const isModern = description.includes('modern');
+  const isImpressionist = description.includes('impressionist');
+  const isSeascape = description.includes('sea') || description.includes('ocean');
+  const isCityscape = description.includes('city') || description.includes('urban');
   const isAbstractModern = (isAbstract && isModern) || description.includes('contemporary');
+
+  // Build review pool with proper type handling
+  let reviewPool: ReviewContent[] = [];
   
-  // Large pool of short, varied reviews
-  const reviewTemplates = {
-    abstract: [
-      'Stunning colors that completely transformed my living room space',
-      'Bold and energetic piece - exactly what my office needed',
-      'Modern masterpiece, creates the perfect focal point in our home',
-      'Vibrant and eye-catching. Everyone asks about this piece!',
-      'Adds such perfect energy to my space. Really happy with this purchase',
-      'Absolute conversation starter. The colors are even better in person',
-      'Better than expected - the colors really pop against my wall',
-      'Sophisticated and bold. Perfect size for my dining room',
-      'Amazing abstract composition that ties the whole room together',
-      'Perfect statement piece for our entryway. Very impressed',
-      'Dramatic and beautiful. The quality is outstanding',
-      'Love how this expresses such powerful artistic emotion',
-      'Exactly what I wanted for my new apartment',
-      'High-quality abstract work with incredible depth and movement',
-      'Completely transforms the room. Worth every penny'
-    ],
-    landscape: [
-      'Peaceful and serene view that brings calm to our bedroom',
-      'Colors are true to nature and absolutely breathtaking in person',
-      'Brings the outdoors in. Perfect for my mountain home',
-      'Creates such a calming presence in my living room space',
-      'Beautiful natural scene that makes the room feel bigger',
-      'Perfect landscape capture. The light effects are amazing',
-      'Exceptional detail work in every part of this piece',
-      'Makes the room feel larger and more connected to nature',
-      'Like looking through a window to another world',
-      'Stunning vista with incredible depth. Very satisfied customer',
-      'Natural beauty at its finest. Shipping was quick too',
-      'Creates such a relaxing atmosphere in my office',
-      'Rich, vibrant scenery that catches the morning light perfectly',
-      'Perfect perspective and composition. Really well done',
-      'Breathtaking view to enjoy every single day'
-    ],
-    original: [
-      'Can see every brushstroke. The texture is absolutely incredible',
-      'True artistic talent shines through in this beautiful piece',
-      'Worth the investment - this is genuine museum quality',
-      'Unique and beautiful. The colors are even better in person',
-      'Amazing texture and depth that photos cannot capture',
-      'Gallery quality piece that makes a stunning impression',
-      'Exceptional craftsmanship from a clearly talented artist',
-      'One-of-a-kind beauty that exceeded my expectations completely',
-      'Artist\'s skill shines through in every detail. Simply magnificent',
-      'Museum worthy artwork at a reasonable price point',
-      'Incredible original piece with amazing attention to detail',
-      'Love the personal touch and the artist\'s unique style',
-      'Masterfully executed with stunning use of color and form',
-      'Rich in detail and color. A true investment piece',
-      'Outstanding original work that arrived perfectly packaged'
-    ],
-    floral: [
-      'Delicate and beautiful flowers that brighten our entire dining room',
-      'Brings spring year-round to my bedroom wall',
-      'Lovely floral arrangement with such incredible detail work',
-      'Perfect botanical piece for my reading nook. Colors are amazing',
-      'Fresh and vibrant look that works perfectly with our decor',
-      'Garden-inspired beauty that makes me smile every morning',
-      'Elegant flower study with remarkable attention to detail',
-      'Brightens up the room instantly. The colors are so vivid',
-      'Natural grace captured in every petal. Simply stunning',
-      'These flowers never fade! Absolutely beautiful piece',
-      'Like having fresh flowers that last forever. Great investment',
-      'Beautiful botanical art that works in any season',
-      'Cheerful addition to my kitchen. Everyone loves it',
-      'Perfectly captured petals with amazing depth and shadows',
-      'Timeless floral beauty that works with any style',
-      'The detail in each flower is simply breathtaking',
-      'Brings such life and energy to my office space',
-      'Gorgeous floral piece that looks different throughout the day',
-      'Perfect balance of colors and composition. Very pleased',
-      'Such a calming presence in our guest room'
-    ],
-    modern: [
-      'Clean, contemporary look that defines our living space',
-      'Perfect modern aesthetic for my minimalist apartment',
-      'Sleek and sophisticated with incredible visual impact',
-      'Bold geometric beauty that makes a statement',
-      'Minimalist perfection for my office wall',
-      'Contemporary masterpiece at a reasonable price point',
-      'Stylish modern piece that ties the room together',
-      'Perfect design element for our newly renovated space',
-      'Cutting-edge artwork that feels timeless',
-      'Fresh and innovative take on modern design',
-      'Modern classic feel with outstanding execution',
-      'Architectural beauty that commands attention',
-      'Striking modern work with perfect proportions',
-      'Contemporary elegance that exceeded expectations',
-      'Perfect modern touch for our loft space',
-      'Bold statement piece that everyone notices',
-      'Clean lines and perfect composition. Love it',
-      'Sophisticated modern art at its finest',
-      'Exactly the contemporary piece I was looking for',
-      'Makes such an impact in our modern home'
-    ],
-    seascape: [
-      'Ocean vibes are perfect for my coastal-themed room',
-      'Captures water movement beautifully. Almost feels real',
-      'Coastal charm at its best. The colors are perfect',
-      'Like a window to the sea in our beach house',
-      'Peaceful ocean scene that helps me relax',
-      'Beautiful maritime piece with incredible light effects',
-      'Serene water views that transport you instantly',
-      'Perfect beach house art. The quality is outstanding',
-      'Coastal beauty captured in stunning detail',
-      'Ocean colors are stunning in morning light',
-      'Waves look so real you can almost hear them',
-      'Maritime masterpiece for our vacation home',
-      'Beachy perfection with amazing depth',
-      'Seaside serenity captured beautifully',
-      'Beautiful water motion that mesmerizes',
-      'The way light plays on the water is incredible',
-      'Brings the beach feeling right into our home',
-      'Perfect capture of ocean movement and light',
-      'Makes me feel like I\'m at the beach every day',
-      'Stunning seascape with remarkable detail'
-    ],
-    cityscape: [
-      'Urban energy captured perfectly in this stunning piece',
-      'City lights sparkle like real diamonds on the wall',
-      'Metropolitan beauty that makes a bold statement',
-      'Perfect city perspective for my downtown apartment',
-      'Urban sophistication with incredible detail',
-      'Captures city life perfectly in every detail',
-      'Amazing architectural detail in every building',
-      'City rhythm in art form. Simply magnificent',
-      'Urban landscape mastery at its finest',
-      'Metropolitan elegance for my office wall',
-      'City pulse captured in stunning clarity',
-      'Perfect urban scene with amazing depth',
-      'Skyline perfection with remarkable detail',
-      'City energy on canvas. Absolutely love it',
-      'Urban sophistication meets artistic excellence',
-      'Captures the city\'s spirit beautifully',
-      'Dynamic city view that changes with the light',
-      'Every building tells its own story. Remarkable',
-      'Brings big city energy to our space',
-      'The detail in the architecture is incredible'
-    ],
-    abstract_modern: [
-      'Perfect blend of color and form. Makes a statement',
-      'Contemporary masterpiece that transforms our space',
-      'Bold shapes and colors create amazing energy',
-      'Sophisticated abstract piece with perfect balance',
-      'Modern art that speaks to the soul',
-      'Dynamic composition that catches every eye',
-      'Perfect harmony of colors and movement',
-      'Makes such a powerful statement in our home',
-      'Contemporary elegance with a bold twist',
-      'The perfect focal point for any modern space',
-      'Absolutely stunning piece that grows on you',
-      'Creates such an interesting visual dynamic',
-      'Love how it changes throughout the day',
-      'Perfect abstract expression of movement',
-      'Brings such life to our minimal space'
-    ],
-    impressionist: [
-      'Light and color dance beautifully in this piece',
-      'Reminds me of Monet\'s garden. Simply beautiful',
-      'Soft, dreamy quality that soothes the soul',
-      'Perfect impressionist style for our home',
-      'Captures light and atmosphere brilliantly',
-      'Beautiful brushwork with amazing depth',
-      'Colors blend together like a dream',
-      'Creates such a peaceful atmosphere',
-      'The technique is absolutely masterful',
-      'Every viewing reveals new details',
-      'Stunning play of light and shadow',
-      'Brings such warmth to our living space',
-      'Perfect balance of color and technique',
-      'Like stepping into a beautiful dream',
-      'The artist really captured the essence'
-    ]
-  };
+  if (isAbstract) reviewPool = [...reviewPool, ...reviewTemplates.abstract];
+  if (isLandscape) reviewPool = [...reviewPool, ...reviewTemplates.landscape];
+  if (isOriginal) reviewPool = [...reviewPool, ...reviewTemplates.original];
+  if (isFloral) reviewPool = [...reviewPool, ...reviewTemplates.floral];
+  if (isModern) reviewPool = [...reviewPool, ...reviewTemplates.modern];
+  if (isSeascape) reviewPool = [...reviewPool, ...reviewTemplates.seascape];
+  if (isCityscape) reviewPool = [...reviewPool, ...reviewTemplates.cityscape];
+  if (isAbstractModern) reviewPool = [...reviewPool, ...reviewTemplates.abstract_modern];
+  if (isImpressionist) reviewPool = [...reviewPool, ...reviewTemplates.impressionist];
 
-  // Helper function to get random items without duplicates
-  const getRandomReviews = (pool: string[], count: number) => {
-    const shuffled = [...pool].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
-  };
+  // Default to abstract if no specific category matched
+  if (reviewPool.length === 0) {
+    reviewPool = [...reviewTemplates.abstract];
+  }
 
-  // Select appropriate review pool and generate unique reviews
-  let reviewPool: string[] = [];
-  if (isAbstract) reviewPool = reviewPool.concat(reviewTemplates.abstract);
-  if (isLandscape) reviewPool = reviewPool.concat(reviewTemplates.landscape);
-  if (isOriginal) reviewPool = reviewPool.concat(reviewTemplates.original);
-  if (isFloral) reviewPool = reviewPool.concat(reviewTemplates.floral);
-  if (isModern) reviewPool = reviewPool.concat(reviewTemplates.modern);
-  if (isSeascape) reviewPool = reviewPool.concat(reviewTemplates.seascape);
-  if (isCityscape) reviewPool = reviewPool.concat(reviewTemplates.cityscape);
-  if (isAbstractModern) reviewPool = reviewPool.concat(reviewTemplates.abstract_modern);
-  if (isImpressionist) reviewPool = reviewPool.concat(reviewTemplates.impressionist);
-
-  // If no specific category matched, use abstract as default
-  if (reviewPool.length === 0) reviewPool = reviewTemplates.abstract;
+  const reviews: Review[] = [];
+  const names = ['Sarah M.', 'Michael R.', 'Emma L.', 'David K.', 'Jennifer W.', 'Robert P.', 'Lisa T.', 'Amy H.', 'John B.', 'Rachel S.'] as const;
+  const months = ['January', 'February', 'March', 'April', 'May', 'June'] as const;
 
   // Get unique reviews
   const selectedReviews = getRandomReviews(reviewPool, reviewCount);
 
-  // Generate final reviews
+  // Generate reviews
   for (let i = 0; i < reviewCount; i++) {
     const reviewRating = Math.min(5, baseRating + (Math.random() * maxVariation));
-    const month = months[Math.floor(Math.random() * months.length)];
+    const month = months[Math.floor(Math.random() * months.length)]!;
     const day = Math.floor(Math.random() * 28) + 1;
     const year = 2024;
+    const author = names[Math.floor(Math.random() * names.length)]!;
+    const content = selectedReviews[i] ?? 'Great product!';
 
     reviews.push({
       id: `review-${i}`,
-      author: names[Math.floor(Math.random() * names.length)],
+      author,
       rating: reviewRating,
       date: `${month} ${day}, ${year}`,
       title: 'Verified Purchase',
-      content: selectedReviews[i],
+      content,
       verified: Math.random() > 0.2
     });
   }
@@ -731,21 +753,14 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
             onClick={handleZoomClick}
           >
             <div className="absolute inset-0 transition-all duration-300 group-hover:scale-105">
-              {images[0] ? (
-                <Image
-                  src={images[0]}
-                  alt={product.title || 'Product image'}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 25vw"
-                  className="object-cover rounded-t-sm"
-                  loading="lazy"
-                  priority={isPriority}
-                />
-              ) : (
-                <div className="w-full h-full bg-primary-100 dark:bg-primary-800 flex items-center justify-center">
-                  <span className="text-primary-400 dark:text-primary-500">No image available</span>
-                </div>
-              )}
+              <SafeImage
+                src={images[0] ?? ''}
+                alt={product.title || 'Product image'}
+                fill
+                className="object-cover rounded-t-sm"
+                loading="lazy"
+                priority={isPriority}
+              />
             </div>
 
             {/* Hover overlay with zoom button - Fixed visibility */}
@@ -956,15 +971,15 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
 
 ProductCard.displayName = 'ProductCard'
 
-const determineProductCategory = (product: Product): string => {
-  const title = product.title?.toLowerCase() || ''
-  const type = product.productType?.toLowerCase() || ''
+const determineProductCategory = (product: ExtendedProduct): string => {
+  const title = product.title?.toLowerCase() || '';
+  const type = product.productType?.toLowerCase() || '';
   const tags = Array.isArray(product.tags) 
     ? product.tags.map(tag => tag.toLowerCase()) 
-    : []
-  const description = product.description?.toLowerCase() || ''
+    : [];
+  const description = product.description?.toLowerCase() || '';
 
-  const searchText = `${title} ${type} ${tags.join(' ')} ${description}`
+  const searchText = `${title} ${type} ${tags.join(' ')} ${description}`;
 
   // Material type detection
   const getMaterialType = (): string => {

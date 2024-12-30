@@ -3,6 +3,16 @@ import { getBlogQuery } from '@/lib/shopify/queries/blog';
 import { shopifyFetch } from '@/lib/utils';
 import { NextResponse } from 'next/server';
 
+interface ShopifyBlogResponse {
+  data: {
+    blog: {
+      articles: {
+        edges: any[];
+      };
+    };
+  };
+}
+
 export async function GET() {
   try {
     const response = await shopifyFetch({
@@ -14,12 +24,12 @@ export async function GET() {
       cache: 'force-cache'
     });
 
-    return NextResponse.json({ articles: response.body.data.blog.articles.edges });
+    // Type assertion just for the response.body
+    const responseBody = response.body as ShopifyBlogResponse;
+
+    return NextResponse.json({ articles: responseBody.data.blog.articles.edges });
   } catch (error) {
     console.error('Error in blog route:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch blog articles' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch blog articles' }, { status: 500 });
   }
 }

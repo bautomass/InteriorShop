@@ -2,11 +2,12 @@
 'use client';
 
 import { useDebounce } from '@/hooks/use-debounce';
-import { Collection } from '@/lib/shopify/queries/collection';
+import type { ProductVariant, Product as ShopifyProduct } from '@/lib/shopify/types';
+import type { GiftProduct } from '@/types/gift-builder';
 import { motion } from 'framer-motion';
 import { Check, Minus, Package, Plus, Search } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useGiftBuilder } from './context';
 
 interface Collection {
@@ -14,16 +15,22 @@ interface Collection {
   title: string;
 }
 
-interface Product {
+type Product = {
   id: string;
+  variantId: string;
   title: string;
   price: number;
   image?: {
     url: string;
     altText: string;
   };
-  collection: Collection;
-}
+  collection: {
+    id: string;
+    title: string;
+  };
+  variant: ProductVariant;
+  originalProduct: ShopifyProduct;
+};
 
 export function ProductSelector() {
   const { state, dispatch } = useGiftBuilder();
@@ -79,7 +86,18 @@ export function ProductSelector() {
       if (!state.selectedBox) return;
       if (state.selectedProducts.length >= state.selectedBox.maxProducts) return;
 
-      dispatch({ type: 'ADD_PRODUCT', payload: product });
+      const giftProduct: GiftProduct = {
+        id: product.id,
+        variantId: product.variantId,
+        title: product.title,
+        price: product.price,
+        image: product.image,
+        collection: product.collection,
+        variant: product.variant,
+        originalProduct: product.originalProduct
+      };
+
+      dispatch({ type: 'ADD_PRODUCT', payload: giftProduct });
     },
     [dispatch, state.selectedBox, state.selectedProducts.length]
   );

@@ -361,13 +361,13 @@ export async function getMenu(handle: string): Promise<Menu[]> {
     })) || []
   );
 
-//   return (
-//     res.body?.data?.menu?.items.map((item: { title: string; url: string }) => ({
-//       title: item.title,
-//       path: item.url.replace(domain, '').replace('/collections', '/search').replace('/pages', '')
-//     })) || []
-//   );
- }
+  //   return (
+  //     res.body?.data?.menu?.items.map((item: { title: string; url: string }) => ({
+  //       title: item.title,
+  //       path: item.url.replace(domain, '').replace('/collections', '/search').replace('/pages', '')
+  //     })) || []
+  //   );
+}
 
 export async function getPage(handle: string): Promise<Page> {
   const res = await shopifyFetch<ShopifyPageOperation>({
@@ -434,31 +434,32 @@ export async function getProducts({
   return reshapeProducts(removeEdgesAndNodes(res.body.data.products));
 }
 
-export async function searchCollections({
-  query
-}: {
-  query?: string;
-}): Promise<Collection[]> {
+export async function searchCollections({ query }: { query?: string }): Promise<Collection[]> {
   const res = await shopifyFetch<ShopifyCollectionsOperation>({
     query: searchCollectionsQuery,
-    variables: {
-      query
-    },
     tags: [TAGS.collections]
   });
 
-  return reshapeCollections(removeEdgesAndNodes(res.body.data.collections));
+  const collections = removeEdgesAndNodes(res.body.data.collections);
+  if (query) {
+    const lowerQuery = query.toLowerCase();
+    return reshapeCollections(collections.filter(collection => 
+      collection.title.toLowerCase().includes(lowerQuery) || 
+      collection.description?.toLowerCase().includes(lowerQuery)
+    ));
+  }
+  return reshapeCollections(collections);
 }
 
 export async function getProductsByTag(tag: string): Promise<Product[]> {
   console.log('Executing Shopify query for tag:', tag);
-  
+
   try {
     const res = await shopifyFetch<ShopifyProductsOperation>({
       query: getProductsByTagQuery,
       tags: [TAGS.products],
       variables: {
-        tag: `tag:${tag}`
+        query: `tag:${tag}`
       }
     });
 

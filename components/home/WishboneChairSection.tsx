@@ -3,12 +3,66 @@
 import { cn } from '@/lib/utils';
 import { LazyMotion, domAnimation, motion } from 'framer-motion';
 import { ChevronRight, Info, X } from 'lucide-react';
+import { ErrorBoundary } from 'next/dist/client/components/error-boundary';
 import Image from 'next/image';
 import { memo, useCallback, useState } from 'react';
 import BackgroundElements from './BackgroundElements';
 
+// Add type and constant at the top of file
+type WishboneDetail = {
+  src: string;
+  alt: string;
+  caption: string;
+  description: string;
+};
+
+const WISHBONE_DETAILS: readonly WishboneDetail[] = [
+  {
+    src: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/wishbone-chair.jpg?v=1733859192",
+    alt: "Wishbone chair craftsmanship detail",
+    caption: "Traditional Joinery",
+    description: "The traditional joinery of this chair represents a masterpiece of woodworking craftsmanship. Each joint is precisely engineered and steam-bent to create the characteristic Y-shaped back that gives the chair its nickname. The complex joinery technique used here combines ancient Danish woodworking traditions with modern precision, requiring over 100 steps to complete. The curved top rail and backrest are made from a single piece of steam-bent wood, showcasing how traditional methods can create both durability and elegant simplicity in design."
+  },
+  {
+    src: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/wishbone-chair-2.jpg?v=1731254593",
+    alt: "Wishbone chair paper cord seat weaving",
+    caption: "Natural Finish",
+    description: "The natural finish highlights the chair's pure Scandinavian aesthetic, allowing the raw beauty of the wood grain to shine through. This finish is not merely decorative – it's a careful treatment that protects the wood while maintaining its organic texture and warmth. The light, natural tone is achieved through careful sanding and finishing processes that enhance the wood's natural characteristics without masking them. This approach reflects the Danish modern principle of honest materials and showcases the beauty of simplicity in design."
+  },
+  {
+    src: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/wishbone-chair-close-up.jpg?v=1731253320",
+    alt: "Wishbone chair in natural birch wood",
+    caption: "Hand-Woven Seat",
+    description: "The seat of this chair features approximately 120 meters of paper cord, meticulously hand-woven in a characteristic envelope pattern. This traditional Danish weaving technique creates a durable, comfortable surface that grows more beautiful with age. The natural paper cord is twisted at high tension to ensure longevity, while the weaving pattern provides optimal support and subtle flexibility. This labor-intensive process takes skilled artisans several hours to complete, resulting in a seat that combines aesthetic beauty with ergonomic comfort."
+  }
+] as const;
+
+// Add interfaces at the top
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  description: string;
+}
+
+interface ImageCardProps {
+  image: {
+    src: string;
+    alt: string;
+    caption: string;
+    description: string;
+  };
+  index: number;
+  onModalOpen: (index: number) => void;
+}
+
 // Memoized Modal Component
-const InfoModal = memo(({ isOpen, onClose, title, description }) => {
+const InfoModal = memo(function InfoModal({ 
+  isOpen, 
+  onClose, 
+  title, 
+  description 
+}: ModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -41,7 +95,15 @@ const InfoModal = memo(({ isOpen, onClose, title, description }) => {
 InfoModal.displayName = 'InfoModal';
 
 // Memoized Image Card Component
-const ImageCard = memo(({ image, index, onModalOpen }) => {
+const ImageCard = memo(function ImageCard({ 
+  image, 
+  index, 
+  onModalOpen 
+}: ImageCardProps) {
+  const handleModalOpen = useCallback(() => {
+    onModalOpen(index);
+  }, [index, onModalOpen]);
+
   return (
     <motion.div
       key={index}
@@ -71,7 +133,7 @@ const ImageCard = memo(({ image, index, onModalOpen }) => {
             {image.caption}
           </p>
           <button
-            onClick={() => onModalOpen(index)}
+            onClick={handleModalOpen}
             className="opacity-0 group-hover:opacity-100 transition-opacity duration-300
                      inline-flex items-center justify-center
                      bg-white/20 hover:bg-white/30
@@ -90,33 +152,12 @@ const ImageCard = memo(({ image, index, onModalOpen }) => {
 
 ImageCard.displayName = 'ImageCard';
 
-const WishboneChairSection = () => {
-  const [selectedModal, setSelectedModal] = useState(null);
+const WishboneChairSection = memo(function WishboneChairSection() {
+  const [selectedModal, setSelectedModal] = useState<number | null>(null);
 
   const handleModalClose = useCallback(() => {
     setSelectedModal(null);
   }, []);
-
-  const details = [
-    {
-      src: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/wishbone-chair.jpg?v=1733859192",
-      alt: "Wishbone chair craftsmanship detail",
-      caption: "Traditional Joinery",
-      description: "The traditional joinery of this chair represents a masterpiece of woodworking craftsmanship. Each joint is precisely engineered and steam-bent to create the characteristic Y-shaped back that gives the chair its nickname. The complex joinery technique used here combines ancient Danish woodworking traditions with modern precision, requiring over 100 steps to complete. The curved top rail and backrest are made from a single piece of steam-bent wood, showcasing how traditional methods can create both durability and elegant simplicity in design."
-    },
-    {
-      src: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/wishbone-chair-2.jpg?v=1731254593",
-      alt: "Wishbone chair paper cord seat weaving",
-      caption: "Natural Finish",
-      description: "The natural finish highlights the chair's pure Scandinavian aesthetic, allowing the raw beauty of the wood grain to shine through. This finish is not merely decorative – it's a careful treatment that protects the wood while maintaining its organic texture and warmth. The light, natural tone is achieved through careful sanding and finishing processes that enhance the wood's natural characteristics without masking them. This approach reflects the Danish modern principle of honest materials and showcases the beauty of simplicity in design."
-    },
-    {
-      src: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/wishbone-chair-close-up.jpg?v=1731253320",
-      alt: "Wishbone chair in natural birch wood",
-      caption: "Hand-Woven Seat",
-      description: "The seat of this chair features approximately 120 meters of paper cord, meticulously hand-woven in a characteristic envelope pattern. This traditional Danish weaving technique creates a durable, comfortable surface that grows more beautiful with age. The natural paper cord is twisted at high tension to ensure longevity, while the weaving pattern provides optimal support and subtle flexibility. This labor-intensive process takes skilled artisans several hours to complete, resulting in a seat that combines aesthetic beauty with ergonomic comfort."
-    }
-  ];
 
   return (
     <LazyMotion features={domAnimation}>
@@ -234,7 +275,7 @@ const WishboneChairSection = () => {
 
           {/* Bottom Section with Three Images */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 px-2 md:px-4">
-            {details.map((image, index) => (
+            {WISHBONE_DETAILS.map((image, index) => (
               <ImageCard
                 key={image.src}
                 image={image}
@@ -247,13 +288,21 @@ const WishboneChairSection = () => {
           <InfoModal
             isOpen={selectedModal !== null}
             onClose={handleModalClose}
-            title={selectedModal !== null ? details[selectedModal].caption : ''}
-            description={selectedModal !== null ? details[selectedModal].description : ''}
+            title={selectedModal !== null ? WISHBONE_DETAILS[selectedModal]?.caption ?? '' : ''}
+            description={selectedModal !== null ? WISHBONE_DETAILS[selectedModal]?.description ?? '' : ''}
           />
         </div>
       </section>
     </LazyMotion>
   );
-};
+});
 
-export default memo(WishboneChairSection);
+export default function WishboneChairSectionWrapper() {
+  return (
+    <ErrorBoundary errorComponent={() => 
+      <div className="p-4 text-red-500">Something went wrong. Please try again later.</div>
+    }>
+      <WishboneChairSection />
+    </ErrorBoundary>
+  );
+}

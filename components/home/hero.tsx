@@ -17,6 +17,32 @@ const slideContent = {
   alt: 'Simple Interior Ideas',
 };
 
+// Base Product interface definition
+interface BaseProduct {
+  id: string;
+  title: string;
+  handle: string;
+  description?: string;
+  featuredImage?: {
+    url: string;
+    altText?: string;
+  };
+  priceRange: {
+    minVariantPrice: {
+      amount: string;
+    };
+  };
+  images?: Array<{
+    url: string;
+    altText?: string;
+  }>;
+}
+
+// Extended interface for products with creation date
+interface ExtendedProduct extends BaseProduct {
+  createdAt: string;
+}
+
 function Hero() {
   const { results, isLoading, error, performSearch } = useSearch();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -33,7 +59,13 @@ function Hero() {
   const { cart } = useCart();
 
   const filteredAndSortedResults = useMemo(() => {
-    let filtered = [...results.products];
+    // First, ensure we have the correct types by mapping the products
+    const productsWithDates = results.products.map(product => ({
+      ...product,
+      createdAt: (product as unknown as { createdAt?: string })?.createdAt || new Date().toISOString()
+    })) as ExtendedProduct[];
+
+    let filtered = [...productsWithDates];
 
     if (priceRange) {
       filtered = filtered.filter((product) => {

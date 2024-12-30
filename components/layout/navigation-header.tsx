@@ -4,13 +4,32 @@ import { PriceRangeFilter } from '@/components/filter/PriceRangeFilter';
 import { SortSelect } from '@/components/filter/SortSelect';
 import { SidebarMenu } from '@/components/layout/SidebarMenu';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useHeaderState } from '@/hooks/useHeaderState';
 import { useSearch } from '@/hooks/useSearch';
+import type {
+  Collection as ShopifyCollection,
+  Image as ShopifyImage,
+  Product as ShopifyProduct
+} from '@/lib/shopify/types';
 import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+
+const ANIMATION_VARIANTS = {
+  fadeIn: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 }
+  },
+  slideIn: {
+    initial: { x: '100%' },
+    animate: { x: 0 },
+    exit: { x: '100%' }
+  }
+} as const;
 
 const mainNavItems = [
   {
@@ -20,7 +39,7 @@ const mainNavItems = [
     subItems: [
       { label: 'Latest Drops', href: '/collections/latest-drops' },
       { label: 'Coming Soon', href: '/collections/coming-soon' },
-      { label: 'Best Sellers', href: '/collections/best-sellers' },
+      { label: 'Best Sellers', href: '/collections/best-sellers' }
     ]
   },
   {
@@ -30,39 +49,239 @@ const mainNavItems = [
       { label: 'Necklaces', href: '/collections/necklaces' },
       { label: 'Bracelets', href: '/collections/bracelets' },
       { label: 'Rings', href: '/collections/rings' },
-      { label: 'Earrings', href: '/collections/earrings' },
+      { label: 'Earrings', href: '/collections/earrings' }
     ]
   },
   { label: 'About', href: '/about' },
-  { label: 'Contact', href: '/contact' },
+  { label: 'Contact', href: '/contact' }
 ];
 
+// Define Money type
+interface LocalMoney {
+  amount: string;
+  currencyCode?: string;
+}
+
+// Update Collection interface to match search results
+interface LocalCollection {
+  id: string;
+  handle: string;
+  title: string;
+  description?: string;
+  image?: {
+    url: string;
+    altText?: string;
+  };
+}
+
+// Update Product interface to match search results
+interface LocalProduct {
+  id: string;
+  handle: string;
+  title: string;
+  description?: string;
+  featuredImage?: {
+    url: string;
+    altText?: string;
+  };
+  priceRange: {
+    minVariantPrice: LocalMoney;
+    maxVariantPrice: LocalMoney;
+  };
+}
+
+// Update SearchResult interface
+interface SearchResult {
+  products: LocalProduct[];
+  collections: LocalCollection[];
+}
+
+// Update type guard function
+function isShopifyImage(image: unknown): image is ShopifyImage {
+  return Boolean(
+    image &&
+      typeof image === 'object' &&
+      'url' in image &&
+      'altText' in image &&
+      'width' in image &&
+      'height' in image &&
+      typeof (image as ShopifyImage).url === 'string'
+  );
+}
+
+// Extended Product type for sorting
+interface SortableProduct extends LocalProduct {
+  createdAt: string;
+}
+
+// Update hasCreatedAt function
+function hasCreatedAt(product: LocalProduct): product is SortableProduct {
+  return 'createdAt' in product && typeof (product as SortableProduct).createdAt === 'string';
+}
+
+// Add these type definitions after the existing interfaces
+type PriceRange = 'Under $50' | '$50 - $100' | '$100 - $200' | '$200+' | null;
+type SortOption = 'price_asc' | 'price_desc' | 'created_asc' | 'created_desc' | null;
+
+interface HeaderState {
+  isScrolled: boolean;
+  isSearchOpen: boolean;
+  isAccountOpen: boolean;
+  isCartOpen: boolean;
+  isSidebarOpen: boolean;
+  isMobileMenuOpen: boolean;
+  showSearchModal: boolean;
+  searchQuery: string;
+  priceRange: PriceRange;
+  sortBy: SortOption;
+}
+
+// Add these helper functions after the type guards
+const renderImage = (image: unknown, alt: string) => {
+  if (isShopifyImage(image)) {
+    return (
+      <Image
+        src={image.url}
+        alt={image.altText || alt}
+        fill
+        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+        className="object-cover transition-transform duration-300 group-hover:scale-105"
+      />
+    );
+  }
+  return null;
+};
+
+const renderCollectionImage = (collection: LocalCollection | ShopifyCollection, alt: string) => {
+  if (!collection.image) return null;
+
+  const imageUrl =
+    typeof collection.image === 'object' && 'url' in collection.image ? collection.image.url : null;
+
+  if (!imageUrl) return null;
+
+  return (
+    <Image
+      src={imageUrl}
+      alt={
+        typeof collection.image === 'object' && 'altText' in collection.image
+          ? collection.image.altText || alt
+          : alt
+      }
+      fill
+      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+      className="object-cover transition-transform duration-300 group-hover:scale-105"
+    />
+  );
+};
+
+const renderProductImage = (product: LocalProduct | ShopifyProduct, alt: string) => {
+  if (!product.featuredImage) return null;
+
+  const imageUrl =
+    typeof product.featuredImage === 'object' && 'url' in product.featuredImage
+      ? product.featuredImage.url
+      : null;
+
+  if (!imageUrl) return null;
+
+  return (
+    <Image
+      src={imageUrl}
+      alt={
+        typeof product.featuredImage === 'object' && 'altText' in product.featuredImage
+          ? product.featuredImage.altText || alt
+          : alt
+      }
+      fill
+      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+      className="object-cover transition-transform duration-300 group-hover:scale-105"
+    />
+  );
+};
+
+// Update type guard for SortableProduct
+function isSortableProduct(product: LocalProduct): product is SortableProduct {
+  return 'createdAt' in product && typeof (product as SortableProduct).createdAt === 'string';
+}
+
 export function NavigationHeader() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearch = useDebounce(searchQuery, 300);
-  const [showSearchModal, setShowSearchModal] = useState(false);
-  const modalSearchInputRef = useRef<HTMLInputElement>(null);
+  const { state, updateState } = useHeaderState();
   const searchDropdownRef = useRef<HTMLDivElement>(null);
+  const modalSearchInputRef = useRef<HTMLInputElement>(null);
   const { cart } = useCart();
+
+  const debouncedSearch = useDebounce(state.searchQuery, 300);
   const { results, isLoading, error, performSearch } = useSearch();
-  const [sortBy, setSortBy] = useState('created_desc');
-  const [priceRange, setPriceRange] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Replace individual state hooks with single state object
+  useEffect(() => {
+    const handleScroll = () => {
+      updateState({ isScrolled: window.scrollY > 20 });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [updateState]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchDropdownRef.current &&
+        !searchDropdownRef.current.contains(event.target as Node) &&
+        !(event.target as HTMLElement).closest('input')
+      ) {
+        updateState({
+          isSearchOpen: false,
+          searchQuery: ''
+        });
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [updateState]);
+
+  useEffect(() => {
+    if (debouncedSearch) {
+      performSearch(debouncedSearch);
+    }
+  }, [debouncedSearch, performSearch]);
+
+  const handleModalOpen = () => {
+    updateState({ showSearchModal: true });
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleModalClose = () => {
+    updateState({ showSearchModal: false });
+    document.body.style.overflow = '';
+  };
+
+  // Update filteredAndSortedResults in NavigationHeader component
   const filteredAndSortedResults = useMemo(() => {
-    let filtered = [...results.products];
+    let filtered = [...results.products].filter((product): product is ShopifyProduct => {
+      return Boolean(
+        product &&
+          'id' in product &&
+          'handle' in product &&
+          'title' in product &&
+          'priceRange' in product &&
+          typeof product.priceRange === 'object' &&
+          product.priceRange !== null &&
+          'minVariantPrice' in product.priceRange &&
+          typeof product.priceRange.minVariantPrice === 'object' &&
+          product.priceRange.minVariantPrice !== null &&
+          'amount' in product.priceRange.minVariantPrice &&
+          'createdAt' in product &&
+          typeof (product as any).createdAt === 'string'
+      );
+    });
 
-    if (priceRange) {
+    if (state.priceRange) {
       filtered = filtered.filter((product) => {
         const price = parseFloat(product.priceRange.minVariantPrice.amount);
-        switch (priceRange) {
+        switch (state.priceRange) {
           case 'Under $50':
             return price < 50;
           case '$50 - $100':
@@ -80,106 +299,64 @@ export function NavigationHeader() {
     return filtered.sort((a, b) => {
       const priceA = parseFloat(a.priceRange.minVariantPrice.amount);
       const priceB = parseFloat(b.priceRange.minVariantPrice.amount);
-      
-      switch (sortBy) {
+
+      switch (state.sortBy) {
         case 'price_asc':
           return priceA - priceB;
         case 'price_desc':
           return priceB - priceA;
         case 'created_asc':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          return (
+            new Date((a as any).createdAt).getTime() - new Date((b as any).createdAt).getTime()
+          );
         case 'created_desc':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return (
+            new Date((b as any).createdAt).getTime() - new Date((a as any).createdAt).getTime()
+          );
         default:
           return 0;
       }
     });
-  }, [results.products, sortBy, priceRange]);
-
-  useEffect(() => {
-    if (debouncedSearch) {
-      performSearch(debouncedSearch);
-    }
-  }, [debouncedSearch, performSearch]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        searchDropdownRef.current && 
-        !searchDropdownRef.current.contains(event.target as Node) &&
-        !(event.target as HTMLElement).closest('input')
-      ) {
-        setIsSearchOpen(false);
-        setSearchQuery('');
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  }, [results.products, state.sortBy, state.priceRange]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && isSearchOpen && searchQuery) {
+      if (e.key === 'Enter' && state.isSearchOpen && state.searchQuery) {
         e.preventDefault();
-        openModal();
+        handleModalOpen();
       }
       if (e.key === 'Escape') {
-        closeModal();
+        handleModalClose();
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isSearchOpen, searchQuery]);
+  }, [state.isSearchOpen, state.searchQuery]);
 
   useEffect(() => {
-    if (showSearchModal && modalSearchInputRef.current) {
+    if (state.showSearchModal && modalSearchInputRef.current) {
       modalSearchInputRef.current.focus();
     }
-  }, [showSearchModal]);
+  }, [state.showSearchModal]);
 
   useEffect(() => {
-    if (isSidebarOpen) {
+    if (state.isSidebarOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-  }, [isSidebarOpen]);
-
-  const openModal = () => {
-    setShowSearchModal(true);
-    setIsModalOpen(true);
-    document.body.style.overflow = 'hidden';
-  };
-
-  const closeModal = () => {
-    setShowSearchModal(false);
-    setIsModalOpen(false);
-    document.body.style.overflow = '';
-  };
+  }, [state.isSidebarOpen]);
 
   const renderContent = () => {
     return (
       <div className="relative">
         <header
-          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300
-                     ${isScrolled ? 'bg-white/80 backdrop-blur-lg shadow-sm' : 'bg-transparent'}`}
+          className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${state.isScrolled ? 'bg-white/80 shadow-sm backdrop-blur-lg' : 'bg-transparent'}`}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="flex items-center justify-between py-4 md:py-6">
-              <div className="flex items-center gap-4 w-1/4">
+              <div className="flex w-1/4 items-center gap-4">
                 <Link href="/" className="flex-shrink-0">
                   <Image
                     src="/logo.png"
@@ -190,162 +367,217 @@ export function NavigationHeader() {
                   />
                 </Link>
               </div>
-              <nav className="hidden md:flex items-center justify-center flex-1">
+              <nav className="hidden flex-1 items-center justify-center md:flex">
                 <div className="flex items-center gap-8">
                   <button
-                    onClick={() => setIsSidebarOpen(true)}
-                    className="text-[#6B5E4C] hover:text-[#8C7E6A] transition-colors"
+                    onClick={() => updateState({ isSidebarOpen: true })}
+                    className="text-[#6B5E4C] transition-colors hover:text-[#8C7E6A]"
                   >
                     MENU
                   </button>
-                  <Link href="/blog" className="text-[#6B5E4C] hover:text-[#8C7E6A] transition-colors">
+                  <Link
+                    href="/blog"
+                    className="text-[#6B5E4C] transition-colors hover:text-[#8C7E6A]"
+                  >
                     BLOG
                   </Link>
-                  <Link href="/track-order" className="text-[#6B5E4C] hover:text-[#8C7E6A] transition-colors">
+                  <Link
+                    href="/track-order"
+                    className="text-[#6B5E4C] transition-colors hover:text-[#8C7E6A]"
+                  >
                     TRACK ORDER
                   </Link>
-                  <Link href="/faq" className="text-[#6B5E4C] hover:text-[#8C7E6A] transition-colors">
+                  <Link
+                    href="/faq"
+                    className="text-[#6B5E4C] transition-colors hover:text-[#8C7E6A]"
+                  >
                     FAQ'S
                   </Link>
-                  <Link href="/support" className="text-[#6B5E4C] hover:text-[#8C7E6A] transition-colors">
+                  <Link
+                    href="/support"
+                    className="text-[#6B5E4C] transition-colors hover:text-[#8C7E6A]"
+                  >
                     SUPPORT
                   </Link>
                 </div>
               </nav>
 
-              <div className="w-1/4 flex justify-end">
-                <motion.div 
+              <div className="flex w-1/4 justify-end">
+                <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="relative z-20"
                 >
-                  <div className="flex items-center gap-2 rounded-md bg-[#9e896c]/90 px-3 py-2 shadow-lg backdrop-blur-sm h-[40px]">
+                  <div className="flex h-[40px] items-center gap-2 rounded-md bg-[#9e896c]/90 px-3 py-2 shadow-lg backdrop-blur-sm">
                     <AnimatePresence mode="wait">
-                      {!isSearchOpen && !isAccountOpen && !isCartOpen ? (
-                        <motion.div 
+                      {!state.isSearchOpen && !state.isAccountOpen && !state.isCartOpen ? (
+                        <motion.div
                           key="icons"
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 20 }}
-                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          transition={{ duration: 0.3, ease: 'easeInOut' }}
                           className="flex items-center gap-2"
                         >
-                          <button 
-                            className="rounded-md p-1.5 text-white transition-all duration-300 hover:bg-white/20 active:scale-95" 
+                          <button
+                            className="rounded-md p-1.5 text-white transition-all duration-300 hover:bg-white/20 active:scale-95"
                             aria-label="Search"
-                            onClick={() => setIsSearchOpen(true)}
+                            onClick={() => updateState({ isSearchOpen: true })}
                           >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" strokeLinecap="round"/>
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
+                                strokeLinecap="round"
+                              />
                             </svg>
                           </button>
-                          <button 
-                            className="rounded-md p-1.5 text-white transition-all duration-300 hover:bg-white/20 active:scale-95" 
+                          <button
+                            className="rounded-md p-1.5 text-white transition-all duration-300 hover:bg-white/20 active:scale-95"
                             aria-label="Profile"
-                            onClick={() => setIsAccountOpen(true)}
+                            onClick={() => updateState({ isAccountOpen: true })}
                           >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" strokeLinecap="round"/>
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
+                                strokeLinecap="round"
+                              />
                             </svg>
                           </button>
-                          <button 
-                            className="rounded-md p-1.5 text-white transition-all duration-300 hover:bg-white/20 active:scale-95" 
+                          <button
+                            className="rounded-md p-1.5 text-white transition-all duration-300 hover:bg-white/20 active:scale-95"
                             aria-label="Cart"
-                            onClick={() => setIsCartOpen(true)}
+                            onClick={() => updateState({ isCartOpen: true })}
                           >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M3 3H5L5.4 5M5.4 5H21L17 13H7M5.4 5L7 13M7 13L4.707 15.293C4.077 15.923 4.523 17 5.414 17H17M17 17C16.4696 17 15.9609 17.2107 15.5858 17.5858C15.2107 17.9609 15 18.4696 15 19C15 19.5304 15.2107 20.0391 15.5858 20.4142C15.9609 20.7893 16.4696 21 17 21C17.5304 21 18.0391 20.7893 18.4142 20.4142C18.7893 20.0391 19 19.5304 19 19C19 18.4696 18.7893 17.9609 18.4142 17.5858C18.0391 17.2107 17.5304 17 17 17Z" strokeLinecap="round"/>
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                d="M3 3H5L5.4 5M5.4 5H21L17 13H7M5.4 5L7 13M7 13L4.707 15.293C4.077 15.923 4.523 17 5.414 17H17M17 17C16.4696 17 15.9609 17.2107 15.5858 17.5858C15.2107 17.9609 15 18.4696 15 19C15 19.5304 15.2107 20.0391 15.5858 20.4142C15.9609 20.7893 16.4696 21 17 21C17.5304 21 18.0391 20.7893 18.4142 20.4142C18.7893 20.0391 19 19.5304 19 19C19 18.4696 18.7893 17.9609 18.4142 17.5858C18.0391 17.2107 17.5304 17 17 17Z"
+                                strokeLinecap="round"
+                              />
                             </svg>
                           </button>
                         </motion.div>
-                      ) : isSearchOpen ? (
-                        <motion.div 
+                      ) : state.isSearchOpen ? (
+                        <motion.div
                           key="search"
                           initial={{ opacity: 0, x: 20 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          transition={{ duration: 0.3, ease: 'easeInOut' }}
                           className="relative flex items-center justify-between gap-4 pr-2"
                         >
-                          <motion.button 
+                          <motion.button
                             initial={{ x: -10, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ delay: 0.1 }}
                             className="rounded-md p-1 text-white transition-all duration-300 hover:bg-white/20 active:scale-95"
                             onClick={() => {
-                              setIsSearchOpen(false);
-                              setSearchQuery('');
+                              updateState({
+                                isSearchOpen: false,
+                                searchQuery: ''
+                              });
                             }}
                           >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15 19l-7-7 7-7"
+                              />
                             </svg>
                           </motion.button>
-                          <motion.div 
+                          <motion.div
                             initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="flex flex-col w-full"
+                            className="flex w-full flex-col"
                           >
                             <input
                               type="text"
                               placeholder="Search..."
-                              className="w-full appearance-none bg-transparent px-4 py-2 text-white placeholder-white/70 outline-none border-none ring-0 focus:outline-none focus:ring-0 focus:border-none focus:bg-transparent active:bg-transparent"
+                              className="w-full appearance-none border-none bg-transparent px-4 py-2 text-white placeholder-white/70 outline-none ring-0 focus:border-none focus:bg-transparent focus:outline-none focus:ring-0 active:bg-transparent"
                               style={{ WebkitAppearance: 'none', boxShadow: 'none' }}
-                              value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
+                              value={state.searchQuery}
+                              onChange={(e) => updateState({ searchQuery: e.target.value })}
                               autoFocus
                             />
-                            
+
                             {/* Search Results Dropdown */}
-                            {isSearchOpen && searchQuery && (
-                              <motion.div 
+                            {state.isSearchOpen && state.searchQuery && (
+                              <motion.div
                                 ref={searchDropdownRef}
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.2 }}
-                                className="absolute top-full right-0 w-[400px] mt-3 bg-white/95 backdrop-blur-md rounded-lg shadow-2xl overflow-hidden z-50 border border-neutral-200"
-                                style={{ marginRight: "-13px" }}
+                                className="absolute right-0 top-full z-50 mt-3 w-[400px] overflow-hidden rounded-lg border border-neutral-200 bg-white/95 shadow-2xl backdrop-blur-md"
+                                style={{ marginRight: '-13px' }}
                               >
-                                <div className="max-h-[60vh] overflow-y-auto custom-scrollbar">
-                                  {(results.products.length > 0 || results.collections.length > 0) ? (
+                                <div className="custom-scrollbar max-h-[60vh] overflow-y-auto">
+                                  {results.products.length > 0 || results.collections.length > 0 ? (
                                     <>
-                                      <div className="sticky top-0 bg-white/95 backdrop-blur-md px-4 py-3 border-b border-neutral-200">
+                                      <div className="sticky top-0 border-b border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur-md">
                                         <p className="text-sm text-neutral-500">
-                                          Found {results.products.length + results.collections.length} results
+                                          Found{' '}
+                                          {results.products.length + results.collections.length}{' '}
+                                          results
                                         </p>
                                       </div>
 
                                       {/* Collections Section */}
                                       {results.collections.length > 0 && (
                                         <div className="divide-y divide-neutral-100">
-                                          <div className="px-4 py-2 bg-neutral-50">
-                                            <p className="text-sm font-medium text-neutral-600">Collections</p>
+                                          <div className="bg-neutral-50 px-4 py-2">
+                                            <p className="text-sm font-medium text-neutral-600">
+                                              Collections
+                                            </p>
                                           </div>
                                           {results.collections.slice(0, 3).map((collection) => (
                                             <Link
                                               key={collection.handle}
                                               href={`/collections/${collection.handle}`}
-                                              className="flex items-center gap-4 p-4 hover:bg-neutral-50 transition-colors group"
-                                              onClick={() => setIsSearchOpen(false)}
+                                              className="group flex items-center gap-4 p-4 transition-colors hover:bg-neutral-50"
+                                              onClick={() => updateState({ isSearchOpen: false })}
                                             >
-                                              {collection.image && (
-                                                <div className="relative w-16 h-16 flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100">
-                                                  <Image
-                                                    src={collection.image.url}
-                                                    alt={collection.image.altText || collection.title}
-                                                    fill
-                                                    sizes="64px"
-                                                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                                  />
-                                                </div>
-                                              )}
-                                              <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium text-neutral-900 truncate group-hover:text-[#9e896c]">
+                                              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100">
+                                                {renderCollectionImage(
+                                                  collection,
+                                                  collection.title
+                                                )}
+                                              </div>
+                                              <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-medium text-neutral-900 group-hover:text-[#9e896c]">
                                                   {collection.title}
                                                 </p>
                                                 {collection.description && (
-                                                  <p className="text-sm text-neutral-500 mt-0.5 truncate">
+                                                  <p className="mt-0.5 truncate text-sm text-neutral-500">
                                                     {collection.description}
                                                   </p>
                                                 )}
@@ -357,33 +589,30 @@ export function NavigationHeader() {
 
                                       {/* Products Section */}
                                       <div className="divide-y divide-neutral-100">
-                                        <div className="px-4 py-2 bg-neutral-50">
-                                          <p className="text-sm font-medium text-neutral-600">Products</p>
+                                        <div className="bg-neutral-50 px-4 py-2">
+                                          <p className="text-sm font-medium text-neutral-600">
+                                            Products
+                                          </p>
                                         </div>
                                         {results.products.slice(0, 5).map((product) => (
                                           <Link
                                             key={product.id}
                                             href={`/products/${product.handle}`}
-                                            className="flex items-center gap-4 p-4 hover:bg-neutral-50 transition-colors group"
-                                            onClick={() => setIsSearchOpen(false)}
+                                            className="group flex items-center gap-4 p-4 transition-colors hover:bg-neutral-50"
+                                            onClick={() => updateState({ isSearchOpen: false })}
                                           >
-                                            {product.featuredImage && (
-                                              <div className="relative w-16 h-16 flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100">
-                                                <Image
-                                                  src={product.featuredImage.url}
-                                                  alt={product.featuredImage.altText || product.title}
-                                                  fill
-                                                  sizes="64px"
-                                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                                />
-                                              </div>
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                              <p className="text-sm font-medium text-neutral-900 truncate group-hover:text-[#9e896c]">
+                                            <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100">
+                                              {renderProductImage(product as any, product.title)}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                              <p className="truncate text-sm font-medium text-neutral-900 group-hover:text-[#9e896c]">
                                                 {product.title}
                                               </p>
-                                              <p className="text-sm text-neutral-500 mt-0.5">
-                                                ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                                              <p className="mt-0.5 text-sm text-neutral-500">
+                                                $
+                                                {parseFloat(
+                                                  product.priceRange.minVariantPrice.amount
+                                                ).toFixed(2)}
                                               </p>
                                             </div>
                                           </Link>
@@ -393,17 +622,20 @@ export function NavigationHeader() {
                                   ) : (
                                     <div className="p-8 text-center">
                                       <p className="text-neutral-600">No results found</p>
-                                      <p className="text-sm text-neutral-400 mt-1">Try adjusting your search</p>
+                                      <p className="mt-1 text-sm text-neutral-400">
+                                        Try adjusting your search
+                                      </p>
                                     </div>
                                   )}
                                 </div>
-                                {(results.products.length + results.collections.length) > 5 && (
-                                  <div className="p-4 bg-neutral-50 border-t border-neutral-200">
+                                {results.products.length + results.collections.length > 5 && (
+                                  <div className="border-t border-neutral-200 bg-neutral-50 p-4">
                                     <button
-                                      onClick={() => openModal()}
-                                      className="w-full py-2.5 px-4 text-sm text-center text-white bg-[#9e896c] rounded-lg hover:bg-[#8a775d] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2"
+                                      onClick={() => handleModalOpen()}
+                                      className="w-full rounded-lg bg-[#9e896c] px-4 py-2.5 text-center text-sm text-white transition-colors hover:bg-[#8a775d] focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2"
                                     >
-                                      View All {results.products.length + results.collections.length} Results
+                                      View All{' '}
+                                      {results.products.length + results.collections.length} Results
                                     </button>
                                   </div>
                                 )}
@@ -411,30 +643,42 @@ export function NavigationHeader() {
                             )}
                           </motion.div>
                         </motion.div>
-                      ) : isCartOpen ? (
-                        <motion.div 
+                      ) : state.isCartOpen ? (
+                        <motion.div
                           key="cart"
                           initial={{ opacity: 0, x: 20 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          transition={{ duration: 0.3, ease: 'easeInOut' }}
                           className="flex items-center gap-3 whitespace-nowrap pr-1"
                         >
-                          <motion.button 
+                          <motion.button
                             initial={{ x: -10, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ delay: 0.1 }}
                             className="rounded-md p-1 text-white transition-all duration-300 hover:bg-white/20 active:scale-95"
-                            onClick={() => setIsCartOpen(false)}
+                            onClick={() => updateState({ isCartOpen: false })}
                           >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15 19l-7-7 7-7"
+                              />
                             </svg>
                           </motion.button>
                           <span className="text-sm text-white">
-                            {cart?.totalQuantity || 0} {cart?.totalQuantity === 1 ? 'item' : 'items'}
+                            {cart?.totalQuantity || 0}{' '}
+                            {cart?.totalQuantity === 1 ? 'item' : 'items'}
                           </span>
-                          <Link 
+                          <Link
                             href="/cart"
                             className="text-sm text-white underline-offset-4 hover:underline"
                           >
@@ -442,38 +686,49 @@ export function NavigationHeader() {
                           </Link>
                         </motion.div>
                       ) : (
-                        <motion.div 
+                        <motion.div
                           key="account"
                           initial={{ opacity: 0, x: 20 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          transition={{ duration: 0.3, ease: 'easeInOut' }}
                           className="flex items-center gap-2 whitespace-nowrap pr-1"
                         >
-                          <motion.button 
+                          <motion.button
                             initial={{ x: -10, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ delay: 0.1 }}
                             className="rounded-md p-1 text-white transition-all duration-300 hover:bg-white/20 active:scale-95"
-                            onClick={() => setIsAccountOpen(false)}
+                            onClick={() => updateState({ isAccountOpen: false })}
                           >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15 19l-7-7 7-7"
+                              />
                             </svg>
                           </motion.button>
-                          <motion.button 
+                          <motion.button
                             initial={{ x: 10, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ delay: 0.2 }}
                             className="text-sm text-white transition-colors hover:text-white/70"
                             onClick={() => {
                               // Add login logic here
-                              setIsAccountOpen(false);
+                              updateState({ isAccountOpen: false });
                             }}
                           >
                             Log In
                           </motion.button>
-                          <motion.span 
+                          <motion.span
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.3 }}
@@ -481,14 +736,14 @@ export function NavigationHeader() {
                           >
                             /
                           </motion.span>
-                          <motion.button 
+                          <motion.button
                             initial={{ x: -10, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ delay: 0.4 }}
                             className="text-sm text-white transition-colors hover:text-white/70"
                             onClick={() => {
                               // Add signup logic here
-                              setIsAccountOpen(false);
+                              updateState({ isAccountOpen: false });
                             }}
                           >
                             Sign Up
@@ -503,28 +758,28 @@ export function NavigationHeader() {
           </div>
         </header>
 
-        {isMobileMenuOpen && (
+        {state.isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 md:hidden"
-            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm md:hidden"
+            onClick={() => updateState({ isMobileMenuOpen: false })}
           >
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              className="absolute right-0 top-0 bottom-0 w-[80%] max-w-sm bg-white"
-              onClick={(e) => e.stopPropagation()}
+              className="absolute bottom-0 right-0 top-0 w-[80%] max-w-sm bg-white"
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
               <div className="p-4">
                 <div className="flex justify-end">
                   <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-2 rounded-full hover:bg-[#6B5E4C]/5"
+                    onClick={() => updateState({ isMobileMenuOpen: false })}
+                    className="rounded-full p-2 hover:bg-[#6B5E4C]/5"
                   >
-                    <X className="w-6 h-6 text-[#6B5E4C]" />
+                    <X className="h-6 w-6 text-[#6B5E4C]" />
                   </button>
                 </div>
                 <nav className="mt-8">
@@ -535,7 +790,7 @@ export function NavigationHeader() {
                         className={`text-lg font-medium ${
                           item.featured ? 'text-[#B5A48B]' : 'text-[#6B5E4C]'
                         }`}
-                        onClick={() => setIsMobileMenuOpen(false)}
+                        onClick={() => updateState({ isMobileMenuOpen: false })}
                       >
                         {item.label}
                       </Link>
@@ -546,7 +801,7 @@ export function NavigationHeader() {
                               key={subItem.label}
                               href={subItem.href}
                               className="block text-sm text-[#8C7E6A]"
-                              onClick={() => setIsMobileMenuOpen(false)}
+                              onClick={() => updateState({ isMobileMenuOpen: false })}
                             >
                               {subItem.label}
                             </Link>
@@ -561,59 +816,72 @@ export function NavigationHeader() {
           </motion.div>
         )}
 
-        {showSearchModal && (
+        {state.showSearchModal && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-[50]"
-              onClick={closeModal}
+              className="fixed inset-0 z-[50] bg-black/50"
+              onClick={handleModalClose}
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 overflow-hidden pt-[10vh] pb-[10vh] z-[60]"
+              className="fixed inset-0 z-[60] overflow-hidden pb-[10vh] pt-[10vh]"
             >
-              <div className="relative w-full h-full max-w-4xl mx-auto">
-                <div className="h-full bg-white rounded-lg shadow-xl flex flex-col overflow-hidden">
-                  <div className="sticky top-0 z-10 bg-white border-b border-neutral-200">
+              <div className="relative mx-auto h-full w-full max-w-4xl">
+                <div className="flex h-full flex-col overflow-hidden rounded-lg bg-white shadow-xl">
+                  <div className="sticky top-0 z-10 border-b border-neutral-200 bg-white">
                     <div className="p-6">
                       <div className="relative">
                         <input
                           ref={modalSearchInputRef}
                           type="text"
                           placeholder="Search products..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full px-4 py-3 text-lg text-neutral-900 bg-neutral-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:bg-white transition-all pr-12"
-                          />
+                          value={state.searchQuery}
+                          onChange={(e) => updateState({ searchQuery: e.target.value })}
+                          className="w-full rounded-lg bg-neutral-100 px-4 py-3 pr-12 text-lg text-neutral-900 transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9e896c]"
+                        />
                         <button
-                          onClick={closeModal}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-neutral-400 hover:text-neutral-600 rounded-full hover:bg-neutral-100 transition-colors"
+                          onClick={handleModalClose}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
                         >
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          <svg
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
                           </svg>
                         </button>
                       </div>
                     </div>
-  
-                    <div className="px-6 pb-4 flex items-center justify-between gap-4">
+
+                    <div className="flex items-center justify-between gap-4 px-6 pb-4">
                       <div className="flex items-center gap-4">
                         <div className="w-48">
-                          <SortSelect value={sortBy} onChange={setSortBy} />
+                          <SortSelect
+                            value={state.sortBy}
+                            onChange={(value) => updateState({ sortBy: value })}
+                          />
                         </div>
-                        <div className="relative group">
-                          <button className="px-4 py-2 text-sm bg-neutral-100 rounded-lg hover:bg-neutral-200 transition-colors">
+                        <div className="group relative">
+                          <button className="rounded-lg bg-neutral-100 px-4 py-2 text-sm transition-colors hover:bg-neutral-200">
                             Price Range
                           </button>
-                          <div className="absolute left-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-neutral-200 p-4 min-w-[200px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                          <div className="invisible absolute left-0 top-full mt-2 min-w-[200px] rounded-lg border border-neutral-200 bg-white p-4 opacity-0 shadow-xl transition-all group-hover:visible group-hover:opacity-100">
                             <PriceRangeFilter
-                              selectedRange={priceRange}
-                              onChange={setPriceRange}
+                              selectedRange={state.priceRange}
+                              onChange={(value) => updateState({ priceRange: value })}
                             />
                           </div>
                         </div>
@@ -623,37 +891,29 @@ export function NavigationHeader() {
                       </div>
                     </div>
                   </div>
-  
-                  <div className="flex-1 overflow-y-auto custom-scrollbar">
+
+                  <div className="custom-scrollbar flex-1 overflow-y-auto">
                     <div className="p-6">
                       {results.collections.length > 0 && (
                         <div className="mb-8">
-                          <h2 className="text-lg font-medium text-neutral-900 mb-4">Collections</h2>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <h2 className="mb-4 text-lg font-medium text-neutral-900">Collections</h2>
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {results.collections.map((collection) => (
                               <Link
                                 key={collection.handle}
                                 href={`/collections/${collection.handle}`}
-                                onClick={() => setShowSearchModal(false)}
-                                className="group bg-neutral-50 rounded-lg overflow-hidden hover:bg-neutral-100 transition-colors"
+                                onClick={() => updateState({ showSearchModal: false })}
+                                className="group overflow-hidden rounded-lg bg-neutral-50 transition-colors hover:bg-neutral-100"
                               >
-                                <div className="relative aspect-[4/3] bg-neutral-200 overflow-hidden">
-                                  {collection.image && (
-                                    <Image
-                                      src={collection.image.url}
-                                      alt={collection.image.altText || collection.title}
-                                      fill
-                                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                  )}
+                                <div className="relative aspect-[4/3] overflow-hidden bg-neutral-200">
+                                  {renderCollectionImage(collection, collection.title)}
                                 </div>
                                 <div className="p-4">
-                                  <h3 className="font-medium text-neutral-900 group-hover:text-[#9e896c] truncate">
+                                  <h3 className="truncate font-medium text-neutral-900 group-hover:text-[#9e896c]">
                                     {collection.title}
                                   </h3>
                                   {collection.description && (
-                                    <p className="text-sm text-neutral-500 mt-1 truncate">
+                                    <p className="mt-1 truncate text-sm text-neutral-500">
                                       {collection.description}
                                     </p>
                                   )}
@@ -663,35 +923,30 @@ export function NavigationHeader() {
                           </div>
                         </div>
                       )}
-  
+
                       {filteredAndSortedResults.length > 0 && (
                         <div>
-                          <h2 className="text-lg font-medium text-neutral-900 mb-4">Products</h2>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <h2 className="mb-4 text-lg font-medium text-neutral-900">Products</h2>
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {filteredAndSortedResults.map((product) => (
                               <Link
                                 key={product.id}
                                 href={`/products/${product.handle}`}
-                                onClick={() => setShowSearchModal(false)}
-                                className="group bg-neutral-50 rounded-lg overflow-hidden hover:bg-neutral-100 transition-colors"
+                                onClick={() => updateState({ showSearchModal: false })}
+                                className="group overflow-hidden rounded-lg bg-neutral-50 transition-colors hover:bg-neutral-100"
                               >
-                                <div className="relative aspect-[4/3] bg-neutral-200 overflow-hidden">
-                                  {product.featuredImage && (
-                                    <Image
-                                      src={product.featuredImage.url}
-                                      alt={product.featuredImage.altText || product.title}
-                                      fill
-                                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                  )}
+                                <div className="relative aspect-[4/3] overflow-hidden bg-neutral-200">
+                                  {renderProductImage(product, product.title)}
                                 </div>
                                 <div className="p-4">
-                                  <h3 className="font-medium text-neutral-900 group-hover:text-[#9e896c] truncate">
+                                  <h3 className="truncate font-medium text-neutral-900 group-hover:text-[#9e896c]">
                                     {product.title}
                                   </h3>
-                                  <p className="text-sm text-neutral-500 mt-1">
-                                    ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                                  <p className="mt-1 text-sm text-neutral-500">
+                                    $
+                                    {parseFloat(product.priceRange.minVariantPrice.amount).toFixed(
+                                      2
+                                    )}
                                   </p>
                                 </div>
                               </Link>
@@ -699,11 +954,13 @@ export function NavigationHeader() {
                           </div>
                         </div>
                       )}
-  
+
                       {!results.collections.length && !filteredAndSortedResults.length && (
-                        <div className="text-center py-12">
+                        <div className="py-12 text-center">
                           <p className="text-neutral-600">No results found</p>
-                          <p className="text-sm text-neutral-400 mt-1">Try adjusting your search or filters</p>
+                          <p className="mt-1 text-sm text-neutral-400">
+                            Try adjusting your search or filters
+                          </p>
                         </div>
                       )}
                     </div>
@@ -714,15 +971,15 @@ export function NavigationHeader() {
           </>
         )}
 
-        {isSidebarOpen && (
-          <SidebarMenu 
-            isOpen={isSidebarOpen} 
-            onClose={() => setIsSidebarOpen(false)} 
+        {state.isSidebarOpen && (
+          <SidebarMenu
+            isOpen={state.isSidebarOpen}
+            onClose={() => updateState({ isSidebarOpen: false })}
           />
         )}
 
         {error && (
-          <div className="fixed bottom-4 right-4 p-4 bg-red-50 text-red-600 rounded-lg shadow-lg">
+          <div className="fixed bottom-4 right-4 rounded-lg bg-red-50 p-4 text-red-600 shadow-lg">
             {error}
           </div>
         )}

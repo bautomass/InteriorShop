@@ -1,13 +1,14 @@
 // components/gift-builder/gift-box-selector.tsx
 'use client';
 
+import { ErrorBoundary } from '@/components/error-boundary';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ProductOption } from 'lib/shopify/types';
-import { Check, ChevronLeft, ChevronRight, Package, ShoppingBag, X } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Package, RefreshCcw, ShoppingBag, X } from 'lucide-react';
 import Image from 'next/image';
-import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useGiftBuilder } from './context';
 
 // Enhanced Types
@@ -26,10 +27,10 @@ interface GiftBoxVariant {
   id: string;
   title: string;
   price: number;
-  selectedOptions: {
+  selectedOptions: Array<{
     name: string;
     value: string;
-  }[];
+  }>;
   image?: GiftBoxImage;
 }
 
@@ -43,6 +44,38 @@ interface GiftBox {
   variants: GiftBoxVariant[];
   options: ProductOption[];
   selectedVariant?: GiftBoxVariant;
+}
+
+interface GiftBoxCardProps {
+  box: GiftBox;
+  isSelected: boolean;
+  onCustomize: () => void;
+  hoveredBox: string | null;
+  onHover: (id: string | null) => void;
+}
+
+interface ImageGalleryProps {
+  images: GiftBoxImage[];
+  selectedIndex: number;
+  onSelect: (index: number) => void;
+  selectedVariant?: GiftBoxVariant;
+  className?: string;
+}
+
+interface CustomDropdownProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: readonly string[];
+  placeholder: string;
+  label: string;
+  id: string;
+}
+
+interface BoxSelectionPayload extends GiftBox {
+  variantId: string;
+  price: number;
+  maxProducts: number;
+  selectedOptions: SelectedOptions;
 }
 
 // Enhanced Animation Variants
@@ -119,16 +152,10 @@ function ImageGallery({
   onSelect,
   selectedVariant,
   className = ''
-}: {
-  images: GiftBoxImage[];
-  selectedIndex: number;
-  onSelect: (index: number) => void;
-  selectedVariant?: GiftBoxVariant;
-  className?: string;
-}) {
+}: ImageGalleryProps) {
   const shouldReduceMotion = useReducedMotion();
   const [isLoading, setIsLoading] = useState(true);
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useMediaQuery('(max-width: 768px)') ?? false;
   const thumbnailsRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -163,9 +190,20 @@ function ImageGallery({
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [handleKeyPress]);
 
-  const currentImages = selectedVariant?.image
-    ? [selectedVariant.image, ...images.filter((img) => img.url !== selectedVariant.image?.url)]
-    : images;
+  const currentImages = useMemo(() => {
+    if (!images?.length) return [] as GiftBoxImage[];
+    return selectedVariant?.image 
+      ? [selectedVariant.image, ...images.filter(img => img.url !== selectedVariant.image?.url)]
+      : images;
+  }, [images, selectedVariant]);
+
+  if (!currentImages.length) {
+    return (
+      <div className="aspect-square w-full rounded-2xl bg-primary-100 dark:bg-primary-800 flex items-center justify-center">
+        <Package className="h-12 w-12 text-primary-300" />
+      </div>
+    );
+  }
 
   const checkScrollButtons = useCallback(() => {
     if (thumbnailsRef.current) {
@@ -206,7 +244,7 @@ function ImageGallery({
       <div className="group relative aspect-square w-full overflow-hidden rounded-2xl border border-primary-100/20 bg-gradient-to-b from-primary-50 to-white shadow-lg dark:from-primary-900/50 dark:to-primary-800">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
-            key={currentImages[selectedIndex].url}
+            key={currentImages[selectedIndex]?.url || 'fallback'}
             variants={shouldReduceMotion ? fadeIn : scaleUp}
             initial="initial"
             animate="animate"
@@ -215,8 +253,8 @@ function ImageGallery({
             onAnimationComplete={() => setIsLoading(false)}
           >
             <Image
-              src={currentImages[selectedIndex].url}
-              alt={currentImages[selectedIndex].altText}
+              src={currentImages[selectedIndex]?.url ?? ''}
+              alt={currentImages[selectedIndex]?.altText ?? ''}
               fill
               className={`transform-gpu object-cover transition-transform duration-700 will-change-transform ${
                 !isLoading && 'group-hover:scale-105'
@@ -451,14 +489,7 @@ const CustomDropdown = ({
   placeholder,
   label,
   id
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  options: string[];
-  placeholder: string;
-  label: string;
-  id: string;
-}) => {
+}: CustomDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -532,11 +563,15 @@ function BoxOptionsSelector({
   initialOptions?: SelectedOptions;
 }) {
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>(initialOptions);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isMobile = useMediaQuery('(max-width: 768px)') ?? false;
 
   const availableOptions = useMemo(() => {
     const options: { [key: string]: Set<string> } = {};
+    
+    if (!box?.variants) return options;
 
     box.variants.forEach((variant) => {
       variant.selectedOptions.forEach((option) => {
@@ -552,13 +587,28 @@ function BoxOptionsSelector({
         );
 
         if (isValidOption) {
-          options[option.name].add(option.value);
+          options[option.name]!.add(option.value);
         }
       });
     });
 
     return options;
-  }, [box.variants, selectedOptions]);
+  }, [box?.variants, selectedOptions]);
+
+  const handleComplete = async (variant: GiftBoxVariant) => {
+    if (isSubmitting) return;
+    
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      await onComplete(variant, selectedOptions);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to complete selection');
+      console.error('Error completing selection:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const selectedVariant = useMemo(() => {
     if (Object.keys(selectedOptions).length !== box.options.length) return null;
@@ -581,7 +631,7 @@ function BoxOptionsSelector({
         images={box.images}
         selectedIndex={selectedImageIndex}
         onSelect={setSelectedImageIndex}
-        selectedVariant={selectedVariant}
+        selectedVariant={selectedVariant || undefined}
         className={isMobile ? '' : 'sticky top-8'}
       />
 
@@ -589,7 +639,7 @@ function BoxOptionsSelector({
       <div className="space-y-6">
         <motion.div variants={fadeIn} className="space-y-4">
           {box.options.map((option) => {
-            const availableValues = Array.from(availableOptions[option.name] || new Set());
+            const availableValues: string[] = Array.from(availableOptions[option.name] || new Set());
 
             return (
               <CustomDropdown
@@ -622,16 +672,23 @@ function BoxOptionsSelector({
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => selectedVariant && onComplete(selectedVariant, selectedOptions)}
-          disabled={!isComplete}
+          onClick={() => selectedVariant && handleComplete(selectedVariant)}
+          disabled={!isComplete || isSubmitting}
           className={`mt-6 w-full rounded-xl px-6 py-3.5 text-sm font-medium shadow-lg transition-all ${
-            isComplete
+            isSubmitting
               ? 'bg-accent-500 text-white hover:bg-accent-600'
-              : 'bg-primary-100 text-primary-400 dark:bg-primary-800'
+              : isComplete
+                ? 'bg-accent-500 text-white hover:bg-accent-600'
+                : 'bg-primary-100 text-primary-400 dark:bg-primary-800'
           }`}
-          aria-label={isComplete ? 'Confirm selection' : 'Complete all options to continue'}
+          aria-label={isSubmitting ? 'Processing...' : isComplete ? 'Confirm selection' : 'Complete all options to continue'}
         >
-          {isComplete ? (
+          {isSubmitting ? (
+            <span className="flex items-center justify-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Processing...
+            </span>
+          ) : isComplete ? (
             <span className="flex items-center justify-center gap-2">
               <ShoppingBag className="h-4 w-4" />
               Confirm Selection
@@ -644,8 +701,9 @@ function BoxOptionsSelector({
     </div>
   );
 }
+
 // Updated GiftBoxCard Component
-function GiftBoxCard({ box, isSelected, onCustomize, hoveredBox, onHover }) {
+function GiftBoxCard({ box, isSelected, onCustomize, hoveredBox, onHover }: GiftBoxCardProps) {
   const startingPrice = useMemo(() => {
     return Math.min(...box.variants.map((v) => v.price));
   }, [box.variants]);
@@ -785,6 +843,14 @@ function ErrorState({ error, refetch }: { error: Error; refetch: () => void }) {
 
 // Main Component
 export function GiftBoxSelector() {
+  return (
+    <ErrorBoundary>
+      <GiftBoxSelectorContent />
+    </ErrorBoundary>
+  );
+}
+
+function GiftBoxSelectorContent() {
   const { state, dispatch } = useGiftBuilder();
   const [hoveredBox, setHoveredBox] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState<string | null>(null);
@@ -808,6 +874,21 @@ export function GiftBoxSelector() {
     if (variantTitle.toLowerCase().includes('medium')) return 6;
     return 10;
   }, []);
+
+  const handleComplete = (box: GiftBox, variant: GiftBoxVariant, options: SelectedOptions) => {
+    dispatch({
+      type: 'SELECT_BOX',
+      payload: {
+        ...box,
+        variantId: variant.id,
+        price: variant.price,
+        maxProducts: getMaxProducts(variant.title),
+        selectedOptions: options
+      } as BoxSelectionPayload
+    });
+    dispatch({ type: 'SET_STEP', payload: 2 });
+    setOpenModal(null);
+  };
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -876,21 +957,10 @@ export function GiftBoxSelector() {
               <BoxOptionsSelector
                 box={box}
                 initialOptions={
-                  state.selectedBox?.id === box.id ? state.selectedBox.selectedOptions : {}
+                  (state.selectedBox as BoxSelectionPayload)?.selectedOptions ?? {}
                 }
                 onComplete={(variant, options) => {
-                  dispatch({
-                    type: 'SELECT_BOX',
-                    payload: {
-                      ...box,
-                      variantId: variant.id,
-                      price: variant.price,
-                      maxProducts: getMaxProducts(variant.title),
-                      selectedOptions: options
-                    }
-                  });
-                  dispatch({ type: 'SET_STEP', payload: 2 });
-                  setOpenModal(null);
+                  handleComplete(box, variant, options);
                 }}
               />
             </Modal>

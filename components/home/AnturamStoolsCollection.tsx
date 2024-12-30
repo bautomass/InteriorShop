@@ -2,6 +2,7 @@
 import { PriceSortFilter } from '@/components/filter/PriceSortFilter';
 import { ProductQuickView } from '@/components/quickview/ProductQuickView';
 import { ProductCard } from '@/components/shared/ProductCard';
+import { useProducts } from '@/hooks/useProducts';
 import { useQuickView } from '@/hooks/useQuickView';
 import type { Product } from '@/lib/shopify/types';
 import { cn } from '@/lib/utils';
@@ -16,11 +17,47 @@ import 'swiper/css/navigation';
 import { Autoplay, Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-type ViewSettings = {
-  minCards: number
-  maxCards: number
-  defaultCards: number
+interface GridViewProps {
+  products: Product[];
+  cardsToShow: number;
+  onQuickView: (e: React.MouseEvent<Element>) => void;
 }
+
+interface ViewSettings {
+  minCards: number;
+  maxCards: number;
+  defaultCards: number;
+}
+
+interface ViewControlsProps {
+  current: number;
+  min: number;
+  max: number;
+  onChange: (value: number) => void;
+  isGridView: boolean;
+  onViewChange: (value: boolean) => void;
+}
+
+const SWIPER_CONFIG = {
+  spaceBetween: 16,
+  speed: 1000,
+  autoplay: {
+    delay: 6000,
+    disableOnInteraction: false,
+    pauseOnMouseEnter: true
+  },
+  breakpoints: {
+    0: { slidesPerView: 1, spaceBetween: 16 },
+    480: { slidesPerView: 2, spaceBetween: 16 },
+    768: { slidesPerView: 3, spaceBetween: 16 },
+    1024: { slidesPerView: 'auto' as const, spaceBetween: 16 }
+  }
+} as const;
+
+const ERROR_MESSAGES = {
+  FETCH_ERROR: 'Failed to fetch products',
+  NO_DATA: 'No products data received'
+} as const;
 
 const useCardsView = (settings: ViewSettings) => {
   const [cardsToShow, setCardsToShow] = useState(settings.defaultCards)
@@ -32,14 +69,7 @@ const useCardsView = (settings: ViewSettings) => {
   return { cardsToShow, handleViewChange }
 }
 
-const ViewControls = ({ current, min, max, onChange, isGridView, onViewChange }: { 
-  current: number;
-  min: number;
-  max: number;
-  onChange: (value: number) => void;
-  isGridView: boolean;
-  onViewChange: (value: boolean) => void;
-}) => (
+const ViewControls = ({ current, min, max, onChange, isGridView, onViewChange }: ViewControlsProps) => (
   <div className="flex items-center gap-2 mb-4 absolute right-0 top-0 z-10">
     <button
       onClick={() => onViewChange(!isGridView)}
@@ -93,31 +123,21 @@ const ViewControls = ({ current, min, max, onChange, isGridView, onViewChange }:
   </div>
 );
 
-const GridView = memo(({ 
-  products, 
-  cardsToShow, 
-  onQuickView 
-}: { 
-  products: Product[]
-  cardsToShow: number
-  onQuickView: (product: Product) => void
-}) => {
-  const [visibleRows, setVisibleRows] = useState(2)
-  const productsPerRow = cardsToShow
-  const totalRows = Math.ceil(products.length / productsPerRow)
-  const visibleProducts = products.slice(0, visibleRows * productsPerRow)
+const GridView = memo(({ products, cardsToShow, onQuickView }: GridViewProps) => {
+  const [visibleRows, setVisibleRows] = useState(2);
+  const productsPerRow = cardsToShow;
+  const totalRows = Math.ceil(products.length / productsPerRow);
+  const visibleProducts = products.slice(0, visibleRows * productsPerRow);
 
   const showMoreRows = () => {
-    setVisibleRows(prev => Math.min(prev + 2, totalRows))
+    setVisibleRows(prev => Math.min(prev + 2, totalRows));
   }
 
   return (
     <div className="space-y-12">
       <div 
         className="grid gap-6 md:gap-8 w-full"
-        style={{ 
-          gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` 
-        }}
+        style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}
       >
         {visibleProducts.map((product) => (
           <motion.div
@@ -131,10 +151,10 @@ const GridView = memo(({
               className="block h-full w-full"
             >
               <ProductCard 
-                product={product} 
+                product={product}
                 onQuickView={(e) => {
                   e.preventDefault();
-                  onQuickView(product);
+                  onQuickView(e);
                 }}
                 cardsToShow={cardsToShow}
               />
@@ -170,11 +190,57 @@ const GridView = memo(({
 
 GridView.displayName = 'GridView'
 
+const useProductsFetch = () => {
+  const [state, setState] = useState<{
+    products: Product[];
+    loading: boolean;
+    error: string | null;
+  }>({
+    products: [],
+    loading: true,
+    error: null
+  });
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/anturam-stools');
+        const data = await response.json();
+        
+        if (!response.ok) throw new Error(data.error || ERROR_MESSAGES.FETCH_ERROR);
+        if (!data.products) throw new Error(ERROR_MESSAGES.NO_DATA);
+        
+        if (mounted) {
+          setState({
+            products: data.products,
+            loading: false,
+            error: null
+          });
+        }
+      } catch (err) {
+        if (mounted) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: err instanceof Error ? err.message : ERROR_MESSAGES.FETCH_ERROR
+          }));
+        }
+      }
+    };
+
+    fetchProducts();
+    return () => { mounted = false; };
+  }, []);
+
+  return state;
+};
+
 export default function AnturamStoolsCollection() {
   const quickView = useQuickView()
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { products: fetchedProducts, loading, error } = useProductsFetch()
+  const { products, sortProducts } = useProducts(fetchedProducts)
   const [isSlideHovered, setIsSlideHovered] = useState(false)
   const { ref, inView } = useInView({
     threshold: 0.1,
@@ -185,35 +251,9 @@ export default function AnturamStoolsCollection() {
   const [isEnd, setIsEnd] = useState(false);
   const [isGridView, setIsGridView] = useState(false)
 
-  useEffect(() => {
-    async function fetchStools() {
-      try {
-        setLoading(true)
-        const response = await fetch('/api/anturam-stools')
-        const data = await response.json()
-        
-        if (!response.ok) throw new Error(data.error || 'Failed to fetch products')
-        if (!data.products) throw new Error('No products data received')
-        
-        setProducts(data.products)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load products')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchStools()
-  }, [])
-
   const handlePriceSort = useCallback((direction: 'asc' | 'desc') => {
-    const sorted = [...products].sort((a, b) => {
-      const priceA = parseFloat(a.priceRange.minVariantPrice.amount)
-      const priceB = parseFloat(b.priceRange.minVariantPrice.amount)
-      return direction === 'asc' ? priceA - priceB : priceB - priceA
-    })
-    setProducts(sorted)
-  }, [products])
+    sortProducts(direction);
+  }, [sortProducts]);
 
   const viewSettings: ViewSettings = {
     minCards: 4,
@@ -532,25 +572,16 @@ export default function AnturamStoolsCollection() {
                 <GridView 
                   products={products}
                   cardsToShow={cardsToShow}
-                  onQuickView={(e) => {
+                  onQuickView={(e: React.MouseEvent<Element>) => {
                     e.preventDefault();
-                    quickView.openQuickView(product);
+                    const target = e.currentTarget as HTMLElement;
+                    if (target.dataset.product) {
+                      const product = products.find(p => p.id === target.dataset.product);
+                      if (product) {
+                        quickView.openQuickView(product);
+                      }
+                    }
                   }}
-                  renderProduct={(product) => (
-                    <Link 
-                      href={`/product/${product.handle}`}
-                      className="block h-full w-full"
-                    >
-                      <ProductCard 
-                        product={product}
-                        onQuickView={(e) => {
-                          e.preventDefault();
-                          quickView.openQuickView(product);
-                        }}
-                        cardsToShow={cardsToShow}
-                      />
-                    </Link>
-                  )}
                 />
               ) : (
                 <div 
