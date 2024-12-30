@@ -6,8 +6,6 @@ import type { LucideIcon } from 'lucide-react';
 import {
   Award,
   CheckCircle,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   Globe2,
   HeartHandshake,
@@ -343,6 +341,60 @@ class TabErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundary
   }
 }
 
+// Add new interface and components
+interface Testimonial {
+  id: number;
+  rating: number;
+  name: string;
+  location: string;
+  date: string;
+  title: string;
+  text: string;
+  verified: boolean;
+}
+
+const VerifiedBadge = memo(() => (
+  <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 transition-opacity">
+    <CheckCircle className="h-3 w-3" />
+    Verified Purchase
+  </span>
+));
+VerifiedBadge.displayName = 'VerifiedBadge';
+
+const ReviewCard = memo(({ testimonial }: { testimonial: Testimonial }) => (
+  <div className="w-[calc(33.333%-16px)] min-w-[350px] flex-shrink-0 rounded-xl bg-white p-6 shadow-sm transition-shadow duration-300 ease-in-out hover:shadow-md">
+    <div className="flex items-center justify-between">
+      <ReviewStars rating={testimonial.rating} />
+      {testimonial.verified && <VerifiedBadge />}
+    </div>
+    
+    <h4 className="mt-4 font-medium text-[#6B5E4C] line-clamp-1">{testimonial.title}</h4>
+    <p className="mt-2 text-sm text-[#8C7E6A] line-clamp-4">{testimonial.text}</p>
+    
+    <div className="mt-4 flex items-center justify-between border-t border-[#6B5E4C]/10 pt-4 text-xs text-[#8C7E6A]">
+      <div className="flex flex-col">
+        <span className="font-medium">{testimonial.name}</span>
+        <span>{testimonial.location}</span>
+      </div>
+      <time dateTime={testimonial.date} className="text-[#8C7E6A]/70">
+        {testimonial.date}
+      </time>
+    </div>
+  </div>
+));
+ReviewCard.displayName = 'ReviewCard';
+
+const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }) => {
+  return (
+    <div className="flex overflow-x-auto gap-4">
+      {testimonials.map((testimonial) => (
+        <ReviewCard key={testimonial.id} testimonial={testimonial} />
+      ))}
+    </div>
+  );
+});
+ReviewsContainer.displayName = 'ReviewsContainer';
+
 export function ProductTabs() {
   const [activeTab, setActiveTab] = useState<Tab['id']>(INITIAL_TAB_ID);
   const { ref, inView } = useInView({
@@ -439,65 +491,7 @@ export function ProductTabs() {
       {isReviewsTab(tab) && (
         <div className="space-y-8">
           <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
-          
-          <div className="relative">
-            <button 
-              onClick={() => scroll('left')}
-              className={`absolute -left-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow-md backdrop-blur-sm transition-all 
-                ${!scrollState.canScrollLeft && 'opacity-0 pointer-events-none'}`}
-              disabled={!scrollState.canScrollLeft}
-              aria-label="Previous reviews"
-            >
-              <ChevronLeft className="h-5 w-5 text-[#6B5E4C]" />
-            </button>
-
-            <div 
-              ref={reviewsRef}
-              onScroll={checkScrollability}
-              className="flex gap-6 overflow-x-auto px-1 pb-6 scrollbar-hide scroll-smooth"
-            >
-              {tab.content.testimonials.map((testimonial) => (
-                <motion.div 
-                  key={testimonial.id}
-                  layoutId={`review-${testimonial.id}`}
-                  className="w-[calc(100%/3-1rem)] min-w-[350px] flex-shrink-0 rounded-xl bg-white p-6 shadow-sm transition will-change-transform hover:shadow-md"
-                >
-                  <div className="flex items-center justify-between">
-                    <ReviewStars rating={testimonial.rating} />
-                    {Math.random() > 0.3 && (
-                      <span className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
-                        <CheckCircle className="h-3 w-3" />
-                        Verified Purchase
-                      </span>
-                    )}
-                  </div>
-                  
-                  <h4 className="mt-4 font-medium text-[#6B5E4C] line-clamp-1">{testimonial.title}</h4>
-                  <p className="mt-2 text-sm text-[#8C7E6A] line-clamp-4">{testimonial.text}</p>
-                  
-                  <div className="mt-4 flex items-center justify-between border-t border-[#6B5E4C]/10 pt-4 text-xs text-[#8C7E6A]">
-                    <div className="flex flex-col">
-                      <span className="font-medium">{testimonial.name}</span>
-                      <span>{testimonial.location}</span>
-                    </div>
-                    <time dateTime={testimonial.date} className="text-[#8C7E6A]/70">
-                      {testimonial.date}
-                    </time>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            <button 
-              onClick={() => scroll('right')}
-              className={`absolute -right-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow-md backdrop-blur-sm transition-all
-                ${!scrollState.canScrollRight && 'opacity-0 pointer-events-none'}`}
-              disabled={!scrollState.canScrollRight}
-              aria-label="Next reviews"
-            >
-              <ChevronRight className="h-5 w-5 text-[#6B5E4C]" />
-            </button>
-          </div>
+          <ReviewsContainer testimonials={tab.content.testimonials} />
         </div>
       )}
 
