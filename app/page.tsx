@@ -42,7 +42,7 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  console.log('HomePage: Server Component Rendering');
+  console.log('HomePage: Starting render');
   
   return (
     <>
@@ -55,9 +55,11 @@ export default function HomePage() {
         <LampsCollection />
         <GiftBuilderSection />
         <NewArrivalsCollection />
-        <Debug message="HomePage: Before AnturamStoolsCollection" />
-        <AnturamStoolsCollection />
-        <Debug message="HomePage: After AnturamStoolsCollection" />
+        <div>
+          <div>Before AnturamStoolsCollection</div>
+          <AnturamStoolsCollection />
+          <div>After AnturamStoolsCollection</div>
+        </div>
         <CanvasCollection />
         <CeramicVaseSection />
         <WishboneChairSection/>

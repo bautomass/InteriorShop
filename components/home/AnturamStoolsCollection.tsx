@@ -203,17 +203,23 @@ const useProductsFetch = () => {
   });
 
   useEffect(() => {
+    console.log('Starting products fetch...');
     let mounted = true;
 
     const fetchProducts = async () => {
       try {
+        console.log('Fetching from /api/anturam-stools');
         const response = await fetch('/api/anturam-stools');
+        console.log('Response status:', response.status);
+        
         const data = await response.json();
+        console.log('API Response:', data);
         
         if (!response.ok) throw new Error(data.error || ERROR_MESSAGES.FETCH_ERROR);
         if (!data.products) throw new Error(ERROR_MESSAGES.NO_DATA);
         
         if (mounted) {
+          console.log('Setting products:', data.products.length);
           setState({
             products: data.products,
             loading: false,
@@ -221,6 +227,7 @@ const useProductsFetch = () => {
           });
         }
       } catch (err) {
+        console.error('Fetch error:', err);
         if (mounted) {
           setState(prev => ({
             ...prev,
@@ -297,9 +304,16 @@ export default function AnturamStoolsCollection() {
   }, [swiper, products]);
 
   useEffect(() => {
-    console.log('AnturamStoolsCollection: Client Component Mounted');
-    return () => console.log('AnturamStoolsCollection: Client Component Unmounted');
+    console.log('=== AnturamStoolsCollection Debug ===');
+    console.log('Component Mounted');
+    return () => console.log('Component Unmounted');
   }, []);
+
+  useEffect(() => {
+    console.log('Fetched Products:', fetchedProducts?.length || 0);
+    console.log('Loading:', loading);
+    console.log('Error:', error);
+  }, [fetchedProducts, loading, error]);
 
   console.log('AnturamStoolsCollection: Rendering');
   
