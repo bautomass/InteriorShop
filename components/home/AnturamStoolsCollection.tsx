@@ -203,23 +203,17 @@ const useProductsFetch = () => {
   });
 
   useEffect(() => {
-    console.log('Starting products fetch...');
     let mounted = true;
 
     const fetchProducts = async () => {
       try {
-        console.log('Fetching from /api/anturam-stools');
         const response = await fetch('/api/anturam-stools');
-        console.log('Response status:', response.status);
-        
         const data = await response.json();
-        console.log('API Response:', data);
         
         if (!response.ok) throw new Error(data.error || ERROR_MESSAGES.FETCH_ERROR);
         if (!data.products) throw new Error(ERROR_MESSAGES.NO_DATA);
         
         if (mounted) {
-          console.log('Setting products:', data.products.length);
           setState({
             products: data.products,
             loading: false,
@@ -227,7 +221,6 @@ const useProductsFetch = () => {
           });
         }
       } catch (err) {
-        console.error('Fetch error:', err);
         if (mounted) {
           setState(prev => ({
             ...prev,
@@ -303,29 +296,9 @@ export default function AnturamStoolsCollection() {
     }
   }, [swiper, products]);
 
-  useEffect(() => {
-    console.log('=== AnturamStoolsCollection Debug ===');
-    console.log('Component Mounted');
-    return () => console.log('Component Unmounted');
-  }, []);
-
-  useEffect(() => {
-    console.log('Fetched Products:', fetchedProducts?.length || 0);
-    console.log('Loading:', loading);
-    console.log('Error:', error);
-  }, [fetchedProducts, loading, error]);
-
-  console.log('Final rendered products length:', products?.length);
-  console.log('Loading state:', loading);
-  console.log('Error state:', error);
-
-  if (loading) {
-    console.log('Returning loading skeleton');
-    return <LoadingSkeleton />
-  }
+  if (loading) return <LoadingSkeleton />
   
   if (error) {
-    console.log('Returning error state');
     return (
       <div className="w-full py-12 bg-primary-50 dark:bg-primary-900">
         <div className="container mx-auto px-4 text-center">
@@ -335,14 +308,7 @@ export default function AnturamStoolsCollection() {
     )
   }
 
-  if (!products?.length) {
-    console.log('No products to display, returning null');
-    console.log('Products array:', products);
-    console.log('Fetched products:', fetchedProducts);
-    return null
-  }
-
-  console.log('Rendering full component with products:', products?.length);
+  if (!products?.length) return null;
 
   return (
     <>

@@ -16,11 +16,6 @@ import { TopHeader } from 'components/layout/navbar/top-header';
 import InteriorTipsSection from '@/components/home/InteriorTipsSection';
 import type { Metadata } from 'next';
 
-const Debug = ({ message }: { message: string }) => {
-  console.log(message);
-  return null;
-};
-
 export const metadata: Metadata = {
   title: 'Modern Interior Design & Home Decor',
   description:
@@ -42,8 +37,6 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  console.log('HomePage: Starting render');
-  
   return (
     <>
       <TopHeader />
@@ -55,11 +48,7 @@ export default function HomePage() {
         <LampsCollection />
         <GiftBuilderSection />
         <NewArrivalsCollection />
-        <div>
-          <div>Before AnturamStoolsCollection</div>
-          <AnturamStoolsCollection />
-          <div>After AnturamStoolsCollection</div>
-        </div>
+        <AnturamStoolsCollection />
         <CanvasCollection />
         <CeramicVaseSection />
         <WishboneChairSection/>
