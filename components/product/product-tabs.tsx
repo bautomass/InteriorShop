@@ -22,6 +22,16 @@ import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { CareInstructions } from './care-instructions';
 
+interface Product {
+  id: string;
+  name: string;
+}
+
+const ERROR_MESSAGES = {
+  FETCH_ERROR: 'Failed to fetch products',
+  NO_DATA: 'No products data available'
+} as const;
+
 interface TabBase {
   id: string;
   label: string;
@@ -599,6 +609,57 @@ const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }
 });
 
 ReviewsContainer.displayName = 'ReviewsContainer';
+
+const useProductsFetch = () => {
+  const [state, setState] = useState<{
+    products: Product[];
+    loading: boolean;
+    error: string | null;
+  }>({
+    products: [],
+    loading: true,
+    error: null
+  });
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchProducts = async () => {
+      console.log('Starting products fetch...');
+      try {
+        const response = await fetch('/api/anturam-stools');
+        const data = await response.json();
+        
+        console.log('API Response:', data);
+        
+        if (!response.ok) throw new Error(data.error || ERROR_MESSAGES.FETCH_ERROR);
+        if (!data.products) throw new Error(ERROR_MESSAGES.NO_DATA);
+        
+        if (mounted) {
+          setState({
+            products: data.products,
+            loading: false,
+            error: null
+          });
+        }
+      } catch (err) {
+        console.error('Fetch error:', err);
+        if (mounted) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: err instanceof Error ? err.message : ERROR_MESSAGES.FETCH_ERROR
+          }));
+        }
+      }
+    };
+
+    fetchProducts();
+    return () => { mounted = false; };
+  }, []);
+
+  return state;
+};
 
 export function ProductTabs() {
   const [activeTab, setActiveTab] = useState<Tab['id']>(INITIAL_TAB_ID);

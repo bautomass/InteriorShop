@@ -1,3 +1,4 @@
+// components/home/AnturamStoolsCollection.tsx
 "use client"
 import { PriceSortFilter } from '@/components/filter/PriceSortFilter';
 import { ProductQuickView } from '@/components/quickview/ProductQuickView';
@@ -206,7 +207,7 @@ const useProductsFetch = () => {
 
     const fetchProducts = async () => {
       try {
-        const response = await fetch('/api/stools');
+        const response = await fetch('/api/anturam-stools');
         const data = await response.json();
         
         if (!response.ok) throw new Error(data.error || ERROR_MESSAGES.FETCH_ERROR);
