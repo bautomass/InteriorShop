@@ -3,7 +3,18 @@
 
 import { motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
-import { Award, Clock, Globe2, HeartHandshake, Shield, Ship, Sparkles, Star } from 'lucide-react';
+import {
+  Award,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Globe2,
+  HeartHandshake,
+  Shield,
+  Ship,
+  Sparkles,
+  Star
+} from 'lucide-react';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { CareInstructions } from './care-instructions';
@@ -380,70 +391,99 @@ export function ProductTabs() {
 
     return (
       <TabErrorBoundary>
-      {isShippingTab(tab) && (
-        <div className="space-y-6">
-          <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
-          <p className="text-[#8C7E6A]">{tab.content.description}</p>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {tab.content.points.map((point, index) => (
-              <div key={index} className="rounded-xl bg-white/80 p-4 shadow-sm sm:p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6B5E4C]/10">
-                    <point.icon className="h-4 w-4 text-[#6B5E4C]" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="mb-2 font-medium text-[#6B5E4C]">{point.title}</h4>
-                    <p className="text-sm text-[#8C7E6A]">{point.description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {isQualityTab(tab) && (
-        <div className="space-y-6">
-          <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
-          <p className="text-[#8C7E6A]">{tab.content.description}</p>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {tab.content.points.map((point, index) => (
-              <div key={index} className="rounded-xl bg-white/80 p-4 shadow-sm sm:p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6B5E4C]/10">
-                    <point.icon className="h-4 w-4 text-[#6B5E4C]" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="mb-2 font-medium text-[#6B5E4C]">{point.title}</h4>
-                    <p className="text-sm text-[#8C7E6A]">{point.description}</p>
+        {isShippingTab(tab) && (
+          <div className="space-y-6">
+            <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
+            <p className="text-[#8C7E6A]">{tab.content.description}</p>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {tab.content.points.map((point, index) => (
+                <div key={index} className="rounded-xl bg-white/80 p-4 shadow-sm sm:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6B5E4C]/10">
+                      <point.icon className="h-4 w-4 text-[#6B5E4C]" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="mb-2 font-medium text-[#6B5E4C]">{point.title}</h4>
+                      <p className="text-sm text-[#8C7E6A]">{point.description}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {isReviewsTab(tab) && (
-        <div className="space-y-8">
-          <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {tab.content.testimonials.map((testimonial) => (
-              <div key={testimonial.id} className="rounded-xl bg-white/80 p-6 shadow-sm">
-                <ReviewStars rating={testimonial.rating} />
-                <h4 className="mt-4 font-medium text-[#6B5E4C]">{testimonial.title}</h4>
-                <p className="mt-2 text-sm text-[#8C7E6A]">{testimonial.text}</p>
-                <div className="mt-4 flex items-center justify-between text-xs text-[#8C7E6A]">
-                  <span>{testimonial.name}, {testimonial.location}</span>
-                  <span>{testimonial.date}</span>
+        {isQualityTab(tab) && (
+          <div className="space-y-6">
+            <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
+            <p className="text-[#8C7E6A]">{tab.content.description}</p>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {tab.content.points.map((point, index) => (
+                <div key={index} className="rounded-xl bg-white/80 p-4 shadow-sm sm:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6B5E4C]/10">
+                      <point.icon className="h-4 w-4 text-[#6B5E4C]" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="mb-2 font-medium text-[#6B5E4C]">{point.title}</h4>
+                      <p className="text-sm text-[#8C7E6A]">{point.description}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {isCareTab(tab) && <CareInstructions />}
+        {isReviewsTab(tab) && (
+          <div className="space-y-8">
+            <h3 className="text-xl font-light text-[#6B5E4C] sm:text-2xl">{tab.content.title}</h3>
+
+            <div className="relative">
+              <button
+                onClick={() => scroll('left')}
+                className={`absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-2 shadow-md transition-all hover:bg-gray-50 ${!scrollState.canScrollLeft && 'opacity-0'} md:-left-4`}
+                disabled={!scrollState.canScrollLeft}
+              >
+                <ChevronLeft className="h-5 w-5 text-[#6B5E4C]" />
+              </button>
+
+              <div
+                ref={reviewsRef}
+                onScroll={checkScrollability}
+                className="flex snap-x snap-mandatory gap-6 overflow-x-auto px-1 pb-6 scrollbar-hide"
+              >
+                {tab.content.testimonials.map((testimonial) => (
+                  <div
+                    key={testimonial.id}
+                    className="min-w-[300px] flex-shrink-0 snap-center rounded-xl bg-white/80 p-6 shadow-sm transition-transform hover:scale-[1.02] sm:min-w-[350px] lg:min-w-[400px]"
+                  >
+                    <ReviewStars rating={testimonial.rating} />
+                    <h4 className="mt-4 font-medium text-[#6B5E4C]">{testimonial.title}</h4>
+                    <p className="mt-2 line-clamp-4 text-sm text-[#8C7E6A]">{testimonial.text}</p>
+                    <div className="mt-4 flex items-center justify-between text-xs text-[#8C7E6A]">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{testimonial.name}</span>
+                        <span>{testimonial.location}</span>
+                      </div>
+                      <span>{testimonial.date}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => scroll('right')}
+                className={`absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-2 shadow-md transition-all hover:bg-gray-50 ${!scrollState.canScrollRight && 'opacity-0'} md:-right-4`}
+                disabled={!scrollState.canScrollRight}
+              >
+                <ChevronRight className="h-5 w-5 text-[#6B5E4C]" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isCareTab(tab) && <CareInstructions />}
       </TabErrorBoundary>
     );
   };
