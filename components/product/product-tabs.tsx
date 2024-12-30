@@ -477,7 +477,7 @@ const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }
 
   const variants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 1000 : -1000,
+      x: direction > 0 ? 500 : -500,
       opacity: 0
     }),
     center: {
@@ -487,7 +487,7 @@ const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }
     },
     exit: (direction: number) => ({
       zIndex: 0,
-      x: direction < 0 ? 1000 : -1000,
+      x: direction < 0 ? 500 : -500,
       opacity: 0
     })
   };
@@ -510,27 +510,29 @@ const ReviewsContainer = memo(({ testimonials }: { testimonials: Testimonial[] }
         <ChevronLeft className="h-5 w-5 text-gray-600" />
       </button>
 
-      <AnimatePresence initial={false} custom={direction} mode="popLayout">
-        <motion.div
-          key={page}
-          custom={direction}
-          variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{
-            x: { type: "spring", stiffness: 300, damping: 30 },
-            opacity: { duration: 0.2 }
-          }}
-          className="grid grid-cols-3 gap-6"
-        >
-          {testimonials
-            .slice(page * reviewsPerPage, (page + 1) * reviewsPerPage)
-            .map((review) => (
-              <ReviewCard key={review.id} review={review} />
-            ))}
-        </motion.div>
-      </AnimatePresence>
+      <div className="overflow-hidden">
+        <AnimatePresence initial={false} custom={direction} mode="wait">
+          <motion.div
+            key={page}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 100, damping: 20, duration: 0.6 },
+              opacity: { duration: 0.4 }
+            }}
+            className="grid grid-cols-3 gap-6"
+          >
+            {testimonials
+              .slice(page * reviewsPerPage, (page + 1) * reviewsPerPage)
+              .map((review) => (
+                <ReviewCard key={review.id} review={review} />
+              ))}
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       <button 
         onClick={() => paginate(1)}
