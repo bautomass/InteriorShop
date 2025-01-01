@@ -10,6 +10,55 @@ import { Product, ProductVariant } from 'lib/shopify/types';
 import { FormEvent } from 'react';
 import { useCart } from './cart-context';
 
+export function AddToCart({ product }: { product: Product }) {
+  const { variants, availableForSale } = product;
+  const { addCartItem } = useCart();
+  const { state } = useProduct();
+  const [message, formAction] = useActionState(addItem, null);
+
+  const variant = variants.find((variant: ProductVariant) =>
+    variant.selectedOptions.every((option) => option.value === state[option.name.toLowerCase()])
+  );
+  const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
+  const selectedVariantId = variant?.id || defaultVariantId;
+  const finalVariant = variants.find((variant) => variant.id === selectedVariantId);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedVariantId || !finalVariant) {
+      console.error('No variant selected');
+      return;
+    }
+
+    try {
+      console.log('Adding to cart:', { variantId: selectedVariantId, quantity: 1 });
+      const result = await formAction(selectedVariantId, 1);
+      
+      if (result === 'Success') {
+        await addCartItem({
+          variant: finalVariant,
+          product: product,
+          quantity: 1
+        });
+      } else {
+        console.error('Add to cart failed:', result);
+      }
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <SubmitButton availableForSale={availableForSale} selectedVariantId={selectedVariantId} />
+      <p aria-live="polite" className="sr-only" role="status">
+        {message}
+      </p>
+    </form>
+  );
+}
+
 function SubmitButton({
   availableForSale,
   selectedVariantId
@@ -59,56 +108,15 @@ function SubmitButton({
     </button>
   );
 }
-
-export function AddToCart({ product }: { product: Product }) {
-  const { variants, availableForSale } = product;
-  const { addCartItem } = useCart();
-  const { state } = useProduct();
-  const [message, formAction] = useActionState(addItem, null);
-
-  const variant = variants.find((variant: ProductVariant) =>
-    variant.selectedOptions.every((option) => option.value === state[option.name.toLowerCase()])
-  );
-  const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
-  const selectedVariantId = variant?.id || defaultVariantId;
-  const actionWithVariant = formAction.bind(null, selectedVariantId);
-  const finalVariant = variants.find((variant) => variant.id === selectedVariantId)!;
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    try {
-      if (selectedVariantId) {
-        await addCartItem({
-          variant: finalVariant,
-          product: product,
-          quantity: 1
-        });
-        await actionWithVariant();
-      }
-    } catch (error) {
-      console.error('Error adding item to cart:', error);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <SubmitButton availableForSale={availableForSale} selectedVariantId={selectedVariantId} />
-      <p aria-live="polite" className="sr-only" role="status">
-        {message}
-      </p>
-    </form>
-  );
-}
-
-
 // 'use client';
 
+// import { useActionState } from '@/hooks/useActionState';
 // import { PlusIcon } from '@heroicons/react/24/outline';
 // import clsx from 'clsx';
 // import { addItem } from 'components/cart/actions';
 // import { useProduct } from 'components/product/product-context';
 // import { Product, ProductVariant } from 'lib/shopify/types';
-// import { useActionState } from 'react';
+// import { FormEvent } from 'react';
 // import { useCart } from './cart-context';
 
 // function SubmitButton({
@@ -130,7 +138,6 @@ export function AddToCart({ product }: { product: Product }) {
 //     );
 //   }
 
-//   console.log(selectedVariantId);
 //   if (!selectedVariantId) {
 //     return (
 //       <button
@@ -148,6 +155,7 @@ export function AddToCart({ product }: { product: Product }) {
 
 //   return (
 //     <button
+//       type="submit"
 //       aria-label="Add to cart"
 //       className={clsx(buttonClasses, {
 //         'hover:opacity-90': true
@@ -175,13 +183,24 @@ export function AddToCart({ product }: { product: Product }) {
 //   const actionWithVariant = formAction.bind(null, selectedVariantId);
 //   const finalVariant = variants.find((variant) => variant.id === selectedVariantId)!;
 
-//   return (
-//     <form
-//       action={async () => {
-//         addCartItem(finalVariant, product);
+//   const handleSubmit = async (e: FormEvent) => {
+//     e.preventDefault();
+//     try {
+//       if (selectedVariantId) {
+//         await addCartItem({
+//           variant: finalVariant,
+//           product: product,
+//           quantity: 1
+//         });
 //         await actionWithVariant();
-//       }}
-//     >
+//       }
+//     } catch (error) {
+//       console.error('Error adding item to cart:', error);
+//     }
+//   };
+
+//   return (
+//     <form onSubmit={handleSubmit}>
 //       <SubmitButton availableForSale={availableForSale} selectedVariantId={selectedVariantId} />
 //       <p aria-live="polite" className="sr-only" role="status">
 //         {message}
