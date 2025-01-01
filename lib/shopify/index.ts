@@ -135,62 +135,6 @@ export async function shopifyFetch<T>({
   }
 }
 
-// export async function shopifyFetch<T>({
-//   cache = 'force-cache',
-//   headers,
-//   query,
-//   tags,
-//   variables
-// }: {
-//   cache?: RequestCache;
-//   headers?: HeadersInit;
-//   query: string;
-//   tags?: string[];
-//   variables?: ExtractVariables<T>;
-// }): Promise<{ status: number; body: T } | never> {
-//   try {
-//     const result = await fetch(endpoint, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         'X-Shopify-Storefront-Access-Token': key,
-//         ...headers
-//       },
-//       body: JSON.stringify({
-//         ...(query && { query }),
-//         ...(variables && { variables })
-//       }),
-//       cache,
-//       ...(tags && { next: { tags } })
-//     });
-
-//     const body = await result.json();
-
-//     if (body.errors) {
-//       throw body.errors[0];
-//     }
-
-//     return {
-//       status: result.status,
-//       body
-//     };
-//   } catch (e) {
-//     if (isShopifyError(e)) {
-//       throw {
-//         cause: e.cause?.toString() || 'unknown',
-//         status: e.status || 500,
-//         message: e.message,
-//         query
-//       };
-//     }
-
-//     throw {
-//       error: e,
-//       query
-//     };
-//   }
-// }
-
 const removeEdgesAndNodes = <T>(array: Connection<T>): T[] => {
   return array.edges.map((edge) => edge?.node);
 };
@@ -482,13 +426,6 @@ export async function getMenu(handle: string): Promise<Menu[]> {
       path: item.url.replace(domain, '').replace('/pages', '')
     })) || []
   );
-
-  //   return (
-  //     res.body?.data?.menu?.items.map((item: { title: string; url: string }) => ({
-  //       title: item.title,
-  //       path: item.url.replace(domain, '').replace('/collections', '/search').replace('/pages', '')
-  //     })) || []
-  //   );
 }
 
 export async function getPage(handle: string): Promise<Page> {
