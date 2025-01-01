@@ -1,3 +1,4 @@
+//components/cart/actions.ts
 'use server';
 
 import { TAGS } from 'lib/constants';
@@ -5,6 +6,50 @@ import { addToCart, createCart, getCart, removeFromCart, updateCart } from 'lib/
 import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+
+// export async function addItem(
+//   prevState: any,
+//   selectedVariantId: string | undefined,
+//   quantity: number = 1
+// ) {
+//   try {
+//     if (!selectedVariantId) {
+//       throw new Error('No variant ID provided');
+//     }
+
+//     let cartId = cookies().get('cartId')?.value;
+//     if (!cartId) {
+//       const cart = await createCart();
+//       if (!cart?.id) throw new Error('Failed to create cart');
+//       cartId = cart.id;
+//       cookies().set('cartId', cart.id);
+//     }
+
+//     // Deliberately do NOT format the variant ID - pass it through as is
+//     console.log('Adding to cart:', {
+//       cartId,
+//       selectedVariantId,
+//       quantity
+//     });
+
+//     const result = await addToCart(cartId, [{ merchandiseId: selectedVariantId, quantity }]);
+
+//     if (!result?.id) {
+//       console.error('Invalid cart response:', result);
+//       throw new Error('Failed to add item to cart');
+//     }
+
+//     revalidateTag(TAGS.cart);
+//     return 'Success';
+//   } catch (e) {
+//     console.error('Cart error:', {
+//       error: e,
+//       variant: selectedVariantId,
+//       quantity
+//     });
+//     return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
+//   }
+// }
 
 export async function addItem(
   prevState: any,
@@ -24,28 +69,20 @@ export async function addItem(
       cookies().set('cartId', cart.id);
     }
 
-    // Deliberately do NOT format the variant ID - pass it through as is
-    console.log('Adding to cart:', {
-      cartId,
-      selectedVariantId,
+    // Ensure proper Shopify format
+    const formattedVariantId = selectedVariantId.includes('gid://shopify/ProductVariant/') 
+      ? selectedVariantId
+      : `gid://shopify/ProductVariant/${selectedVariantId.split('/').pop()}`;
+
+    const result = await addToCart(cartId, [{
+      merchandiseId: formattedVariantId,
       quantity
-    });
-
-    const result = await addToCart(cartId, [{ merchandiseId: selectedVariantId, quantity }]);
-
-    if (!result?.id) {
-      console.error('Invalid cart response:', result);
-      throw new Error('Failed to add item to cart');
-    }
+    }]);
 
     revalidateTag(TAGS.cart);
     return 'Success';
   } catch (e) {
-    console.error('Cart error:', {
-      error: e,
-      variant: selectedVariantId,
-      quantity
-    });
+    console.error('Cart error:', e);
     return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
   }
 }

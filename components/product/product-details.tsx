@@ -1,4 +1,4 @@
-//Product Details
+//components/product/product-details.tsx
 'use client';
 
 import { useActionState } from '@/hooks/useActionState';
