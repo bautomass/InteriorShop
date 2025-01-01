@@ -128,10 +128,13 @@ export async function shopifyFetch<T>({
       body
     };
   } catch (e) {
-    console.error('Shopify Fetch Full Error:', {
+    console.error('RAW ERROR:', {
       error: e,
       message: e instanceof Error ? e.message : 'Unknown error',
-      stack: e instanceof Error ? e.stack : undefined
+      endpoint,
+      key: !!key,
+      hasQuery: !!query,
+      hasVars: !!variables
     });
     throw e;
   }
@@ -239,6 +242,12 @@ export async function addToCart(
   lines: { merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
   try {
+    console.log('CART DEBUG:', JSON.stringify({
+      cartId,
+      lines,
+      token: !!key,
+      endpoint
+    }, null, 2));
     console.log('====== Add to Cart Debug ======');
     console.log('1. Initial values:', { cartId, lines });
 
