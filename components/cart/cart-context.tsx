@@ -1,3 +1,5 @@
+//components/cart/cart-context.tsx
+
 'use client';
 
 import type { Cart, CartItem, Product, ProductVariant } from 'lib/shopify/types';
@@ -204,6 +206,7 @@ export function useCart() {
   }
   return context;
 }
+
 // 'use client';
 
 // import type { Cart, CartItem, Product, ProductVariant } from 'lib/shopify/types';
