@@ -340,7 +340,12 @@ export function ProductDetails({ product }: { product: Product }) {
 
     // Using Promise then/catch instead of async/await inside startTransition
     startTransition(() => {
-      formAction(selectedVariant.id, quantity)
+      // Extract the numeric ID from the variant ID if needed
+      const variantId = selectedVariant.id.includes('gid://')
+        ? selectedVariant.id
+        : selectedVariant.id.split('/').pop();
+
+      formAction(variantId, quantity)
         .then((result) => {
           if (result === 'Success' && selectedVariant) {
             addCartItem({
@@ -941,73 +946,6 @@ function QuantitySelector({
   );
 }
 
-// export function AddToCart({ product }: { product: Product }) {
-//   const { variants, availableForSale } = product;
-//   const { addCartItem } = useCart();
-//   const { state } = useProduct();
-//   const [quantity, setQuantity] = useState(1);
-//   const [message, formAction] = useActionState(addItem, null);
-
-//   const variant = variants.find((variant: ProductVariant) =>
-//     variant.selectedOptions.every((option) => option.value === state[option.name.toLowerCase()])
-//   );
-//   const selectedVariantId = variant?.id || (variants.length === 1 ? variants[0]?.id : undefined);
-
-//   const handleAddToCart = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     console.log('Adding to cart:', { selectedVariantId, quantity });
-
-//     if (!selectedVariantId) {
-//       console.error('No variant selected');
-//       return;
-//     }
-
-//     try {
-//       const result = await formAction(selectedVariantId, quantity);
-//       console.log('Server action result:', result);
-
-//       if (result === 'Success' && variant) {
-//         addCartItem({
-//           variant,
-//           product,
-//           quantity
-//         });
-//         console.log('Added to cart successfully');
-//       } else {
-//         console.error('Failed to add to cart:', result);
-//       }
-//     } catch (error) {
-//       console.error('Failed to add to cart:', error);
-//     }
-//   };
-
-//   return (
-//     <form onSubmit={handleAddToCart} className="mt-6">
-//       <div className="flex items-center gap-4">
-//         <QuantitySelector
-//           quantity={quantity}
-//           onIncrease={() => setQuantity((q) => q + 1)}
-//           onDecrease={() => setQuantity((q) => (q > 1 ? q - 1 : 1))}
-//         />
-
-//         <motion.button
-//           type="submit"
-//           whileHover={{ scale: 1.02 }}
-//           whileTap={{ scale: 0.98 }}
-//           disabled={!selectedVariantId || !availableForSale}
-//           className={`flex flex-1 items-center justify-center gap-2 rounded-md px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl ${
-//             !selectedVariantId || !availableForSale
-//               ? 'cursor-not-allowed bg-gray-400'
-//               : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
-//           }`}
-//         >
-//           <Plus className="h-5 w-5" />
-//           Add To Cart
-//         </motion.button>
-//       </div>
-//     </form>
-//   );
-// }
 export function AddToCart({ product }: { product: Product }) {
   const { variants, availableForSale } = product;
   const { addCartItem } = useCart();
@@ -1050,22 +988,13 @@ export function AddToCart({ product }: { product: Product }) {
 
   return (
     <form onSubmit={handleAddToCart}>
-      <QuantitySelector
-        quantity={1}
-        onIncrease={() => {}}
-        onDecrease={() => {}}
-      />
+      <QuantitySelector quantity={1} onIncrease={() => {}} onDecrease={() => {}} />
       <button
         type="submit"
-        className="bg-[#6B5E4C] text-white px-6 py-3 rounded-lg hover:bg-[#5A4D3B] transition-colors disabled:bg-gray-300"
+        className="rounded-lg bg-[#6B5E4C] px-6 py-3 text-white transition-colors hover:bg-[#5A4D3B] disabled:bg-gray-300"
         disabled={!availableForSale || !selectedVariantId}
       >
-        {!availableForSale 
-          ? 'Out of Stock' 
-          : !selectedVariantId 
-            ? 'Select options' 
-            : 'Add to Cart'
-        }
+        {!availableForSale ? 'Out of Stock' : !selectedVariantId ? 'Select options' : 'Add to Cart'}
       </button>
     </form>
   );
