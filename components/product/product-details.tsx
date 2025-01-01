@@ -333,60 +333,25 @@ export function ProductDetails({ product }: { product: Product }) {
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
   };
 
-  // const handleAddToCart = useCallback(() => {
-  //   if (!selectedVariant || !product.availableForSale) {
-  //     return;
-  //   }
-
-  //   // Using Promise then/catch instead of async/await inside startTransition
-  //   startTransition(() => {
-  //     // Safely handle the variant ID
-  //     const variantId = typeof selectedVariant.id === 'string' 
-  //       ? selectedVariant.id.split('/').pop() || selectedVariant.id
-  //       : selectedVariant.id;
-
-  //     formAction(variantId, quantity)
-  //       .then((result) => {
-  //         if (result === 'Success' && selectedVariant) {
-  //           addCartItem({
-  //             variant: selectedVariant,
-  //             product,
-  //             quantity
-  //           });
-  //           console.log('Added to cart successfully');
-  //         } else {
-  //           console.error('Failed to add to cart:', result);
-  //         }
-  //       })
-  //       .catch((error) => {
-  //         console.error('Failed to add to cart:', error);
-  //       });
-  //   });
-  // }, [selectedVariant, product, quantity, formAction, addCartItem]);
-
   const handleAddToCart = useCallback(() => {
     if (!selectedVariant || !product.availableForSale) {
-      console.log('Cannot add to cart:', { 
-        hasVariant: !!selectedVariant, 
-        isAvailable: product.availableForSale 
+      console.log('Cannot add to cart:', {
+        hasVariant: !!selectedVariant,
+        isAvailable: product.availableForSale
       });
       return;
     }
-  
+
     console.log('=== Add to Cart Debug ===');
     console.log('Selected Variant:', selectedVariant);
-    console.log('Variant ID:', selectedVariant.id);
+    console.log('Original Variant ID:', selectedVariant.id);
     console.log('Quantity:', quantity);
-  
-    // Using Promise then/catch instead of async/await inside startTransition
+
     startTransition(() => {
-      // Safely handle the variant ID
-      const variantId = typeof selectedVariant.id === 'string' 
-        ? selectedVariant.id.split('/').pop() || selectedVariant.id
-        : selectedVariant.id;
-  
-      console.log('Formatted Variant ID:', variantId);
-  
+      // Keep the full Shopify ID format
+      const variantId = selectedVariant.id;
+      console.log('Using Variant ID:', variantId);
+
       formAction(variantId, quantity)
         .then((result) => {
           if (result === 'Success' && selectedVariant) {

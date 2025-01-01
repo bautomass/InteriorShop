@@ -14,12 +14,10 @@ export async function addItem(
 ) {
   try {
     let cartId = cookies().get('cartId')?.value;
-    console.log('Initial cartId:', cartId);
-
+    
     // Create cart if it doesn't exist
     if (!cartId) {
       const cart = await createCart();
-      console.log('Created new cart:', cart);
       if (!cart?.id) {
         throw new Error('Failed to create cart');
       }
@@ -36,36 +34,30 @@ export async function addItem(
       throw new Error('No variant ID provided');
     }
 
-    console.log('Selected variant ID:', selectedVariantId);
+    // Keep the full Shopify ID format, just ensure it's properly formatted
+    const merchandiseId = selectedVariantId.startsWith('gid://') 
+      ? selectedVariantId 
+      : `gid://shopify/ProductVariant/${selectedVariantId}`;
 
-    // Safe variant ID formatting
-    let formattedVariantId = String(selectedVariantId);
-    if (!formattedVariantId.startsWith('gid://')) {
-      // Remove any existing "ProductVariant/" prefix
-      const cleanId = formattedVariantId.replace('ProductVariant/', '');
-      formattedVariantId = `gid://shopify/ProductVariant/${cleanId}`;
-    }
+    console.log('Using merchandiseId:', merchandiseId);
 
-    console.log('Formatted variant ID:', formattedVariantId);
-
-    // Add item to cart with formatted ID
-    const result = await addToCart(cartId, [{ merchandiseId: formattedVariantId, quantity }]);
-
-    console.log('Add to cart result:', result);
-
+    // Add item to cart with properly formatted ID
+    const result = await addToCart(cartId, [
+      { merchandiseId, quantity }
+    ]);
+    
     if (!result?.id) {
       throw new Error('Failed to add item to cart');
     }
-
+    
     revalidateTag(TAGS.cart);
     return 'Success';
   } catch (e) {
-    console.error('Full error details:', e);
+    console.error('Error in addItem:', e);
     const errorMsg = e instanceof Error ? e.message : 'Failed to add item to cart';
     return `Error: ${errorMsg}`;
   }
 }
-
 export async function removeItem(prevState: any, merchandiseId: string) {
   try {
     const cartId = cookies().get('cartId')?.value;
