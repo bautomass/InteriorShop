@@ -335,15 +335,18 @@ export function ProductDetails({ product }: { product: Product }) {
 
   const handleAddToCart = useCallback(() => {
     if (!selectedVariant || !product.availableForSale) return;
-  
+
     startTransition(() => {
-      // Pass the full variant ID directly
-      const variantId = selectedVariant.id;
+      // Extract just the ID number from the variant ID if it's a full Shopify URL
+      const variantId = selectedVariant.id.includes('/')
+        ? selectedVariant.id
+        : `gid://shopify/ProductVariant/${selectedVariant.id}`;
+
       console.log('DEBUG - Adding to cart:', {
         variantId,
         quantity
       });
-  
+
       formAction(variantId, quantity)
         .then((result) => {
           console.log('formAction result:', result);

@@ -245,7 +245,9 @@ export async function addToCart(
     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
 
     const formattedLines = lines.map((line) => ({
-      merchandiseId: line.merchandiseId,
+      merchandiseId: line.merchandiseId.startsWith('gid://') 
+        ? line.merchandiseId 
+        : `gid://shopify/ProductVariant/${line.merchandiseId}`,
       quantity: line.quantity
     }));
 

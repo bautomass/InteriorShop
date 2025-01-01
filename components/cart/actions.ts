@@ -19,20 +19,21 @@ export async function addItem(
       const cart = await createCart();
       if (!cart?.id) throw new Error('Failed to create cart');
       cartId = cart.id;
-      cookies().set('cartId', cart.id, {
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        path: '/',
-        sameSite: 'lax'
-      });
+      cookies().set('cartId', cart.id);
     }
 
     if (!selectedVariantId) {
       throw new Error('No variant ID provided');
     }
 
-    // Keep original Shopify ID format without any modifications
-    const result = await addToCart(cartId, [{ merchandiseId: selectedVariantId, quantity }]);
+    // Ensure the variant ID is in the correct format
+    const formattedVariantId = selectedVariantId.startsWith('gid://') 
+      ? selectedVariantId 
+      : `gid://shopify/ProductVariant/${selectedVariantId}`;
+
+    const result = await addToCart(cartId, [
+      { merchandiseId: formattedVariantId, quantity }
+    ]);
 
     if (!result?.id) throw new Error('Failed to add item to cart');
 
