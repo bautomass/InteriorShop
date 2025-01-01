@@ -7,6 +7,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 export async function addItem(
+  prevState: any,
   selectedVariantId: string | undefined,
   quantity: number = 1
 ) {
@@ -49,7 +50,7 @@ export async function addItem(
   }
 }
 
-export async function removeItem(merchandiseId: string) {
+export async function removeItem(prevState: any, merchandiseId: string) {
   try {
     const cartId = cookies().get('cartId')?.value;
     if (!cartId) {
@@ -76,6 +77,7 @@ export async function removeItem(merchandiseId: string) {
 }
 
 export async function updateItemQuantity(
+  prevState: any,
   payload: {
     merchandiseId: string;
     quantity: number;
