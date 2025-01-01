@@ -26,6 +26,11 @@ export async function addItem(
       throw new Error('No variant ID provided');
     }
 
+    // Add type checking to ensure we're working with a string
+    if (typeof selectedVariantId !== 'string') {
+      throw new Error('Variant ID must be a string');
+    }
+
     // Ensure the variant ID is in the correct format
     const formattedVariantId = selectedVariantId.startsWith('gid://') 
       ? selectedVariantId 

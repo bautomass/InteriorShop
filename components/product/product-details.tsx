@@ -337,10 +337,17 @@ export function ProductDetails({ product }: { product: Product }) {
     if (!selectedVariant || !product.availableForSale) return;
 
     startTransition(() => {
+      // Ensure we're working with a string ID
+      const rawId = selectedVariant.id;
+      if (typeof rawId !== 'string') {
+        console.error('Invalid variant ID type:', typeof rawId);
+        return;
+      }
+
       // Extract just the ID number from the variant ID if it's a full Shopify URL
-      const variantId = selectedVariant.id.includes('/')
-        ? selectedVariant.id
-        : `gid://shopify/ProductVariant/${selectedVariant.id}`;
+      const variantId = rawId.includes('/')
+        ? rawId
+        : `gid://shopify/ProductVariant/${rawId}`;
 
       console.log('DEBUG - Adding to cart:', {
         variantId,
