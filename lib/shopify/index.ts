@@ -51,7 +51,6 @@ import {
   ShopifyRemoveFromCartOperation,
   ShopifyUpdateCartOperation
 } from './types';
-import { cookies } from 'next/headers';
 
 const domain = process.env.SHOPIFY_STORE_DOMAIN
   ? ensureStartsWith(process.env.SHOPIFY_STORE_DOMAIN, 'https://')
@@ -229,34 +228,85 @@ export async function addToCart(
   lines: Array<{ merchandiseId: string; quantity: number }>
 ): Promise<Cart> {
   try {
-    const formattedCartId = cartId.includes('gid://shopify/Cart/')
-      ? cartId 
-      : `gid://shopify/Cart/${cartId}`;
+    // Basic validation
+    if (!cartId || typeof cartId !== 'string') {
+      throw new Error('Invalid cart ID');
+    }
+
+    // Format cart ID
+    const formattedCartId =
+      typeof cartId === 'string' && cartId.startsWith('gid://')
+        ? cartId
+        : `gid://shopify/Cart/${cartId}`;
+
+    // Format lines properly
+    const formattedLines = lines.map((line) => {
+      if (!line.merchandiseId || typeof line.merchandiseId !== 'string') {
+        throw new Error('Invalid variant ID');
+      }
+
+      return {
+        merchandiseId:
+          typeof line.merchandiseId === 'string' && line.merchandiseId.startsWith('gid://')
+            ? line.merchandiseId
+            : `gid://shopify/ProductVariant/${line.merchandiseId}`,
+        quantity: line.quantity
+      };
+    });
 
     const res = await shopifyFetch<ShopifyAddToCartOperation>({
       query: addToCartMutation,
       variables: {
         cartId: formattedCartId,
-        lines
+        lines: formattedLines
       },
       cache: 'no-store'
     });
 
     if (!res.body.data?.cartLinesAdd?.cart) {
-      console.error('Cart API Response:', res.body);
       throw new Error('Invalid cart response from Shopify');
     }
 
     return reshapeCart(res.body.data.cartLinesAdd.cart);
   } catch (error) {
-    console.error('Cart operation error:', {
-      error,
-      cartId,
-      lines
-    });
+    console.error('Cart operation error:', error);
     throw error;
   }
 }
+
+// export async function addToCart(
+//   cartId: string,
+//   lines: Array<{ merchandiseId: string; quantity: number }>
+// ): Promise<Cart> {
+//   try {
+//     const formattedCartId = cartId.includes('gid://shopify/Cart/')
+//       ? cartId
+//       : `gid://shopify/Cart/${cartId}`;
+
+//     const res = await shopifyFetch<ShopifyAddToCartOperation>({
+//       query: addToCartMutation,
+//       variables: {
+//         cartId: formattedCartId,
+//         lines
+//       },
+//       cache: 'no-store'
+//     });
+
+//     if (!res.body.data?.cartLinesAdd?.cart) {
+//       console.error('Cart API Response:', res.body);
+//       throw new Error('Invalid cart response from Shopify');
+//     }
+
+//     return reshapeCart(res.body.data.cartLinesAdd.cart);
+//   } catch (error) {
+//     console.error('Cart operation error:', {
+//       error,
+//       cartId,
+//       lines
+//     });
+//     throw error;
+//   }
+// }
 
 export async function removeFromCart(cartId: string, lineIds: string[]): Promise<Cart> {
   const res = await shopifyFetch<ShopifyRemoveFromCartOperation>({
