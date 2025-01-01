@@ -1,27 +1,39 @@
+// app/api/search/route.ts
 import { getProducts, searchCollections } from '@/lib/shopify';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q');
-
-  if (!query || query.trim().length === 0) {
-    return NextResponse.json({ products: [], collections: [] });
-  }
-
   try {
+    const { searchParams } = new URL(request.url);
+    const searchQuery = searchParams.get('q');
+
+    if (!searchQuery) {
+      return NextResponse.json({
+        products: [],
+        collections: []
+      });
+    }
+
+    // Execute both searches in parallel
     const [products, collections] = await Promise.all([
       getProducts({ 
-        query: query.trim(),
+        query: searchQuery,
         sortKey: 'RELEVANCE'
+      }).catch(error => {
+        console.error('Product search error:', error);
+        return [];
       }),
       searchCollections({ 
-        query: query.trim() 
+        query: searchQuery 
+      }).catch(error => {
+        console.error('Collection search error:', error);
+        return [];
       })
     ]);
 
+    // Format response
     const response = {
       products: products.map(product => ({
         id: product.id,
@@ -47,10 +59,16 @@ export async function GET(request: Request) {
     });
 
   } catch (error) {
-    console.error('Search error:', error);
+    console.error('Search API error:', error);
     return NextResponse.json(
-      { error: 'Internal server error', products: [], collections: [] },
-      { status: 500 }
+      { 
+        error: 'Search failed',
+        details: process.env.NODE_ENV === 'development' ? 
+          (error instanceof Error ? error.message : String(error)) : undefined,
+        products: [], 
+        collections: [] 
+      },
+      { status: 200 }
     );
   }
 }
