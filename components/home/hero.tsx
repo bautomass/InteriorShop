@@ -1,3 +1,4 @@
+//components/home/hero.tsx
 'use client';
 
 import { PriceRangeFilter } from '@/components/filter/PriceRangeFilter';
@@ -335,7 +336,7 @@ function Hero() {
                                   }) => (
                                     <Link
                                       key={product.id}
-                                      href={`/products/${product.handle}`}
+                                      href={`/product/${product.handle}`}
                                       className="flex items-center gap-4 p-4 hover:bg-neutral-50 transition-colors group"
                                       onClick={() => setIsSearchOpen(false)}
                                     >
@@ -724,7 +725,7 @@ function Hero() {
                             {filteredAndSortedResults.map((product) => (
                               <Link
                                 key={product.id}
-                                href={`/products/${product.handle}`}
+                                href={`/product/${product.handle}`}
                                 onClick={() => setShowSearchModal(false)}
                                 className="group bg-neutral-50 rounded-lg overflow-hidden hover:bg-neutral-100 transition-colors"
                               >
