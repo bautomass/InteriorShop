@@ -974,15 +974,24 @@ export function AddToCart({ product }: { product: Product }) {
     }
 
     try {
+      // Ensure we're working with a string and format it correctly
+      const variantId = typeof selectedVariantId === 'string' 
+        ? (selectedVariantId.startsWith('gid://') 
+            ? selectedVariantId 
+            : `gid://shopify/ProductVariant/${selectedVariantId}`)
+        : String(selectedVariantId); // Convert to string if it's not already
+
       // First update the cart UI optimistically
-      addCartItem({
-        variant: variant!,
-        product,
-        quantity: 1
-      });
+      if (variant) {
+        addCartItem({
+          variant,
+          product,
+          quantity: 1
+        });
+      }
 
       // Then send the server action
-      const result = await formAction(selectedVariantId, 1);
+      const result = await formAction(variantId, 1);
       console.log('Add to cart result:', result);
 
       if (result !== 'Success') {
