@@ -1,4 +1,3 @@
-//components/cart/actions.ts
 'use server';
 
 import { TAGS } from 'lib/constants';
@@ -7,21 +6,7 @@ import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-function validateAndFormatVariantId(variantId: string | undefined): string {
-  if (!variantId) throw new Error('No variant ID provided');
-  return String(variantId);
-}
-
-function validateQuantity(quantity: number): number {
-  const parsedQuantity = Number(quantity);
-  if (isNaN(parsedQuantity) || parsedQuantity < 1) {
-    throw new Error('Quantity must be a positive number');
-  }
-  return parsedQuantity;
-}
-
 export async function addItem(
-  prevState: any,
   selectedVariantId: string | undefined,
   quantity: number = 1
 ) {
@@ -38,32 +23,33 @@ export async function addItem(
       cookies().set('cartId', cart.id);
     }
 
-    // Ensure we have a string and it's properly formatted
-    const formattedVariantId = typeof selectedVariantId === 'string' && selectedVariantId.includes('gid://') 
-      ? selectedVariantId 
-      : `gid://shopify/ProductVariant/${selectedVariantId}`;
-
-    console.log('Cart Addition:', {
+    // Deliberately do NOT format the variant ID - pass it through as is
+    console.log('Adding to cart:', {
       cartId,
-      formattedVariantId,
+      selectedVariantId,
       quantity
     });
 
-    const result = await addToCart(cartId, [
-      { merchandiseId: formattedVariantId, quantity }
-    ]);
+    const result = await addToCart(cartId, [{ merchandiseId: selectedVariantId, quantity }]);
 
-    if (!result?.id) throw new Error('Failed to add item to cart');
+    if (!result?.id) {
+      console.error('Invalid cart response:', result);
+      throw new Error('Failed to add item to cart');
+    }
 
     revalidateTag(TAGS.cart);
     return 'Success';
   } catch (e) {
-    console.error('Cart error:', e);
+    console.error('Cart error:', {
+      error: e,
+      variant: selectedVariantId,
+      quantity
+    });
     return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
   }
 }
 
-export async function removeItem(prevState: any, merchandiseId: string) {
+export async function removeItem(merchandiseId: string) {
   try {
     const cartId = cookies().get('cartId')?.value;
     if (!cartId) {
@@ -90,7 +76,6 @@ export async function removeItem(prevState: any, merchandiseId: string) {
 }
 
 export async function updateItemQuantity(
-  prevState: any,
   payload: {
     merchandiseId: string;
     quantity: number;
