@@ -74,17 +74,10 @@ export async function shopifyFetch<T>({
   variables?: ExtractVariables<T>;
 }): Promise<{ status: number; body: T } | never> {
   try {
+    // Request setup logging
     console.log('Shopify Request:', {
-      endpoint,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': key ? '[REDACTED]' : 'MISSING',
-        ...headers
-      },
-      body: {
-        query,
-        variables
-      }
+      query: query.slice(0, 100) + '...',
+      variables
     });
 
     const result = await fetch(endpoint, {
@@ -103,40 +96,34 @@ export async function shopifyFetch<T>({
     });
 
     const body = await result.json();
-    console.log('Shopify Response:', {
-      status: result.status,
-      body: JSON.stringify(body, null, 2),
-      query,
-      variables
-    });
 
-    if (body.errors) {
-      console.error('GraphQL Errors:', body.errors);
-      throw new Error(`Shopify API Error: ${body.errors.map((e: any) => e.message).join(', ')}`);
+    // Enhanced error handling
+    if (body.errors?.length > 0) {
+      console.error('GraphQL Errors:', JSON.stringify(body.errors, null, 2));
+      throw new Error(body.errors.map((e: any) => e.message).join(', '));
     }
 
     if (!result.ok) {
-      console.error('HTTP Error:', {
-        status: result.status,
-        statusText: result.statusText
-      });
       throw new Error(`HTTP error! status: ${result.status}`);
+    }
+
+    if (!body.data) {
+      console.error('Invalid response structure:', body);
+      throw new Error('Invalid API response structure');
     }
 
     return {
       status: result.status,
       body
     };
-  } catch (e) {
-    console.error('RAW ERROR:', {
-      error: e,
-      message: e instanceof Error ? e.message : 'Unknown error',
-      endpoint,
-      key: !!key,
-      hasQuery: !!query,
-      hasVars: !!variables
+
+  } catch (error) {
+    console.error('Shopify fetch error:', {
+      error,
+      query: query.slice(0, 100) + '...',
+      variables
     });
-    throw e;
+    throw error;
   }
 }
 

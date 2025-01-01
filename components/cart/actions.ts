@@ -1,3 +1,4 @@
+//components/cart/actions.ts
 'use server';
 
 import { TAGS } from 'lib/constants';
@@ -33,26 +34,38 @@ export async function addItem(
       cookies().set('cartId', cart.id);
     }
 
-    const formattedVariantId = validateAndFormatVariantId(selectedVariantId);
+    // Validate and format variant ID
+    const formattedVariantId = selectedVariantId?.startsWith('gid://')
+      ? selectedVariantId
+      : `gid://shopify/ProductVariant/${selectedVariantId}`;
 
-    console.log('Type check:', {
-      originalId: selectedVariantId,
-      formattedId: formattedVariantId,
-      type: typeof formattedVariantId
+    if (!formattedVariantId) {
+      throw new Error('Invalid variant ID');
+    }
+
+    // Add debug logging
+    console.log('Cart Addition Debug:', {
+      cartId,
+      formattedVariantId,
+      quantity
     });
 
-    const validatedQuantity = validateQuantity(quantity);
-
     const result = await addToCart(cartId, [
-      { merchandiseId: formattedVariantId, quantity: validatedQuantity }
+      { merchandiseId: formattedVariantId, quantity }
     ]);
 
-    if (!result?.id) throw new Error('Failed to add item to cart');
+    if (!result?.id) {
+      throw new Error('Failed to add item to cart: Invalid cart response');
+    }
 
     revalidateTag(TAGS.cart);
     return 'Success';
   } catch (e) {
-    console.error('Full error details in addItem:', e);
+    console.error('Add to cart error:', {
+      error: e,
+      variant: selectedVariantId,
+      quantity
+    });
     return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
   }
 }

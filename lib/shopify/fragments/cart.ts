@@ -1,3 +1,4 @@
+//lib/shopify/fragments/cart.ts
 import productFragment from './product';
 
 export const cartFragment = /* GraphQL */ `
