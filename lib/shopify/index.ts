@@ -105,7 +105,9 @@ export async function shopifyFetch<T>({
     const body = await result.json();
     console.log('Shopify Response:', {
       status: result.status,
-      body: JSON.stringify(body, null, 2)
+      body: JSON.stringify(body, null, 2),
+      query,
+      variables
     });
 
     if (body.errors) {
@@ -263,6 +265,12 @@ export async function addToCart(
         cartId: formattedCartId,
         lines: formattedLines
       }
+    });
+
+    console.log('Pre-fetch variables:', {
+      cartId: formattedCartId,
+      lines: formattedLines,
+      rawQuery: addToCartMutation
     });
 
     const res = await shopifyFetch<ShopifyAddToCartOperation>({
