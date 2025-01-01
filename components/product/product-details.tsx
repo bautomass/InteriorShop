@@ -337,26 +337,16 @@ export function ProductDetails({ product }: { product: Product }) {
     if (!selectedVariant || !product.availableForSale) return;
 
     startTransition(() => {
-      // Ensure we're working with a string ID
-      const rawId = selectedVariant.id;
-      if (typeof rawId !== 'string') {
-        console.error('Invalid variant ID type:', typeof rawId);
-        return;
-      }
-
-      // Extract just the ID number from the variant ID if it's a full Shopify URL
-      const variantId = rawId.includes('/')
-        ? rawId
-        : `gid://shopify/ProductVariant/${rawId}`;
-
-      console.log('DEBUG - Adding to cart:', {
-        variantId,
-        quantity
-      });
+      // Ensure variant ID is a string and properly formatted
+      const variantId =
+        typeof selectedVariant.id === 'string'
+          ? selectedVariant.id.startsWith('gid://')
+            ? selectedVariant.id
+            : `gid://shopify/ProductVariant/${selectedVariant.id}`
+          : String(selectedVariant.id);
 
       formAction(variantId, quantity)
         .then((result) => {
-          console.log('formAction result:', result);
           if (result === 'Success' && selectedVariant) {
             addCartItem({
               variant: selectedVariant,
@@ -367,7 +357,7 @@ export function ProductDetails({ product }: { product: Product }) {
             console.error('Add to cart failed:', result);
           }
         })
-        .catch(error => console.error('Add to cart error:', error));
+        .catch((error) => console.error('Add to cart error:', error));
     });
   }, [selectedVariant, product, quantity, formAction, addCartItem]);
 
@@ -975,11 +965,12 @@ export function AddToCart({ product }: { product: Product }) {
 
     try {
       // Ensure we're working with a string and format it correctly
-      const variantId = typeof selectedVariantId === 'string' 
-        ? (selectedVariantId.startsWith('gid://') 
-            ? selectedVariantId 
-            : `gid://shopify/ProductVariant/${selectedVariantId}`)
-        : String(selectedVariantId); // Convert to string if it's not already
+      const variantId =
+        typeof selectedVariantId === 'string'
+          ? selectedVariantId.startsWith('gid://')
+            ? selectedVariantId
+            : `gid://shopify/ProductVariant/${selectedVariantId}`
+          : String(selectedVariantId); // Convert to string if it's not already
 
       // First update the cart UI optimistically
       if (variant) {
