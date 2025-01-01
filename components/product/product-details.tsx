@@ -340,10 +340,10 @@ export function ProductDetails({ product }: { product: Product }) {
 
     // Using Promise then/catch instead of async/await inside startTransition
     startTransition(() => {
-      // Extract the numeric ID from the variant ID if needed
-      const variantId = selectedVariant.id.includes('gid://')
-        ? selectedVariant.id
-        : selectedVariant.id.split('/').pop();
+      // Safely handle the variant ID
+      const variantId = typeof selectedVariant.id === 'string' 
+        ? selectedVariant.id.split('/').pop() || selectedVariant.id
+        : selectedVariant.id;
 
       formAction(variantId, quantity)
         .then((result) => {
