@@ -14,15 +14,10 @@ export async function addItem(
 ) {
   try {
     let cartId = cookies().get('cartId')?.value;
-    console.log('Starting addItem with:', { selectedVariantId, quantity });
 
-    // Create cart if it doesn't exist
     if (!cartId) {
       const cart = await createCart();
-      console.log('Created new cart:', cart);
-      if (!cart?.id) {
-        throw new Error('Failed to create cart');
-      }
+      if (!cart?.id) throw new Error('Failed to create cart');
       cartId = cart.id;
       cookies().set('cartId', cart.id, {
         secure: process.env.NODE_ENV === 'production',
@@ -36,25 +31,16 @@ export async function addItem(
       throw new Error('No variant ID provided');
     }
 
-    // Ensure we're working with a string
-    const merchandiseId = String(selectedVariantId);
-    console.log('Using merchandiseId:', merchandiseId);
+    // Keep original Shopify ID format without any modifications
+    const result = await addToCart(cartId, [{ merchandiseId: selectedVariantId, quantity }]);
 
-    // Add item to cart with the variant ID as-is
-    const result = await addToCart(cartId, [{ merchandiseId, quantity }]);
-
-    console.log('Add to cart result:', result);
-
-    if (!result?.id) {
-      throw new Error('Failed to add item to cart');
-    }
+    if (!result?.id) throw new Error('Failed to add item to cart');
 
     revalidateTag(TAGS.cart);
     return 'Success';
   } catch (e) {
     console.error('Full error details in addItem:', e);
-    const errorMsg = e instanceof Error ? e.message : 'Failed to add item to cart';
-    return `Error: ${errorMsg}`;
+    return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
   }
 }
 export async function removeItem(prevState: any, merchandiseId: string) {
