@@ -22,7 +22,7 @@ import {
   X
 } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import { FormEvent, useCallback, useEffect, useState, useTransition } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { TagProductsModal } from './tag-products-modal';
 
@@ -941,11 +941,77 @@ function QuantitySelector({
   );
 }
 
+// export function AddToCart({ product }: { product: Product }) {
+//   const { variants, availableForSale } = product;
+//   const { addCartItem } = useCart();
+//   const { state } = useProduct();
+//   const [quantity, setQuantity] = useState(1);
+//   const [message, formAction] = useActionState(addItem, null);
+
+//   const variant = variants.find((variant: ProductVariant) =>
+//     variant.selectedOptions.every((option) => option.value === state[option.name.toLowerCase()])
+//   );
+//   const selectedVariantId = variant?.id || (variants.length === 1 ? variants[0]?.id : undefined);
+
+//   const handleAddToCart = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     console.log('Adding to cart:', { selectedVariantId, quantity });
+
+//     if (!selectedVariantId) {
+//       console.error('No variant selected');
+//       return;
+//     }
+
+//     try {
+//       const result = await formAction(selectedVariantId, quantity);
+//       console.log('Server action result:', result);
+
+//       if (result === 'Success' && variant) {
+//         addCartItem({
+//           variant,
+//           product,
+//           quantity
+//         });
+//         console.log('Added to cart successfully');
+//       } else {
+//         console.error('Failed to add to cart:', result);
+//       }
+//     } catch (error) {
+//       console.error('Failed to add to cart:', error);
+//     }
+//   };
+
+//   return (
+//     <form onSubmit={handleAddToCart} className="mt-6">
+//       <div className="flex items-center gap-4">
+//         <QuantitySelector
+//           quantity={quantity}
+//           onIncrease={() => setQuantity((q) => q + 1)}
+//           onDecrease={() => setQuantity((q) => (q > 1 ? q - 1 : 1))}
+//         />
+
+//         <motion.button
+//           type="submit"
+//           whileHover={{ scale: 1.02 }}
+//           whileTap={{ scale: 0.98 }}
+//           disabled={!selectedVariantId || !availableForSale}
+//           className={`flex flex-1 items-center justify-center gap-2 rounded-md px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl ${
+//             !selectedVariantId || !availableForSale
+//               ? 'cursor-not-allowed bg-gray-400'
+//               : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
+//           }`}
+//         >
+//           <Plus className="h-5 w-5" />
+//           Add To Cart
+//         </motion.button>
+//       </div>
+//     </form>
+//   );
+// }
 export function AddToCart({ product }: { product: Product }) {
   const { variants, availableForSale } = product;
   const { addCartItem } = useCart();
   const { state } = useProduct();
-  const [quantity, setQuantity] = useState(1);
   const [message, formAction] = useActionState(addItem, null);
 
   const variant = variants.find((variant: ProductVariant) =>
@@ -953,9 +1019,9 @@ export function AddToCart({ product }: { product: Product }) {
   );
   const selectedVariantId = variant?.id || (variants.length === 1 ? variants[0]?.id : undefined);
 
-  const handleAddToCart = async (e: React.FormEvent) => {
+  const handleAddToCart = async (e: FormEvent) => {
     e.preventDefault();
-    console.log('Adding to cart:', { selectedVariantId, quantity });
+    console.log('Starting add to cart with variant:', selectedVariantId);
 
     if (!selectedVariantId) {
       console.error('No variant selected');
@@ -963,48 +1029,44 @@ export function AddToCart({ product }: { product: Product }) {
     }
 
     try {
-      const result = await formAction(selectedVariantId, quantity);
-      console.log('Server action result:', result);
+      // First update the cart UI optimistically
+      addCartItem({
+        variant: variant!,
+        product,
+        quantity: 1
+      });
 
-      if (result === 'Success' && variant) {
-        addCartItem({
-          variant,
-          product,
-          quantity
-        });
-        console.log('Added to cart successfully');
-      } else {
-        console.error('Failed to add to cart:', result);
+      // Then send the server action
+      const result = await formAction(selectedVariantId, 1);
+      console.log('Add to cart result:', result);
+
+      if (result !== 'Success') {
+        throw new Error(result);
       }
     } catch (error) {
-      console.error('Failed to add to cart:', error);
+      console.error('Error adding to cart:', error);
     }
   };
 
   return (
-    <form onSubmit={handleAddToCart} className="mt-6">
-      <div className="flex items-center gap-4">
-        <QuantitySelector
-          quantity={quantity}
-          onIncrease={() => setQuantity((q) => q + 1)}
-          onDecrease={() => setQuantity((q) => (q > 1 ? q - 1 : 1))}
-        />
-
-        <motion.button
-          type="submit"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          disabled={!selectedVariantId || !availableForSale}
-          className={`flex flex-1 items-center justify-center gap-2 rounded-md px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl ${
-            !selectedVariantId || !availableForSale
-              ? 'cursor-not-allowed bg-gray-400'
-              : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
-          }`}
-        >
-          <Plus className="h-5 w-5" />
-          Add To Cart
-        </motion.button>
-      </div>
+    <form onSubmit={handleAddToCart}>
+      <QuantitySelector
+        quantity={1}
+        onIncrease={() => {}}
+        onDecrease={() => {}}
+      />
+      <button
+        type="submit"
+        className="bg-[#6B5E4C] text-white px-6 py-3 rounded-lg hover:bg-[#5A4D3B] transition-colors disabled:bg-gray-300"
+        disabled={!availableForSale || !selectedVariantId}
+      >
+        {!availableForSale 
+          ? 'Out of Stock' 
+          : !selectedVariantId 
+            ? 'Select options' 
+            : 'Add to Cart'
+        }
+      </button>
     </form>
   );
 }
