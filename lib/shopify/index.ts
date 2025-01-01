@@ -237,26 +237,62 @@ export async function createCart(): Promise<Cart> {
   return reshapeCart(res.body.data.cartCreate.cart);
 }
 
-export async function addToCart(
-  cartId: string,
-  lines: { merchandiseId: string; quantity: number }[]
-): Promise<Cart> {
+// export async function addToCart(
+//   cartId: string,
+//   lines: { merchandiseId: string; quantity: number }[]
+// ): Promise<Cart> {
+//   try {
+//     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
+
+//     // Debug log
+//     console.log('FINAL API CALL:', {
+//       cartId: formattedCartId,
+//       lines,
+//       hasKey: !!key,
+//       endpoint
+//     });
+
+//     const res = await shopifyFetch<ShopifyAddToCartOperation>({
+//       query: addToCartMutation,
+//       variables: {
+//         cartId: formattedCartId,
+//         lines
+//       },
+//       cache: 'no-store'
+//     });
+
+//     if (!res.body.data?.cartLinesAdd?.cart) {
+//       console.error('API ERROR:', res.body);
+//       throw new Error('Failed to add item to cart: Invalid response');
+//     }
+
+//     return reshapeCart(res.body.data.cartLinesAdd.cart);
+//   } catch (error) {
+//     console.error('CART ERROR:', error);
+//     throw error;
+//   }
+// }
+
+export async function addToCart(cartId: string, lines: { merchandiseId: string; quantity: number }[]): Promise<Cart> {
   try {
     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
+    
+    // Keep the full variant ID format
+    const formattedLines = lines.map(line => ({
+      merchandiseId: line.merchandiseId,
+      quantity: line.quantity
+    }));
 
-    // Debug log
     console.log('FINAL API CALL:', {
       cartId: formattedCartId,
-      lines,
-      hasKey: !!key,
-      endpoint
+      lines: formattedLines
     });
 
     const res = await shopifyFetch<ShopifyAddToCartOperation>({
       query: addToCartMutation,
       variables: {
         cartId: formattedCartId,
-        lines
+        lines: formattedLines
       },
       cache: 'no-store'
     });
