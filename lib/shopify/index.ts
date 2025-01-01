@@ -165,7 +165,6 @@ export async function shopifyFetch<T>({
 //   }
 // }
 
-
 const removeEdgesAndNodes = <T>(array: Connection<T>): T[] => {
   return array.edges.map((edge) => edge?.node);
 };
@@ -278,20 +277,57 @@ export async function createCart(): Promise<Cart> {
 //   return reshapeCart(res.body.data.cartLinesAdd.cart);
 // }
 
+// export async function addToCart(
+//   cartId: string,
+//   lines: { merchandiseId: string; quantity: number }[]
+// ): Promise<Cart> {
+//   try {
+//     console.log('Adding to cart:', { cartId, lines });
+//     const res = await shopifyFetch<ShopifyAddToCartOperation>({
+//       query: addToCartMutation,
+//       variables: {
+//         cartId,
+//         lines
+//       },
+//       cache: 'no-store'
+//     });
+
+//     if (!res.body.data?.cartLinesAdd?.cart) {
+//       console.error('Invalid cart response:', res.body);
+//       throw new Error('Failed to add item to cart: Invalid response');
+//     }
+
+//     return reshapeCart(res.body.data.cartLinesAdd.cart);
+//   } catch (error) {
+//     console.error('Error in addToCart:', error);
+//     throw error; // Re-throw to be handled by the caller
+//   }
+// }
+
 export async function addToCart(
   cartId: string,
   lines: { merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
   try {
-    console.log('Adding to cart:', { cartId, lines });
+    console.log('Adding to cart with data:', { cartId, lines });
+
+    // Ensure the cart ID is properly formatted
+    const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
+
     const res = await shopifyFetch<ShopifyAddToCartOperation>({
       query: addToCartMutation,
       variables: {
-        cartId,
-        lines
+        cartId: formattedCartId,
+        lines: lines.map((line) => ({
+          merchandiseId: line.merchandiseId,
+          quantity: line.quantity
+        }))
       },
       cache: 'no-store'
     });
+
+    // Log the response for debugging
+    console.log('Cart API Response:', res.body);
 
     if (!res.body.data?.cartLinesAdd?.cart) {
       console.error('Invalid cart response:', res.body);
@@ -301,7 +337,7 @@ export async function addToCart(
     return reshapeCart(res.body.data.cartLinesAdd.cart);
   } catch (error) {
     console.error('Error in addToCart:', error);
-    throw error; // Re-throw to be handled by the caller
+    throw error;
   }
 }
 
@@ -519,10 +555,13 @@ export async function searchCollections({ query }: { query?: string }): Promise<
   const collections = removeEdgesAndNodes(res.body.data.collections);
   if (query) {
     const lowerQuery = query.toLowerCase();
-    return reshapeCollections(collections.filter(collection => 
-      collection.title.toLowerCase().includes(lowerQuery) || 
-      collection.description?.toLowerCase().includes(lowerQuery)
-    ));
+    return reshapeCollections(
+      collections.filter(
+        (collection) =>
+          collection.title.toLowerCase().includes(lowerQuery) ||
+          collection.description?.toLowerCase().includes(lowerQuery)
+      )
+    );
   }
   return reshapeCollections(collections);
 }
