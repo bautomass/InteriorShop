@@ -334,40 +334,30 @@ export function ProductDetails({ product }: { product: Product }) {
   };
 
   const handleAddToCart = useCallback(() => {
-    if (!selectedVariant || !product.availableForSale) {
-      console.log('Cannot add to cart:', {
-        hasVariant: !!selectedVariant,
-        isAvailable: product.availableForSale
-      });
-      return;
-    }
-
-    console.log('=== Add to Cart Debug ===');
-    console.log('Selected Variant:', selectedVariant);
-    console.log('Original Variant ID:', selectedVariant.id);
-    console.log('Quantity:', quantity);
-
+    if (!selectedVariant || !product.availableForSale) return;
+  
     startTransition(() => {
-      // Keep the full Shopify ID format
+      // Pass the full variant ID directly
       const variantId = selectedVariant.id;
-      console.log('Using Variant ID:', variantId);
-
+      console.log('DEBUG - Adding to cart:', {
+        variantId,
+        quantity
+      });
+  
       formAction(variantId, quantity)
         .then((result) => {
+          console.log('formAction result:', result);
           if (result === 'Success' && selectedVariant) {
             addCartItem({
               variant: selectedVariant,
               product,
               quantity
             });
-            console.log('Added to cart successfully');
           } else {
-            console.error('Failed to add to cart:', result);
+            console.error('Add to cart failed:', result);
           }
         })
-        .catch((error) => {
-          console.error('Full error details:', error);
-        });
+        .catch(error => console.error('Add to cart error:', error));
     });
   }, [selectedVariant, product, quantity, formAction, addCartItem]);
 
