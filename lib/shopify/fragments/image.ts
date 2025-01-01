@@ -1,3 +1,4 @@
+//lib/shopify/fragments/image.ts
 const imageFragment = /* GraphQL */ `
   fragment image on Image {
     url

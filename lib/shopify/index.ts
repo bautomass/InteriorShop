@@ -1,6 +1,5 @@
 //lib/shopify/index.ts
 import { HIDDEN_PRODUCT_TAG, SHOPIFY_GRAPHQL_API_ENDPOINT, TAGS } from 'lib/constants';
-import { isShopifyError } from 'lib/type-guards';
 import { ensureStartsWith } from 'lib/utils';
 import { revalidateTag } from 'next/cache';
 import { headers } from 'next/headers';
@@ -87,13 +86,17 @@ export async function shopifyFetch<T>({
         ...(variables && { variables })
       }),
       cache,
-      ...(tags && { next: { tags } })
+      next: tags ? { tags, revalidate: 60 } : undefined
     });
 
     const body = await result.json();
 
     if (body.errors) {
-      throw body.errors[0];
+      throw new Error(body.errors[0].message);
+    }
+
+    if (!result.ok) {
+      throw new Error(`HTTP error! status: ${result.status}`);
     }
 
     return {
@@ -101,21 +104,67 @@ export async function shopifyFetch<T>({
       body
     };
   } catch (e) {
-    if (isShopifyError(e)) {
-      throw {
-        cause: e.cause?.toString() || 'unknown',
-        status: e.status || 500,
-        message: e.message,
-        query
-      };
-    }
-
-    throw {
-      error: e,
-      query
-    };
+    console.error('Shopify fetch error:', e);
+    throw e;
   }
 }
+
+// export async function shopifyFetch<T>({
+//   cache = 'force-cache',
+//   headers,
+//   query,
+//   tags,
+//   variables
+// }: {
+//   cache?: RequestCache;
+//   headers?: HeadersInit;
+//   query: string;
+//   tags?: string[];
+//   variables?: ExtractVariables<T>;
+// }): Promise<{ status: number; body: T } | never> {
+//   try {
+//     const result = await fetch(endpoint, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'X-Shopify-Storefront-Access-Token': key,
+//         ...headers
+//       },
+//       body: JSON.stringify({
+//         ...(query && { query }),
+//         ...(variables && { variables })
+//       }),
+//       cache,
+//       ...(tags && { next: { tags } })
+//     });
+
+//     const body = await result.json();
+
+//     if (body.errors) {
+//       throw body.errors[0];
+//     }
+
+//     return {
+//       status: result.status,
+//       body
+//     };
+//   } catch (e) {
+//     if (isShopifyError(e)) {
+//       throw {
+//         cause: e.cause?.toString() || 'unknown',
+//         status: e.status || 500,
+//         message: e.message,
+//         query
+//       };
+//     }
+
+//     throw {
+//       error: e,
+//       query
+//     };
+//   }
+// }
+
 
 const removeEdgesAndNodes = <T>(array: Connection<T>): T[] => {
   return array.edges.map((edge) => edge?.node);

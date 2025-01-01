@@ -8,116 +8,27 @@ import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-// export async function addItem(
-//   prevState: any,
-//   selectedVariantId: string | undefined,
-//   quantity: number = 1
-// ) {
-//   console.log('Server action: addItem', { selectedVariantId, quantity });
-  
-//   try {
-//     let cartId = cookies().get('cartId')?.value;
-    
-//     if (!cartId) {
-//       console.log('Creating new cart...');
-//       const cart = await createCart();
-//       if (!cart?.id) {
-//         throw new Error('Failed to create cart');
-//       }
-//       cartId = cart.id;
-//       cookies().set('cartId', cart.id);
-//     }
-
-//     if (!selectedVariantId) {
-//       throw new Error('No variant ID provided');
-//     }
-
-//     const result = await addToCart(cartId, [
-//       { merchandiseId: selectedVariantId, quantity }
-//     ]);
-    
-//     console.log('Add to cart result:', result);
-    
-//     if (!result) {
-//       throw new Error('Failed to add to cart');
-//     }
-    
-//     revalidateTag(TAGS.cart);
-//     return 'Success';
-//   } catch (e) {
-//     console.error('Error adding to cart:', e);
-//     return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
-//   }
-// }
-
-// export async function addItem(
-//   prevState: any,
-//   selectedVariantId: string | undefined,
-//   quantity: number = 1
-// ) {
-//   console.log('Server action: addItem', { selectedVariantId, quantity });
-  
-//   let cartId = cookies().get('cartId')?.value;
-//   let cart;
-  
-//   try {
-//     if (!cartId) {
-//       console.log('Creating new cart...');
-//       cart = await createCart();
-//       if (!cart?.id) {
-//         throw new Error('Failed to create cart');
-//       }
-//       cartId = cart.id;
-//       cookies().set('cartId', cart.id);
-//     }
-
-//     if (!selectedVariantId) {
-//       throw new Error('No variant ID provided');
-//     }
-
-//     if (!cartId) {
-//       throw new Error('No cart ID available');
-//     }
-
-//     const result = await addToCart(cartId, [
-//       { merchandiseId: selectedVariantId, quantity }
-//     ]);
-    
-//     console.log('Add to cart result:', result);
-    
-//     if (!result) {
-//       throw new Error('Failed to add item to cart');
-//     }
-    
-//     revalidateTag(TAGS.cart);
-//     return 'Success';
-//   } catch (e) {
-//     console.error('Error in addItem:', e);
-//     const errorMessage = e instanceof Error ? e.message : 'Failed to add item to cart';
-//     return `Error: ${errorMessage}`;
-//   }
-// }
-
 export async function addItem(
   prevState: any,
   selectedVariantId: string | undefined,
   quantity: number = 1
 ) {
-  console.log('Server action: addItem', { selectedVariantId, quantity });
-  
-  let cartId = cookies().get('cartId')?.value;
-  let cart;
-  
   try {
-    // Create cart if needed
+    let cartId = cookies().get('cartId')?.value;
+    
+    // Create cart if it doesn't exist
     if (!cartId) {
-      console.log('Creating new cart...');
-      cart = await createCart();
+      const cart = await createCart();
       if (!cart?.id) {
         throw new Error('Failed to create cart');
       }
       cartId = cart.id;
-      cookies().set('cartId', cart.id);
+      cookies().set('cartId', cart.id, {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        path: '/',
+        sameSite: 'lax'
+      });
     }
 
     if (!selectedVariantId) {
@@ -125,22 +36,19 @@ export async function addItem(
     }
 
     // Add item to cart
-    console.log('Adding item to cart...', { cartId, selectedVariantId, quantity });
     const result = await addToCart(cartId, [
       { merchandiseId: selectedVariantId, quantity }
     ]);
     
-    console.log('Add to cart result:', result);
-    
-    if (!result) {
+    if (!result?.id) {
       throw new Error('Failed to add item to cart');
     }
     
     revalidateTag(TAGS.cart);
     return 'Success';
   } catch (e) {
+    console.error('Error in addItem:', e);
     const errorMsg = e instanceof Error ? e.message : 'Failed to add item to cart';
-    console.error('Error in addItem:', errorMsg);
     return `Error: ${errorMsg}`;
   }
 }
