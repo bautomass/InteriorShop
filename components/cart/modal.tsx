@@ -1,3 +1,4 @@
+//components/cart/modal.tsx
 'use client';
 
 import { Dialog, Transition } from '@headlessui/react';

@@ -214,19 +214,46 @@ export async function createCart(): Promise<Cart> {
   return reshapeCart(res.body.data.cartCreate.cart);
 }
 
+// export async function addToCart(
+//   cartId: string,
+//   lines: { merchandiseId: string; quantity: number }[]
+// ): Promise<Cart> {
+//   const res = await shopifyFetch<ShopifyAddToCartOperation>({
+//     query: addToCartMutation,
+//     variables: {
+//       cartId,
+//       lines
+//     },
+//     cache: 'no-store'
+//   });
+//   return reshapeCart(res.body.data.cartLinesAdd.cart);
+// }
+
 export async function addToCart(
   cartId: string,
   lines: { merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
-  const res = await shopifyFetch<ShopifyAddToCartOperation>({
-    query: addToCartMutation,
-    variables: {
-      cartId,
-      lines
-    },
-    cache: 'no-store'
-  });
-  return reshapeCart(res.body.data.cartLinesAdd.cart);
+  try {
+    console.log('Adding to cart:', { cartId, lines });
+    const res = await shopifyFetch<ShopifyAddToCartOperation>({
+      query: addToCartMutation,
+      variables: {
+        cartId,
+        lines
+      },
+      cache: 'no-store'
+    });
+
+    if (!res.body.data?.cartLinesAdd?.cart) {
+      console.error('Invalid cart response:', res.body);
+      throw new Error('Failed to add item to cart: Invalid response');
+    }
+
+    return reshapeCart(res.body.data.cartLinesAdd.cart);
+  } catch (error) {
+    console.error('Error in addToCart:', error);
+    throw error; // Re-throw to be handled by the caller
+  }
 }
 
 export async function removeFromCart(cartId: string, lineIds: string[]): Promise<Cart> {

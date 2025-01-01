@@ -1,3 +1,5 @@
+//components/cart/close-cart.tsx
+
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 
