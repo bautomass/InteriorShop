@@ -23,13 +23,50 @@ export function AddToCart({ product }: { product: Product }) {
   const selectedVariantId = variant?.id || defaultVariantId;
   const finalVariant = variants.find((variant) => variant.id === selectedVariantId);
 
+  // const handleSubmit = async (e: FormEvent) => {
+  //   e.preventDefault();
+
+  //   console.log('RAW DATA:', {
+  //     variant,
+  //     finalVariant,
+  //     selectedVariantId
+  //   });
+
+  //   if (!selectedVariantId || !finalVariant) {
+  //     console.error('No variant selected');
+  //     return;
+  //   }
+
+  //   try {
+  //     if (variant) {
+  //       addCartItem({
+  //         variant: finalVariant,
+  //         product,
+  //         quantity: 1
+  //       });
+  //     }
+
+  //     // Pass the full variant ID
+  //     const result = await formAction(finalVariant.id, 1);
+  //     if (result !== 'Success') {
+  //       throw new Error(result);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error adding to cart:', error);
+  //   }
+  // };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    console.log('RAW DATA:', {
-      variant,
+    console.log('Submit Debug:', {
+      selectedVariantId,
       finalVariant,
-      selectedVariantId
+      variantId: finalVariant?.id,
+      allVariants: variants.map((v) => ({
+        id: v.id,
+        title: v.title
+      }))
     });
 
     if (!selectedVariantId || !finalVariant) {
@@ -46,7 +83,6 @@ export function AddToCart({ product }: { product: Product }) {
         });
       }
 
-      // Pass the full variant ID
       const result = await formAction(finalVariant.id, 1);
       if (result !== 'Success') {
         throw new Error(result);
