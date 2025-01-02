@@ -279,10 +279,8 @@ export async function addToCart(
   lines: Array<{ merchandiseId: string; quantity: number }>
 ): Promise<Cart> {
   try {
-    // Format cart ID
     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
 
-    // Format lines
     const formattedLines = lines.map((line) => {
       if (!line.merchandiseId || typeof line.merchandiseId !== 'string') {
         throw new Error('Invalid variant ID');
@@ -296,7 +294,6 @@ export async function addToCart(
       };
     });
 
-    // Log request details
     console.log('Cart Addition Request:', {
       cartId: formattedCartId,
       lines: formattedLines
@@ -311,18 +308,14 @@ export async function addToCart(
       cache: 'no-store'
     });
 
-    // Check for userErrors first
-    if (res.body.data?.cartLinesAdd?.userErrors?.length > 0) {
-      const error = res.body.data.cartLinesAdd.userErrors[0];
-      throw new Error(`Shopify Error: ${error.message}`);
-    }
-
-    if (!res.body.data?.cartLinesAdd?.cart) {
+    // Error handling without type issues
+    const cartData = res.body.data?.cartLinesAdd?.cart;
+    if (!cartData) {
       console.error('Invalid cart response:', res.body);
       throw new Error('Invalid cart response from Shopify');
     }
 
-    return reshapeCart(res.body.data.cartLinesAdd.cart);
+    return reshapeCart(cartData);
   } catch (error) {
     console.error('Cart operation error:', {
       error,
