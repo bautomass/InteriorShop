@@ -8,7 +8,7 @@ import { useProduct } from 'components/product/product-context';
 import { motion } from 'framer-motion';
 import { Product, ProductVariant } from 'lib/shopify/types';
 import { Minus, Plus, ShoppingCart } from 'lucide-react';
-import { FormEvent, useEffect, useMemo, useState, useTransition } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { useCart } from './cart-context';
 
 export function AddToCart({ product }: { product: Product }) {
@@ -58,61 +58,49 @@ export function AddToCart({ product }: { product: Product }) {
     });
   }, [state, variant, variants]);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleAddToCart = useCallback(async (e: FormEvent) => {
     e.preventDefault();
-
-    if (!selectedVariantId || !finalVariant) {
-      console.error('AddToCart: No variant selected', {
-        selectedVariantId,
-        finalVariant
-      });
+    
+    if (!variant?.id || !product.availableForSale) {
+      console.log('AddToCart: Invalid variant or product not available');
       return;
     }
 
     try {
-      // Log the variant data before processing
+      // Ensure we're using the full Shopify variant ID
+      const variantId = variant.id;
+      
       console.log('AddToCart: Submitting variant', {
-        id: String(finalVariant.id),
-        variant: finalVariant,
-        state: state
+        id: variantId,
+        variant,
+        state
       });
 
-      if (variant) {
-        addCartItem({
-          variant: finalVariant,
-          product,
-          quantity: 1
-        });
-      }
-
-      // Ensure we're passing a string ID
-      const variantId = String(finalVariant.id);
-      console.log('AddToCart: Sending to server', {
-        variantId,
-        type: typeof variantId
+      // First update the cart UI optimistically
+      addCartItem({
+        variant,
+        product,
+        quantity
       });
 
-      const result = await formAction(variantId, 1);
-
+      // Then send the server action
+      const result = await formAction(variantId, quantity);
+      
       if (result !== 'Success') {
-        throw new Error(result);
+        throw new Error(`Add to Cart Failed: ${result}`);
       }
 
-      console.log('AddToCart: Success', {
-        result,
-        variantId
-      });
     } catch (error) {
       console.error('AddToCart: Error', {
         error,
-        variant: finalVariant,
-        state: state
+        variant,
+        state
       });
     }
-  };
+  }, [variant, product, quantity, addCartItem, formAction, state]);
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-4">
+    <form onSubmit={handleAddToCart} className="flex items-center gap-4">
       <div className="flex h-[52px] items-center rounded-md border border-[#6B5E4C]/20">
         <button
           type="button"
