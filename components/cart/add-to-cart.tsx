@@ -23,51 +23,23 @@ export function AddToCart({ product }: { product: Product }) {
   const selectedVariantId = variant?.id || defaultVariantId;
   const finalVariant = variants.find((variant) => variant.id === selectedVariantId);
 
-  // const handleSubmit = async (e: FormEvent) => {
-  //   e.preventDefault();
-
-  //   console.log('RAW DATA:', {
-  //     variant,
-  //     finalVariant,
-  //     selectedVariantId
-  //   });
-
-  //   if (!selectedVariantId || !finalVariant) {
-  //     console.error('No variant selected');
-  //     return;
-  //   }
-
-  //   try {
-  //     if (variant) {
-  //       addCartItem({
-  //         variant: finalVariant,
-  //         product,
-  //         quantity: 1
-  //       });
-  //     }
-
-  //     // Pass the full variant ID
-  //     const result = await formAction(finalVariant.id, 1);
-  //     if (result !== 'Success') {
-  //       throw new Error(result);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error adding to cart:', error);
-  //   }
-  // };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    console.log('Submit Debug:', {
-      selectedVariantId,
-      finalVariant,
-      variantId: finalVariant?.id,
-      allVariants: variants.map((v) => ({
-        id: v.id,
-        title: v.title
-      }))
-    });
+    alert(
+      JSON.stringify(
+        {
+          selectedVariantId,
+          variantId: finalVariant?.id,
+          allVariants: variants.map((v) => ({
+            id: v.id,
+            title: v.title
+          }))
+        },
+        null,
+        2
+      )
+    );
 
     if (!selectedVariantId || !finalVariant) {
       console.error('No variant selected');
@@ -75,6 +47,10 @@ export function AddToCart({ product }: { product: Product }) {
     }
 
     try {
+      // Convert and verify variant ID format
+      const strippedId = String(finalVariant.id).replace('gid://shopify/ProductVariant/', '');
+      const fullVariantId = `gid://shopify/ProductVariant/${strippedId}`;
+
       if (variant) {
         addCartItem({
           variant: finalVariant,
@@ -83,7 +59,10 @@ export function AddToCart({ product }: { product: Product }) {
         });
       }
 
-      const result = await formAction(finalVariant.id, 1);
+      // Use the properly formatted variant ID
+      const result = await formAction(fullVariantId, 1);
+      console.log('Add to cart result:', result);
+
       if (result !== 'Success') {
         throw new Error(result);
       }
