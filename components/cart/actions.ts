@@ -124,8 +124,6 @@ export async function addItem(
       throw new Error('No variant ID provided');
     }
 
-    console.log('Cart Action - Starting with:', { selectedVariantId });
-
     let cartId = cookies().get('cartId')?.value;
     if (!cartId) {
       const cart = await createCart();
@@ -134,20 +132,19 @@ export async function addItem(
       cookies().set('cartId', cart.id);
     }
 
-    // Format cartId if needed
-    const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
+    // Ensure proper Shopify ID format
+    const variantIdString = String(selectedVariantId);
+    const formattedVariantId = variantIdString.includes('gid://shopify/ProductVariant/')
+      ? variantIdString
+      : `gid://shopify/ProductVariant/${variantIdString}`;
 
-    // Ensure variant ID is complete
-    const formattedVariantId = selectedVariantId.startsWith('gid://shopify/ProductVariant/')
-      ? selectedVariantId
-      : `gid://shopify/ProductVariant/${selectedVariantId}`;
-
-    console.log('Cart Action - Formatted IDs:', {
-      cartId: formattedCartId,
-      variantId: formattedVariantId
+    console.log('Cart Debug:', {
+      cartId,
+      originalVariantId: selectedVariantId,
+      formattedVariantId
     });
 
-    const result = await addToCart(formattedCartId, [
+    const result = await addToCart(cartId, [
       {
         merchandiseId: formattedVariantId,
         quantity
