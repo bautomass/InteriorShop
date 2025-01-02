@@ -16,24 +16,22 @@ export function AddToCart({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const { variants, availableForSale } = product;
   const { addCartItem } = useCart();
-  const { state, setState } = useProduct();
+  const { state, updateOption } = useProduct();
   const [message, formAction] = useActionState(addItem, null);
 
   useEffect(() => {
     if (variants.length > 0) {
       const defaultVariant = variants[0];
       if (defaultVariant) {
-        const defaultOptions: { [key: string]: string } = {};
         defaultVariant.selectedOptions.forEach((option) => {
-          defaultOptions[option.name.toLowerCase()] = option.value;
+          updateOption(option.name, option.value);
         });
-        setState(defaultOptions);
       }
     }
-  }, [variants, setState]);
+  }, [variants, updateOption]);
 
   const variant = variants.find((variant: ProductVariant) =>
-    variant.selectedOptions.every((option) => option.value === state[option.name.toLowerCase()])
+    variant.selectedOptions.every((option) => state[option.name] === option.value)
   );
   const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
   const selectedVariantId = variant?.id || defaultVariantId;
