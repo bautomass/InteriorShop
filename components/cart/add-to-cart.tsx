@@ -23,33 +23,61 @@ export function AddToCart({ product }: { product: Product }) {
   const selectedVariantId = variant?.id || defaultVariantId;
   const finalVariant = variants.find((variant) => variant.id === selectedVariantId);
 
+  // const handleSubmit = async (e: FormEvent) => {
+  //   e.preventDefault();
+
+  //   if (!selectedVariantId || !finalVariant) {
+  //     console.log('Add to cart - No variant:', { selectedVariantId, finalVariant });
+  //     return;
+  //   }
+
+  //   try {
+  //     console.log('Add to cart - Starting with:', {
+  //       selectedVariantId,
+  //       variantType: typeof selectedVariantId,
+  //       variant: finalVariant
+  //     });
+
+  //     // First add to cart context
+  //     addCartItem({
+  //       variant: finalVariant,
+  //       product,
+  //       quantity: 1
+  //     });
+
+  //     // Then call server action with raw ID
+  //     const result = await formAction(selectedVariantId, 1);
+
+  //     console.log('Add to cart - Result:', result);
+
+  //     if (result !== 'Success') {
+  //       throw new Error(result);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error adding to cart:', error);
+  //   }
+  // };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!selectedVariantId || !finalVariant) {
-      console.log('Add to cart - No variant:', { selectedVariantId, finalVariant });
+      console.error('No variant selected');
       return;
     }
 
     try {
-      console.log('Add to cart - Starting with:', {
-        selectedVariantId,
-        variantType: typeof selectedVariantId,
-        variant: finalVariant
-      });
+      // Do NOT format the ID here, pass it as is
+      if (variant) {
+        addCartItem({
+          variant: finalVariant,
+          product,
+          quantity: 1
+        });
+      }
 
-      // First add to cart context
-      addCartItem({
-        variant: finalVariant,
-        product,
-        quantity: 1
-      });
-
-      // Then call server action with raw ID
+      // Pass the raw selectedVariantId
       const result = await formAction(selectedVariantId, 1);
-
-      console.log('Add to cart - Result:', result);
-
       if (result !== 'Success') {
         throw new Error(result);
       }
@@ -57,6 +85,7 @@ export function AddToCart({ product }: { product: Product }) {
       console.error('Error adding to cart:', error);
     }
   };
+
   return (
     <form onSubmit={handleSubmit}>
       <SubmitButton availableForSale={availableForSale} selectedVariantId={selectedVariantId} />
