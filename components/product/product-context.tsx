@@ -112,13 +112,19 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
 
   const updateOption = useCallback(
     (name: string, value: string) => {
+      console.log('UpdateOption called:', { name, value });
+
       const update: OptimisticUpdate = {
         type: 'OPTION',
-        payload: { [name]: value }
+        payload: { [name.toLowerCase()]: value }
       };
 
       performOptimisticUpdate(update);
-      return { ...state, [name]: value };
+
+      const newState = { ...state, [name.toLowerCase()]: value };
+      console.log('New state:', newState);
+
+      return newState;
     },
     [state, performOptimisticUpdate]
   );
@@ -167,11 +173,15 @@ export function useUpdateURL() {
 
       Object.entries(state).forEach(([key, value]) => {
         if (value !== undefined && value !== '') {
-          newParams.set(key, value);
+          newParams.set(key.toLowerCase(), value);
         }
       });
 
-      router.push(`?${newParams.toString()}`, { scroll: false });
+      const newURL = `${window.location.pathname}?${newParams.toString()}`;
+      console.log('Updating URL to:', newURL);
+
+      // Fixed router.push syntax
+      return router.push(newURL, { scroll: false });
     },
     [router]
   );

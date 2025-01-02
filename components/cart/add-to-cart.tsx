@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import { addItem } from 'components/cart/actions';
 import { useProduct } from 'components/product/product-context';
 import { Product, ProductVariant } from 'lib/shopify/types';
-import { FormEvent } from 'react';
+import { FormEvent, useEffect } from 'react';
 import { useCart } from './cart-context';
 
 export function AddToCart({ product }: { product: Product }) {
@@ -22,19 +22,35 @@ export function AddToCart({ product }: { product: Product }) {
   const selectedVariantId = variant?.id || defaultVariantId;
   const finalVariant = variants.find((variant) => variant.id === selectedVariantId);
 
+  // Debug state changes
+  useEffect(() => {
+    console.log('AddToCart state updated:', {
+      state,
+      selectedVariant: variant?.id,
+      allVariants: variants.map((v) => ({
+        id: v.id,
+        options: v.selectedOptions
+      }))
+    });
+  }, [state, variant, variants]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!selectedVariantId || !finalVariant) {
-      console.error('No variant selected');
+      console.error('AddToCart: No variant selected', {
+        selectedVariantId,
+        finalVariant
+      });
       return;
     }
 
     try {
       // Log the variant data before processing
-      console.log('Variant Debug:', {
+      console.log('AddToCart: Submitting variant', {
         id: String(finalVariant.id),
-        variant: finalVariant
+        variant: finalVariant,
+        state: state
       });
 
       if (variant) {
@@ -45,13 +61,29 @@ export function AddToCart({ product }: { product: Product }) {
         });
       }
 
-      // Pass the raw ID and let server action handle formatting
-      const result = await formAction(String(finalVariant.id), 1);
+      // Ensure we're passing a string ID
+      const variantId = String(finalVariant.id);
+      console.log('AddToCart: Sending to server', {
+        variantId,
+        type: typeof variantId
+      });
+
+      const result = await formAction(variantId, 1);
+
       if (result !== 'Success') {
         throw new Error(result);
       }
+
+      console.log('AddToCart: Success', {
+        result,
+        variantId
+      });
     } catch (error) {
-      console.error('Error adding to cart:', error);
+      console.error('AddToCart: Error', {
+        error,
+        variant: finalVariant,
+        state: state
+      });
     }
   };
 
@@ -114,7 +146,6 @@ function SubmitButton({
     </button>
   );
 }
-// //components/cart/add-to-cart.tsx
 // 'use client';
 
 // import { useActionState } from '@/hooks/useActionState';
@@ -126,13 +157,15 @@ function SubmitButton({
 // import { FormEvent } from 'react';
 // import { useCart } from './cart-context';
 
+// // In add-to-cart.tsx
+// const { state } = useProduct();
+
 // export function AddToCart({ product }: { product: Product }) {
 //   const { variants, availableForSale } = product;
 //   const { addCartItem } = useCart();
 //   const { state } = useProduct();
 //   const [message, formAction] = useActionState(addItem, null);
 
-//   // Find selected variant
 //   const variant = variants.find((variant: ProductVariant) =>
 //     variant.selectedOptions.every((option) => option.value === state[option.name.toLowerCase()])
 //   );
@@ -140,30 +173,18 @@ function SubmitButton({
 //   const selectedVariantId = variant?.id || defaultVariantId;
 //   const finalVariant = variants.find((variant) => variant.id === selectedVariantId);
 
-//   // Debug logs right after variant selection
-//   console.log('🔍 Variants Debug:', {
-//     allVariants: variants.map((v) => ({ id: v.id, title: v.title })),
-//     selectedVariant: variant,
-//     defaultVariantId,
-//     selectedVariantId,
-//     finalVariant
-//   });
-
 //   const handleSubmit = async (e: FormEvent) => {
 //     e.preventDefault();
 
 //     if (!selectedVariantId || !finalVariant) {
-//       console.error('No variant selected:', {
-//         selectedVariantId,
-//         finalVariant
-//       });
+//       console.error('No variant selected');
 //       return;
 //     }
 
 //     try {
-//       console.log('🛍️ Submitting variant:', {
-//         id: finalVariant.id,
-//         type: typeof finalVariant.id,
+//       // Log the variant data before processing
+//       console.log('Variant Debug:', {
+//         id: String(finalVariant.id),
 //         variant: finalVariant
 //       });
 
@@ -175,9 +196,8 @@ function SubmitButton({
 //         });
 //       }
 
-//       const result = await formAction(finalVariant.id, 1);
-//       console.log('🛍️ Form action result:', result);
-
+//       // Pass the raw ID and let server action handle formatting
+//       const result = await formAction(String(finalVariant.id), 1);
 //       if (result !== 'Success') {
 //         throw new Error(result);
 //       }
