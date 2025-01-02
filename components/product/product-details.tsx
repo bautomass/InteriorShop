@@ -5,8 +5,8 @@ import { useActionState } from '@/hooks/useActionState';
 import type { Product, ProductVariant } from '@/lib/shopify/types';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { addItem } from 'components/cart/actions';
+import { AddToCart } from 'components/cart/add-to-cart';
 import { useCart } from 'components/cart/cart-context';
-import { useProduct } from 'components/product/product-context';
 import { motion } from 'framer-motion';
 import {
   Cog,
@@ -22,7 +22,7 @@ import {
   X
 } from 'lucide-react';
 import Image from 'next/image';
-import { FormEvent, useCallback, useEffect, useState, useTransition } from 'react';
+import { useCallback, useEffect, useState, useTransition } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { TagProductsModal } from './tag-products-modal';
 
@@ -551,51 +551,7 @@ export function ProductDetails({ product }: { product: Product }) {
 
           {/* Add to Cart Button */}
           <div className="flex items-center gap-4">
-            <div className="flex h-[52px] items-center rounded-md border border-[#6B5E4C]/20">
-              <button
-                onClick={decrementQuantity}
-                className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
-                aria-label="Decrease quantity"
-              >
-                <Minus className="h-4 w-4" />
-              </button>
-              <div className="relative w-12 overflow-hidden text-center font-medium text-[#6B5E4C]">
-                <div className="relative h-[20px]">
-                  <AnimatedNumber number={quantity} />
-                </div>
-              </div>
-              <button
-                onClick={incrementQuantity}
-                className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
-                aria-label="Increase quantity"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
-
-            <motion.button
-              onClick={handleAddToCart}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              disabled={!selectedVariant || !product.availableForSale || isPending}
-              className={`group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-md px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl ${
-                !selectedVariant || !product.availableForSale || isPending
-                  ? 'cursor-not-allowed bg-gray-400'
-                  : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
-              }`}
-            >
-              <ShoppingCart className="h-5 w-5" />
-              <span className="relative z-10">
-                {isPending
-                  ? 'Adding...'
-                  : !selectedVariant
-                    ? 'Select options'
-                    : !product.availableForSale
-                      ? 'Out of Stock'
-                      : 'Add to Cart'}
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-            </motion.button>
+            <AddToCart product={product} />
           </div>
 
           {/* Shipping and guarantees info */}
@@ -934,69 +890,5 @@ function QuantitySelector({
         <Plus className="h-4 w-4" />
       </button>
     </div>
-  );
-}
-
-export function AddToCart({ product }: { product: Product }) {
-  const { variants, availableForSale } = product;
-  const { addCartItem } = useCart();
-  const { state } = useProduct();
-  const [message, formAction] = useActionState(addItem, null);
-
-  const variant = variants.find((variant: ProductVariant) =>
-    variant.selectedOptions.every((option) => option.value === state[option.name.toLowerCase()])
-  );
-  const selectedVariantId = variant?.id || (variants.length === 1 ? variants[0]?.id : undefined);
-
-  const handleAddToCart = async (e: FormEvent) => {
-    e.preventDefault();
-    console.log('Starting add to cart with variant:', selectedVariantId);
-
-    if (!selectedVariantId) {
-      console.error('No variant selected');
-      return;
-    }
-
-    try {
-      // Ensure we're working with a string and format it correctly
-      const variantId =
-        typeof selectedVariantId === 'string'
-          ? selectedVariantId.startsWith('gid://')
-            ? selectedVariantId
-            : `gid://shopify/ProductVariant/${selectedVariantId}`
-          : String(selectedVariantId); // Convert to string if it's not already
-
-      // First update the cart UI optimistically
-      if (variant) {
-        addCartItem({
-          variant,
-          product,
-          quantity: 1
-        });
-      }
-
-      // Then send the server action
-      const result = await formAction(variantId, 1);
-      console.log('Add to cart result:', result);
-
-      if (result !== 'Success') {
-        throw new Error(result);
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-    }
-  };
-
-  return (
-    <form onSubmit={handleAddToCart}>
-      <QuantitySelector quantity={1} onIncrease={() => {}} onDecrease={() => {}} />
-      <button
-        type="submit"
-        className="rounded-lg bg-[#6B5E4C] px-6 py-3 text-white transition-colors hover:bg-[#5A4D3B] disabled:bg-gray-300"
-        disabled={!availableForSale || !selectedVariantId}
-      >
-        {!availableForSale ? 'Out of Stock' : !selectedVariantId ? 'Select options' : 'Add to Cart'}
-      </button>
-    </form>
   );
 }
