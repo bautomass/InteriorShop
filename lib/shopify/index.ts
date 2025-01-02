@@ -60,6 +60,71 @@ const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
 
 type ExtractVariables<T> = T extends { variables: object } ? T['variables'] : never;
 
+// export async function shopifyFetch<T>({
+//   cache = 'force-cache',
+//   headers,
+//   query,
+//   tags,
+//   variables
+// }: {
+//   cache?: RequestCache;
+//   headers?: HeadersInit;
+//   query: string;
+//   tags?: string[];
+//   variables?: ExtractVariables<T>;
+// }): Promise<{ status: number; body: T } | never> {
+//   try {
+//     // Request setup logging
+//     console.log('Shopify Request:', {
+//       query: query.slice(0, 100) + '...',
+//       variables
+//     });
+
+//     const result = await fetch(endpoint, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'X-Shopify-Storefront-Access-Token': key,
+//         ...headers
+//       },
+//       body: JSON.stringify({
+//         ...(query && { query }),
+//         ...(variables && { variables })
+//       }),
+//       cache,
+//       next: tags ? { tags, revalidate: 60 } : undefined
+//     });
+
+//     const body = await result.json();
+
+//     // Enhanced error handling
+//     if (body.errors?.length > 0) {
+//       console.error('GraphQL Errors:', JSON.stringify(body.errors, null, 2));
+//       throw new Error(body.errors.map((e: any) => e.message).join(', '));
+//     }
+
+//     if (!result.ok) {
+//       throw new Error(`HTTP error! status: ${result.status}`);
+//     }
+
+//     if (!body.data) {
+//       console.error('Invalid response structure:', body);
+//       throw new Error('Invalid API response structure');
+//     }
+
+//     return {
+//       status: result.status,
+//       body
+//     };
+//   } catch (error) {
+//     console.error('Shopify fetch error:', {
+//       error,
+//       query: query.slice(0, 100) + '...',
+//       variables
+//     });
+//     throw error;
+//   }
+// }
 export async function shopifyFetch<T>({
   cache = 'force-cache',
   headers,
@@ -74,12 +139,6 @@ export async function shopifyFetch<T>({
   variables?: ExtractVariables<T>;
 }): Promise<{ status: number; body: T } | never> {
   try {
-    // Request setup logging
-    console.log('Shopify Request:', {
-      query: query.slice(0, 100) + '...',
-      variables
-    });
-
     const result = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -97,19 +156,12 @@ export async function shopifyFetch<T>({
 
     const body = await result.json();
 
-    // Enhanced error handling
-    if (body.errors?.length > 0) {
-      console.error('GraphQL Errors:', JSON.stringify(body.errors, null, 2));
-      throw new Error(body.errors.map((e: any) => e.message).join(', '));
+    if (body.errors) {
+      throw new Error(`GraphQL Error: ${JSON.stringify(body.errors)}`);
     }
 
     if (!result.ok) {
-      throw new Error(`HTTP error! status: ${result.status}`);
-    }
-
-    if (!body.data) {
-      console.error('Invalid response structure:', body);
-      throw new Error('Invalid API response structure');
+      throw new Error(`HTTP error! status: ${result.status}: ${JSON.stringify(body)}`);
     }
 
     return {
@@ -117,12 +169,9 @@ export async function shopifyFetch<T>({
       body
     };
   } catch (error) {
-    console.error('Shopify fetch error:', {
-      error,
-      query: query.slice(0, 100) + '...',
-      variables
-    });
-    throw error;
+    throw new Error(
+      `Shop API Error: ${error instanceof Error ? error.message : 'Unknown error'} | Query: ${query.slice(0, 100)}`
+    );
   }
 }
 
@@ -223,31 +272,74 @@ export async function createCart(): Promise<Cart> {
   return reshapeCart(res.body.data.cartCreate.cart);
 }
 
+// export async function addToCart(
+//   cartId: string,
+//   lines: Array<{ merchandiseId: string; quantity: number }>
+// ): Promise<Cart> {
+//   try {
+//     console.log('🛍️ AddToCart Starting:', {
+//       cartId,
+//       lines
+//     });
+
+//     // Format cart ID if needed
+//     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
+
+//     // Format variant IDs
+//     const formattedLines = lines.map((line) => ({
+//       merchandiseId: line.merchandiseId.startsWith('gid://')
+//         ? line.merchandiseId
+//         : `gid://shopify/ProductVariant/${line.merchandiseId.split('/').pop()?.replace(/\D/g, '')}`,
+//       quantity: line.quantity
+//     }));
+
+//     console.log('🛍️ AddToCart Formatted:', {
+//       formattedCartId,
+//       formattedLines
+//     });
+
+//     const res = await shopifyFetch<ShopifyAddToCartOperation>({
+//       query: addToCartMutation,
+//       variables: {
+//         cartId: formattedCartId,
+//         lines: formattedLines
+//       },
+//       cache: 'no-store'
+//     });
+
+//     console.log('🛍️ AddToCart Response:', {
+//       data: res.body.data,
+//       cartAdd: res.body.data?.cartLinesAdd
+//     });
+
+//     if (!res.body.data?.cartLinesAdd?.cart) {
+//       console.error('Cart Response Error:', res.body);
+//       throw new Error('Invalid cart response from Shopify');
+//     }
+
+//     return reshapeCart(res.body.data.cartLinesAdd.cart);
+//   } catch (error) {
+//     console.error('🛍️ AddToCart Error:', {
+//       error,
+//       message: error instanceof Error ? error.message : 'Unknown error'
+//     });
+//     throw error;
+//   }
+// }
+
 export async function addToCart(
   cartId: string,
   lines: Array<{ merchandiseId: string; quantity: number }>
 ): Promise<Cart> {
   try {
-    console.log('🛍️ AddToCart Starting:', {
-      cartId,
-      lines
-    });
-
-    // Format cart ID if needed
     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
 
-    // Format variant IDs
     const formattedLines = lines.map((line) => ({
       merchandiseId: line.merchandiseId.startsWith('gid://')
         ? line.merchandiseId
-        : `gid://shopify/ProductVariant/${line.merchandiseId.split('/').pop()?.replace(/\D/g, '')}`,
+        : `gid://shopify/ProductVariant/${line.merchandiseId.replace(/[^\d]/g, '')}`,
       quantity: line.quantity
     }));
-
-    console.log('🛍️ AddToCart Formatted:', {
-      formattedCartId,
-      formattedLines
-    });
 
     const res = await shopifyFetch<ShopifyAddToCartOperation>({
       query: addToCartMutation,
@@ -258,23 +350,17 @@ export async function addToCart(
       cache: 'no-store'
     });
 
-    console.log('🛍️ AddToCart Response:', {
-      data: res.body.data,
-      cartAdd: res.body.data?.cartLinesAdd
-    });
-
     if (!res.body.data?.cartLinesAdd?.cart) {
-      console.error('Cart Response Error:', res.body);
-      throw new Error('Invalid cart response from Shopify');
+      throw new Error(
+        `Cart Error: Invalid Response | Cart ID: ${cartId} | Lines: ${JSON.stringify(lines)}`
+      );
     }
 
     return reshapeCart(res.body.data.cartLinesAdd.cart);
   } catch (error) {
-    console.error('🛍️ AddToCart Error:', {
-      error,
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-    throw error;
+    throw new Error(
+      `Add to Cart Failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 
