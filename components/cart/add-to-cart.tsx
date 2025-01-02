@@ -16,8 +16,21 @@ export function AddToCart({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const { variants, availableForSale } = product;
   const { addCartItem } = useCart();
-  const { state } = useProduct();
+  const { state, setState } = useProduct();
   const [message, formAction] = useActionState(addItem, null);
+
+  useEffect(() => {
+    if (variants.length > 0) {
+      const defaultVariant = variants[0];
+      if (defaultVariant) {
+        const defaultOptions: { [key: string]: string } = {};
+        defaultVariant.selectedOptions.forEach((option) => {
+          defaultOptions[option.name.toLowerCase()] = option.value;
+        });
+        setState(defaultOptions);
+      }
+    }
+  }, [variants, setState]);
 
   const variant = variants.find((variant: ProductVariant) =>
     variant.selectedOptions.every((option) => option.value === state[option.name.toLowerCase()])

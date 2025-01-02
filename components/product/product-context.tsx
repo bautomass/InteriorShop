@@ -21,11 +21,12 @@ interface ProductState extends BaseProductState {
   image?: string;
 }
 
-interface ProductContextValue {
+export type ProductContextValue = {
   state: ProductState;
-  updateOption: (name: string, value: string) => ProductState;
-  updateImage: (index: string) => ProductState;
-}
+  setState: React.Dispatch<React.SetStateAction<ProductState>>;
+  updateOption: (name: string, value: string) => any;
+  updateImage: (index: string) => any;
+};
 
 type UpdateType = 'OPTION' | 'IMAGE';
 
@@ -145,10 +146,11 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(
     () => ({
       state,
+      setState,
       updateOption,
       updateImage
     }),
-    [state, updateOption, updateImage]
+    [state, setState, updateOption, updateImage]
   );
 
   return <ProductContext.Provider value={value}>{children}</ProductContext.Provider>;
