@@ -8,7 +8,7 @@ import { useProduct } from 'components/product/product-context';
 import { motion } from 'framer-motion';
 import { Product, ProductVariant } from 'lib/shopify/types';
 import { Minus, Plus, ShoppingCart } from 'lucide-react';
-import { FormEvent, useEffect, useState, useTransition } from 'react';
+import { FormEvent, useEffect, useMemo, useState, useTransition } from 'react';
 import { useCart } from './cart-context';
 
 export function AddToCart({ product }: { product: Product }) {
@@ -18,20 +18,29 @@ export function AddToCart({ product }: { product: Product }) {
   const { addCartItem } = useCart();
   const { state, updateOption } = useProduct();
   const [message, formAction] = useActionState(addItem, null);
+  const [hasSetDefault, setHasSetDefault] = useState(false);
 
+  // Set default variant only once when component mounts
   useEffect(() => {
-    if (variants.length > 0) {
+    if (!hasSetDefault && variants.length > 0) {
       const defaultVariant = variants[0];
       if (defaultVariant) {
-        defaultVariant.selectedOptions.forEach((option) => {
-          updateOption(option.name, option.value);
-        });
+        // Use Promise.all to handle all updates at once
+        Promise.all(
+          defaultVariant.selectedOptions.map((option) => 
+            updateOption(option.name, option.value)
+          )
+        );
+        setHasSetDefault(true);
       }
     }
-  }, [variants, updateOption]);
+  }, [variants, updateOption, hasSetDefault]);
 
-  const variant = variants.find((variant: ProductVariant) =>
-    variant.selectedOptions.every((option) => state[option.name] === option.value)
+  const variant = useMemo(() => 
+    variants.find((variant: ProductVariant) =>
+      variant.selectedOptions.every((option) => state[option.name] === option.value)
+    ),
+    [variants, state]
   );
   const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
   const selectedVariantId = variant?.id || defaultVariantId;

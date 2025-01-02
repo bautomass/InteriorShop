@@ -113,14 +113,23 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
 
   const updateOption = useCallback(
     (name: string, value: string) => {
+      // Keep both versions to maintain backward compatibility
       const update: OptimisticUpdate = {
         type: 'OPTION',
-        payload: { [name]: value }
+        payload: {
+          [name]: value,
+          [name.toLowerCase()]: value // Maintain lowercase version for compatibility
+        }
       };
 
       performOptimisticUpdate(update);
 
-      const newState = { ...state, [name]: value };
+      const newState = {
+        ...state,
+        [name]: value,
+        [name.toLowerCase()]: value // Maintain lowercase version for compatibility
+      };
+      
       console.log('UpdateOption called:', { name, value, newState });
 
       return newState;
