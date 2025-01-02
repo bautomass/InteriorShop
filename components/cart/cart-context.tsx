@@ -170,13 +170,36 @@ export function CartProvider({
     updateOptimisticCart({ type: 'UPDATE_ITEM', payload: { merchandiseId, updateType } });
   };
 
+  // const addCartItem = (params: { variant: ProductVariant; product: Product; quantity: number }) => {
+  //   try {
+  //     if (!params.variant || !params.product) {
+  //       throw new Error('Invalid product or variant data');
+  //     }
+
+  //     console.log('Adding item to cart:', { variant: params.variant, product: params.product });
+  //     updateOptimisticCart({
+  //       type: 'ADD_ITEM',
+  //       payload: { variant: params.variant, product: params.product, quantity: params.quantity }
+  //     });
+  //   } catch (error) {
+  //     console.error('Failed to add item to cart:', error);
+  //   }
+  // };
+
   const addCartItem = (params: { variant: ProductVariant; product: Product; quantity: number }) => {
     try {
       if (!params.variant || !params.product) {
         throw new Error('Invalid product or variant data');
       }
 
-      console.log('Adding item to cart:', { variant: params.variant, product: params.product });
+      // Log variant data
+      console.log('Cart Context - Adding Item:', {
+        variantId: params.variant.id,
+        variantIdType: typeof params.variant.id,
+        productId: params.product.id,
+        quantity: params.quantity
+      });
+
       updateOptimisticCart({
         type: 'ADD_ITEM',
         payload: { variant: params.variant, product: params.product, quantity: params.quantity }
