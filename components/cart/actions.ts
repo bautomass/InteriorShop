@@ -6,62 +6,13 @@ import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-// export async function addItem(
-//   prevState: any,
-//   selectedVariantId: string | undefined,
-//   quantity: number = 1
-// ) {
-//   try {
-//     if (!selectedVariantId) {
-//       throw new Error('No variant ID provided');
-//     }
-
-//     let cartId = cookies().get('cartId')?.value;
-//     if (!cartId) {
-//       const cart = await createCart();
-//       if (!cart?.id) throw new Error('Failed to create cart');
-//       cartId = cart.id;
-//       cookies().set('cartId', cart.id);
-//     }
-
-//     // Safer ID formatting using regex
-//     const formattedVariantId = /^gid:\/\/shopify\/ProductVariant\//.test(String(selectedVariantId))
-//       ? selectedVariantId
-//       : `gid://shopify/ProductVariant/${String(selectedVariantId).replace(/\D/g, '')}`;
-
-//     console.log('Adding to cart:', {
-//       cartId,
-//       variantId: formattedVariantId,
-//       quantity
-//     });
-
-//     const result = await addToCart(cartId, [
-//       {
-//         merchandiseId: formattedVariantId,
-//         quantity
-//       }
-//     ]);
-
-//     if (!result?.id) throw new Error('Failed to add item to cart');
-
-//     revalidateTag(TAGS.cart);
-//     return 'Success';
-//   } catch (e) {
-//     console.error('Cart error:', {
-//       error: e,
-//       variant: selectedVariantId,
-//       quantity
-//     });
-//     return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
-//   }
-// }
 export async function addItem(
   prevState: any,
   selectedVariantId: string | undefined,
   quantity: number = 1
 ) {
   try {
-    console.log('Server action - starting with variant:', selectedVariantId);
+    console.log('AddItem - Input:', { selectedVariantId, type: typeof selectedVariantId });
 
     if (!selectedVariantId) {
       throw new Error('No variant ID provided');
@@ -75,8 +26,22 @@ export async function addItem(
       cookies().set('cartId', cart.id);
     }
 
-    // Preserve the full variant ID
-    const result = await addToCart(cartId, [{ merchandiseId: selectedVariantId, quantity }]);
+    // Ensure variant ID is properly formatted
+    const formattedVariantId = selectedVariantId.includes('gid://shopify/ProductVariant/')
+      ? selectedVariantId
+      : `gid://shopify/ProductVariant/${selectedVariantId}`;
+
+    console.log('AddItem - Formatted:', {
+      original: selectedVariantId,
+      formatted: formattedVariantId
+    });
+
+    const result = await addToCart(cartId, [
+      {
+        merchandiseId: formattedVariantId,
+        quantity
+      }
+    ]);
 
     revalidateTag(TAGS.cart);
     return 'Success';
@@ -194,7 +159,7 @@ export async function createCartAndSetCookie() {
     return `Error: ${e instanceof Error ? e.message : 'Failed to create cart'}`;
   }
 }
-// //components/cart/actions.ts
+
 // 'use server';
 
 // import { TAGS } from 'lib/constants';
@@ -209,6 +174,8 @@ export async function createCartAndSetCookie() {
 //   quantity: number = 1
 // ) {
 //   try {
+//     console.log('Server action - starting with variant:', selectedVariantId);
+
 //     if (!selectedVariantId) {
 //       throw new Error('No variant ID provided');
 //     }
@@ -221,17 +188,8 @@ export async function createCartAndSetCookie() {
 //       cookies().set('cartId', cart.id);
 //     }
 
-//     // Ensure proper Shopify format
-//     const formattedVariantId = selectedVariantId.includes('gid://shopify/ProductVariant/')
-//       ? selectedVariantId
-//       : `gid://shopify/ProductVariant/${selectedVariantId.split('/').pop()}`;
-
-//     const result = await addToCart(cartId, [
-//       {
-//         merchandiseId: formattedVariantId,
-//         quantity
-//       }
-//     ]);
+//     // Preserve the full variant ID
+//     const result = await addToCart(cartId, [{ merchandiseId: selectedVariantId, quantity }]);
 
 //     revalidateTag(TAGS.cart);
 //     return 'Success';
