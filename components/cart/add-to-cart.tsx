@@ -23,41 +23,6 @@ export function AddToCart({ product }: { product: Product }) {
   const selectedVariantId = variant?.id || defaultVariantId;
   const finalVariant = variants.find((variant) => variant.id === selectedVariantId);
 
-  // const handleSubmit = async (e: FormEvent) => {
-  //   e.preventDefault();
-
-  //   if (!selectedVariantId || !finalVariant) {
-  //     console.log('Add to cart - No variant:', { selectedVariantId, finalVariant });
-  //     return;
-  //   }
-
-  //   try {
-  //     console.log('Add to cart - Starting with:', {
-  //       selectedVariantId,
-  //       variantType: typeof selectedVariantId,
-  //       variant: finalVariant
-  //     });
-
-  //     // First add to cart context
-  //     addCartItem({
-  //       variant: finalVariant,
-  //       product,
-  //       quantity: 1
-  //     });
-
-  //     // Then call server action with raw ID
-  //     const result = await formAction(selectedVariantId, 1);
-
-  //     console.log('Add to cart - Result:', result);
-
-  //     if (result !== 'Success') {
-  //       throw new Error(result);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error adding to cart:', error);
-  //   }
-  // };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -67,7 +32,13 @@ export function AddToCart({ product }: { product: Product }) {
     }
 
     try {
-      // Do NOT format the ID here, pass it as is
+      // Log the initial variant ID
+      console.log('Initial variant info:', {
+        selectedVariantId,
+        finalVariantId: finalVariant.id,
+        type: typeof selectedVariantId
+      });
+
       if (variant) {
         addCartItem({
           variant: finalVariant,
@@ -76,8 +47,8 @@ export function AddToCart({ product }: { product: Product }) {
         });
       }
 
-      // Pass the raw selectedVariantId
-      const result = await formAction(selectedVariantId, 1);
+      // Pass the full variant ID
+      const result = await formAction(finalVariant.id, 1);
       if (result !== 'Success') {
         throw new Error(result);
       }
