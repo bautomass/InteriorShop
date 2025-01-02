@@ -38,7 +38,9 @@ export function AddToCart({ product }: { product: Product }) {
 
   const variant = useMemo(() => 
     variants.find((variant: ProductVariant) =>
-      variant.selectedOptions.every((option) => state[option.name] === option.value)
+      variant.selectedOptions.every((option) => 
+        state[option.name] === option.value
+      )
     ),
     [variants, state]
   );
@@ -55,6 +57,15 @@ export function AddToCart({ product }: { product: Product }) {
         id: v.id,
         options: v.selectedOptions
       }))
+    });
+  }, [state, variant, variants]);
+
+  // Debug variant matching
+  useEffect(() => {
+    console.log('Variant matching:', {
+      state,
+      variant: variant?.id,
+      allOptions: variants.map(v => v.selectedOptions)
     });
   }, [state, variant, variants]);
 

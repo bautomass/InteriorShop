@@ -8,7 +8,6 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState
 } from 'react';
 
@@ -40,101 +39,67 @@ const ProductContext = createContext<ProductContextValue | undefined>(undefined)
 export function ProductProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isUpdatingRef = useRef(false);
 
   // Initialize state with type safety
   const [state, setState] = useState<ProductState>(() => {
     const params: ProductState = {};
     searchParams.forEach((value, key) => {
-      if (value) {
-        // Ensure we only set defined values
-        params[key] = value;
-      }
+      params[key] = value;
     });
     return params;
   });
 
-  // Sync with URL params
+  // Keep URL and state in sync
   useEffect(() => {
-    if (!isUpdatingRef.current) {
-      const params: ProductState = {};
-      searchParams.forEach((value, key) => {
-        if (value) {
-          // Ensure we only set defined values
-          params[key] = value;
-        }
-      });
-      setState(params);
-    }
+    const params: ProductState = {};
+    searchParams.forEach((value, key) => {
+      params[key] = value;
+    });
+    setState(params);
   }, [searchParams]);
 
-  // Type-safe URL update
-  const updateURL = useCallback(
-    (newState: ProductState) => {
-      const newParams = new URLSearchParams();
-      Object.entries(newState).forEach(([key, value]) => {
-        if (value !== undefined && value !== '') {
-          newParams.set(key, value);
-        }
+  const performOptimisticUpdate = useCallback(
+    (update: OptimisticUpdate) => {
+      setState((prevState) => {
+        const newState = { ...prevState, ...update.payload };
+        const newParams = new URLSearchParams(window.location.search);
+        Object.entries(update.payload).forEach(([key, value]) => {
+          if (value) newParams.set(key, value);
+        });
+        router.push(`?${newParams.toString()}`, { scroll: false });
+        return newState;
       });
-
-      isUpdatingRef.current = true;
-      router.push(`?${newParams.toString()}`, { scroll: false });
-
-      setTimeout(() => {
-        isUpdatingRef.current = false;
-      }, 0);
     },
     [router]
   );
 
-  // Type-safe optimistic update
-  const performOptimisticUpdate = useCallback(
-    (update: OptimisticUpdate) => {
+  const updateOption = useCallback(
+    (name: string, value: string) => {
       setState((prevState) => {
-        const newState: ProductState = {
+        // Create new state with only the new option
+        const newState = {
           ...prevState,
-          ...update.payload
+          [name]: value
         };
 
-        // Remove undefined or empty values
-        Object.keys(newState).forEach((key) => {
-          if (newState[key] === undefined || newState[key] === '') {
-            delete newState[key];
-          }
+        // Update URL immediately
+        const newParams = new URLSearchParams(window.location.search);
+        newParams.set(name, value);
+        
+        console.log('Updating state and URL:', { 
+          name, 
+          value, 
+          newState,
+          url: `?${newParams.toString()}`
         });
 
-        updateURL(newState);
+        // Update URL without lowercase conversion
+        router.push(`?${newParams.toString()}`, { scroll: false });
+
         return newState;
       });
     },
-    [updateURL]
-  );
-
-  const updateOption = useCallback(
-    (name: string, value: string) => {
-      // Keep both versions to maintain backward compatibility
-      const update: OptimisticUpdate = {
-        type: 'OPTION',
-        payload: {
-          [name]: value,
-          [name.toLowerCase()]: value // Maintain lowercase version for compatibility
-        }
-      };
-
-      performOptimisticUpdate(update);
-
-      const newState = {
-        ...state,
-        [name]: value,
-        [name.toLowerCase()]: value // Maintain lowercase version for compatibility
-      };
-      
-      console.log('UpdateOption called:', { name, value, newState });
-
-      return newState;
-    },
-    [state, performOptimisticUpdate]
+    [router]
   );
 
   const updateImage = useCallback(
