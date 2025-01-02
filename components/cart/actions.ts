@@ -60,20 +60,71 @@ import { redirect } from 'next/navigation';
 //   }
 // }
 
+// export async function addItem(
+//   prevState: any,
+//   selectedVariantId: string | undefined,
+//   quantity: number = 1
+// ) {
+//   try {
+//     console.log('🛒 Cart Action - Starting:', {
+//       selectedVariantId,
+//       type: typeof selectedVariantId
+//     });
+
+//     if (!selectedVariantId) {
+//       throw new Error('No variant ID provided');
+//     }
+
+//     let cartId = cookies().get('cartId')?.value;
+//     if (!cartId) {
+//       const cart = await createCart();
+//       if (!cart?.id) throw new Error('Failed to create cart');
+//       cartId = cart.id;
+//       cookies().set('cartId', cart.id);
+//     }
+
+//     // Ensure we have a complete variant ID
+//     const variantIdString = String(selectedVariantId);
+//     const hasPrefix = variantIdString.startsWith('gid://shopify/ProductVariant/');
+//     const baseId = hasPrefix ? variantIdString.split('/').pop() : variantIdString;
+//     const formattedVariantId = hasPrefix
+//       ? variantIdString
+//       : `gid://shopify/ProductVariant/${baseId}`;
+
+//     console.log('🛒 Cart Action - Formatted:', {
+//       original: selectedVariantId,
+//       formatted: formattedVariantId
+//     });
+
+//     const result = await addToCart(cartId, [
+//       {
+//         merchandiseId: formattedVariantId,
+//         quantity
+//       }
+//     ]);
+
+//     revalidateTag(TAGS.cart);
+//     return 'Success';
+//   } catch (e) {
+//     console.error('🛒 Cart Action - Error:', {
+//       error: e,
+//       variant: selectedVariantId
+//     });
+//     return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
+//   }
+// }
+
 export async function addItem(
   prevState: any,
   selectedVariantId: string | undefined,
   quantity: number = 1
 ) {
   try {
-    console.log('🛒 Cart Action - Starting:', {
-      selectedVariantId,
-      type: typeof selectedVariantId
-    });
-
     if (!selectedVariantId) {
       throw new Error('No variant ID provided');
     }
+
+    console.log('Cart Action - Starting with:', { selectedVariantId });
 
     let cartId = cookies().get('cartId')?.value;
     if (!cartId) {
@@ -83,20 +134,20 @@ export async function addItem(
       cookies().set('cartId', cart.id);
     }
 
-    // Ensure we have a complete variant ID
-    const variantIdString = String(selectedVariantId);
-    const hasPrefix = variantIdString.startsWith('gid://shopify/ProductVariant/');
-    const baseId = hasPrefix ? variantIdString.split('/').pop() : variantIdString;
-    const formattedVariantId = hasPrefix
-      ? variantIdString
-      : `gid://shopify/ProductVariant/${baseId}`;
+    // Format cartId if needed
+    const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
 
-    console.log('🛒 Cart Action - Formatted:', {
-      original: selectedVariantId,
-      formatted: formattedVariantId
+    // Ensure variant ID is complete
+    const formattedVariantId = selectedVariantId.startsWith('gid://shopify/ProductVariant/')
+      ? selectedVariantId
+      : `gid://shopify/ProductVariant/${selectedVariantId}`;
+
+    console.log('Cart Action - Formatted IDs:', {
+      cartId: formattedCartId,
+      variantId: formattedVariantId
     });
 
-    const result = await addToCart(cartId, [
+    const result = await addToCart(formattedCartId, [
       {
         merchandiseId: formattedVariantId,
         quantity
@@ -106,10 +157,7 @@ export async function addItem(
     revalidateTag(TAGS.cart);
     return 'Success';
   } catch (e) {
-    console.error('🛒 Cart Action - Error:', {
-      error: e,
-      variant: selectedVariantId
-    });
+    console.error('Cart error:', e);
     return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
   }
 }
