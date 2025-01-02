@@ -333,34 +333,6 @@ export function ProductDetails({ product }: { product: Product }) {
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
   };
 
-  // const handleAddToCart = useCallback(() => {
-  //   if (!selectedVariant || !product.availableForSale) return;
-
-  //   startTransition(() => {
-  //     // Ensure variant ID is a string and properly formatted
-  //     const variantId =
-  //       typeof selectedVariant.id === 'string'
-  //         ? selectedVariant.id.startsWith('gid://')
-  //           ? selectedVariant.id
-  //           : `gid://shopify/ProductVariant/${selectedVariant.id}`
-  //         : String(selectedVariant.id);
-
-  //     formAction(variantId, quantity)
-  //       .then((result) => {
-  //         if (result === 'Success' && selectedVariant) {
-  //           addCartItem({
-  //             variant: selectedVariant,
-  //             product,
-  //             quantity
-  //           });
-  //         } else {
-  //           console.error('Add to cart failed:', result);
-  //         }
-  //       })
-  //       .catch((error) => console.error('Add to cart error:', error));
-  //   });
-  // }, [selectedVariant, product, quantity, formAction, addCartItem]);
-
   const handleAddToCart = useCallback(() => {
     if (!selectedVariant || !product.availableForSale) return;
 
