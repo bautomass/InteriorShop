@@ -272,20 +272,64 @@ export async function createCart(): Promise<Cart> {
   return reshapeCart(res.body.data.cartCreate.cart);
 }
 
+// export async function addToCart(
+//   cartId: string,
+//   lines: Array<{ merchandiseId: string; quantity: number }>
+// ): Promise<Cart> {
+//   try {
+//     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
+
+//     const formattedLines = lines.map((line) => {
+//       const variantId = line.merchandiseId.includes('gid://shopify/ProductVariant/')
+//         ? line.merchandiseId
+//         : `gid://shopify/ProductVariant/${line.merchandiseId}`;
+
+//       return {
+//         merchandiseId: variantId,
+//         quantity: line.quantity
+//       };
+//     });
+
+//     const res = await shopifyFetch<ShopifyAddToCartOperation>({
+//       query: addToCartMutation,
+//       variables: {
+//         cartId: formattedCartId,
+//         lines: formattedLines
+//       },
+//       cache: 'no-store'
+//     });
+
+//     if (!res.body.data?.cartLinesAdd?.cart) {
+//       throw new Error(
+//         `Cart Error: Invalid Response | Cart ID: ${cartId} | Lines: ${JSON.stringify(lines)} | Response: ${JSON.stringify(res.body)}`
+//       );
+//     }
+
+//     return reshapeCart(res.body.data.cartLinesAdd.cart);
+//   } catch (error) {
+//     throw new Error(
+//       `Add to Cart Failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+//     );
+//   }
+// }
+
 export async function addToCart(
   cartId: string,
   lines: Array<{ merchandiseId: string; quantity: number }>
 ): Promise<Cart> {
   try {
-    const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
+    const formattedCartId = cartId.startsWith('gid://')
+      ? cartId
+      : `gid://shopify/Cart/${cartId}`;
 
-    const formattedLines = lines.map((line) => {
-      const variantId = line.merchandiseId.includes('gid://shopify/ProductVariant/')
-        ? line.merchandiseId
-        : `gid://shopify/ProductVariant/${line.merchandiseId}`;
-
+    const formattedLines = lines.map(line => {
+      // Add type checking and conversion
+      const rawId = String(line.merchandiseId); // Convert to string explicitly
+      
       return {
-        merchandiseId: variantId,
+        merchandiseId: rawId.startsWith('gid://shopify/ProductVariant/')
+          ? rawId
+          : `gid://shopify/ProductVariant/${rawId}`,
         quantity: line.quantity
       };
     });
@@ -300,16 +344,12 @@ export async function addToCart(
     });
 
     if (!res.body.data?.cartLinesAdd?.cart) {
-      throw new Error(
-        `Cart Error: Invalid Response | Cart ID: ${cartId} | Lines: ${JSON.stringify(lines)} | Response: ${JSON.stringify(res.body)}`
-      );
+      throw new Error(`Cart Error: Invalid Response | Cart ID: ${cartId} | Lines: ${JSON.stringify(lines)} | Response: ${JSON.stringify(res.body)}`);
     }
 
     return reshapeCart(res.body.data.cartLinesAdd.cart);
   } catch (error) {
-    throw new Error(
-      `Add to Cart Failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
+    throw new Error(`Add to Cart Failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
