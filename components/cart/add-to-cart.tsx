@@ -10,12 +10,84 @@ import { Product, ProductVariant } from 'lib/shopify/types';
 import { FormEvent } from 'react';
 import { useCart } from './cart-context';
 
+// export function AddToCart({ product }: { product: Product }) {
+//   const { variants, availableForSale } = product;
+//   const { addCartItem } = useCart();
+//   const { state } = useProduct();
+//   const [message, formAction] = useActionState(addItem, null);
+
+//   const variant = variants.find((variant: ProductVariant) =>
+//     variant.selectedOptions.every((option) => option.value === state[option.name.toLowerCase()])
+//   );
+//   const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
+//   const selectedVariantId = variant?.id || defaultVariantId;
+//   const finalVariant = variants.find((variant) => variant.id === selectedVariantId);
+
+//   const handleSubmit = async (e: FormEvent) => {
+//     e.preventDefault();
+
+//     alert(
+//       JSON.stringify(
+//         {
+//           selectedVariantId,
+//           variantId: finalVariant?.id,
+//           allVariants: variants.map((v) => ({
+//             id: v.id,
+//             title: v.title
+//           }))
+//         },
+//         null,
+//         2
+//       )
+//     );
+
+//     if (!selectedVariantId || !finalVariant) {
+//       console.error('No variant selected');
+//       return;
+//     }
+
+//     try {
+//       // Convert and verify variant ID format
+//       const strippedId = String(finalVariant.id).replace('gid://shopify/ProductVariant/', '');
+//       const fullVariantId = `gid://shopify/ProductVariant/${strippedId}`;
+
+//       if (variant) {
+//         addCartItem({
+//           variant: finalVariant,
+//           product,
+//           quantity: 1
+//         });
+//       }
+
+//       // Use the properly formatted variant ID
+//       const result = await formAction(fullVariantId, 1);
+//       console.log('Add to cart result:', result);
+
+//       if (result !== 'Success') {
+//         throw new Error(result);
+//       }
+//     } catch (error) {
+//       console.error('Error adding to cart:', error);
+//     }
+//   };
+
+//   return (
+//     <form onSubmit={handleSubmit}>
+//       <SubmitButton availableForSale={availableForSale} selectedVariantId={selectedVariantId} />
+//       <p aria-live="polite" className="sr-only" role="status">
+//         {message}
+//       </p>
+//     </form>
+//   );
+// }
+
 export function AddToCart({ product }: { product: Product }) {
   const { variants, availableForSale } = product;
   const { addCartItem } = useCart();
   const { state } = useProduct();
   const [message, formAction] = useActionState(addItem, null);
 
+  // Find selected variant
   const variant = variants.find((variant: ProductVariant) =>
     variant.selectedOptions.every((option) => option.value === state[option.name.toLowerCase()])
   );
@@ -23,33 +95,32 @@ export function AddToCart({ product }: { product: Product }) {
   const selectedVariantId = variant?.id || defaultVariantId;
   const finalVariant = variants.find((variant) => variant.id === selectedVariantId);
 
+  // Debug logs right after variant selection
+  console.log('🔍 Variants Debug:', {
+    allVariants: variants.map((v) => ({ id: v.id, title: v.title })),
+    selectedVariant: variant,
+    defaultVariantId,
+    selectedVariantId,
+    finalVariant
+  });
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    alert(
-      JSON.stringify(
-        {
-          selectedVariantId,
-          variantId: finalVariant?.id,
-          allVariants: variants.map((v) => ({
-            id: v.id,
-            title: v.title
-          }))
-        },
-        null,
-        2
-      )
-    );
-
     if (!selectedVariantId || !finalVariant) {
-      console.error('No variant selected');
+      console.error('No variant selected:', {
+        selectedVariantId,
+        finalVariant
+      });
       return;
     }
 
     try {
-      // Convert and verify variant ID format
-      const strippedId = String(finalVariant.id).replace('gid://shopify/ProductVariant/', '');
-      const fullVariantId = `gid://shopify/ProductVariant/${strippedId}`;
+      console.log('🛍️ Submitting variant:', {
+        id: finalVariant.id,
+        type: typeof finalVariant.id,
+        variant: finalVariant
+      });
 
       if (variant) {
         addCartItem({
@@ -59,9 +130,8 @@ export function AddToCart({ product }: { product: Product }) {
         });
       }
 
-      // Use the properly formatted variant ID
-      const result = await formAction(fullVariantId, 1);
-      console.log('Add to cart result:', result);
+      const result = await formAction(finalVariant.id, 1);
+      console.log('🛍️ Form action result:', result);
 
       if (result !== 'Success') {
         throw new Error(result);
