@@ -9,10 +9,12 @@ import { Product, ProductVariant } from 'lib/shopify/types';
 import { FormEvent, useCallback, useMemo } from 'react';
 import { useCart } from './cart-context';
 
-// Helper functions
-const ensureVariantId = (id: string): string => {
+// Helper functions with type safety
+const ensureVariantId = (id: string | number | undefined): string => {
+  if (!id) return '';
+  const idString = String(id);
   const prefix = 'gid://shopify/ProductVariant/';
-  return id.startsWith(prefix) ? id : `${prefix}${id}`;
+  return idString.includes(prefix) ? idString : `${prefix}${idString}`;
 };
 
 // Types
@@ -58,8 +60,12 @@ export function AddToCart({ product }: { product: Product }) {
       }
 
       try {
-        // Ensure we're working with a complete variant ID
+        // Get the complete variant ID with type safety
         const formattedVariantId = ensureVariantId(finalVariant.id);
+
+        if (!formattedVariantId) {
+          throw new Error('Invalid variant ID format');
+        }
 
         console.log('AddToCart: Processing', {
           originalId: finalVariant.id,
@@ -67,7 +73,7 @@ export function AddToCart({ product }: { product: Product }) {
           variant: finalVariant
         });
 
-        // Update local cart state first
+        // Update local cart state
         if (variant) {
           addCartItem({
             variant: finalVariant,
@@ -76,17 +82,14 @@ export function AddToCart({ product }: { product: Product }) {
           });
         }
 
-        // Send to server
+        // Send to server with validated ID
         const result = await formAction(formattedVariantId, 1);
 
         if (result !== 'Success') {
           throw new Error(result);
         }
 
-        console.log('AddToCart: Success', {
-          variantId: formattedVariantId,
-          result
-        });
+        console.log('AddToCart: Success', { variantId: formattedVariantId });
       } catch (error) {
         console.error('AddToCart: Error', {
           error,
@@ -108,7 +111,7 @@ export function AddToCart({ product }: { product: Product }) {
   );
 }
 
-// Separated button component with proper typing
+// SubmitButton component remains the same
 function SubmitButton({ availableForSale, selectedVariantId }: SubmitButtonProps) {
   const buttonClasses = useMemo(
     () => ({
@@ -160,7 +163,6 @@ function SubmitButton({ availableForSale, selectedVariantId }: SubmitButtonProps
     </button>
   );
 }
-
 // //components/cart/add-to-cart.tsx
 // 'use client';
 
