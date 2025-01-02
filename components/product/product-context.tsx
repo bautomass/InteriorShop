@@ -113,17 +113,15 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
 
   const updateOption = useCallback(
     (name: string, value: string) => {
-      console.log('UpdateOption called:', { name, value });
-
       const update: OptimisticUpdate = {
         type: 'OPTION',
-        payload: { [name.toLowerCase()]: value }
+        payload: { [name]: value }
       };
 
       performOptimisticUpdate(update);
 
-      const newState = { ...state, [name.toLowerCase()]: value };
-      console.log('New state:', newState);
+      const newState = { ...state, [name]: value };
+      console.log('UpdateOption called:', { name, value, newState });
 
       return newState;
     },
