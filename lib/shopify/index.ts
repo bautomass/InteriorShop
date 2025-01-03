@@ -1,4 +1,6 @@
 //lib/shopify/index.ts
+'use client';
+
 import { HIDDEN_PRODUCT_TAG, SHOPIFY_GRAPHQL_API_ENDPOINT, TAGS } from 'lib/constants';
 import { ensureStartsWith } from 'lib/utils';
 import { revalidateTag } from 'next/cache';
@@ -60,71 +62,6 @@ const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
 
 type ExtractVariables<T> = T extends { variables: object } ? T['variables'] : never;
 
-// export async function shopifyFetch<T>({
-//   cache = 'force-cache',
-//   headers,
-//   query,
-//   tags,
-//   variables
-// }: {
-//   cache?: RequestCache;
-//   headers?: HeadersInit;
-//   query: string;
-//   tags?: string[];
-//   variables?: ExtractVariables<T>;
-// }): Promise<{ status: number; body: T } | never> {
-//   try {
-//     // Request setup logging
-//     console.log('Shopify Request:', {
-//       query: query.slice(0, 100) + '...',
-//       variables
-//     });
-
-//     const result = await fetch(endpoint, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         'X-Shopify-Storefront-Access-Token': key,
-//         ...headers
-//       },
-//       body: JSON.stringify({
-//         ...(query && { query }),
-//         ...(variables && { variables })
-//       }),
-//       cache,
-//       next: tags ? { tags, revalidate: 60 } : undefined
-//     });
-
-//     const body = await result.json();
-
-//     // Enhanced error handling
-//     if (body.errors?.length > 0) {
-//       console.error('GraphQL Errors:', JSON.stringify(body.errors, null, 2));
-//       throw new Error(body.errors.map((e: any) => e.message).join(', '));
-//     }
-
-//     if (!result.ok) {
-//       throw new Error(`HTTP error! status: ${result.status}`);
-//     }
-
-//     if (!body.data) {
-//       console.error('Invalid response structure:', body);
-//       throw new Error('Invalid API response structure');
-//     }
-
-//     return {
-//       status: result.status,
-//       body
-//     };
-//   } catch (error) {
-//     console.error('Shopify fetch error:', {
-//       error,
-//       query: query.slice(0, 100) + '...',
-//       variables
-//     });
-//     throw error;
-//   }
-// }
 export async function shopifyFetch<T>({
   cache = 'force-cache',
   headers,
@@ -187,9 +124,14 @@ const reshapeCart = (cart: ShopifyCart): Cart => {
     };
   }
 
+  if (!cart.checkoutUrl) {
+    console.warn('Cart is missing checkoutUrl:', cart.id);
+  }
+
   return {
     ...cart,
-    lines: removeEdgesAndNodes(cart.lines)
+    lines: removeEdgesAndNodes(cart.lines),
+    checkoutUrl: cart.checkoutUrl || ''
   };
 };
 
@@ -266,10 +208,26 @@ const reshapeProducts = (products: ShopifyProduct[]) => {
 export async function createCart(): Promise<Cart> {
   const res = await shopifyFetch<ShopifyCreateCartOperation>({
     query: createCartMutation,
-    cache: 'no-store'
+    cache: 'no-store',
+    variables: {
+      buyerIdentity: {
+        countryCode: 'US'
+      }
+    }
   });
 
-  return reshapeCart(res.body.data.cartCreate.cart);
+  if (!res.body.data?.cartCreate?.cart) {
+    throw new Error('Failed to create cart');
+  }
+
+  const cart = res.body.data.cartCreate.cart;
+  
+  if (!cart.checkoutUrl) {
+    console.error('Created cart is missing checkoutUrl:', cart);
+    throw new Error('Cart created without checkout URL');
+  }
+
+  return reshapeCart(cart);
 }
 
 export async function addToCart(
@@ -369,18 +327,28 @@ export async function getCart(cartId: string | undefined): Promise<Cart | undefi
     return undefined;
   }
 
-  const res = await shopifyFetch<ShopifyCartOperation>({
-    query: getCartQuery,
-    variables: { cartId },
-    tags: [TAGS.cart]
-  });
+  try {
+    const res = await shopifyFetch<ShopifyCartOperation>({
+      query: getCartQuery,
+      variables: { cartId },
+      cache: 'no-store',
+      tags: [TAGS.cart]
+    });
 
-  // Old carts becomes `null` when you checkout.
-  if (!res.body.data.cart) {
+    if (!res.body.data.cart) {
+      return undefined;
+    }
+
+    if (!res.body.data.cart.checkoutUrl) {
+      console.warn('Cart exists but missing checkoutUrl, creating new cart');
+      return createCart();
+    }
+
+    return reshapeCart(res.body.data.cart);
+  } catch (error) {
+    console.error('Error fetching cart:', error);
     return undefined;
   }
-
-  return reshapeCart(res.body.data.cart);
 }
 
 export async function getCollection(handle: string): Promise<Collection | undefined> {

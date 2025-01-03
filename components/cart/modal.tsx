@@ -40,7 +40,8 @@ export default function CartModal({
     console.log('Checkout attempted:', {
       hasCart: !!cart,
       checkoutUrl: cart?.checkoutUrl,
-      isCheckingOut
+      isCheckingOut,
+      cartId: cart?.id
     });
     
     if (!cart || !cart.lines?.length) {
@@ -48,23 +49,27 @@ export default function CartModal({
       return;
     }
     
-    if (!cart.checkoutUrl && cart.lines.length > 0) {
-      try {
-        await createCartAndSetCookie();
-        return;
-      } catch (error) {
-        console.error('Failed to create new cart:', error);
+    setIsCheckingOut(true);
+    
+    try {
+      // If we don't have a checkout URL, try to create a new cart
+      if (!cart.checkoutUrl) {
+        console.log('No checkout URL found, creating new cart...');
+        const newCart = await createCartAndSetCookie();
+        if (!newCart?.checkoutUrl) {
+          throw new Error('Failed to get checkout URL');
+        }
+        console.log('New cart created with checkout URL:', newCart.checkoutUrl);
+        window.location.assign(newCart.checkoutUrl);
         return;
       }
-    }
-    
-    setIsCheckingOut(true);
-    try {
+      
       console.log('Redirecting to:', cart.checkoutUrl);
-      window.location.assign(cart.checkoutUrl!);
+      window.location.assign(cart.checkoutUrl);
     } catch (error) {
       console.error('Checkout error:', error);
       setIsCheckingOut(false);
+      // You might want to show an error message to the user here
     }
   };
 
@@ -97,7 +102,7 @@ export default function CartModal({
     }
   }, [cart]);
 
-  const isCheckoutDisabled = !cart?.lines?.length || isCheckingOut;
+  const isCheckoutDisabled = !cart?.lines?.length || isCheckingOut || (!cart?.checkoutUrl && isCheckingOut);
 
   return (
     <>

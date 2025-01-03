@@ -162,7 +162,16 @@ export type ShopifyCartOperation = {
 };
 
 export type ShopifyCreateCartOperation = {
-  data: { cartCreate: { cart: ShopifyCart } };
+  data: {
+    cartCreate: {
+      cart: ShopifyCart;
+    };
+  };
+  variables: {
+    buyerIdentity?: {
+      countryCode: string;
+    };
+  };
 };
 
 // export type ShopifyAddToCartOperation = {
