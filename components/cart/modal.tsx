@@ -234,7 +234,7 @@ export default function CartModal({
                     </div>
                     <button
                       onClick={() => handleCheckout(cart.checkoutUrl)}
-                      disabled={!cart?.checkoutUrl}
+                      disabled={!cart?.checkoutUrl || cart.checkoutUrl === ""}
                       className="mt-8 w-full px-6 py-3 text-base font-medium text-white 
                         bg-red-600 rounded-lg shadow-sm hover:bg-red-700 
                         transition-colors duration-200 disabled:opacity-50 
@@ -390,7 +390,7 @@ function CartContent({
       </div>
       <button
         onClick={() => handleCheckout(cart.checkoutUrl)}
-        disabled={!cart?.checkoutUrl}
+        disabled={!cart?.checkoutUrl || cart.checkoutUrl === ""}
         className="mt-8 w-full px-6 py-3 text-base font-medium text-white 
           bg-red-600 rounded-lg shadow-sm hover:bg-red-700 
           transition-colors duration-200 disabled:opacity-50 
