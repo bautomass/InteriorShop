@@ -338,48 +338,42 @@ export async function addToCart(
   lines: Array<{ merchandiseId: string; quantity: number }>
 ): Promise<Cart> {
   try {
-    // Format cart ID if needed
     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
 
-    // Ensure merchandiseId is the complete Shopify ID
-    const formattedLines = lines.map((line) => {
-      // Log the incoming ID for debugging
-      console.log('Processing merchandiseId:', line.merchandiseId);
-
-      return {
-        merchandiseId: line.merchandiseId,
-        quantity: line.quantity
-      };
-    });
-
-    console.log('Sending to Shopify:', {
-      cartId: formattedCartId,
-      lines: formattedLines
+    // Log the incoming request
+    console.log('Shopify addToCart - Request:', {
+      formattedCartId,
+      lines: JSON.stringify(lines)
     });
 
     const res = await shopifyFetch<ShopifyAddToCartOperation>({
       query: addToCartMutation,
       variables: {
         cartId: formattedCartId,
-        lines: formattedLines
+        lines: lines.map((line) => ({
+          merchandiseId: line.merchandiseId,
+          quantity: line.quantity
+        }))
       },
       cache: 'no-store'
     });
 
+    // Log the response
+    console.log('Shopify addToCart - Response:', JSON.stringify(res.body));
+
     if (res.body.data?.cartLinesAdd?.userErrors?.length > 0) {
-      const errors = res.body.data.cartLinesAdd.userErrors;
-      throw new Error(`Shopify Error: ${errors.map((e) => e.message).join(', ')}`);
+      throw new Error(`Shopify Errors: ${JSON.stringify(res.body.data.cartLinesAdd.userErrors)}`);
     }
 
     if (!res.body.data?.cartLinesAdd?.cart) {
       throw new Error(
-        `Cart Error: Invalid Response | Cart ID: ${cartId} | Lines: ${JSON.stringify(lines)} | Response: ${JSON.stringify(res.body)}`
+        `Cart Error: Invalid Response | Cart ID: ${cartId} | Lines: ${JSON.stringify(lines)}`
       );
     }
 
     return reshapeCart(res.body.data.cartLinesAdd.cart);
   } catch (error) {
-    console.error('Add to Cart Error:', error);
+    console.error('Shopify addToCart - Error:', error);
     throw error;
   }
 }
