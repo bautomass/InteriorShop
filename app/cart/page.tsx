@@ -149,41 +149,45 @@ export default function CartPage() {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 relative"
+        className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 lg:px-8 relative"
       >
-        {/* Navigation Buttons - Adjusted positioning */}
+        {/* Navigation Buttons - Responsive positioning */}
         <motion.div 
           variants={itemVariants}
-          className="absolute left-4 top-14 sm:left-6 sm:top-14 lg:left-8 lg:top-14 flex gap-2 z-10"
+          className="flex justify-center gap-3 mb-8 sm:mb-0 sm:justify-start sm:absolute sm:left-6 sm:top-14 lg:left-8 z-10"
         >
           <button
             onClick={() => router.back()}
-            className="group flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-white shadow-sm 
-              ring-1 ring-[#6B5E4C]/5 transition-all duration-200 hover:shadow-md
-              hover:bg-[#F8F6F3] text-[#6B5E4C]"
+            className="group flex items-center justify-center gap-2 px-4 py-2.5 sm:px-3 sm:py-2 
+              text-sm rounded-lg bg-white shadow-sm ring-1 ring-[#6B5E4C]/5 
+              transition-all duration-200 hover:shadow-md hover:bg-[#F8F6F3] text-[#6B5E4C]
+              min-w-[100px] sm:min-w-0"
           >
             <ArrowLeft 
               className="w-4 h-4 transition-transform group-hover:-translate-x-1" 
               strokeWidth={1.5} 
             />
+            <span className="sm:hidden">Back</span>
             <span className="hidden sm:inline">Back</span>
           </button>
           
           <button
             onClick={() => router.push('/')}
-            className="group flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-white shadow-sm 
-              ring-1 ring-[#6B5E4C]/5 transition-all duration-200 hover:shadow-md
-              hover:bg-[#F8F6F3] text-[#6B5E4C]"
+            className="group flex items-center justify-center gap-2 px-4 py-2.5 sm:px-3 sm:py-2 
+              text-sm rounded-lg bg-white shadow-sm ring-1 ring-[#6B5E4C]/5 
+              transition-all duration-200 hover:shadow-md hover:bg-[#F8F6F3] text-[#6B5E4C]
+              min-w-[100px] sm:min-w-0"
           >
             <Home 
               className="w-4 h-4 transition-transform group-hover:scale-110" 
               strokeWidth={1.5} 
             />
+            <span className="sm:hidden">Home</span>
             <span className="hidden sm:inline">Home</span>
           </button>
         </motion.div>
 
-        {/* Header */}
+        {/* Header - Adjusted margin for mobile */}
         <motion.div variants={itemVariants} className="text-center mb-12">
           <h1 className="text-4xl font-bold text-[#6B5E4C] mb-4">Your Shopping Cart</h1>
           {isLoading ? (
