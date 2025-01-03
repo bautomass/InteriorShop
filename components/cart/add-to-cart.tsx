@@ -1,4 +1,3 @@
-// //add-to-cart-.tsx file
 'use client';
 
 import { useActionState } from '@/hooks/useActionState';
@@ -19,12 +18,16 @@ export function AddToCart({ product }: { product: Product }) {
 
   // Find matching variant based on selected options
   const selectedVariant = useMemo(() => {
-    // Only try to match if we have all required options selected
+    if (!variants.length || !Object.keys(state).length) return null;
+
+    // Check if we have all required options selected
     const requiredOptionCount = product.options.length;
-    const selectedOptionCount = Object.keys(state).length;
+    const selectedOptionCount = Object.keys(state).filter((key) =>
+      product.options.some((option) => option.name === key)
+    ).length;
 
     if (selectedOptionCount < requiredOptionCount) {
-      return undefined;
+      return null;
     }
 
     return variants.find((variant: ProductVariant) =>
@@ -33,19 +36,18 @@ export function AddToCart({ product }: { product: Product }) {
         return selectedValue === option.value;
       })
     );
-  }, [variants, state, product.options.length]);
+  }, [variants, state, product.options]);
 
-  // Debug selected variant
+  // Debug logging
   useEffect(() => {
-    console.log('AddToCart - Variant selection:', {
+    console.log('AddToCart state updated:', {
+      selectedVariant: selectedVariant?.id,
       state,
-      selectedVariantId: selectedVariant?.id,
-      allVariants: variants.map((v) => ({
-        id: v.id,
-        options: v.selectedOptions
-      }))
+      allOptions: product.options.map((opt) => opt.name),
+      selectedOptionCount: Object.keys(state).length,
+      requiredOptionCount: product.options.length
     });
-  }, [state, selectedVariant, variants]);
+  }, [state, selectedVariant, product.options]);
 
   const handleAddToCart = useCallback(
     async (e: FormEvent) => {
@@ -57,9 +59,8 @@ export function AddToCart({ product }: { product: Product }) {
       }
 
       try {
-        console.log('AddToCart: Adding to cart', {
+        console.log('Adding to cart:', {
           variantId: selectedVariant.id,
-          variant: selectedVariant,
           quantity
         });
 
@@ -151,115 +152,89 @@ function AnimatedNumber({ number }: { number: number }) {
   );
 }
 
+// // //add-to-cart-.tsx file
 // 'use client';
 
 // import { useActionState } from '@/hooks/useActionState';
-// import { PlusIcon } from '@heroicons/react/24/outline';
-// import clsx from 'clsx';
 // import { addItem } from 'components/cart/actions';
 // import { useProduct } from 'components/product/product-context';
 // import { motion } from 'framer-motion';
 // import { Product, ProductVariant } from 'lib/shopify/types';
 // import { Minus, Plus, ShoppingCart } from 'lucide-react';
-// import { FormEvent, useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+// import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 // import { useCart } from './cart-context';
 
 // export function AddToCart({ product }: { product: Product }) {
-//   const [isPending, startTransition] = useTransition();
 //   const [quantity, setQuantity] = useState(1);
 //   const { variants, availableForSale } = product;
 //   const { addCartItem } = useCart();
-//   const { state, updateOption } = useProduct();
+//   const { state } = useProduct();
 //   const [message, formAction] = useActionState(addItem, null);
-//   const [hasSetDefault, setHasSetDefault] = useState(false);
 
-//   // Set default variant only once when component mounts
-//   useEffect(() => {
-//     if (!hasSetDefault && variants.length > 0) {
-//       const defaultVariant = variants[0];
-//       if (defaultVariant) {
-//         // Use Promise.all to handle all updates at once
-//         Promise.all(
-//           defaultVariant.selectedOptions.map((option) => updateOption(option.name, option.value))
-//         );
-//         setHasSetDefault(true);
-//       }
+//   // Find matching variant based on selected options
+//   const selectedVariant = useMemo(() => {
+//     // Only try to match if we have all required options selected
+//     const requiredOptionCount = product.options.length;
+//     const selectedOptionCount = Object.keys(state).length;
+
+//     if (selectedOptionCount < requiredOptionCount) {
+//       return undefined;
 //     }
-//   }, [variants, updateOption, hasSetDefault]);
 
-//   const variant = useMemo(
-//     () =>
-//       variants.find((variant: ProductVariant) =>
-//         variant.selectedOptions.every((option) => state[option.name] === option.value)
-//       ),
-//     [variants, state]
-//   );
-//   const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
-//   const selectedVariantId = variant?.id || defaultVariantId;
-//   const finalVariant = variants.find((variant) => variant.id === selectedVariantId);
+//     return variants.find((variant: ProductVariant) =>
+//       variant.selectedOptions.every((option) => {
+//         const selectedValue = state[option.name];
+//         return selectedValue === option.value;
+//       })
+//     );
+//   }, [variants, state, product.options.length]);
 
-//   // Debug state changes
+//   // Debug selected variant
 //   useEffect(() => {
-//     console.log('AddToCart state updated:', {
+//     console.log('AddToCart - Variant selection:', {
 //       state,
-//       selectedVariant: variant?.id,
+//       selectedVariantId: selectedVariant?.id,
 //       allVariants: variants.map((v) => ({
 //         id: v.id,
 //         options: v.selectedOptions
 //       }))
 //     });
-//   }, [state, variant, variants]);
-
-//   // Debug variant matching
-//   useEffect(() => {
-//     console.log('Variant matching:', {
-//       state,
-//       variant: variant?.id,
-//       allOptions: variants.map((v) => v.selectedOptions)
-//     });
-//   }, [state, variant, variants]);
+//   }, [state, selectedVariant, variants]);
 
 //   const handleAddToCart = useCallback(
 //     async (e: FormEvent) => {
 //       e.preventDefault();
 
-//       if (!variant?.id || !product.availableForSale) {
+//       if (!selectedVariant || !product.availableForSale) {
 //         console.log('AddToCart: Invalid variant or product not available');
 //         return;
 //       }
 
 //       try {
-//         // Ensure we're using the full Shopify variant ID
-//         const variantId = variant.id;
-
-//         console.log('AddToCart: Submitting variant', {
-//           id: variantId,
-//           variant,
-//           state
+//         console.log('AddToCart: Adding to cart', {
+//           variantId: selectedVariant.id,
+//           variant: selectedVariant,
+//           quantity
 //         });
 
-//         // First update the cart UI optimistically
+//         // Update cart UI optimistically
 //         addCartItem({
-//           variant,
+//           variant: selectedVariant,
 //           product,
 //           quantity
 //         });
 
-//         // Then send the server action
-//         const result = await formAction(variantId, quantity);
+//         // Send server action
+//         const result = await formAction(selectedVariant.id, quantity);
 
 //         if (result !== 'Success') {
 //           throw new Error(`Add to Cart Failed: ${result}`);
 //         }
 //       } catch (error) {
-//         console.error('AddToCart: Error', {
-//           error,
-//           variant,
-//           state
-//         });
+//         console.error('AddToCart: Error', error);
 //       }
 //     },
-//     [variant, product, quantity, addCartItem, formAction, state]
+//     [selectedVariant, product, quantity, addCartItem, formAction]
 //   );
 
 //   return (
@@ -269,7 +244,6 @@ function AnimatedNumber({ number }: { number: number }) {
 //           type="button"
 //           onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
 //           className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
-//           aria-label="Decrease quantity"
 //         >
 //           <Minus className="h-4 w-4" />
 //         </button>
@@ -282,7 +256,6 @@ function AnimatedNumber({ number }: { number: number }) {
 //           type="button"
 //           onClick={() => setQuantity((prev) => prev + 1)}
 //           className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
-//           aria-label="Increase quantity"
 //         >
 //           <Plus className="h-4 w-4" />
 //         </button>
@@ -292,76 +265,24 @@ function AnimatedNumber({ number }: { number: number }) {
 //         type="submit"
 //         whileHover={{ scale: 1.02 }}
 //         whileTap={{ scale: 0.98 }}
-//         disabled={!variant || !product.availableForSale || isPending}
+//         disabled={!selectedVariant || !product.availableForSale}
 //         className={`group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-md px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl ${
-//           !variant || !product.availableForSale || isPending
+//           !selectedVariant || !product.availableForSale
 //             ? 'cursor-not-allowed bg-gray-400'
 //             : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
 //         }`}
 //       >
 //         <ShoppingCart className="h-5 w-5" />
 //         <span className="relative z-10">
-//           {isPending
-//             ? 'Adding...'
-//             : !variant
-//               ? 'Select options'
-//               : !product.availableForSale
-//                 ? 'Out of Stock'
-//                 : 'Add to Cart'}
+//           {!selectedVariant
+//             ? 'Select options'
+//             : !product.availableForSale
+//               ? 'Out of Stock'
+//               : 'Add to Cart'}
 //         </span>
 //         <div className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 //       </motion.button>
 //     </form>
-//   );
-// }
-
-// function SubmitButton({
-//   availableForSale,
-//   selectedVariantId
-// }: {
-//   availableForSale: boolean;
-//   selectedVariantId: string | undefined;
-// }) {
-//   const buttonClasses =
-//     'relative flex w-full items-center justify-center rounded-full bg-accent-600 p-4 tracking-wide text-primary-50';
-//   const disabledClasses = 'cursor-not-allowed opacity-60 hover:opacity-60';
-
-//   if (!availableForSale) {
-//     return (
-//       <button disabled className={clsx(buttonClasses, disabledClasses)}>
-//         Out Of Stock
-//       </button>
-//     );
-//   }
-
-//   if (!selectedVariantId) {
-//     return (
-//       <button
-//         aria-label="Please select an option"
-//         disabled
-//         className={clsx(buttonClasses, disabledClasses)}
-//       >
-//         <div className="absolute left-0 ml-4">
-//           <PlusIcon className="h-5" />
-//         </div>
-//         Add To Cart
-//       </button>
-//     );
-//   }
-
-//   return (
-//     <button
-//       type="submit"
-//       aria-label="Add to cart"
-//       className={clsx(buttonClasses, {
-//         'hover:opacity-90': true
-//       })}
-//     >
-//       <div className="absolute left-0 ml-4">
-//         <PlusIcon className="h-5" />
-//       </div>
-//       Add To Cart
-//     </button>
 //   );
 // }
 

@@ -2,11 +2,12 @@
 'use client';
 
 import { useActionState } from '@/hooks/useActionState';
-import type { Product, ProductVariant } from '@/lib/shopify/types';
+import type { Product } from '@/lib/shopify/types';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { addItem } from 'components/cart/actions';
 import { AddToCart } from 'components/cart/add-to-cart';
 import { useCart } from 'components/cart/cart-context';
+import { useProduct } from 'components/product/product-context';
 import { motion } from 'framer-motion';
 import {
   Cog,
@@ -22,7 +23,7 @@ import {
   X
 } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { TagProductsModal } from './tag-products-modal';
 
@@ -46,8 +47,7 @@ function AnimatedNumber({ number }: { number: number }) {
 }
 
 export function ProductDetails({ product }: { product: Product }) {
-  const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: string }>({});
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const { state, updateOption } = useProduct();
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const { ref, inView } = useInView({
     threshold: 0.2,
@@ -65,26 +65,21 @@ export function ProductDetails({ product }: { product: Product }) {
   const [tagProducts, setTagProducts] = useState<Product[]>([]);
   const [isLoadingTagProducts, setIsLoadingTagProducts] = useState(false);
 
-  useEffect(() => {
-    if (product) {
-      const defaultOptions: { [key: string]: string } = {};
-      product.options.forEach((option) => {
-        if (option.values?.[0]) {
-          defaultOptions[option.name] = option.values[0];
-        }
-      });
-      setSelectedOptions(defaultOptions);
-    }
-  }, [product]);
+  const selectedVariant = useMemo(() => {
+    if (!Object.keys(state).length) return null;
+
+    return product.variants.find((variant) =>
+      variant.selectedOptions.every((option) => state[option.name] === option.value)
+    );
+  }, [state, product.variants]);
 
   useEffect(() => {
-    if (product && Object.keys(selectedOptions).length > 0) {
-      const matchingVariant = product.variants.find((variant) =>
-        variant.selectedOptions.every((option) => selectedOptions[option.name] === option.value)
-      );
-      setSelectedVariant(matchingVariant || null);
-    }
-  }, [selectedOptions, product]);
+    console.log('ProductDetails - Selected variant:', {
+      variantId: selectedVariant?.id,
+      state,
+      productOptions: product.options
+    });
+  }, [selectedVariant, state, product.options]);
 
   useEffect(() => {
     if (product) {
@@ -154,10 +149,7 @@ export function ProductDetails({ product }: { product: Product }) {
   }, [stickyBarClosed]);
 
   const handleOptionChange = (optionName: string, value: string) => {
-    setSelectedOptions((prev) => ({
-      ...prev,
-      [optionName]: value
-    }));
+    updateOption(optionName, value);
   };
 
   const toggleOptionExpansion = (optionName: string) => {
@@ -177,7 +169,7 @@ export function ProductDetails({ product }: { product: Product }) {
       <div className="space-y-2">
         <div className="flex flex-wrap gap-1.5">
           {displayedValues.map((value: string) => {
-            const isSelected = selectedOptions[option.name] === value;
+            const isSelected = state[option.name] === value;
             return (
               <button
                 key={value}
