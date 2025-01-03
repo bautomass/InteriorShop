@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { useProduct } from 'components/product/product-context';
+import { useProduct, useUpdateURL } from 'components/product/product-context';
 import { ProductOption, ProductVariant } from 'lib/shopify/types';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -18,19 +18,29 @@ interface VariantSelectorProps {
 
 export function VariantSelector({ options, variants }: VariantSelectorProps): JSX.Element | null {
   const { state, updateOption } = useProduct();
+  const updateURL = useUpdateURL();
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Set default variant when component mounts
+  // Set default variant when component mounts and no state exists
   useEffect(() => {
-    if (!Object.keys(state).length && variants.length > 0) {
-      const defaultVariant = variants.find((v) => v.availableForSale) || variants[0];
-      if (defaultVariant) {
-        defaultVariant.selectedOptions.forEach((option) => {
-          updateOption(option.name, option.value);
-        });
+    const setDefaultVariant = async () => {
+      if (Object.keys(state).length === 0 && variants.length > 0) {
+        const defaultVariant = variants.find((v) => v.availableForSale) || variants[0];
+        if (defaultVariant) {
+          try {
+            for (const option of defaultVariant.selectedOptions) {
+              const newState = await updateOption(option.name.toLowerCase(), option.value);
+              await updateURL(newState);
+            }
+          } catch (error) {
+            console.error('Error setting default variant:', error);
+          }
+        }
       }
-    }
-  }, [variants, state, updateOption]);
+    };
+
+    setDefaultVariant();
+  }, [variants, state, updateOption, updateURL]);
 
   const hasNoOptionsOrJustOneOption =
     !options.length || (options.length === 1 && options[0]?.values.length === 1);
@@ -43,7 +53,7 @@ export function VariantSelector({ options, variants }: VariantSelectorProps): JS
     id: variant.id,
     availableForSale: variant.availableForSale,
     ...variant.selectedOptions.reduce(
-      (accumulator, option) => ({ ...accumulator, [option.name]: option.value }),
+      (accumulator, option) => ({ ...accumulator, [option.name.toLowerCase()]: option.value }),
       {}
     )
   }));
@@ -53,16 +63,23 @@ export function VariantSelector({ options, variants }: VariantSelectorProps): JS
       if (isUpdating) return;
       setIsUpdating(true);
 
+      console.log('Before update:', {
+        optionName,
+        value,
+        currentState: state
+      });
+
       try {
-        console.log('Updating option:', { optionName, value, currentState: state });
-        updateOption(optionName, value);
+        const newState = await updateOption(optionName, value);
+        console.log('After updateOption:', newState);
+        await updateURL(newState);
       } catch (error) {
         console.error('Failed to update variant:', error);
       } finally {
         setIsUpdating(false);
       }
     },
-    [isUpdating, updateOption, state]
+    [isUpdating, updateOption, updateURL, state]
   );
 
   return (
@@ -73,14 +90,16 @@ export function VariantSelector({ options, variants }: VariantSelectorProps): JS
             <dt className="mb-4 text-sm uppercase tracking-wide">{option.name}</dt>
             <dd className="flex flex-wrap gap-3">
               {option.values.map((value) => {
-                const optionParams = { ...state, [option.name]: value };
+                const optionNameLowerCase = option.name.toLowerCase();
+                const optionParams = { ...state, [optionNameLowerCase]: value };
 
-                // Filter out invalid options with type guard
                 const filtered = Object.entries(optionParams).filter(
                   (entry): entry is [string, string] =>
                     typeof entry[1] === 'string' &&
                     !!options.find(
-                      (opt) => opt.name === entry[0] && opt.values.includes(entry[1] as string)
+                      (opt) =>
+                        opt.name.toLowerCase() === entry[0] &&
+                        opt.values.includes(entry[1] as string)
                     )
                 );
 
@@ -90,13 +109,13 @@ export function VariantSelector({ options, variants }: VariantSelectorProps): JS
                   )
                 );
 
-                const isActive = state[option.name] === value;
+                const isActive = state[optionNameLowerCase] === value;
 
                 return (
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      handleOptionClick(option.name, value);
+                      handleOptionClick(optionNameLowerCase, value);
                     }}
                     key={value}
                     type="button"
@@ -125,7 +144,6 @@ export function VariantSelector({ options, variants }: VariantSelectorProps): JS
     </div>
   );
 }
-
 // 'use client';
 
 // import clsx from 'clsx';

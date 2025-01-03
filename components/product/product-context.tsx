@@ -3,12 +3,17 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-interface ProductState {
-  [key: string]: string;
+interface BaseProductState {
+  [key: string]: string | undefined;
+}
+
+interface ProductState extends BaseProductState {
+  image?: string;
 }
 
 export type ProductContextValue = {
   state: ProductState;
+  setState: React.Dispatch<React.SetStateAction<ProductState>>;
   updateOption: (name: string, value: string) => ProductState;
   updateImage: (index: string) => ProductState;
 };
@@ -19,7 +24,6 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Initialize state from URL params
   const [state, setState] = useState<ProductState>(() => {
     const params: ProductState = {};
     searchParams.forEach((value, key) => {
@@ -28,65 +32,46 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     return params;
   });
 
-  // Sync state with URL params
   useEffect(() => {
     const params: ProductState = {};
     searchParams.forEach((value, key) => {
       params[key] = value;
     });
-    setState((current) => ({ ...current, ...params }));
+    setState(params);
   }, [searchParams]);
-
-  const updateURL = useCallback(
-    (newState: ProductState) => {
-      const params = new URLSearchParams(searchParams.toString());
-      Object.entries(newState).forEach(([key, value]) => {
-        if (value) {
-          params.set(key, value);
-        }
-      });
-      router.push(`?${params.toString()}`, { scroll: false });
-    },
-    [router, searchParams]
-  );
 
   const updateOption = useCallback(
     (name: string, value: string) => {
-      const newState = {
-        ...state,
-        [name]: value
-      };
+      setState((prevState) => {
+        const newState = {
+          ...prevState,
+          [name]: value
+        };
 
-      setState(newState);
-      updateURL(newState);
-
-      console.log('ProductContext - Updating option:', {
-        name,
-        value,
-        newState
+        console.log('Updating state:', { name, value, newState });
+        return newState;
       });
 
-      return newState;
+      return { ...state, [name]: value };
     },
-    [state, updateURL]
+    [state]
   );
 
   const updateImage = useCallback(
     (index: string) => {
-      const newState = {
-        ...state,
+      setState((prevState) => ({
+        ...prevState,
         image: index
-      };
-      setState(newState);
-      updateURL(newState);
-      return newState;
+      }));
+      return { ...state, image: index };
     },
-    [state, updateURL]
+    [state]
   );
 
   const value = useMemo(
     () => ({
       state,
+      setState,
       updateOption,
       updateImage
     }),
@@ -98,12 +83,35 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
 
 export function useProduct() {
   const context = useContext(ProductContext);
+
   if (context === undefined) {
     throw new Error('useProduct must be used within a ProductProvider');
   }
+
   return context;
 }
 
+export function useUpdateURL() {
+  const router = useRouter();
+
+  return useCallback(
+    (state: ProductState) => {
+      const newParams = new URLSearchParams();
+
+      Object.entries(state).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          newParams.set(key.toLowerCase(), value);
+        }
+      });
+
+      const newURL = `${window.location.pathname}?${newParams.toString()}`;
+      console.log('Updating URL to:', newURL);
+
+      return router.push(newURL, { scroll: false });
+    },
+    [router]
+  );
+}
 // // //product-context.tsx
 // 'use client';
 
