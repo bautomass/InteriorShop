@@ -16,6 +16,13 @@ export async function addItem(
       throw new Error('No variant ID provided');
     }
 
+    // Debug logging
+    console.log('Add Item - Input:', {
+      selectedVariantId,
+      quantity,
+      type: typeof selectedVariantId
+    });
+
     let cartId = cookies().get('cartId')?.value;
     let cart;
 
@@ -26,15 +33,18 @@ export async function addItem(
       cookies().set('cartId', cart.id);
     }
 
+    // Ensure variant ID is in the correct format
+    const merchandiseId = selectedVariantId;
+
     console.log('Cart Debug - Add Item:', {
       cartId,
-      selectedVariantId,
+      merchandiseId,
       quantity
     });
 
     cart = await addToCart(cartId, [
       {
-        merchandiseId: selectedVariantId,
+        merchandiseId,
         quantity
       }
     ]);
@@ -163,6 +173,7 @@ export async function createCartAndSetCookie() {
     return `Error: ${e instanceof Error ? e.message : 'Failed to create cart'}`;
   }
 }
+
 // 'use server';
 
 // import { TAGS } from 'lib/constants';
@@ -181,10 +192,11 @@ export async function createCartAndSetCookie() {
 //       throw new Error('No variant ID provided');
 //     }
 
-//     // Get or create cart
 //     let cartId = cookies().get('cartId')?.value;
+//     let cart;
+
 //     if (!cartId) {
-//       const cart = await createCart();
+//       cart = await createCart();
 //       if (!cart?.id) throw new Error('Failed to create cart');
 //       cartId = cart.id;
 //       cookies().set('cartId', cart.id);
@@ -196,8 +208,7 @@ export async function createCartAndSetCookie() {
 //       quantity
 //     });
 
-//     // Add to cart with variant ID as-is
-//     const cart = await addToCart(cartId, [
+//     cart = await addToCart(cartId, [
 //       {
 //         merchandiseId: selectedVariantId,
 //         quantity

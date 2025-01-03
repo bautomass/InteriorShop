@@ -1,11 +1,10 @@
-// components/cart/add-to-cart.tsx
 'use client';
 
 import { useActionState } from '@/hooks/useActionState';
 import { addItem } from 'components/cart/actions';
 import { useProduct } from 'components/product/product-context';
 import { motion } from 'framer-motion';
-import { Product, ProductVariant } from 'lib/shopify/types';
+import { Product } from 'lib/shopify/types';
 import { Minus, Plus, ShoppingCart } from 'lucide-react';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useCart } from './cart-context';
@@ -21,7 +20,7 @@ export function AddToCart({ product }: { product: Product }) {
   const selectedVariant = useMemo(() => {
     if (!Object.keys(state).length) return null;
 
-    return variants.find((variant: ProductVariant) =>
+    return variants.find((variant) =>
       variant.selectedOptions.every((option) => state[option.name] === option.value)
     );
   }, [variants, state]);
@@ -48,17 +47,13 @@ export function AddToCart({ product }: { product: Product }) {
       setIsSubmitting(true);
 
       try {
-        // Ensure we're using the full Shopify variant ID
-        const variantId = selectedVariant.id;
-
         console.log('Adding to cart:', {
-          variantId,
-          quantity,
-          selectedVariant
+          variantId: selectedVariant.id,
+          quantity
         });
 
-        // Send server action first
-        const result = await formAction(variantId, quantity);
+        // Send server action with full variant ID
+        const result = await formAction(selectedVariant.id, quantity);
         console.log('Server action result:', result);
 
         if (result === 'Success') {
@@ -82,6 +77,7 @@ export function AddToCart({ product }: { product: Product }) {
 
   return (
     <form onSubmit={handleAddToCart} className="flex items-center gap-4">
+      {/* Quantity Controls */}
       <div className="flex h-[52px] items-center rounded-md border border-[#6B5E4C]/20">
         <button
           type="button"
@@ -104,6 +100,7 @@ export function AddToCart({ product }: { product: Product }) {
         </button>
       </div>
 
+      {/* Add to Cart Button */}
       <motion.button
         type="submit"
         whileHover={{ scale: 1.02 }}
@@ -150,6 +147,21 @@ function AnimatedNumber({ number }: { number: number }) {
   );
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // components/cart/add-to-cart.tsx
 // 'use client';
 
 // import { useActionState } from '@/hooks/useActionState';
@@ -199,14 +211,18 @@ function AnimatedNumber({ number }: { number: number }) {
 //       setIsSubmitting(true);
 
 //       try {
-//         const variantId = String(selectedVariant.id);
+//         // Ensure we're using the full Shopify variant ID
+//         const variantId = selectedVariant.id;
+
 //         console.log('Adding to cart:', {
 //           variantId,
-//           quantity
+//           quantity,
+//           selectedVariant
 //         });
 
 //         // Send server action first
 //         const result = await formAction(variantId, quantity);
+//         console.log('Server action result:', result);
 
 //         if (result === 'Success') {
 //           // Only update UI if server action succeeds
