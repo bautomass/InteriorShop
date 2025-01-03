@@ -11,7 +11,7 @@ import { createUrl } from 'lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { createCartAndSetCookie } from './actions';
+import { createCartAndSetCookie, redirectToCheckout } from './actions';
 import { useCart } from './cart-context';
 import CloseCart from './close-cart';
 import { DeleteItemButton } from './delete-item-button';
@@ -53,18 +53,6 @@ export default function CartModal({
       quantityRef.current = cart?.totalQuantity;
     }
   }, [isOpen, cart?.totalQuantity, quantityRef]);
-
-  const handleCheckout = (checkoutUrl?: string) => {
-    if (checkoutUrl) {
-      window.location.href = checkoutUrl;
-    }
-  };
-
-  console.log('Cart debug:', {
-    hasCart: !!cart,
-    hasLines: (cart?.lines?.length ?? 0) > 0,
-    checkoutUrl: cart?.checkoutUrl
-  });
 
   return (
     <>
@@ -232,16 +220,9 @@ export default function CartModal({
                         />
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleCheckout(cart.checkoutUrl)}
-                      disabled={!cart?.checkoutUrl || cart.checkoutUrl === ""}
-                      className="mt-8 w-full px-6 py-3 text-base font-medium text-white 
-                        bg-red-600 rounded-lg shadow-sm hover:bg-red-700 
-                        transition-colors duration-200 disabled:opacity-50 
-                        disabled:cursor-not-allowed"
-                    >
-                      Proceed to Checkout
-                    </button>
+                    <form action={redirectToCheckout}>
+                      <CheckoutButton />
+                    </form>
                   </div>
                 )}
               </Dialog.Panel>
@@ -277,12 +258,6 @@ function CartContent({
   updateCartItem: (merchandiseId: string, type: 'plus' | 'minus' | 'delete') => void;
   closeCart: () => void;
 }) {
-  const handleCheckout = (checkoutUrl?: string) => {
-    if (checkoutUrl) {
-      window.location.href = checkoutUrl;
-    }
-  };
-
   return (
     <div className="flex h-full flex-col justify-between overflow-hidden">
       <ul className="flex-grow overflow-auto py-4">
@@ -388,16 +363,9 @@ function CartContent({
           />
         </div>
       </div>
-      <button
-        onClick={() => handleCheckout(cart.checkoutUrl)}
-        disabled={!cart?.checkoutUrl || cart.checkoutUrl === ""}
-        className="mt-8 w-full px-6 py-3 text-base font-medium text-white 
-          bg-red-600 rounded-lg shadow-sm hover:bg-red-700 
-          transition-colors duration-200 disabled:opacity-50 
-          disabled:cursor-not-allowed"
-      >
-        Proceed to Checkout
-      </button>
+      <form action={redirectToCheckout}>
+        <CheckoutButton />
+      </form>
     </div>
   );
 }
