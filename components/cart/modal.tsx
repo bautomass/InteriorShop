@@ -25,14 +25,9 @@ type MerchandiseSearchParams = {
 interface CartModalProps {
   initialCart?: Cart;
   isCartPage?: boolean;
-  onCheckout?: () => void;
 }
 
-export default function CartModal({
-  initialCart,
-  isCartPage = false,
-  onCheckout
-}: CartModalProps) {
+export default function CartModal({ initialCart, isCartPage }: CartModalProps) {
   const { cart, updateCartItem } = useCart();
   const [isOpen, setIsOpen] = useState(isCartPage);
   const quantityRef = useRef(cart?.totalQuantity);
@@ -76,7 +71,19 @@ export default function CartModal({
               </p>
             </div>
           ) : (
-            <CartContent cart={cart} updateCartItem={updateCartItem} closeCart={closeCart} />
+            <div>
+              <CartContent cart={cart} updateCartItem={updateCartItem} closeCart={closeCart} />
+              <button
+                onClick={() => redirectToCheckout(cart.checkoutUrl)}
+                disabled={!cart?.checkoutUrl}
+                className="mt-8 w-full px-6 py-3 text-base font-medium text-white 
+                  bg-[#6B5E4C] rounded-lg shadow-sm hover:bg-[#9e896c] 
+                  transition-colors duration-200 disabled:opacity-50 
+                  disabled:cursor-not-allowed"
+              >
+                Proceed to Checkout
+              </button>
+            </div>
           )}
         </div>
       ) : (
@@ -224,18 +231,16 @@ export default function CartModal({
                         />
                       </div>
                     </div>
-                    {onCheckout && (
-                      <button
-                        onClick={onCheckout}
-                        disabled={!initialCart?.checkoutUrl}
-                        className="w-full px-6 py-3 text-base font-medium text-white 
-                          bg-[#6B5E4C] rounded-lg shadow-sm hover:bg-[#9e896c] 
-                          transition-colors duration-200 disabled:opacity-50 
-                          disabled:cursor-not-allowed"
-                      >
-                        Proceed to Checkout
-                      </button>
-                    )}
+                    <button
+                      onClick={() => redirectToCheckout(cart.checkoutUrl)}
+                      disabled={!cart?.checkoutUrl}
+                      className="w-full px-6 py-3 text-base font-medium text-white 
+                        bg-[#6B5E4C] rounded-lg shadow-sm hover:bg-[#9e896c] 
+                        transition-colors duration-200 disabled:opacity-50 
+                        disabled:cursor-not-allowed"
+                    >
+                      Proceed to Checkout
+                    </button>
                   </div>
                 )}
               </Dialog.Panel>
@@ -245,6 +250,12 @@ export default function CartModal({
       )}
     </>
   );
+}
+
+function redirectToCheckout(checkoutUrl?: string) {
+  if (checkoutUrl) {
+    window.location.href = checkoutUrl;
+  }
 }
 
 function CheckoutButton() {
