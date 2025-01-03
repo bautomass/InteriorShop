@@ -1,6 +1,4 @@
 //lib/shopify/index.ts
-'use client';
-
 import { HIDDEN_PRODUCT_TAG, SHOPIFY_GRAPHQL_API_ENDPOINT, TAGS } from 'lib/constants';
 import { ensureStartsWith } from 'lib/utils';
 import { revalidateTag } from 'next/cache';
