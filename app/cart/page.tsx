@@ -1,7 +1,9 @@
 'use client';
 
+import { useActionState } from '@/hooks/useActionState';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import type { Cart, Product } from '@/lib/shopify/types';
+import { addItem } from 'components/cart/actions';
 import CartModal from 'components/cart/modal';
 import { motion } from 'framer-motion';
 import { Lock, RotateCcw, Truck } from 'lucide-react';
@@ -51,6 +53,8 @@ export default function CartPage() {
   const [cart, setCart] = useState<Cart | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const { recentItems } = useRecentlyViewed();
+  const [message, formAction] = useActionState(addItem, null);
+  const [isAddingToCart, setIsAddingToCart] = useState<{[key: string]: boolean}>({});
 
   const fetchCart = async () => {
     try {
@@ -72,16 +76,22 @@ export default function CartPage() {
 
   const addToCart = async (product: Product) => {
     try {
-      await fetch('/api/cart', {
-        method: 'POST',
-        body: JSON.stringify({
-          merchandiseId: product.variants?.[0]?.id || '',
-          quantity: 1
-        })
+      setIsAddingToCart(prev => ({ ...prev, [product.id]: true }));
+      
+      const result = await formAction({
+        merchandiseId: product.variants[0]?.id || '',
+        quantity: 1
       });
-      fetchCart();
+
+      if (result === 'Success') {
+        // Show success state briefly
+        setTimeout(() => {
+          setIsAddingToCart(prev => ({ ...prev, [product.id]: false }));
+        }, 1500);
+      }
     } catch (error) {
       console.error('Failed to add item to cart:', error);
+      setIsAddingToCart(prev => ({ ...prev, [product.id]: false }));
     }
   };
 
@@ -177,9 +187,21 @@ export default function CartPage() {
                         e.stopPropagation();
                         addToCart(product);
                       }}
-                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-6 py-2 text-sm font-medium text-[#6B5E4C] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[#F8F6F3]"
+                      disabled={isAddingToCart[product.id]}
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-6 py-2 text-sm font-medium text-[#6B5E4C] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[#F8F6F3] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Add to Cart
+                      {isAddingToCart[product.id] ? (
+                        <span className="flex items-center gap-2">
+                          <motion.span
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                          >
+                            Added!
+                          </motion.span>
+                        </span>
+                      ) : (
+                        'Add to Cart'
+                      )}
                     </button>
                   </div>
                   <div className="p-4">
