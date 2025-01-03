@@ -338,36 +338,14 @@ export async function addToCart(
   lines: Array<{ merchandiseId: string; quantity: number }>
 ): Promise<Cart> {
   try {
+    // Only format the cart ID if needed
     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
-
-    // Ensure merchandiseId is the full Shopify Global ID
-    const formattedLines = lines.map(line => {
-      const merchandiseId = String(line.merchandiseId); // Ensure string type
-      
-      // If it's already a full Shopify Global ID, use it as is
-      if (merchandiseId.startsWith('gid://shopify/ProductVariant/')) {
-        return {
-          merchandiseId,
-          quantity: line.quantity
-        };
-      }
-      
-      // Otherwise, extract just the ID number or use the full string
-      const variantId = merchandiseId.includes('/') 
-        ? merchandiseId.split('/').pop() 
-        : merchandiseId;
-      
-      return {
-        merchandiseId: `gid://shopify/ProductVariant/${variantId}`,
-        quantity: line.quantity
-      };
-    });
 
     const res = await shopifyFetch<ShopifyAddToCartOperation>({
       query: addToCartMutation,
       variables: {
         cartId: formattedCartId,
-        lines: formattedLines
+        lines: lines // Use the original lines array without any modification
       },
       cache: 'no-store'
     });
