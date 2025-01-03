@@ -52,19 +52,19 @@ const TRUST_BADGES = [
 const DISCOUNT_PERCENTAGE = 10;
 
 export default function CartPage() {
-  const [cart, setCart] = useState<Cart | undefined>();
+  const [serverCart, setServerCart] = useState<Cart | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const { recentItems } = useRecentlyViewed();
   const [message, formAction] = useActionState(addItem, null);
   const [isAddingToCart, setIsAddingToCart] = useState<{[key: string]: boolean}>({});
-  const { addCartItem } = useCart();
+  const { cart: contextCart } = useCart();
 
   const fetchCart = async () => {
     try {
       const response = await fetch('/api/cart');
       if (response.ok) {
         const data = await response.json();
-        setCart(data.cart);
+        setServerCart(data.cart);
       }
     } catch (error) {
       console.error('Failed to fetch cart:', error);
@@ -76,6 +76,8 @@ export default function CartPage() {
   useEffect(() => {
     fetchCart();
   }, []);
+
+  const activeCart = contextCart || serverCart;
 
   const addToCart = async (product: Product) => {
     try {
@@ -154,8 +156,8 @@ export default function CartPage() {
             <p className="text-[#8C7E6A]">Loading cart...</p>
           ) : (
             <p className="text-[#8C7E6A]">
-              {cart?.lines?.length 
-                ? `You have ${cart.lines.length} ${cart.lines.length === 1 ? 'item' : 'items'} in your cart`
+              {activeCart?.lines?.length 
+                ? `You have ${activeCart.lines.length} ${activeCart.lines.length === 1 ? 'item' : 'items'} in your cart`
                 : 'Your cart is empty'}
             </p>
           )}
@@ -168,7 +170,7 @@ export default function CartPage() {
             <motion.div variants={itemVariants} className="mb-8">
               <div className="bg-white rounded-xl shadow-sm ring-1 ring-[#6B5E4C]/5 overflow-hidden">
                 <div className="p-6">
-                  <CartModal initialCart={cart} isCartPage={true} />
+                  <CartModal initialCart={activeCart} isCartPage={true} />
                 </div>
               </div>
             </motion.div>
