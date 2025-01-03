@@ -1,8 +1,10 @@
+'use client';
+
+import type { Cart } from '@/lib/shopify/types';
 import CartModal from 'components/cart/modal';
 import { motion } from 'framer-motion';
-import { getCart } from 'lib/shopify';
 import { ShoppingBag } from 'lucide-react';
-import { cookies } from 'next/headers';
+import { useEffect, useState } from 'react';
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -22,9 +24,19 @@ const childVariants = {
   visible: { opacity: 1, y: 0 }
 };
 
-export default async function CartPage() {
-  const cartId = (await cookies()).get('cartId')?.value;
-  const cart = cartId ? await getCart(cartId) : undefined;
+export default function CartPage() {
+  const [cart, setCart] = useState<Cart | undefined>();
+
+  useEffect(() => {
+    async function fetchCart() {
+      const response = await fetch('/api/cart');
+      if (response.ok) {
+        const data = await response.json();
+        setCart(data.cart);
+      }
+    }
+    fetchCart();
+  }, []);
 
   return (
     <motion.div 
