@@ -45,15 +45,17 @@ export function AddToCart({ product }: { product: Product }) {
       setIsSubmitting(true);
 
       try {
-        console.log('AddToCart - Submitting:', {
-          variantId: selectedVariant.id,
+        const variantId = selectedVariant.id;
+        
+        console.log('AddToCart - Processing:', {
+          variantId,
           quantity,
           selectedVariant
         });
 
         const result = await formAction({
-          merchandiseId: selectedVariant.id,
-          quantity
+          merchandiseId: variantId,
+          quantity: quantity
         });
 
         console.log('AddToCart - Server Action Result:', result);

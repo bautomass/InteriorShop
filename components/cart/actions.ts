@@ -11,11 +11,11 @@ export async function addItem(
   data: { merchandiseId: string; quantity: number }
 ) {
   try {
+    console.log('Server Action - Received data:', data);
+
     if (!data?.merchandiseId) {
       throw new Error('No variant ID provided');
     }
-
-    console.log('Cart Action addItem - Input:', data);
 
     let cartId = cookies().get('cartId')?.value;
     let cart;
@@ -27,13 +27,12 @@ export async function addItem(
       cookies().set('cartId', cart.id);
     }
 
-    // Use the data directly as it's already in the correct format
     const lines = [{
       merchandiseId: data.merchandiseId,
       quantity: data.quantity
     }];
 
-    console.log('Cart Action addItem - Lines:', lines);
+    console.log('Server Action - Cart lines:', lines);
 
     cart = await addToCart(cartId, lines);
 
@@ -44,7 +43,7 @@ export async function addItem(
     revalidateTag(TAGS.cart);
     return 'Success';
   } catch (e) {
-    console.error('Cart Action addItem - Error:', e);
+    console.error('Server Action - Error:', e);
     return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
   }
 }
