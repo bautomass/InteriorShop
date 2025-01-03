@@ -338,13 +338,22 @@ export async function addToCart(
   lines: Array<{ merchandiseId: string; quantity: number }>
 ): Promise<Cart> {
   try {
-    // Validate merchandiseId format
-    if (!lines?.length || !lines.every(line => 
-      typeof line.merchandiseId === 'string' && 
-      line.merchandiseId.startsWith('gid://shopify/ProductVariant/')
-    )) {
-      throw new Error('Invalid merchandiseId format. Expected Shopify Global ID.');
+    console.log('AddToCart - Received lines:', JSON.stringify(lines, null, 2));
+
+    // Validate merchandiseId format and structure
+    if (!Array.isArray(lines) || !lines?.length) {
+      throw new Error('Invalid lines array provided to addToCart');
     }
+
+    // Check each line item's format
+    lines.forEach((line, index) => {
+      if (!line.merchandiseId || typeof line.merchandiseId !== 'string') {
+        throw new Error(`Invalid merchandiseId at index ${index}. Received: ${JSON.stringify(line)}`);
+      }
+      if (!line.merchandiseId.startsWith('gid://shopify/ProductVariant/')) {
+        throw new Error(`Invalid merchandiseId format at index ${index}. Expected Shopify Global ID, received: ${line.merchandiseId}`);
+      }
+    });
 
     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
 
