@@ -37,33 +37,21 @@ export default function CartModal({
   const closeCart = () => setIsOpen(false);
 
   const handleCheckout = async () => {
-    console.log('Checkout attempted:', {
-      hasCart: !!cart,
-      checkoutUrl: cart?.checkoutUrl,
-      isCheckingOut
-    });
-    
-    if (!cart || !cart.lines?.length) {
-      console.error('Cart is empty or not initialized');
-      return;
-    }
+    if (!cart || !cart.lines?.length) return;
     
     if (!cart.checkoutUrl && cart.lines.length > 0) {
       try {
         await createCartAndSetCookie();
         return;
       } catch (error) {
-        console.error('Failed to create new cart:', error);
         return;
       }
     }
     
     setIsCheckingOut(true);
     try {
-      console.log('Redirecting to:', cart.checkoutUrl);
       window.location.assign(cart.checkoutUrl!);
     } catch (error) {
-      console.error('Checkout error:', error);
       setIsCheckingOut(false);
     }
   };
@@ -87,16 +75,6 @@ export default function CartModal({
     }
   }, [isOpen, cart?.totalQuantity, quantityRef]);
 
-  useEffect(() => {
-    if (cart) {
-      console.log('Cart State:', {
-        hasItems: cart.lines?.length > 0,
-        checkoutUrl: cart.checkoutUrl,
-        totalQuantity: cart.totalQuantity
-      });
-    }
-  }, [cart]);
-
   const isCheckoutDisabled = !cart?.lines?.length || isCheckingOut;
 
   return (
@@ -118,6 +96,12 @@ export default function CartModal({
               <p className="mt-2 text-center text-sm text-neutral-500">
                 Add some items to start shopping
               </p>
+              <Link
+                href="/search"
+                className="mt-6 rounded-full bg-neutral-900 px-6 py-3 text-sm font-medium text-white hover:bg-neutral-800"
+              >
+                All Collections
+              </Link>
             </div>
           ) : (
             <div className="space-y-8">
@@ -222,9 +206,9 @@ export default function CartModal({
                 <button
                   onClick={handleCheckout}
                   disabled={isCheckoutDisabled}
-                  className="mt-6 w-full rounded-lg bg-brown-600 px-6 py-3 text-center text-base 
+                  className="mt-6 w-full rounded-lg bg-neutral-900 px-6 py-3 text-center text-base 
                     font-medium text-white shadow-sm transition-all duration-150 
-                    hover:bg-brown-700 focus:outline-none focus:ring-2 focus:ring-brown-500 
+                    hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-800 
                     focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isCheckingOut ? (
@@ -388,7 +372,7 @@ export default function CartModal({
                     <button
                       onClick={handleCheckout}
                       disabled={isCheckoutDisabled}
-                      className="block w-full rounded-full bg-brown-600 p-3 text-sm font-medium text-primary-50 opacity-90 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="block w-full rounded-full bg-accent-600 p-3 text-sm font-medium text-primary-50 opacity-90 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {isCheckingOut ? (
                         <LoadingDots className="bg-primary-50" />
@@ -406,4 +390,3 @@ export default function CartModal({
     </>
   );
 }
-
