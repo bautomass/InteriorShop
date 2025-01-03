@@ -1,5 +1,5 @@
-import type { Product } from '@/lib/shopify/types';
 import { useEffect, useState } from 'react';
+import type { Product } from '@/lib/shopify/types';
 
 const MAX_RECENT_ITEMS = 7;
 
