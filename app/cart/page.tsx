@@ -150,11 +150,15 @@ export default function CartPage() {
         {/* Header */}
         <motion.div variants={itemVariants} className="text-center mb-12">
           <h1 className="text-4xl font-bold text-[#6B5E4C] mb-4">Your Shopping Cart</h1>
-          <p className="text-[#8C7E6A]">
-            {cart?.totalQuantity 
-              ? `You have ${cart.totalQuantity} ${cart.totalQuantity === 1 ? 'item' : 'items'} in your cart`
-              : 'Your cart is empty'}
-          </p>
+          {isLoading ? (
+            <p className="text-[#8C7E6A]">Loading cart...</p>
+          ) : (
+            <p className="text-[#8C7E6A]">
+              {cart?.lines?.length 
+                ? `You have ${cart.lines.length} ${cart.lines.length === 1 ? 'item' : 'items'} in your cart`
+                : 'Your cart is empty'}
+            </p>
+          )}
         </motion.div>
 
         {/* Main Content with Trust Badges */}
