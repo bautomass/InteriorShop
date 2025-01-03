@@ -520,7 +520,7 @@ export function NavigationHeader() {
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, y: 10 }}
                                   transition={{ duration: 0.2 }}
-                                  className="absolute right-0 top-12 w-[470px] rounded-lg bg-white p-4 shadow-xl ring-1 ring-black/5"
+                                  className="absolute right-0 top-12 w-80 rounded-lg bg-white p-4 shadow-xl ring-1 ring-black/5"
                                   onMouseEnter={() => handleCartHover(true)}
                                   onMouseLeave={() => handleCartHover(false)}
                                 >
@@ -575,13 +575,8 @@ export function NavigationHeader() {
                                       View Cart
                                     </button>
                                     <button
-                                      onClick={() => {
-                                        if (cart?.checkoutUrl) {
-                                          window.location.assign(cart.checkoutUrl);
-                                        }
-                                      }}
-                                      disabled={!cart?.checkoutUrl}
-                                      className="w-full rounded-md bg-[#7B6E5C] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#6A5D4B] disabled:cursor-not-allowed disabled:opacity-50"
+                                      onClick={() => {/* Add checkout handler */}}
+                                      className="w-full rounded-md bg-[#6B5E4C]/10 px-4 py-2 text-sm font-medium text-[#6B5E4C] transition-colors hover:bg-[#6B5E4C]/20"
                                     >
                                       Checkout
                                     </button>
