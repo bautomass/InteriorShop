@@ -6,6 +6,58 @@ import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+// export async function addItem(
+//   prevState: any,
+//   selectedVariantId: string | undefined,
+//   quantity: number = 1
+// ) {
+//   try {
+//     if (!selectedVariantId) {
+//       throw new Error('No variant ID provided');
+//     }
+
+//     // Get or create cart
+//     let cartId = cookies().get('cartId')?.value;
+//     if (!cartId) {
+//       const cart = await createCart();
+//       if (!cart?.id) throw new Error('Failed to create cart');
+//       cartId = cart.id;
+//       cookies().set('cartId', cart.id);
+//     }
+
+//     // Ensure we're using the full Shopify variant ID
+//     const formattedVariantId = String(selectedVariantId).startsWith('gid://shopify/ProductVariant/')
+//       ? selectedVariantId
+//       : `gid://shopify/ProductVariant/${selectedVariantId}`;
+
+//     console.log('Cart Debug - Adding Item:', {
+//       cartId,
+//       variantId: formattedVariantId,
+//       quantity,
+//       originalVariantId: selectedVariantId,
+//       formattedVariantId
+//     });
+
+//     // Add to cart with proper variant ID
+//     const cart = await addToCart(cartId, [
+//       {
+//         merchandiseId: formattedVariantId,
+//         quantity
+//       }
+//     ]);
+
+//     if (!cart) {
+//       throw new Error('Failed to add item to cart');
+//     }
+
+//     revalidateTag(TAGS.cart);
+//     return 'Success';
+//   } catch (e) {
+//     console.error('Cart error:', e);
+//     return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
+//   }
+// }
+
 export async function addItem(
   prevState: any,
   selectedVariantId: string | undefined,
@@ -25,23 +77,16 @@ export async function addItem(
       cookies().set('cartId', cart.id);
     }
 
-    // Ensure we're using the full Shopify variant ID
-    const formattedVariantId = String(selectedVariantId).startsWith('gid://shopify/ProductVariant/')
-      ? selectedVariantId
-      : `gid://shopify/ProductVariant/${selectedVariantId}`;
-
-    console.log('Cart Debug - Adding Item:', {
+    console.log('Cart Debug - Add Item:', {
       cartId,
-      variantId: formattedVariantId,
-      quantity,
-      originalVariantId: selectedVariantId,
-      formattedVariantId
+      selectedVariantId,
+      quantity
     });
 
-    // Add to cart with proper variant ID
+    // Add to cart with variant ID as-is
     const cart = await addToCart(cartId, [
       {
-        merchandiseId: formattedVariantId,
+        merchandiseId: selectedVariantId,
         quantity
       }
     ]);
