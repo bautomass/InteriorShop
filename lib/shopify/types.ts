@@ -354,3 +354,15 @@ export type ShopifyBlogOperation = {
     first?: number;
   };
 };
+
+export interface CartUserError {
+  message: string;
+  field?: string[];
+}
+
+export interface CartResponse {
+  cart: Cart;
+  cartLinesAdd?: {
+    userErrors: CartUserError[];
+  };
+}
