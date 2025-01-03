@@ -272,67 +272,6 @@ export async function createCart(): Promise<Cart> {
   return reshapeCart(res.body.data.cartCreate.cart);
 }
 
-// export async function addToCart(
-//   cartId: string,
-//   lines: Array<{ merchandiseId: string; quantity: number }>
-// ): Promise<Cart> {
-//   try {
-//     // Format cart ID
-//     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
-
-//     // Debug the incoming merchandiseId
-//     console.log('Add to Cart - Original Input:', {
-//       cartId: formattedCartId,
-//       lines
-//     });
-
-//     // Format the lines with proper variant IDs
-//     const formattedLines = lines.map((line) => {
-//       const variantId = line.merchandiseId;
-//       console.log('Processing variant ID:', variantId);
-
-//       // Pass through the full ID if it's already formatted
-//       return {
-//         merchandiseId: variantId,
-//         quantity: line.quantity
-//       };
-//     });
-
-//     console.log('Add to Cart - Formatted Request:', {
-//       cartId: formattedCartId,
-//       lines: formattedLines
-//     });
-
-//     const res = await shopifyFetch<ShopifyAddToCartOperation>({
-//       query: addToCartMutation,
-//       variables: {
-//         cartId: formattedCartId,
-//         lines: formattedLines
-//       },
-//       cache: 'no-store'
-//     });
-
-//     // Check for user errors in the response
-//     if (res.body.data?.cartLinesAdd?.userErrors?.length > 0) {
-//       const errors = res.body.data.cartLinesAdd.userErrors;
-//       throw new Error(`Shopify Error: ${errors.map((e) => e.message).join(', ')}`);
-//     }
-
-//     if (!res.body.data?.cartLinesAdd?.cart) {
-//       throw new Error(
-//         `Cart Error: Invalid Response | Cart ID: ${cartId} | Lines: ${JSON.stringify(lines)} | Response: ${JSON.stringify(res.body)}`
-//       );
-//     }
-
-//     return reshapeCart(res.body.data.cartLinesAdd.cart);
-//   } catch (error) {
-//     console.error('Add to Cart Error:', error);
-//     throw new Error(
-//       `Add to Cart Failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-//     );
-//   }
-// }
-
 export async function addToCart(
   cartId: string,
   lines: Array<{ merchandiseId?: string; variantId?: string; quantity: number }> | any

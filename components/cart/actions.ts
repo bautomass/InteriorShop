@@ -16,11 +16,7 @@ export async function addItem(
       throw new Error('No variant ID provided');
     }
 
-    // Debug logging
-    console.log('Cart Action addItem - Input:', {
-      selectedVariantId,
-      quantity
-    });
+    console.log('Cart Action addItem - Input:', { selectedVariantId, quantity });
 
     let cartId = cookies().get('cartId')?.value;
     let cart;
@@ -32,20 +28,21 @@ export async function addItem(
       cookies().set('cartId', cart.id);
     }
 
-    // Pass the full Shopify Global ID directly
-    cart = await addToCart(cartId, [
-      {
-        merchandiseId: selectedVariantId,  // Use the full ID directly
-        quantity
-      }
-    ]);
+    // Create the lines array with the correct structure
+    const lines = [{
+      merchandiseId: selectedVariantId,  // This should be the full Shopify Global ID
+      quantity: quantity
+    }];
+
+    console.log('Cart Action addItem - Lines:', lines);
+
+    cart = await addToCart(cartId, lines);
 
     if (!cart) {
       throw new Error('Failed to add item to cart');
     }
 
     revalidateTag(TAGS.cart);
-    console.log('Cart Action addItem - Success');
     return 'Success';
   } catch (e) {
     console.error('Cart Action addItem - Error:', e);
