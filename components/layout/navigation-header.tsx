@@ -575,8 +575,13 @@ export function NavigationHeader() {
                                       View Cart
                                     </button>
                                     <button
-                                      onClick={() => {/* Add checkout handler */}}
-                                      className="w-full rounded-md bg-[#6B5E4C]/10 px-4 py-2 text-sm font-medium text-[#6B5E4C] transition-colors hover:bg-[#6B5E4C]/20"
+                                      onClick={() => {
+                                        if (cart?.checkoutUrl) {
+                                          window.location.assign(cart.checkoutUrl);
+                                        }
+                                      }}
+                                      disabled={!cart?.checkoutUrl}
+                                      className="w-full rounded-md bg-[#6B5E4C]/10 px-4 py-2 text-sm font-medium text-[#6B5E4C] transition-colors hover:bg-[#6B5E4C]/20 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                       Checkout
                                     </button>
