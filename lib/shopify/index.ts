@@ -338,14 +338,21 @@ export async function addToCart(
   lines: Array<{ merchandiseId: string; quantity: number }>
 ): Promise<Cart> {
   try {
-    // Only format the cart ID if needed
+    // Validate merchandiseId format
+    if (!lines?.length || !lines.every(line => 
+      typeof line.merchandiseId === 'string' && 
+      line.merchandiseId.startsWith('gid://shopify/ProductVariant/')
+    )) {
+      throw new Error('Invalid merchandiseId format. Expected Shopify Global ID.');
+    }
+
     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
 
     const res = await shopifyFetch<ShopifyAddToCartOperation>({
       query: addToCartMutation,
       variables: {
         cartId: formattedCartId,
-        lines: lines // Use the original lines array without any modification
+        lines
       },
       cache: 'no-store'
     });
