@@ -581,7 +581,7 @@ export function NavigationHeader() {
                                         }
                                       }}
                                       disabled={!cart?.checkoutUrl}
-                                      className="w-full rounded-md bg-[#6B5E4C]/10 px-4 py-2 text-sm font-medium text-[#6B5E4C] transition-colors hover:bg-[#6B5E4C]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                                      className="w-full rounded-md bg-[#7B6E5C] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#6A5D4B] disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                       Checkout
                                     </button>
