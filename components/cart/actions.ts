@@ -3,7 +3,7 @@
 import { TAGS } from 'lib/constants';
 import { addToCart, createCart, getCart, removeFromCart, updateCart } from 'lib/shopify';
 import { revalidateTag } from 'next/cache';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 export async function addItem(
@@ -17,6 +17,11 @@ export async function addItem(
       throw new Error('No variant ID provided');
     }
 
+    // Check if request is coming from cart page
+    const headersList = headers();
+    const referer = headersList.get('referer') || '';
+    const isFromCartPage = referer.includes('/cart');
+
     let cartId = cookies().get('cartId')?.value;
     let cart;
 
@@ -29,7 +34,14 @@ export async function addItem(
 
     const lines = [{
       merchandiseId: data.merchandiseId,
-      quantity: data.quantity
+      quantity: data.quantity,
+      // Apply 10% discount if coming from cart page
+      attributes: isFromCartPage ? [
+        {
+          key: '_discount',
+          value: '10'
+        }
+      ] : []
     }];
 
     console.log('Server Action - Cart lines:', lines);

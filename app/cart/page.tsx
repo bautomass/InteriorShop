@@ -45,6 +45,8 @@ const TRUST_BADGES = [
   }
 ];
 
+const DISCOUNT_PERCENTAGE = 10;
+
 export default function CartPage() {
   const [cart, setCart] = useState<Cart | undefined>();
   const [isLoading, setIsLoading] = useState(true);
@@ -81,6 +83,12 @@ export default function CartPage() {
     } catch (error) {
       console.error('Failed to add item to cart:', error);
     }
+  };
+
+  const calculateDiscountedPrice = (originalPrice: string) => {
+    const price = parseFloat(originalPrice);
+    const discountedPrice = price * (1 - DISCOUNT_PERCENTAGE / 100);
+    return discountedPrice.toFixed(2);
   };
 
   return (
@@ -139,7 +147,7 @@ export default function CartPage() {
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-[#6B5E4C]">Complete Your Collection</h2>
               <p className="text-[#8C7E6A] mt-2">
-                Don't miss out on these perfect additions to your cart
+                Special Offer: 10% OFF these items when added to cart!
               </p>
             </div>
             
@@ -150,6 +158,11 @@ export default function CartPage() {
                   whileHover={{ y: -4 }}
                   className="group bg-white rounded-lg shadow-sm ring-1 ring-[#6B5E4C]/5 overflow-hidden"
                 >
+                  {/* Discount Badge */}
+                  <div className="absolute top-4 right-4 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    10% OFF
+                  </div>
+                  
                   <div className="relative aspect-square overflow-hidden">
                     <Image
                       src={product.featuredImage?.url || ''}
@@ -162,6 +175,7 @@ export default function CartPage() {
                     <button 
                       onClick={(e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         addToCart(product);
                       }}
                       className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-6 py-2 text-sm font-medium text-[#6B5E4C] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[#F8F6F3]"
@@ -173,9 +187,14 @@ export default function CartPage() {
                     <h3 className="font-medium text-[#6B5E4C] group-hover:text-[#9e896c] truncate">
                       {product.title}
                     </h3>
-                    <p className="mt-1 text-sm text-[#8C7E6A]">
-                      ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
-                    </p>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="text-red-500 font-medium">
+                        ${calculateDiscountedPrice(product.priceRange.minVariantPrice.amount)}
+                      </span>
+                      <span className="text-sm text-[#8C7E6A] line-through">
+                        ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                      </span>
+                    </div>
                   </div>
                 </motion.div>
               ))}
