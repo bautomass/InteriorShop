@@ -335,7 +335,7 @@ export async function createCart(): Promise<Cart> {
 
 export async function addToCart(
   cartId: string,
-  lines: Array<{ merchandiseId: string; quantity: number }>
+  lines: Array<{ merchandiseId: string | number; quantity: number }>
 ): Promise<Cart> {
   try {
     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
@@ -346,19 +346,24 @@ export async function addToCart(
       lines: JSON.stringify(lines)
     });
 
-    // Ensure merchandiseId is the full Shopify Global ID
-    const formattedLines = lines.map(line => ({
-      merchandiseId: line.merchandiseId.startsWith('gid://') 
-        ? line.merchandiseId 
-        : `gid://shopify/ProductVariant/${line.merchandiseId}`,
-      quantity: line.quantity
-    }));
+    // Ensure merchandiseId is the full Shopify Global ID and is a string
+    const formattedLines = lines.map(line => {
+      const merchandiseId = String(line.merchandiseId); // Convert to string first
+      return {
+        merchandiseId: merchandiseId.startsWith('gid://') 
+          ? merchandiseId 
+          : `gid://shopify/ProductVariant/${merchandiseId}`,
+        quantity: line.quantity
+      };
+    });
+
+    console.log('Shopify addToCart - Formatted Lines:', formattedLines);
 
     const res = await shopifyFetch<ShopifyAddToCartOperation>({
       query: addToCartMutation,
       variables: {
         cartId: formattedCartId,
-        lines: formattedLines  // Use the formatted lines
+        lines: formattedLines
       },
       cache: 'no-store'
     });
