@@ -259,7 +259,7 @@ function Hero() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute right-0 top-12 w-[470px] rounded-lg bg-white p-4 shadow-xl ring-1 ring-black/5"
+                            className="absolute right-0 top-12 w-[280px] md:w-[400px] rounded-lg bg-white p-4 shadow-xl ring-1 ring-black/5"
                             onMouseEnter={() => handleCartHover(true)}
                             onMouseLeave={() => handleCartHover(false)}
                           >
@@ -268,26 +268,26 @@ function Hero() {
                               <span>{formatPrice(cart.cost.totalAmount.amount)}</span>
                             </div>
                             
-                            <div className="max-h-64 space-y-3 overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#6B5E4C]/20">
+                            <div className="max-h-[40vh] md:max-h-64 space-y-3 overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#6B5E4C]/20">
                               {cart.lines.map((item) => (
                                 <motion.div
                                   key={item.id}
                                   layout
-                                  className="flex gap-3 rounded-md p-2 hover:bg-[#6B5E4C]/5"
+                                  className="flex gap-2 md:gap-3 rounded-md p-2 hover:bg-[#6B5E4C]/5"
                                 >
                                   {item.merchandise.product.featuredImage && (
-                                    <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
+                                    <div className="relative h-14 w-14 md:h-16 md:w-16 flex-shrink-0 overflow-hidden rounded-md">
                                       <Image
                                         src={item.merchandise.product.featuredImage.url}
                                         alt={item.merchandise.product.title}
                                         fill
                                         className="object-cover"
-                                        sizes="64px"
+                                        sizes="(min-width: 768px) 64px, 56px"
                                       />
                                     </div>
                                   )}
-                                  <div className="flex-1">
-                                    <p className="text-sm font-medium text-[#6B5E4C] line-clamp-1">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs md:text-sm font-medium text-[#6B5E4C] line-clamp-1">
                                       {item.merchandise.product.title}
                                     </p>
                                     <p className="text-xs text-[#8C7E6A] line-clamp-1">
@@ -297,7 +297,7 @@ function Hero() {
                                       <span className="text-xs text-[#6B5E4C]">
                                         Qty: {item.quantity}
                                       </span>
-                                      <span className="text-sm font-medium text-[#6B5E4C]">
+                                      <span className="text-xs md:text-sm font-medium text-[#6B5E4C]">
                                         {formatPrice(item.cost.totalAmount.amount)}
                                       </span>
                                     </div>
@@ -309,7 +309,7 @@ function Hero() {
                             <div className="mt-4 space-y-2">
                               <button
                                 onClick={() => setIsCartOpen(true)}
-                                className="w-full rounded-md bg-[#6B5E4C] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#5A4D3B]"
+                                className="w-full rounded-md bg-[#6B5E4C] px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-white transition-colors hover:bg-[#5A4D3B]"
                               >
                                 View Cart
                               </button>
@@ -320,7 +320,7 @@ function Hero() {
                                   }
                                 }}
                                 disabled={!cart?.checkoutUrl}
-                                className="w-full rounded-md bg-[#6B5E4C]/10 px-4 py-2 text-sm font-medium text-[#6B5E4C] transition-colors hover:bg-[#6B5E4C]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="w-full rounded-md bg-[#6B5E4C]/10 px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-[#6B5E4C] transition-colors hover:bg-[#6B5E4C]/20 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 Checkout
                               </button>
