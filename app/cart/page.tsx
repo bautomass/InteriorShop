@@ -143,12 +143,6 @@ export default function CartPage() {
     return validProducts;
   }, [recentItems]);
 
-  const handleCheckout = () => {
-    if (activeCart?.checkoutUrl) {
-      window.location.href = activeCart.checkoutUrl;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#F8F6F3]">
       <motion.div 
@@ -217,7 +211,6 @@ export default function CartPage() {
                   <CartModal 
                     initialCart={activeCart} 
                     isCartPage={true} 
-                    onCheckout={handleCheckout}
                   />
                 </div>
               </div>
