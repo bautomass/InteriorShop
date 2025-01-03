@@ -6,7 +6,6 @@ import { SortSelect } from '@/components/filter/SortSelect';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useHeaderState } from '@/hooks/useHeaderState';
 import { useSearch } from '@/hooks/useSearch';
-import { formatPrice } from '@/lib/utils';
 import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ShoppingCart } from 'lucide-react';
@@ -46,6 +45,13 @@ interface BaseProduct {
 interface ExtendedProduct extends BaseProduct {
   createdAt: string;
 }
+
+const formatPrice = (amount: string) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(parseFloat(amount));
+};
 
 function Hero() {
   const { results, isLoading, error, performSearch } = useSearch();
