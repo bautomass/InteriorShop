@@ -92,28 +92,12 @@ export function ProductProvider({
         [name]: value
       };
 
-      console.log('Updated product state:', newState);
-      
-      // Find matching variant based on current options
-      const matchingVariant = variants.find((variant) => 
-        variant.selectedOptions.every(
-          (option) => newState[option.name] === option.value
-        )
-      );
-      
-      console.log('Matching variant:', matchingVariant);
-
-      if (matchingVariant) {
-        newState.merchandiseId = matchingVariant.id;
-        console.log('Set merchandiseId:', matchingVariant.id);
-      }
-
       setState(newState);
       updateURL(newState);
 
       return newState;
     },
-    [state, updateURL, variants]
+    [state, updateURL]
   );
 
   const updateImage = useCallback(

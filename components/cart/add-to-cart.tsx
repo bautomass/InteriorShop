@@ -27,25 +27,12 @@ export function AddToCart({ product }: { product: Product }) {
   }, [variants, state]);
 
   useEffect(() => {
-    console.log('AddToCart - Product prop:', product);
-    if (!product || !product.variants || !product.variants.length) {
-      console.error('AddToCart - Invalid product data:', product);
-    }
-  }, [product]);
-
-  useEffect(() => {
-    console.log('AddToCart - Product state from context:', state);
-  }, [state]);
-
-  useEffect(() => {
     if (selectedVariant) {
       console.log('AddToCart - Selected Variant:', {
         id: selectedVariant.id,
         options: selectedVariant.selectedOptions,
         price: selectedVariant.price
       });
-    } else {
-      console.warn('AddToCart - No variant selected.');
     }
   }, [selectedVariant]);
 
@@ -62,16 +49,11 @@ export function AddToCart({ product }: { product: Product }) {
         return;
       }
 
-      const variantId = selectedVariant.id;
-
-      if (!variantId || typeof variantId !== 'string') {
-        console.error('AddToCart: Invalid variantId:', variantId);
-        return;
-      }
-
       setIsSubmitting(true);
 
       try {
+        const variantId = selectedVariant.id;
+        
         console.log('AddToCart - Submitting:', {
           variantId,
           quantity,
@@ -82,12 +64,7 @@ export function AddToCart({ product }: { product: Product }) {
         console.log('AddToCart - Server Action Result:', result);
 
         if (result === 'Success') {
-          console.log('AddToCart - Updating cart with:', {
-            variant: selectedVariant,
-            product,
-            quantity
-          });
-          
+          // Only update UI if server action succeeds
           addCartItem({
             variant: selectedVariant,
             product,

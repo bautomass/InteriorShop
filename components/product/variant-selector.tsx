@@ -1,10 +1,9 @@
-// components/product/variant-selector.tsx
 'use client';
 
 import clsx from 'clsx';
 import { useProduct } from 'components/product/product-context';
 import { ProductOption, ProductVariant } from 'lib/shopify/types';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 interface Combination {
   id: string;
@@ -20,21 +19,6 @@ interface VariantSelectorProps {
 export function VariantSelector({ options, variants }: VariantSelectorProps): JSX.Element | null {
   const { state, updateOption } = useProduct();
   const [isUpdating, setIsUpdating] = useState(false);
-
-  // Add debug logging for variant selection
-  useEffect(() => {
-    const selectedVariant = variants.find((variant) =>
-      variant.selectedOptions.every((option) => state[option.name] === option.value)
-    );
-
-    console.log('Current selection state:', state);
-    console.log('Selected variant:', selectedVariant);
-    if (!selectedVariant) {
-      console.warn('No matching variant found for current selection');
-    } else {
-      console.log('Selected variant merchandiseId:', selectedVariant.id);
-    }
-  }, [state, variants]);
 
   // Create combinations for availability checking
   const combinations: Combination[] = variants.map((variant) => ({
