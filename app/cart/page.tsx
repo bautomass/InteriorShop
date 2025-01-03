@@ -57,7 +57,7 @@ export default function CartPage() {
   const { recentItems } = useRecentlyViewed();
   const [message, formAction] = useActionState(addItem, null);
   const [isAddingToCart, setIsAddingToCart] = useState<{[key: string]: boolean}>({});
-  const { cart: contextCart } = useCart();
+  const { cart: contextCart, addCartItem } = useCart();
 
   const fetchCart = async () => {
     try {
