@@ -37,11 +37,31 @@ export default function CartModal({
   const closeCart = () => setIsOpen(false);
 
   const handleCheckout = async () => {
-    if (!cart?.checkoutUrl) return;
+    console.log('Checkout attempted:', {
+      hasCart: !!cart,
+      checkoutUrl: cart?.checkoutUrl,
+      isCheckingOut
+    });
+    
+    if (!cart || !cart.lines?.length) {
+      console.error('Cart is empty or not initialized');
+      return;
+    }
+    
+    if (!cart.checkoutUrl && cart.lines.length > 0) {
+      try {
+        await createCartAndSetCookie();
+        return;
+      } catch (error) {
+        console.error('Failed to create new cart:', error);
+        return;
+      }
+    }
     
     setIsCheckingOut(true);
     try {
-      window.location.assign(cart.checkoutUrl);
+      console.log('Redirecting to:', cart.checkoutUrl);
+      window.location.assign(cart.checkoutUrl!);
     } catch (error) {
       console.error('Checkout error:', error);
       setIsCheckingOut(false);
@@ -66,6 +86,18 @@ export default function CartModal({
       quantityRef.current = cart?.totalQuantity;
     }
   }, [isOpen, cart?.totalQuantity, quantityRef]);
+
+  useEffect(() => {
+    if (cart) {
+      console.log('Cart State:', {
+        hasItems: cart.lines?.length > 0,
+        checkoutUrl: cart.checkoutUrl,
+        totalQuantity: cart.totalQuantity
+      });
+    }
+  }, [cart]);
+
+  const isCheckoutDisabled = !cart?.lines?.length || isCheckingOut;
 
   return (
     <>
@@ -189,7 +221,7 @@ export default function CartModal({
 
                 <button
                   onClick={handleCheckout}
-                  disabled={!cart?.checkoutUrl || isCheckingOut}
+                  disabled={isCheckoutDisabled}
                   className="mt-6 w-full rounded-lg bg-red-600 px-6 py-3 text-center text-base 
                     font-medium text-white shadow-sm transition-all duration-150 
                     hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 
@@ -355,7 +387,7 @@ export default function CartModal({
                     </div>
                     <button
                       onClick={handleCheckout}
-                      disabled={!cart?.checkoutUrl || isCheckingOut}
+                      disabled={isCheckoutDisabled}
                       className="block w-full rounded-full bg-accent-600 p-3 text-sm font-medium text-primary-50 opacity-90 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {isCheckingOut ? (
