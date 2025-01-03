@@ -156,14 +156,13 @@ export default function CartPage() {
                 <motion.div
                   key={product.id}
                   whileHover={{ y: -4 }}
-                  className="group bg-white rounded-lg shadow-sm ring-1 ring-[#6B5E4C]/5 overflow-hidden"
+                  className="group relative bg-white rounded-lg shadow-sm ring-1 ring-[#6B5E4C]/5 overflow-hidden"
                 >
-                  {/* Discount Badge */}
-                  <div className="absolute top-4 right-4 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    10% OFF
-                  </div>
-                  
                   <div className="relative aspect-square overflow-hidden">
+                    <div className="absolute top-2 right-2 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
+                      10% OFF
+                    </div>
+                    
                     <Image
                       src={product.featuredImage?.url || ''}
                       alt={product.title}
