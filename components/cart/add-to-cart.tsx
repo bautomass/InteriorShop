@@ -4,9 +4,9 @@
 import { useActionState } from '@/hooks/useActionState';
 import { addItem } from 'components/cart/actions';
 import { useProduct } from 'components/product/product-context';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Product } from 'lib/shopify/types';
-import { Minus, Plus, ShoppingCart } from 'lucide-react';
+import { Check, Minus, Plus, ShoppingCart } from 'lucide-react';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useCart } from './cart-context';
 
@@ -17,6 +17,7 @@ export function AddToCart({ product }: { product: Product }) {
   const { state } = useProduct();
   const [message, formAction] = useActionState(addItem, null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const selectedVariant = useMemo(() => {
     if (!Object.keys(state).length) return null;
@@ -43,29 +44,22 @@ export function AddToCart({ product }: { product: Product }) {
       if (!selectedVariant || !product.availableForSale || isSubmitting) return;
 
       setIsSubmitting(true);
+      setIsSuccess(false);
 
       try {
-        const variantId = selectedVariant.id;
-        
-        console.log('AddToCart - Processing:', {
-          variantId,
-          quantity,
-          selectedVariant
-        });
-
         const result = await formAction({
-          merchandiseId: variantId,
+          merchandiseId: selectedVariant.id,
           quantity: quantity
         });
 
-        console.log('AddToCart - Server Action Result:', result);
-
         if (result === 'Success') {
+          setIsSuccess(true);
           addCartItem({
             variant: selectedVariant,
             product,
             quantity
           });
+          setTimeout(() => setIsSuccess(false), 2000);
         } else {
           throw new Error(`Add to Cart Failed: ${result}`);
         }
@@ -110,20 +104,52 @@ export function AddToCart({ product }: { product: Product }) {
         className={`group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-md px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl ${
           !selectedVariant || !product.availableForSale || isSubmitting
             ? 'cursor-not-allowed bg-gray-400'
+            : isSuccess
+            ? 'bg-green-500'
             : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
         }`}
       >
-        <ShoppingCart className="h-5 w-5" />
-        <span className="relative z-10">
-          {isSubmitting
-            ? 'Adding...'
-            : !selectedVariant
-              ? 'Select options'
-              : !product.availableForSale
-                ? 'Out of Stock'
-                : 'Add to Cart'}
-        </span>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <AnimatePresence mode="wait">
+          {isSuccess ? (
+            <motion.div
+              key="success"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              className="flex items-center gap-2"
+            >
+              <Check className="h-5 w-5" />
+              <span>Added to Cart!</span>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="default"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              className="flex items-center gap-2"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              <span className="relative z-10">
+                {isSubmitting
+                  ? 'Adding...'
+                  : !selectedVariant
+                  ? 'Select options'
+                  : !product.availableForSale
+                  ? 'Out of Stock'
+                  : 'Add to Cart'}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isSuccess ? 0 : 0.1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        />
       </motion.button>
     </form>
   );
