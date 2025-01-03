@@ -35,6 +35,12 @@ export default function CartModal({
   const openCart = () => setIsOpen(true);
   const closeCart = () => setIsOpen(false);
 
+  const handleCheckout = (checkoutUrl?: string) => {
+    if (checkoutUrl) {
+      window.location.href = checkoutUrl;
+    }
+  };
+
   useEffect(() => {
     if (!cart) {
       createCartAndSetCookie();
@@ -64,15 +70,128 @@ export default function CartModal({
 
       {isCartPage ? (
         <div className="w-full">
-          {!cart || cart.lines.length === 0 ? (
+          {!cart || (cart.lines?.length ?? 0) === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <ShoppingCartIcon className="h-16 text-[#6B5E4C]" />
-              <p className="mt-6 text-center text-2xl font-bold text-[#6B5E4C]">
-                Your cart is empty.
+              <ShoppingCartIcon className="h-16 text-neutral-300" />
+              <p className="mt-6 text-center text-2xl font-medium text-neutral-400">
+                Your cart is empty
+              </p>
+              <p className="mt-2 text-center text-sm text-neutral-500">
+                Add some items to start shopping
               </p>
             </div>
           ) : (
-            <CartContent cart={cart} updateCartItem={updateCartItem} closeCart={closeCart} />
+            <div className="space-y-8">
+              {/* Cart Items */}
+              <div className="divide-y divide-neutral-100">
+                {cart.lines.map((item, i) => (
+                  <div key={i} className="flex py-6 first:pt-0">
+                    {/* Product Image */}
+                    <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border border-neutral-100 bg-neutral-50">
+                      <Image
+                        src={item.merchandise.product.featuredImage.url}
+                        alt={item.merchandise.product.title}
+                        fill
+                        className="object-cover object-center"
+                      />
+                    </div>
+
+                    {/* Product Details */}
+                    <div className="ml-4 flex flex-1 flex-col">
+                      <div className="flex justify-between">
+                        <div>
+                          <h3 className="font-medium text-neutral-900">
+                            {item.merchandise.product.title}
+                          </h3>
+                          {item.merchandise.title !== DEFAULT_OPTION && (
+                            <p className="mt-1 text-sm text-neutral-500">
+                              {item.merchandise.title}
+                            </p>
+                          )}
+                        </div>
+                        <Price
+                          className="text-sm font-medium text-neutral-900"
+                          amount={item.cost.totalAmount.amount}
+                          currencyCode={item.cost.totalAmount.currencyCode}
+                        />
+                      </div>
+
+                      {/* Quantity Controls */}
+                      <div className="mt-4 flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <DeleteItemButton
+                            item={item}
+                            optimisticUpdate={updateCartItem}
+                          />
+                        </div>
+                        <div className="flex items-center rounded-lg border border-neutral-200">
+                          <EditItemQuantityButton
+                            item={item}
+                            type="minus"
+                            optimisticUpdate={updateCartItem}
+                          />
+                          <span className="px-3 text-sm font-medium text-neutral-600">
+                            {item.quantity}
+                          </span>
+                          <EditItemQuantityButton
+                            item={item}
+                            type="plus"
+                            optimisticUpdate={updateCartItem}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Cart Summary */}
+              <div className="rounded-lg bg-neutral-50 p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <p className="text-neutral-600">Subtotal</p>
+                    <Price
+                      className="font-medium text-neutral-900"
+                      amount={cart.cost.totalAmount.amount}
+                      currencyCode={cart.cost.totalAmount.currencyCode}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <p className="text-neutral-600">Shipping</p>
+                    <p className="font-medium text-neutral-900">Free</p>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <p className="text-neutral-600">Tax</p>
+                    <Price
+                      className="font-medium text-neutral-900"
+                      amount={cart.cost.totalTaxAmount.amount}
+                      currencyCode={cart.cost.totalTaxAmount.currencyCode}
+                    />
+                  </div>
+                  <div className="border-t border-neutral-200 pt-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-base font-medium text-neutral-900">Total</p>
+                      <Price
+                        className="text-lg font-medium text-neutral-900"
+                        amount={cart.cost.totalAmount.amount}
+                        currencyCode={cart.cost.totalAmount.currencyCode}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleCheckout(cart.checkoutUrl)}
+                  disabled={!cart?.checkoutUrl || cart.checkoutUrl === ""}
+                  className="mt-6 w-full rounded-lg bg-red-600 px-6 py-3 text-center text-base 
+                    font-medium text-white shadow-sm transition-all duration-150 
+                    hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 
+                    focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Proceed to Checkout
+                </button>
+              </div>
+            </div>
           )}
         </div>
       ) : (
@@ -139,7 +258,10 @@ export default function CartModal({
                             >
                               <div className="relative flex w-full flex-row justify-between px-1 py-4">
                                 <div className="absolute z-40 -ml-1 -mt-2">
-                                  <DeleteItemButton item={item} optimisticUpdate={updateCartItem} />
+                                  <DeleteItemButton
+                                    item={item}
+                                    optimisticUpdate={updateCartItem}
+                                  />
                                 </div>
                                 <div className="flex flex-row">
                                   <div className="relative h-16 w-16 overflow-hidden rounded-md border border-primary-200 bg-primary-100 dark:border-primary-700 dark:bg-primary-800">
@@ -284,7 +406,10 @@ function CartContent({
               >
                 <div className="relative flex w-full flex-row justify-between px-1 py-4">
                   <div className="absolute z-40 -ml-1 -mt-2">
-                    <DeleteItemButton item={item} optimisticUpdate={updateCartItem} />
+                    <DeleteItemButton
+                      item={item}
+                      optimisticUpdate={updateCartItem}
+                    />
                   </div>
                   <div className="flex flex-row">
                     <div className="relative h-16 w-16 overflow-hidden rounded-md border border-primary-200 bg-primary-100 dark:border-primary-700 dark:bg-primary-800">
