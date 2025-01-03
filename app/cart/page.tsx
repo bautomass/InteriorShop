@@ -4,6 +4,7 @@ import { useActionState } from '@/hooks/useActionState';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import type { Cart, Product } from '@/lib/shopify/types';
 import { addItem } from 'components/cart/actions';
+import { useCart } from 'components/cart/cart-context';
 import CartModal from 'components/cart/modal';
 import { motion } from 'framer-motion';
 import { Lock, RotateCcw, Truck } from 'lucide-react';
@@ -55,6 +56,7 @@ export default function CartPage() {
   const { recentItems } = useRecentlyViewed();
   const [message, formAction] = useActionState(addItem, null);
   const [isAddingToCart, setIsAddingToCart] = useState<{[key: string]: boolean}>({});
+  const { addCartItem } = useCart();
 
   const fetchCart = async () => {
     try {
@@ -92,6 +94,13 @@ export default function CartPage() {
       });
 
       if (result === 'Success') {
+        // Add to cart context for optimistic updates
+        addCartItem({
+          variant: defaultVariant,
+          product,
+          quantity: 1
+        });
+        
         setTimeout(() => {
           setIsAddingToCart(prev => ({ ...prev, [product.id]: false }));
         }, 1500);
