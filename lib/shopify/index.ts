@@ -340,34 +340,28 @@ export async function addToCart(
   try {
     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
 
-    // Log the incoming request
-    console.log('Shopify addToCart - Request:', {
-      formattedCartId,
-      lines: JSON.stringify(lines)
-    });
-
     // Ensure merchandiseId is the full Shopify Global ID
     const formattedLines = lines.map(line => {
-      // Extract the ID if it's a full Shopify Global ID
-      const idMatch = line.merchandiseId.match(/ProductVariant\/(\d+)$/);
-      const variantId = idMatch ? idMatch[1] : line.merchandiseId;
+      const merchandiseId = String(line.merchandiseId); // Ensure string type
       
-      // Always construct a fresh Global ID to ensure correct format
-      const fullVariantId = `gid://shopify/ProductVariant/${variantId}`;
+      // If it's already a full Shopify Global ID, use it as is
+      if (merchandiseId.startsWith('gid://shopify/ProductVariant/')) {
+        return {
+          merchandiseId,
+          quantity: line.quantity
+        };
+      }
       
-      console.log('Processing variant:', {
-        original: line.merchandiseId,
-        extracted: variantId,
-        formatted: fullVariantId
-      });
-
+      // Otherwise, extract just the ID number or use the full string
+      const variantId = merchandiseId.includes('/') 
+        ? merchandiseId.split('/').pop() 
+        : merchandiseId;
+      
       return {
-        merchandiseId: fullVariantId,
+        merchandiseId: `gid://shopify/ProductVariant/${variantId}`,
         quantity: line.quantity
       };
     });
-
-    console.log('Shopify addToCart - Formatted Lines:', formattedLines);
 
     const res = await shopifyFetch<ShopifyAddToCartOperation>({
       query: addToCartMutation,
@@ -378,17 +372,12 @@ export async function addToCart(
       cache: 'no-store'
     });
 
-    // Log the response
-    console.log('Shopify addToCart - Response:', JSON.stringify(res.body));
-
     if (res.body.data?.cartLinesAdd?.userErrors?.length > 0) {
       throw new Error(`Shopify Errors: ${JSON.stringify(res.body.data.cartLinesAdd.userErrors)}`);
     }
 
     if (!res.body.data?.cartLinesAdd?.cart) {
-      throw new Error(
-        `Cart Error: Invalid Response | Cart ID: ${cartId} | Lines: ${JSON.stringify(lines)}`
-      );
+      throw new Error(`Cart Error: Invalid Response`);
     }
 
     return reshapeCart(res.body.data.cartLinesAdd.cart);
