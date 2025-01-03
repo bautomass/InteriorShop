@@ -11,12 +11,13 @@ import type {
   Image as ShopifyImage,
   Product as ShopifyProduct
 } from '@/lib/shopify/types';
+import { formatPrice } from '@/lib/utils';
 import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { ShoppingCart, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 const ANIMATION_VARIANTS = {
   fadeIn: {
@@ -210,6 +211,8 @@ export function NavigationHeader() {
   const searchDropdownRef = useRef<HTMLDivElement>(null);
   const modalSearchInputRef = useRef<HTMLInputElement>(null);
   const { cart } = useCart();
+  const [isCartHovered, setIsCartHovered] = useState(false);
+  const cartTimeoutRef = useRef<NodeJS.Timeout>();
 
   const debouncedSearch = useDebounce(state.searchQuery, 300);
   const { results, isLoading, error, performSearch } = useSearch();
@@ -348,6 +351,30 @@ export function NavigationHeader() {
     }
   }, [state.isSidebarOpen]);
 
+  // Add new function to handle cart hover
+  const handleCartHover = (isHovering: boolean) => {
+    if (cartTimeoutRef.current) {
+      clearTimeout(cartTimeoutRef.current);
+    }
+
+    if (!isHovering) {
+      cartTimeoutRef.current = setTimeout(() => {
+        setIsCartHovered(false);
+      }, 300); // Delay to prevent accidental mouseout
+    } else {
+      setIsCartHovered(true);
+    }
+  };
+
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (cartTimeoutRef.current) {
+        clearTimeout(cartTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const renderContent = () => {
     return (
       <div className="relative">
@@ -457,25 +484,101 @@ export function NavigationHeader() {
                               />
                             </svg>
                           </button>
-                          <button
-                            className="rounded-md p-1.5 text-white transition-all duration-300 hover:bg-white/20 active:scale-95"
-                            aria-label="Cart"
-                            onClick={() => updateState({ isCartOpen: true })}
+                          <div 
+                            className="relative"
+                            onMouseEnter={() => handleCartHover(true)}
+                            onMouseLeave={() => handleCartHover(false)}
                           >
-                            <svg
-                              width="20"
-                              height="20"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
+                            <button
+                              className="rounded-md p-1.5 text-white transition-all duration-300 hover:bg-white/20 active:scale-95"
+                              aria-label={`Cart with ${cart?.totalQuantity || 0} items`}
+                              onClick={() => updateState({ isCartOpen: true })}
                             >
-                              <path
-                                d="M3 3H5L5.4 5M5.4 5H21L17 13H7M5.4 5L7 13M7 13L4.707 15.293C4.077 15.923 4.523 17 5.414 17H17M17 17C16.4696 17 15.9609 17.2107 15.5858 17.5858C15.2107 17.9609 15 18.4696 15 19C15 19.5304 15.2107 20.0391 15.5858 20.4142C15.9609 20.7893 16.4696 21 17 21C17.5304 21 18.0391 20.7893 18.4142 20.4142C18.7893 20.0391 19 19.5304 19 19C19 18.4696 18.7893 17.9609 18.4142 17.5858C18.0391 17.2107 17.5304 17 17 17Z"
-                                strokeLinecap="round"
-                              />
-                            </svg>
-                          </button>
+                              <ShoppingCart className="h-5 w-5" />
+                              {cart?.totalQuantity ? (
+                                <motion.span
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-xs font-medium text-[#6B5E4C]"
+                                >
+                                  {cart.totalQuantity}
+                                </motion.span>
+                              ) : null}
+                            </button>
+
+                            {/* Cart Preview Popup */}
+                            <AnimatePresence>
+                              {isCartHovered && cart?.lines && (cart.lines as any[]).length > 0 && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: 10 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="absolute right-0 top-12 w-80 rounded-lg bg-white p-4 shadow-xl ring-1 ring-black/5"
+                                  onMouseEnter={() => handleCartHover(true)}
+                                  onMouseLeave={() => handleCartHover(false)}
+                                >
+                                  <div className="mb-3 flex justify-between text-sm font-medium text-[#6B5E4C]">
+                                    <span>Cart ({cart.totalQuantity})</span>
+                                    <span>{formatPrice(cart.cost.totalAmount.amount)}</span>
+                                  </div>
+                                  
+                                  <div className="max-h-64 space-y-3 overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#6B5E4C]/20">
+                                    {cart.lines.map((item) => (
+                                      <motion.div
+                                        key={item.id}
+                                        layout
+                                        className="flex gap-3 rounded-md p-2 hover:bg-[#6B5E4C]/5"
+                                      >
+                                        {item.merchandise.product.featuredImage && (
+                                          <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
+                                            <Image
+                                              src={item.merchandise.product.featuredImage.url}
+                                              alt={item.merchandise.product.title}
+                                              fill
+                                              className="object-cover"
+                                              sizes="64px"
+                                            />
+                                          </div>
+                                        )}
+                                        <div className="flex-1">
+                                          <p className="text-sm font-medium text-[#6B5E4C] line-clamp-1">
+                                            {item.merchandise.product.title}
+                                          </p>
+                                          <p className="text-xs text-[#8C7E6A] line-clamp-1">
+                                            {item.merchandise.title}
+                                          </p>
+                                          <div className="mt-1 flex items-center justify-between">
+                                            <span className="text-xs text-[#6B5E4C]">
+                                              Qty: {item.quantity}
+                                            </span>
+                                            <span className="text-sm font-medium text-[#6B5E4C]">
+                                              {formatPrice(item.cost.totalAmount.amount)}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </motion.div>
+                                    ))}
+                                  </div>
+
+                                  <div className="mt-4 space-y-2">
+                                    <button
+                                      onClick={() => updateState({ isCartOpen: true })}
+                                      className="w-full rounded-md bg-[#6B5E4C] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#5A4D3B]"
+                                    >
+                                      View Cart
+                                    </button>
+                                    <button
+                                      onClick={() => {/* Add checkout handler */}}
+                                      className="w-full rounded-md bg-[#6B5E4C]/10 px-4 py-2 text-sm font-medium text-[#6B5E4C] transition-colors hover:bg-[#6B5E4C]/20"
+                                    >
+                                      Checkout
+                                    </button>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
                         </motion.div>
                       ) : state.isSearchOpen ? (
                         <motion.div
