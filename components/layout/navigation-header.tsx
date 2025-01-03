@@ -11,13 +11,19 @@ import type {
   Image as ShopifyImage,
   Product as ShopifyProduct
 } from '@/lib/shopify/types';
-import { formatPrice } from '@/lib/utils';
 import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ShoppingCart, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
+
+const formatPrice = (amount: string) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(parseFloat(amount));
+};
 
 const ANIMATION_VARIANTS = {
   fadeIn: {
