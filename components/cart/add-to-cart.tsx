@@ -73,23 +73,23 @@ export function AddToCart({ product }: { product: Product }) {
   );
 
   return (
-    <form onSubmit={handleAddToCart} className="flex items-center gap-4">
+    <form onSubmit={handleAddToCart} className="flex w-full flex-col gap-4 sm:flex-row sm:items-center">
       {/* Quantity Controls */}
-      <div className="flex h-[52px] items-center rounded-md border border-[#6B5E4C]/20">
+      <div className="flex h-[52px] items-center rounded-md border border-[#6B5E4C]/20 sm:w-auto">
         <button
           type="button"
           onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-          className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+          className="flex h-full w-16 items-center justify-center text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5 sm:w-12"
         >
           <Minus className="h-4 w-4" />
         </button>
-        <div className="relative w-12 overflow-hidden text-center font-medium text-[#6B5E4C]">
+        <div className="relative w-16 overflow-hidden text-center font-medium text-[#6B5E4C] sm:w-12">
           {quantity}
         </div>
         <button
           type="button"
           onClick={() => setQuantity((prev) => prev + 1)}
-          className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+          className="flex h-full w-16 items-center justify-center text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5 sm:w-12"
         >
           <Plus className="h-4 w-4" />
         </button>
@@ -101,7 +101,7 @@ export function AddToCart({ product }: { product: Product }) {
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         disabled={!selectedVariant || !product.availableForSale || isSubmitting}
-        className={`group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-md px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl ${
+        className={`group relative flex h-[52px] w-full flex-1 items-center justify-center gap-2 overflow-hidden rounded-md px-8 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl ${
           !selectedVariant || !product.availableForSale || isSubmitting
             ? 'cursor-not-allowed bg-gray-400'
             : isSuccess
