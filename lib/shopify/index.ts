@@ -274,7 +274,12 @@ export async function createCart(): Promise<Cart> {
 
 export async function addToCart(
   cartId: string,
-  lines: Array<{ merchandiseId?: string; variantId?: string; quantity: number }> | any
+  lines: Array<{ 
+    merchandiseId?: string; 
+    variantId?: string; 
+    quantity: number;
+    attributes?: { key: string; value: string }[];
+  }> | any
 ): Promise<Cart> {
   try {
     console.log('AddToCart - Initial input:', JSON.stringify({ cartId, lines }, null, 2));
@@ -286,44 +291,19 @@ export async function addToCart(
     const formattedLines = linesArray.map((line, index) => {
       console.log(`Processing line ${index}:`, JSON.stringify(line, null, 2));
 
-      // If line is directly passed as an object with variantId
-      if (line.variantId && typeof line.variantId === 'string') {
-        return {
-          merchandiseId: line.variantId,
-          quantity: line.quantity || 1
-        };
-      }
+      const formattedLine = {
+        merchandiseId: line.variantId || line.merchandiseId,
+        quantity: line.quantity || 1,
+        attributes: line.attributes || []
+      };
 
-      // If merchandiseId is already present
-      if (line.merchandiseId && typeof line.merchandiseId === 'string') {
-        return {
-          merchandiseId: line.merchandiseId,
-          quantity: line.quantity || 1
-        };
-      }
-
-      throw new Error(
-        `Invalid line item at index ${index}. Expected variantId or merchandiseId. Received: ${JSON.stringify(
-          line
-        )}`
-      );
-    });
-
-    console.log('AddToCart - Formatted lines:', JSON.stringify(formattedLines, null, 2));
-
-    // Validate the formatted lines
-    formattedLines.forEach((line, index) => {
-      if (!line.merchandiseId || typeof line.merchandiseId !== 'string') {
+      if (!formattedLine.merchandiseId || typeof formattedLine.merchandiseId !== 'string') {
         throw new Error(
-          `Invalid merchandiseId at index ${index}. Received: ${JSON.stringify(line.merchandiseId)}`
+          `Invalid line item at index ${index}. Expected variantId or merchandiseId.`
         );
       }
 
-      if (!line.merchandiseId.startsWith('gid://shopify/ProductVariant/')) {
-        throw new Error(
-          `Invalid variant ID format at index ${index}. Expected Shopify Global ID, received: ${line.merchandiseId}`
-        );
-      }
+      return formattedLine;
     });
 
     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;

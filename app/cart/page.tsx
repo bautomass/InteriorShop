@@ -95,8 +95,16 @@ export default function CartPage() {
       });
 
       if (result === 'Success') {
+        const discountedVariant = {
+          ...defaultVariant,
+          price: {
+            ...defaultVariant.price,
+            amount: calculateDiscountedPrice(defaultVariant.price.amount)
+          }
+        };
+
         addCartItem({
-          variant: defaultVariant,
+          variant: discountedVariant,
           product,
           quantity: 1
         });

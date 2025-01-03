@@ -51,14 +51,16 @@ function createOrUpdateCartItem(
   quantity: number = 1
 ): CartItem {
   const newQuantity = existingItem ? existingItem.quantity + quantity : quantity;
-  const totalAmount = calculateItemCost(newQuantity, variant.price.amount);
-
+  
+  // Check if the variant has a discounted price
+  const price = variant.price.amount;
+  
   return {
-    id: existingItem?.id,
+    id: existingItem?.id || `temp-${Date.now()}`,
     quantity: newQuantity,
     cost: {
       totalAmount: {
-        amount: totalAmount,
+        amount: (Number(price) * newQuantity).toString(),
         currencyCode: variant.price.currencyCode
       }
     },
