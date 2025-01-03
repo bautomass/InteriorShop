@@ -4,6 +4,7 @@ import { TAGS } from 'lib/constants';
 import { addToCart, createCart, getCart, removeFromCart, updateCart } from 'lib/shopify';
 import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export async function addItem(
   prevState: any,
@@ -48,7 +49,6 @@ export async function addItem(
       throw new Error('Failed to add item to cart');
     }
 
-    // The cart was updated successfully
     revalidateTag(TAGS.cart);
     return 'Success';
   } catch (e) {
@@ -133,6 +133,42 @@ export async function updateItemQuantity(
   }
 }
 
+export async function redirectToCheckout() {
+  try {
+    const cartId = cookies().get('cartId')?.value;
+    if (!cartId) {
+      throw new Error('Missing cart ID');
+    }
+
+    const cart = await getCart(cartId);
+    if (!cart) {
+      throw new Error('Error fetching cart');
+    }
+
+    if (!cart.checkoutUrl) {
+      throw new Error('No checkout URL available');
+    }
+
+    redirect(cart.checkoutUrl);
+  } catch (e) {
+    console.error('Error redirecting to checkout:', e);
+    return `Error: ${e instanceof Error ? e.message : 'Failed to redirect to checkout'}`;
+  }
+}
+
+export async function createCartAndSetCookie() {
+  try {
+    const cart = await createCart();
+    if (!cart?.id) {
+      throw new Error('Failed to create cart');
+    }
+    cookies().set('cartId', cart.id);
+    return 'Success';
+  } catch (e) {
+    console.error('Error creating cart:', e);
+    return `Error: ${e instanceof Error ? e.message : 'Failed to create cart'}`;
+  }
+}
 // //cart/actions.ts file
 // 'use server';
 
