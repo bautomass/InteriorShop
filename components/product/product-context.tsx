@@ -1,4 +1,3 @@
-// //product-context.tsx
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -24,24 +23,23 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<ProductState>(() => {
     const params: ProductState = {};
     searchParams.forEach((value, key) => {
-      // Preserve the original case of the option name
       params[key] = value;
     });
     return params;
   });
 
-  // Keep state in sync with URL params
+  // Sync state with URL params
   useEffect(() => {
     const params: ProductState = {};
     searchParams.forEach((value, key) => {
       params[key] = value;
     });
-    setState(params);
+    setState((current) => ({ ...current, ...params }));
   }, [searchParams]);
 
   const updateURL = useCallback(
     (newState: ProductState) => {
-      const params = new URLSearchParams();
+      const params = new URLSearchParams(searchParams.toString());
       Object.entries(newState).forEach(([key, value]) => {
         if (value) {
           params.set(key, value);
@@ -49,18 +47,16 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       });
       router.push(`?${params.toString()}`, { scroll: false });
     },
-    [router]
+    [router, searchParams]
   );
 
   const updateOption = useCallback(
     (name: string, value: string) => {
-      // Create new state with the updated option
       const newState = {
         ...state,
         [name]: value
       };
 
-      // Update state and URL
       setState(newState);
       updateURL(newState);
 
@@ -107,6 +103,116 @@ export function useProduct() {
   }
   return context;
 }
+
+// // //product-context.tsx
+// 'use client';
+
+// import { useRouter, useSearchParams } from 'next/navigation';
+// import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+
+// interface ProductState {
+//   [key: string]: string;
+// }
+
+// export type ProductContextValue = {
+//   state: ProductState;
+//   updateOption: (name: string, value: string) => ProductState;
+//   updateImage: (index: string) => ProductState;
+// };
+
+// const ProductContext = createContext<ProductContextValue | undefined>(undefined);
+
+// export function ProductProvider({ children }: { children: React.ReactNode }) {
+//   const router = useRouter();
+//   const searchParams = useSearchParams();
+
+//   // Initialize state from URL params
+//   const [state, setState] = useState<ProductState>(() => {
+//     const params: ProductState = {};
+//     searchParams.forEach((value, key) => {
+//       // Preserve the original case of the option name
+//       params[key] = value;
+//     });
+//     return params;
+//   });
+
+//   // Keep state in sync with URL params
+//   useEffect(() => {
+//     const params: ProductState = {};
+//     searchParams.forEach((value, key) => {
+//       params[key] = value;
+//     });
+//     setState(params);
+//   }, [searchParams]);
+
+//   const updateURL = useCallback(
+//     (newState: ProductState) => {
+//       const params = new URLSearchParams();
+//       Object.entries(newState).forEach(([key, value]) => {
+//         if (value) {
+//           params.set(key, value);
+//         }
+//       });
+//       router.push(`?${params.toString()}`, { scroll: false });
+//     },
+//     [router]
+//   );
+
+//   const updateOption = useCallback(
+//     (name: string, value: string) => {
+//       // Create new state with the updated option
+//       const newState = {
+//         ...state,
+//         [name]: value
+//       };
+
+//       // Update state and URL
+//       setState(newState);
+//       updateURL(newState);
+
+//       console.log('ProductContext - Updating option:', {
+//         name,
+//         value,
+//         newState
+//       });
+
+//       return newState;
+//     },
+//     [state, updateURL]
+//   );
+
+//   const updateImage = useCallback(
+//     (index: string) => {
+//       const newState = {
+//         ...state,
+//         image: index
+//       };
+//       setState(newState);
+//       updateURL(newState);
+//       return newState;
+//     },
+//     [state, updateURL]
+//   );
+
+//   const value = useMemo(
+//     () => ({
+//       state,
+//       updateOption,
+//       updateImage
+//     }),
+//     [state, updateOption, updateImage]
+//   );
+
+//   return <ProductContext.Provider value={value}>{children}</ProductContext.Provider>;
+// }
+
+// export function useProduct() {
+//   const context = useContext(ProductContext);
+//   if (context === undefined) {
+//     throw new Error('useProduct must be used within a ProductProvider');
+//   }
+//   return context;
+// }
 
 // 'use client';
 
