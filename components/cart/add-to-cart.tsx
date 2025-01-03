@@ -60,11 +60,14 @@ export function AddToCart({ product }: { product: Product }) {
           selectedVariant
         });
 
-        const result = await formAction(variantId, quantity);
+        const result = await formAction({
+          merchandiseId: variantId,
+          quantity: quantity
+        });
+        
         console.log('AddToCart - Server Action Result:', result);
 
         if (result === 'Success') {
-          // Only update UI if server action succeeds
           addCartItem({
             variant: selectedVariant,
             product,

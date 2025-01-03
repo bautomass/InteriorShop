@@ -8,15 +8,14 @@ import { redirect } from 'next/navigation';
 
 export async function addItem(
   prevState: any,
-  selectedVariantId: string | undefined,
-  quantity: number = 1
+  data: { merchandiseId: string; quantity: number }
 ) {
   try {
-    if (!selectedVariantId) {
+    if (!data?.merchandiseId) {
       throw new Error('No variant ID provided');
     }
 
-    console.log('Cart Action addItem - Input:', { selectedVariantId, quantity });
+    console.log('Cart Action addItem - Input:', data);
 
     let cartId = cookies().get('cartId')?.value;
     let cart;
@@ -28,10 +27,10 @@ export async function addItem(
       cookies().set('cartId', cart.id);
     }
 
-    // Create the lines array with the correct structure
+    // Use the data directly as it's already in the correct format
     const lines = [{
-      merchandiseId: selectedVariantId,  // This should be the full Shopify Global ID
-      quantity: quantity
+      merchandiseId: data.merchandiseId,
+      quantity: data.quantity
     }];
 
     console.log('Cart Action addItem - Lines:', lines);
