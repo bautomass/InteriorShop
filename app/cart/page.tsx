@@ -84,10 +84,10 @@ export default function CartPage() {
         </motion.div>
 
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-          {/* Main Cart Content */}
+          {/* Main Cart Content - Now full width */}
           <motion.div 
             variants={itemVariants}
-            className="lg:col-span-8"
+            className="w-full"
           >
             <div className="bg-white rounded-xl shadow-sm ring-1 ring-[#6B5E4C]/5 overflow-hidden">
               <div className="p-6">
@@ -186,13 +186,65 @@ export default function CartPage() {
           </div>
         </div>
 
-        {/* Related Products or Recently Viewed */}
+        {/* Recently Viewed Section */}
         <motion.div 
           variants={itemVariants}
           className="mt-16"
         >
-          <h2 className="text-2xl font-bold text-[#6B5E4C] mb-6">You Might Also Like</h2>
-          {/* Add your related products component here */}
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-[#6B5E4C]">Complete Your Collection</h2>
+            <p className="text-[#8C7E6A] mt-2">
+              Items you recently viewed - Don't miss out on these perfect additions to your cart
+            </p>
+          </div>
+          
+          <div className="relative">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {recentlyViewed?.slice(0, 7).map((product) => (
+                <motion.div
+                  key={product.id}
+                  whileHover={{ y: -4 }}
+                  className="group"
+                >
+                  <div className="relative aspect-square overflow-hidden rounded-lg bg-[#F8F6F3]">
+                    <Image
+                      src={product.featuredImage?.url || ''}
+                      alt={product.title}
+                      fill
+                      className="object-cover transition-transform group-hover:scale-105"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100" />
+                    <button 
+                      onClick={() => addToCart(product)}
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-6 py-2 text-sm font-medium text-[#6B5E4C] opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                  <div className="mt-3">
+                    <h3 className="font-medium text-[#6B5E4C] group-hover:text-[#9e896c]">
+                      {product.title}
+                    </h3>
+                    <p className="mt-1 text-sm text-[#8C7E6A]">
+                      ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            
+            {recentlyViewed?.length > 0 && (
+              <div className="mt-8 text-center">
+                <p className="text-[#8C7E6A] text-sm mb-4">
+                  ✨ Complete your look with these perfectly matching pieces
+                </p>
+                <p className="text-[#6B5E4C] font-medium">
+                  Free shipping on all orders!
+                </p>
+              </div>
+            )}
+          </div>
         </motion.div>
 
         {/* Help Section */}
