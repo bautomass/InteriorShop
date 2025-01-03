@@ -38,22 +38,6 @@ export function VariantSelector({ options, variants }: VariantSelectorProps): JS
     )
   }));
 
-  // const handleOptionClick = useCallback(
-  //   async (optionName: string, value: string) => {
-  //     if (isUpdating) return;
-  //     setIsUpdating(true);
-  //     try {
-  //       const newState = updateOption(optionName, value);
-  //       await updateURL(newState);
-  //     } catch (error) {
-  //       console.error('Failed to update variant:', error);
-  //     } finally {
-  //       setIsUpdating(false);
-  //     }
-  //   },
-  //   [isUpdating, updateOption, updateURL]
-  // );
-
   const handleOptionClick = useCallback(
     async (optionName: string, value: string) => {
       if (isUpdating) return;
