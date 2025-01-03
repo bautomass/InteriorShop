@@ -335,7 +335,7 @@ export async function createCart(): Promise<Cart> {
 
 export async function addToCart(
   cartId: string,
-  lines: Array<{ merchandiseId: string | number; quantity: number }>
+  lines: Array<{ merchandiseId: string; quantity: number }>
 ): Promise<Cart> {
   try {
     const formattedCartId = cartId.startsWith('gid://') ? cartId : `gid://shopify/Cart/${cartId}`;
@@ -346,13 +346,23 @@ export async function addToCart(
       lines: JSON.stringify(lines)
     });
 
-    // Ensure merchandiseId is the full Shopify Global ID and is a string
+    // Ensure merchandiseId is the full Shopify Global ID
     const formattedLines = lines.map(line => {
-      const merchandiseId = String(line.merchandiseId); // Convert to string first
+      // Extract the ID if it's a full Shopify Global ID
+      const idMatch = line.merchandiseId.match(/ProductVariant\/(\d+)$/);
+      const variantId = idMatch ? idMatch[1] : line.merchandiseId;
+      
+      // Always construct a fresh Global ID to ensure correct format
+      const fullVariantId = `gid://shopify/ProductVariant/${variantId}`;
+      
+      console.log('Processing variant:', {
+        original: line.merchandiseId,
+        extracted: variantId,
+        formatted: fullVariantId
+      });
+
       return {
-        merchandiseId: merchandiseId.startsWith('gid://') 
-          ? merchandiseId 
-          : `gid://shopify/ProductVariant/${merchandiseId}`,
+        merchandiseId: fullVariantId,
         quantity: line.quantity
       };
     });
