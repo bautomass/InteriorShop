@@ -856,39 +856,3 @@ export function ProductDetails({ product }: { product: Product }) {
     </>
   );
 }
-
-function QuantitySelector({
-  quantity,
-  onIncrease,
-  onDecrease
-}: {
-  quantity: number;
-  onIncrease: () => void;
-  onDecrease: () => void;
-}) {
-  return (
-    <div className="flex h-[52px] items-center rounded-md border border-[#6B5E4C]/20">
-      <button
-        onClick={onDecrease}
-        className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
-        aria-label="Decrease quantity"
-        type="button"
-      >
-        <Minus className="h-4 w-4" />
-      </button>
-      <div className="relative w-12 overflow-hidden text-center font-medium text-[#6B5E4C]">
-        <div className="relative h-[20px]">
-          <AnimatedNumber number={quantity} />
-        </div>
-      </div>
-      <button
-        onClick={onIncrease}
-        className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
-        aria-label="Increase quantity"
-        type="button"
-      >
-        <Plus className="h-4 w-4" />
-      </button>
-    </div>
-  );
-}
