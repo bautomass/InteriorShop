@@ -3,6 +3,7 @@
 
 import { Dialog, Transition } from '@headlessui/react';
 import { ShoppingCartIcon } from '@heroicons/react/24/outline';
+import LoadingDots from 'components/loading-dots';
 import Price from 'components/price';
 import { DEFAULT_OPTION } from 'lib/constants';
 import type { Cart } from 'lib/shopify/types';
@@ -10,7 +11,7 @@ import { createUrl } from 'lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { createCartAndSetCookie } from './actions';
+import { createCartAndSetCookie, redirectToCheckout } from './actions';
 import { useCart } from './cart-context';
 import CloseCart from './close-cart';
 import { DeleteItemButton } from './delete-item-button';
@@ -21,12 +22,13 @@ type MerchandiseSearchParams = {
   [key: string]: string;
 };
 
-interface CartModalProps {
+export default function CartModal({
+  initialCart,
+  isCartPage = false
+}: {
   initialCart?: Cart;
   isCartPage?: boolean;
-}
-
-export default function CartModal({ initialCart, isCartPage }: CartModalProps) {
+}) {
   const { cart, updateCartItem } = useCart();
   const [isOpen, setIsOpen] = useState(isCartPage);
   const quantityRef = useRef(cart?.totalQuantity);
@@ -52,12 +54,6 @@ export default function CartModal({ initialCart, isCartPage }: CartModalProps) {
     }
   }, [isOpen, cart?.totalQuantity, quantityRef]);
 
-  const handleCheckout = (checkoutUrl?: string) => {
-    if (checkoutUrl) {
-      window.location.href = checkoutUrl;
-    }
-  };
-
   return (
     <>
       {!isCartPage && (
@@ -76,19 +72,7 @@ export default function CartModal({ initialCart, isCartPage }: CartModalProps) {
               </p>
             </div>
           ) : (
-            <div>
-              <CartContent cart={cart} updateCartItem={updateCartItem} closeCart={closeCart} />
-              <button
-                onClick={() => handleCheckout(cart.checkoutUrl)}
-                disabled={!cart?.checkoutUrl}
-                className="mt-8 w-full px-6 py-3 text-base font-medium text-white 
-                  bg-[#6B5E4C] rounded-lg shadow-sm hover:bg-[#9e896c] 
-                  transition-colors duration-200 disabled:opacity-50 
-                  disabled:cursor-not-allowed"
-              >
-                Proceed to Checkout
-              </button>
-            </div>
+            <CartContent cart={cart} updateCartItem={updateCartItem} closeCart={closeCart} />
           )}
         </div>
       ) : (
@@ -236,16 +220,9 @@ export default function CartModal({ initialCart, isCartPage }: CartModalProps) {
                         />
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleCheckout(cart.checkoutUrl)}
-                      disabled={!cart?.checkoutUrl}
-                      className="w-full px-6 py-3 text-base font-medium text-white 
-                        bg-[#6B5E4C] rounded-lg shadow-sm hover:bg-[#9e896c] 
-                        transition-colors duration-200 disabled:opacity-50 
-                        disabled:cursor-not-allowed"
-                    >
-                      Proceed to Checkout
-                    </button>
+                    <form action={redirectToCheckout}>
+                      <CheckoutButton />
+                    </form>
                   </div>
                 )}
               </Dialog.Panel>
@@ -254,6 +231,21 @@ export default function CartModal({ initialCart, isCartPage }: CartModalProps) {
         </Transition>
       )}
     </>
+  );
+}
+
+function CheckoutButton() {
+  const [isPending, setIsPending] = useState(false);
+
+  return (
+    <button
+      className="block w-full rounded-full bg-accent-600 p-3 text-sm font-medium text-primary-50 opacity-90 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
+      type="submit"
+      disabled={isPending}
+      onClick={() => setIsPending(true)}
+    >
+      {isPending ? <LoadingDots className="bg-primary-50" /> : 'Proceed to Checkout'}
+    </button>
   );
 }
 
@@ -371,7 +363,7 @@ function CartContent({
           />
         </div>
       </div>
-      <form action={handleCheckout}>
+      <form action={redirectToCheckout}>
         <CheckoutButton />
       </form>
     </div>

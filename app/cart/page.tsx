@@ -208,10 +208,7 @@ export default function CartPage() {
             <motion.div variants={itemVariants} className="mb-8">
               <div className="bg-white rounded-xl shadow-sm ring-1 ring-[#6B5E4C]/5 overflow-hidden">
                 <div className="p-6">
-                  <CartModal 
-                    initialCart={activeCart} 
-                    isCartPage={true} 
-                  />
+                  <CartModal initialCart={activeCart} isCartPage={true} />
                 </div>
               </div>
             </motion.div>
