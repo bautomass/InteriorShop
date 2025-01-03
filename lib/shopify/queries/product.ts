@@ -5,6 +5,24 @@ export const getProductQuery = /* GraphQL */ `
   query getProduct($handle: String!) {
     product(handle: $handle) {
       ...product
+      variants(first: 250) {
+        edges {
+          node {
+            id
+            merchandiseId
+            title
+            availableForSale
+            selectedOptions {
+              name
+              value
+            }
+            price {
+              amount
+              currencyCode
+            }
+          }
+        }
+      }
     }
   }
   ${productFragment}
@@ -98,3 +116,23 @@ export const getProductsByTagQuery = `
     }
   }
 `;
+
+// Add helper function for product data validation
+export const validateProductResponse = (response: any) => {
+  console.log('Raw product response:', response);
+  
+  const variants = response?.data?.product?.variants?.edges;
+  if (!variants?.length) {
+    console.error('No variants found in product data:', response);
+    return false;
+  }
+
+  const firstVariant = variants[0].node;
+  if (!firstVariant?.merchandiseId) {
+    console.error('Missing merchandiseId in variant data:', firstVariant);
+    return false;
+  }
+
+  console.log('Valid product data with merchandiseId:', firstVariant.merchandiseId);
+  return true;
+};
