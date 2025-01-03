@@ -6,6 +6,7 @@ import { SortSelect } from '@/components/filter/SortSelect';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useHeaderState } from '@/hooks/useHeaderState';
 import { useSearch } from '@/hooks/useSearch';
+import { formatPrice } from '@/lib/utils';
 import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ShoppingCart } from 'lucide-react';
@@ -61,6 +62,7 @@ function Hero() {
   const searchDropdownRef = useRef<HTMLDivElement>(null);
   const { cart } = useCart();
   const { state, updateState } = useHeaderState();
+  const [isCartHovered, setIsCartHovered] = useState(false);
 
   const filteredAndSortedResults = useMemo(() => {
     // First, ensure we have the correct types by mapping the products
@@ -174,6 +176,10 @@ function Hero() {
     };
   }, []);
 
+  const handleCartHover = (isHovering: boolean) => {
+    setIsCartHovered(isHovering);
+  };
+
   return (
     <>
       <div className={`${isModalOpen ? 'blur-sm transition-all duration-200' : ''}`}>
@@ -215,24 +221,108 @@ function Hero() {
                         <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" strokeLinecap="round"/>
                       </svg>
                     </button>
-                    <button 
-                      className="rounded-md p-1.5 text-white transition-all duration-300 hover:bg-white/20 active:scale-95" 
-                      aria-label="Cart"
-                      onClick={() => setIsCartOpen(true)}
+                    <div 
+                      className="relative"
+                      onMouseEnter={() => handleCartHover(true)}
+                      onMouseLeave={() => handleCartHover(false)}
                     >
-                      <div className="relative">
-                        <ShoppingCart className="h-5 w-5" />
-                        {(cart?.totalQuantity ?? 0) > 0 && (
-                          <motion.span
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-xs font-medium text-[#6B5E4C]"
+                      <button 
+                        className="rounded-md p-1.5 text-white transition-all duration-300 hover:bg-white/20 active:scale-95" 
+                        aria-label="Cart"
+                        onClick={() => setIsCartOpen(true)}
+                      >
+                        <div className="relative">
+                          <ShoppingCart className="h-5 w-5" />
+                          {(cart?.totalQuantity ?? 0) > 0 && (
+                            <motion.span
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-xs font-medium text-[#6B5E4C]"
+                            >
+                              {cart?.totalQuantity ?? 0}
+                            </motion.span>
+                          )}
+                        </div>
+                      </button>
+
+                      {/* Cart Preview Popup */}
+                      <AnimatePresence>
+                        {isCartHovered && cart?.lines && (cart.lines as any[]).length > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute right-0 top-12 w-80 rounded-lg bg-white p-4 shadow-xl ring-1 ring-black/5"
+                            onMouseEnter={() => handleCartHover(true)}
+                            onMouseLeave={() => handleCartHover(false)}
                           >
-                            {cart?.totalQuantity ?? 0}
-                          </motion.span>
+                            <div className="mb-3 flex justify-between text-sm font-medium text-[#6B5E4C]">
+                              <span>Cart ({cart.totalQuantity})</span>
+                              <span>{formatPrice(cart.cost.totalAmount.amount)}</span>
+                            </div>
+                            
+                            <div className="max-h-64 space-y-3 overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#6B5E4C]/20">
+                              {cart.lines.map((item) => (
+                                <motion.div
+                                  key={item.id}
+                                  layout
+                                  className="flex gap-3 rounded-md p-2 hover:bg-[#6B5E4C]/5"
+                                >
+                                  {item.merchandise.product.featuredImage && (
+                                    <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
+                                      <Image
+                                        src={item.merchandise.product.featuredImage.url}
+                                        alt={item.merchandise.product.title}
+                                        fill
+                                        className="object-cover"
+                                        sizes="64px"
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="flex-1">
+                                    <p className="text-sm font-medium text-[#6B5E4C] line-clamp-1">
+                                      {item.merchandise.product.title}
+                                    </p>
+                                    <p className="text-xs text-[#8C7E6A] line-clamp-1">
+                                      {item.merchandise.title}
+                                    </p>
+                                    <div className="mt-1 flex items-center justify-between">
+                                      <span className="text-xs text-[#6B5E4C]">
+                                        Qty: {item.quantity}
+                                      </span>
+                                      <span className="text-sm font-medium text-[#6B5E4C]">
+                                        {formatPrice(item.cost.totalAmount.amount)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
+
+                            <div className="mt-4 space-y-2">
+                              <button
+                                onClick={() => setIsCartOpen(true)}
+                                className="w-full rounded-md bg-[#6B5E4C] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#5A4D3B]"
+                              >
+                                View Cart
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (cart?.checkoutUrl) {
+                                    window.location.assign(cart.checkoutUrl);
+                                  }
+                                }}
+                                disabled={!cart?.checkoutUrl}
+                                className="w-full rounded-md bg-[#6B5E4C]/10 px-4 py-2 text-sm font-medium text-[#6B5E4C] transition-colors hover:bg-[#6B5E4C]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                Checkout
+                              </button>
+                            </div>
+                          </motion.div>
                         )}
-                      </div>
-                    </button>
+                      </AnimatePresence>
+                    </div>
                   </motion.div>
                 ) : isSearchOpen ? (
                   <motion.div 
