@@ -335,23 +335,32 @@ export async function createCart(): Promise<Cart> {
 
 export async function addToCart(
   cartId: string,
-  lines: Array<{ merchandiseId: string; quantity: number }>
+  lines: Array<{ merchandiseId?: string; variantId?: string; quantity: number }>
 ): Promise<Cart> {
   try {
-    console.log('AddToCart - Received lines:', JSON.stringify(lines, null, 2));
+    console.log('AddToCart - Raw input:', JSON.stringify(lines, null, 2));
 
-    // Validate merchandiseId format and structure
-    if (!Array.isArray(lines) || !lines?.length) {
-      throw new Error('Invalid lines array provided to addToCart');
-    }
-
-    // Check each line item's format
-    lines.forEach((line, index) => {
-      if (!line.merchandiseId || typeof line.merchandiseId !== 'string') {
-        throw new Error(`Invalid merchandiseId at index ${index}. Received: ${JSON.stringify(line)}`);
+    // Transform the input to ensure correct format
+    const formattedLines = lines.map((line, index) => {
+      const id = line.merchandiseId || line.variantId;
+      if (!id) {
+        throw new Error(`Missing variant ID at index ${index}`);
       }
+
+      return {
+        merchandiseId: typeof id === 'string' ? id : String(id),
+        quantity: line.quantity
+      };
+    });
+
+    console.log('AddToCart - Formatted lines:', JSON.stringify(formattedLines, null, 2));
+
+    // Validate the formatted lines
+    formattedLines.forEach((line, index) => {
       if (!line.merchandiseId.startsWith('gid://shopify/ProductVariant/')) {
-        throw new Error(`Invalid merchandiseId format at index ${index}. Expected Shopify Global ID, received: ${line.merchandiseId}`);
+        throw new Error(
+          `Invalid variant ID format at index ${index}. Expected Shopify Global ID, received: ${line.merchandiseId}`
+        );
       }
     });
 
@@ -361,7 +370,7 @@ export async function addToCart(
       query: addToCartMutation,
       variables: {
         cartId: formattedCartId,
-        lines
+        lines: formattedLines
       },
       cache: 'no-store'
     });
