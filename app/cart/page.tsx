@@ -78,7 +78,6 @@ export default function CartPage() {
 
   const addToCart = async (product: Product) => {
     try {
-      // Get the first available variant
       const defaultVariant = product.variants[0];
       
       if (!defaultVariant?.id) {
@@ -90,11 +89,16 @@ export default function CartPage() {
       
       const result = await formAction({
         merchandiseId: defaultVariant.id,
-        quantity: 1
+        quantity: 1,
+        attributes: [
+          {
+            key: '_discount',
+            value: '10'
+          }
+        ]
       });
 
       if (result === 'Success') {
-        // Add to cart context for optimistic updates
         addCartItem({
           variant: defaultVariant,
           product,
@@ -191,7 +195,7 @@ export default function CartPage() {
               </p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 sm:gap-6">
               {displayedRecentItems.slice(0, 7).map((product) => (
                 <motion.div
                   key={product.id}
@@ -234,15 +238,15 @@ export default function CartPage() {
                       )}
                     </button>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-medium text-[#6B5E4C] group-hover:text-[#9e896c] truncate">
+                  <div className="p-3 xl:p-2">
+                    <h3 className="font-medium text-[#6B5E4C] group-hover:text-[#9e896c] truncate text-sm xl:text-xs">
                       {product.title}
                     </h3>
                     <div className="mt-1 flex items-center gap-2">
-                      <span className="text-red-500 font-medium">
+                      <span className="text-red-500 font-medium text-sm xl:text-xs">
                         ${calculateDiscountedPrice(product.priceRange.minVariantPrice.amount)}
                       </span>
-                      <span className="text-sm text-[#8C7E6A] line-through">
+                      <span className="text-xs xl:text-[10px] text-[#8C7E6A] line-through">
                         ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
                       </span>
                     </div>

@@ -8,7 +8,11 @@ import { redirect } from 'next/navigation';
 
 export async function addItem(
   prevState: any,
-  data: { merchandiseId: string; quantity: number }
+  data: { 
+    merchandiseId: string; 
+    quantity: number;
+    attributes?: { key: string; value: string }[];
+  }
 ) {
   try {
     console.log('Server Action - Received data:', data);
