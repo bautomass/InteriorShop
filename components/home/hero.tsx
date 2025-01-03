@@ -316,7 +316,7 @@ function Hero() {
                               <button
                                 onClick={() => {
                                   if (cart?.checkoutUrl) {
-                                    window.location.assign(cart.checkoutUrl);
+                                    window.location.href = cart.checkoutUrl;
                                   }
                                 }}
                                 disabled={!cart?.checkoutUrl}
