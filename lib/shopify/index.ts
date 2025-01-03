@@ -346,14 +346,19 @@ export async function addToCart(
       lines: JSON.stringify(lines)
     });
 
+    // Ensure merchandiseId is the full Shopify Global ID
+    const formattedLines = lines.map(line => ({
+      merchandiseId: line.merchandiseId.startsWith('gid://') 
+        ? line.merchandiseId 
+        : `gid://shopify/ProductVariant/${line.merchandiseId}`,
+      quantity: line.quantity
+    }));
+
     const res = await shopifyFetch<ShopifyAddToCartOperation>({
       query: addToCartMutation,
       variables: {
         cartId: formattedCartId,
-        lines: lines.map((line) => ({
-          merchandiseId: line.merchandiseId,
-          quantity: line.quantity
-        }))
+        lines: formattedLines  // Use the formatted lines
       },
       cache: 'no-store'
     });
