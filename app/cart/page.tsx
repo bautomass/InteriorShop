@@ -4,6 +4,7 @@ import type { Cart } from '@/lib/shopify/types';
 import CartModal from 'components/cart/modal';
 import { motion } from 'framer-motion';
 import { ArrowRight, RefreshCcw, Shield, Truck } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 const containerVariants = {
@@ -105,7 +106,7 @@ export default function CartPage() {
               <h2 className="text-lg font-semibold text-[#6B5E4C] mb-4">Order Summary</h2>
               {cart && (
                 <>
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-3 mb-4">
                     <div className="flex justify-between text-sm">
                       <span className="text-[#8C7E6A]">Subtotal</span>
                       <span className="font-medium text-[#6B5E4C]">
@@ -113,11 +114,25 @@ export default function CartPage() {
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-[#8C7E6A]">Shipping</span>
-                      <span className="font-medium text-[#6B5E4C]">Calculated at checkout</span>
+                      <span className="text-[#8C7E6A]">Estimated Shipping</span>
+                      <span className="font-medium text-[#6B5E4C]">
+                        {parseFloat(cart.cost.subtotalAmount.amount) >= 150 ? 'Free' : '$9.99'}
+                      </span>
                     </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-[#8C7E6A]">Estimated Tax</span>
+                      <span className="font-medium text-[#6B5E4C]">
+                        ${(parseFloat(cart.cost.subtotalAmount.amount) * 0.1).toFixed(2)}
+                      </span>
+                    </div>
+                    {Array.isArray(cart?.discountCodes) && cart.discountCodes.length > 0 && (
+                      <div className="flex justify-between text-sm text-green-600">
+                        <span>Discount Applied</span>
+                        <span>-${parseFloat(cart.discountCodes?.[0]?.amount ?? '0').toFixed(2)}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="border-t border-[#6B5E4C]/10 pt-4">
+                  <div className="border-t border-[#6B5E4C]/10 pt-4 mb-4">
                     <div className="flex justify-between">
                       <span className="text-[#6B5E4C] font-semibold">Total</span>
                       <span className="text-[#6B5E4C] font-semibold">
@@ -125,9 +140,27 @@ export default function CartPage() {
                       </span>
                     </div>
                   </div>
-                  <button className="w-full mt-6 bg-[#6B5E4C] text-white py-3 px-4 rounded-md hover:bg-[#5A4D3B] transition-colors flex items-center justify-center gap-2">
+                  <div className="bg-[#F8F6F3] rounded-md p-3 mb-4 text-sm">
+                    {parseFloat(cart.cost.subtotalAmount.amount) >= 150 ? (
+                      <p className="text-green-600">✓ Your order qualifies for free shipping!</p>
+                    ) : (
+                      <p className="text-[#8C7E6A]">
+                        Add ${(150 - parseFloat(cart.cost.subtotalAmount.amount)).toFixed(2)} more for free shipping
+                      </p>
+                    )}
+                  </div>
+                  <button className="w-full mb-3 bg-[#6B5E4C] text-white py-3 px-4 rounded-md hover:bg-[#5A4D3B] transition-colors flex items-center justify-center gap-2">
                     Proceed to Checkout <ArrowRight className="h-4 w-4" />
                   </button>
+                  <div className="text-center text-xs text-[#8C7E6A] mt-4">
+                    <p className="mb-2">Secure Checkout</p>
+                    <div className="flex justify-center gap-2">
+                      <Image src="/visa.svg" alt="Visa" width={32} height={20} />
+                      <Image src="/mastercard.svg" alt="Mastercard" width={32} height={20} />
+                      <Image src="/amex.svg" alt="American Express" width={32} height={20} />
+                      <Image src="/paypal.svg" alt="PayPal" width={32} height={20} />
+                    </div>
+                  </div>
                 </>
               )}
             </motion.div>
