@@ -222,9 +222,9 @@ export default function CartModal({
                 <button
                   onClick={handleCheckout}
                   disabled={isCheckoutDisabled}
-                  className="mt-6 w-full rounded-lg bg-red-600 px-6 py-3 text-center text-base 
+                  className="mt-6 w-full rounded-lg bg-[#8B4513] px-6 py-3 text-center text-base 
                     font-medium text-white shadow-sm transition-all duration-150 
-                    hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 
+                    hover:bg-[#723710] focus:outline-none focus:ring-2 focus:ring-[#8B4513] 
                     focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isCheckingOut ? (
@@ -388,7 +388,7 @@ export default function CartModal({
                     <button
                       onClick={handleCheckout}
                       disabled={isCheckoutDisabled}
-                      className="block w-full rounded-full bg-accent-600 p-3 text-sm font-medium text-primary-50 opacity-90 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="block w-full rounded-full bg-[#8B4513] p-3 text-sm font-medium text-primary-50 opacity-90 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {isCheckingOut ? (
                         <LoadingDots className="bg-primary-50" />
