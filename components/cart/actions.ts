@@ -1,10 +1,64 @@
 'use server';
 
 import { TAGS } from 'lib/constants';
-import { addToCart, createCart, getCart, removeFromCart, updateCart } from 'lib/shopify';
+import { addToCart, createCart } from 'lib/shopify';
 import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+
+export async function addItem(
+  prevState: any,
+  selectedVariantId: string | undefined,
+  quantity: number = 1
+) {
+  try {
+    if (!selectedVariantId) {
+      throw new Error('No variant ID provided');
+    }
+
+    // Get or create cart
+    let cartId = cookies().get('cartId')?.value;
+    let cart;
+
+    if (!cartId) {
+      cart = await createCart();
+      if (!cart?.id) throw new Error('Failed to create cart');
+      cartId = cart.id;
+      cookies().set('cartId', cart.id);
+    }
+
+    console.log('Cart Debug - Add Item:', {
+      cartId,
+      selectedVariantId,
+      quantity
+    });
+
+    // Add to cart with the full Shopify variant ID
+    cart = await addToCart(cartId, [
+      {
+        merchandiseId: selectedVariantId,
+        quantity
+      }
+    ]);
+
+    if (!cart) {
+      throw new Error('Failed to add item to cart');
+    }
+
+    revalidateTag(TAGS.cart);
+    return 'Success';
+  } catch (e) {
+    console.error('Cart error:', e);
+    return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
+  }
+}
+
+// 'use server';
+
+// import { TAGS } from 'lib/constants';
+// import { addToCart, createCart, getCart, removeFromCart, updateCart } from 'lib/shopify';
+// import { revalidateTag } from 'next/cache';
+// import { cookies } from 'next/headers';
+// import { redirect } from 'next/navigation';
 
 // export async function addItem(
 //   prevState: any,
@@ -25,23 +79,16 @@ import { redirect } from 'next/navigation';
 //       cookies().set('cartId', cart.id);
 //     }
 
-//     // Ensure we're using the full Shopify variant ID
-//     const formattedVariantId = String(selectedVariantId).startsWith('gid://shopify/ProductVariant/')
-//       ? selectedVariantId
-//       : `gid://shopify/ProductVariant/${selectedVariantId}`;
-
-//     console.log('Cart Debug - Adding Item:', {
+//     console.log('Cart Debug - Add Item:', {
 //       cartId,
-//       variantId: formattedVariantId,
-//       quantity,
-//       originalVariantId: selectedVariantId,
-//       formattedVariantId
+//       selectedVariantId,
+//       quantity
 //     });
 
-//     // Add to cart with proper variant ID
+//     // Add to cart with variant ID as-is
 //     const cart = await addToCart(cartId, [
 //       {
-//         merchandiseId: formattedVariantId,
+//         merchandiseId: selectedVariantId,
 //         quantity
 //       }
 //     ]);
@@ -58,160 +105,115 @@ import { redirect } from 'next/navigation';
 //   }
 // }
 
-export async function addItem(
-  prevState: any,
-  selectedVariantId: string | undefined,
-  quantity: number = 1
-) {
-  try {
-    if (!selectedVariantId) {
-      throw new Error('No variant ID provided');
-    }
+// export async function removeItem(prevState: any, merchandiseId: string) {
+//   try {
+//     const cartId = cookies().get('cartId')?.value;
+//     if (!cartId) {
+//       throw new Error('Missing cart ID');
+//     }
 
-    // Get or create cart
-    let cartId = cookies().get('cartId')?.value;
-    if (!cartId) {
-      const cart = await createCart();
-      if (!cart?.id) throw new Error('Failed to create cart');
-      cartId = cart.id;
-      cookies().set('cartId', cart.id);
-    }
+//     const cart = await getCart(cartId);
+//     if (!cart) {
+//       throw new Error('Error fetching cart');
+//     }
 
-    console.log('Cart Debug - Add Item:', {
-      cartId,
-      selectedVariantId,
-      quantity
-    });
+//     const lineItem = cart.lines.find((line) => line.merchandise.id === merchandiseId);
+//     if (!lineItem?.id) {
+//       throw new Error('Item not found in cart');
+//     }
 
-    // Add to cart with variant ID as-is
-    const cart = await addToCart(cartId, [
-      {
-        merchandiseId: selectedVariantId,
-        quantity
-      }
-    ]);
+//     const result = await removeFromCart(cartId, [lineItem.id]);
+//     if (!result) {
+//       throw new Error('Failed to remove item from cart');
+//     }
 
-    if (!cart) {
-      throw new Error('Failed to add item to cart');
-    }
+//     revalidateTag(TAGS.cart);
+//     return 'Success';
+//   } catch (e) {
+//     console.error('Error removing item:', e);
+//     return `Error: ${e instanceof Error ? e.message : 'Failed to remove item'}`;
+//   }
+// }
 
-    revalidateTag(TAGS.cart);
-    return 'Success';
-  } catch (e) {
-    console.error('Cart error:', e);
-    return `Error: ${e instanceof Error ? e.message : 'Failed to add item to cart'}`;
-  }
-}
+// export async function updateItemQuantity(
+//   prevState: any,
+//   payload: {
+//     merchandiseId: string;
+//     quantity: number;
+//   }
+// ) {
+//   try {
+//     const cartId = cookies().get('cartId')?.value;
+//     if (!cartId) {
+//       throw new Error('Missing cart ID');
+//     }
 
-export async function removeItem(prevState: any, merchandiseId: string) {
-  try {
-    const cartId = cookies().get('cartId')?.value;
-    if (!cartId) {
-      throw new Error('Missing cart ID');
-    }
+//     const { merchandiseId, quantity } = payload;
+//     const cart = await getCart(cartId);
 
-    const cart = await getCart(cartId);
-    if (!cart) {
-      throw new Error('Error fetching cart');
-    }
+//     if (!cart) {
+//       throw new Error('Error fetching cart');
+//     }
 
-    const lineItem = cart.lines.find((line) => line.merchandise.id === merchandiseId);
-    if (!lineItem?.id) {
-      throw new Error('Item not found in cart');
-    }
+//     const lineItem = cart.lines.find((line) => line.merchandise.id === merchandiseId);
 
-    const result = await removeFromCart(cartId, [lineItem.id]);
-    if (!result) {
-      throw new Error('Failed to remove item from cart');
-    }
+//     if (lineItem?.id) {
+//       if (quantity === 0) {
+//         await removeFromCart(cartId, [lineItem.id]);
+//       } else {
+//         await updateCart(cartId, [
+//           {
+//             id: lineItem.id,
+//             merchandiseId,
+//             quantity
+//           }
+//         ]);
+//       }
+//     } else if (quantity > 0) {
+//       await addToCart(cartId, [{ merchandiseId, quantity }]);
+//     }
 
-    revalidateTag(TAGS.cart);
-    return 'Success';
-  } catch (e) {
-    console.error('Error removing item:', e);
-    return `Error: ${e instanceof Error ? e.message : 'Failed to remove item'}`;
-  }
-}
+//     revalidateTag(TAGS.cart);
+//     return 'Success';
+//   } catch (e) {
+//     console.error('Error updating quantity:', e);
+//     return `Error: ${e instanceof Error ? e.message : 'Failed to update quantity'}`;
+//   }
+// }
 
-export async function updateItemQuantity(
-  prevState: any,
-  payload: {
-    merchandiseId: string;
-    quantity: number;
-  }
-) {
-  try {
-    const cartId = cookies().get('cartId')?.value;
-    if (!cartId) {
-      throw new Error('Missing cart ID');
-    }
+// export async function redirectToCheckout() {
+//   try {
+//     const cartId = cookies().get('cartId')?.value;
+//     if (!cartId) {
+//       throw new Error('Missing cart ID');
+//     }
 
-    const { merchandiseId, quantity } = payload;
-    const cart = await getCart(cartId);
+//     const cart = await getCart(cartId);
+//     if (!cart) {
+//       throw new Error('Error fetching cart');
+//     }
 
-    if (!cart) {
-      throw new Error('Error fetching cart');
-    }
+//     if (!cart.checkoutUrl) {
+//       throw new Error('No checkout URL available');
+//     }
 
-    const lineItem = cart.lines.find((line) => line.merchandise.id === merchandiseId);
+//     redirect(cart.checkoutUrl);
+//   } catch (e) {
+//     console.error('Error redirecting to checkout:', e);
+//     return `Error: ${e instanceof Error ? e.message : 'Failed to redirect to checkout'}`;
+//   }
+// }
 
-    if (lineItem?.id) {
-      if (quantity === 0) {
-        await removeFromCart(cartId, [lineItem.id]);
-      } else {
-        await updateCart(cartId, [
-          {
-            id: lineItem.id,
-            merchandiseId,
-            quantity
-          }
-        ]);
-      }
-    } else if (quantity > 0) {
-      await addToCart(cartId, [{ merchandiseId, quantity }]);
-    }
-
-    revalidateTag(TAGS.cart);
-    return 'Success';
-  } catch (e) {
-    console.error('Error updating quantity:', e);
-    return `Error: ${e instanceof Error ? e.message : 'Failed to update quantity'}`;
-  }
-}
-
-export async function redirectToCheckout() {
-  try {
-    const cartId = cookies().get('cartId')?.value;
-    if (!cartId) {
-      throw new Error('Missing cart ID');
-    }
-
-    const cart = await getCart(cartId);
-    if (!cart) {
-      throw new Error('Error fetching cart');
-    }
-
-    if (!cart.checkoutUrl) {
-      throw new Error('No checkout URL available');
-    }
-
-    redirect(cart.checkoutUrl);
-  } catch (e) {
-    console.error('Error redirecting to checkout:', e);
-    return `Error: ${e instanceof Error ? e.message : 'Failed to redirect to checkout'}`;
-  }
-}
-
-export async function createCartAndSetCookie() {
-  try {
-    const cart = await createCart();
-    if (!cart?.id) {
-      throw new Error('Failed to create cart');
-    }
-    cookies().set('cartId', cart.id);
-    return 'Success';
-  } catch (e) {
-    console.error('Error creating cart:', e);
-    return `Error: ${e instanceof Error ? e.message : 'Failed to create cart'}`;
-  }
-}
+// export async function createCartAndSetCookie() {
+//   try {
+//     const cart = await createCart();
+//     if (!cart?.id) {
+//       throw new Error('Failed to create cart');
+//     }
+//     cookies().set('cartId', cart.id);
+//     return 'Success';
+//   } catch (e) {
+//     console.error('Error creating cart:', e);
+//     return `Error: ${e instanceof Error ? e.message : 'Failed to create cart'}`;
+//   }
+// }

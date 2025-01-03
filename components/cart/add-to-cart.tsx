@@ -1,3 +1,4 @@
+// components/cart/add-to-cart.tsx
 'use client';
 
 import { useActionState } from '@/hooks/useActionState';
@@ -29,7 +30,7 @@ export function AddToCart({ product }: { product: Product }) {
     console.log('AddToCart state updated:', {
       selectedVariant: selectedVariant?.id,
       state,
-      allOptions: product.options.map(opt => opt.name),
+      allOptions: product.options.map((opt) => opt.name),
       selectedOptionCount: Object.keys(state).length,
       requiredOptionCount: product.options.length
     });
@@ -47,14 +48,18 @@ export function AddToCart({ product }: { product: Product }) {
       setIsSubmitting(true);
 
       try {
-        const variantId = String(selectedVariant.id);
+        // Ensure we're using the full Shopify variant ID
+        const variantId = selectedVariant.id;
+
         console.log('Adding to cart:', {
           variantId,
-          quantity
+          quantity,
+          selectedVariant
         });
 
         // Send server action first
         const result = await formAction(variantId, quantity);
+        console.log('Server action result:', result);
 
         if (result === 'Success') {
           // Only update UI if server action succeeds
@@ -145,15 +150,6 @@ function AnimatedNumber({ number }: { number: number }) {
   );
 }
 
-
-
-
-
-
-
-
-
-
 // 'use client';
 
 // import { useActionState } from '@/hooks/useActionState';
@@ -173,7 +169,6 @@ function AnimatedNumber({ number }: { number: number }) {
 //   const [message, formAction] = useActionState(addItem, null);
 //   const [isSubmitting, setIsSubmitting] = useState(false);
 
-//   // Find matching variant based on selected options
 //   const selectedVariant = useMemo(() => {
 //     if (!Object.keys(state).length) return null;
 
@@ -182,7 +177,6 @@ function AnimatedNumber({ number }: { number: number }) {
 //     );
 //   }, [variants, state]);
 
-//   // Debug selected variant
 //   useEffect(() => {
 //     console.log('AddToCart state updated:', {
 //       selectedVariant: selectedVariant?.id,
@@ -205,24 +199,25 @@ function AnimatedNumber({ number }: { number: number }) {
 //       setIsSubmitting(true);
 
 //       try {
+//         const variantId = String(selectedVariant.id);
 //         console.log('Adding to cart:', {
-//           variantId: selectedVariant.id,
+//           variantId,
 //           quantity
 //         });
 
 //         // Send server action first
-//         const result = await formAction(selectedVariant.id, quantity);
+//         const result = await formAction(variantId, quantity);
 
-//         if (result !== 'Success') {
+//         if (result === 'Success') {
+//           // Only update UI if server action succeeds
+//           addCartItem({
+//             variant: selectedVariant,
+//             product,
+//             quantity
+//           });
+//         } else {
 //           throw new Error(`Add to Cart Failed: ${result}`);
 //         }
-
-//         // Only update UI if server action succeeds
-//         addCartItem({
-//           variant: selectedVariant,
-//           product,
-//           quantity
-//         });
 //       } catch (error) {
 //         console.error('AddToCart: Error', error);
 //       } finally {
