@@ -151,10 +151,10 @@ export default function CartPage() {
         variants={containerVariants}
         className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 relative"
       >
-        {/* Navigation Buttons */}
+        {/* Navigation Buttons - Adjusted positioning */}
         <motion.div 
           variants={itemVariants}
-          className="absolute left-4 top-4 sm:left-6 sm:top-6 lg:left-8 lg:top-8 flex gap-2 z-10"
+          className="absolute left-4 top-14 sm:left-6 sm:top-14 lg:left-8 lg:top-14 flex gap-2 z-10"
         >
           <button
             onClick={() => router.back()}
