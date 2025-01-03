@@ -259,7 +259,7 @@ function Hero() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute right-0 top-12 w-80 rounded-lg bg-white p-4 shadow-xl ring-1 ring-black/5"
+                            className="absolute right-0 top-12 w-[470px] rounded-lg bg-white p-4 shadow-xl ring-1 ring-black/5"
                             onMouseEnter={() => handleCartHover(true)}
                             onMouseLeave={() => handleCartHover(false)}
                           >
