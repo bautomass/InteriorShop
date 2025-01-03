@@ -25,13 +25,13 @@ type MerchandiseSearchParams = {
 interface CartModalProps {
   initialCart?: Cart;
   isCartPage?: boolean;
-  checkoutButton?: React.ReactNode;
+  onCheckout?: () => void;
 }
 
 export default function CartModal({
   initialCart,
   isCartPage = false,
-  checkoutButton
+  onCheckout
 }: CartModalProps) {
   const { cart, updateCartItem } = useCart();
   const [isOpen, setIsOpen] = useState(isCartPage);
@@ -224,7 +224,18 @@ export default function CartModal({
                         />
                       </div>
                     </div>
-                    {checkoutButton}
+                    {onCheckout && (
+                      <button
+                        onClick={onCheckout}
+                        disabled={!initialCart?.checkoutUrl}
+                        className="w-full px-6 py-3 text-base font-medium text-white 
+                          bg-[#6B5E4C] rounded-lg shadow-sm hover:bg-[#9e896c] 
+                          transition-colors duration-200 disabled:opacity-50 
+                          disabled:cursor-not-allowed"
+                      >
+                        Proceed to Checkout
+                      </button>
+                    )}
                   </div>
                 )}
               </Dialog.Panel>

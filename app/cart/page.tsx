@@ -217,18 +217,7 @@ export default function CartPage() {
                   <CartModal 
                     initialCart={activeCart} 
                     isCartPage={true} 
-                    checkoutButton={
-                      <button
-                        onClick={handleCheckout}
-                        disabled={!activeCart?.checkoutUrl}
-                        className="w-full px-6 py-3 text-base font-medium text-white 
-                          bg-[#6B5E4C] rounded-lg shadow-sm hover:bg-[#9e896c] 
-                          transition-colors duration-200 disabled:opacity-50 
-                          disabled:cursor-not-allowed"
-                      >
-                        Proceed to Checkout
-                      </button>
-                    }
+                    onCheckout={handleCheckout}
                   />
                 </div>
               </div>
