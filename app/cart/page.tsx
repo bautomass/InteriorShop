@@ -108,23 +108,18 @@ export default function CartPage() {
     return discountedPrice.toFixed(2);
   };
 
-  // Function to shuffle array
-  const shuffleArray = (array: (Product | undefined)[]) => {
-    const validProducts = array.filter((item): item is Product => Boolean(item));
-    const shuffled = [...validProducts];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-
-  // Get recently viewed items and shuffle them
   const displayedRecentItems = useMemo(() => {
-    if (!recentItems?.length) return [];
-    // Remove last viewed item and ensure all items are defined
-    const validItems = recentItems.slice(0, -1).filter((item): item is Product => Boolean(item));
-    return shuffleArray(validItems);
+    if (!recentItems?.length) return [] as Product[];
+    // Remove the last viewed item and filter out undefined products
+    const validProducts = recentItems
+      .slice(0, -1)
+      .filter((item): item is Product => 
+        item !== undefined && 
+        item.id !== undefined && 
+        item.variants !== undefined &&
+        item.title !== undefined
+      );
+    return validProducts;
   }, [recentItems]);
 
   return (
