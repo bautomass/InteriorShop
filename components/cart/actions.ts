@@ -37,23 +37,18 @@ export async function addItem(
     });
 
     // Add to cart with proper variant ID
-    const response = await addToCart(cartId, [
+    const cart = await addToCart(cartId, [
       {
         merchandiseId: formattedVariantId,
         quantity
       }
     ]);
 
-    if (!response?.cart) {
+    if (!cart) {
       throw new Error('Failed to add item to cart');
     }
 
-    // Check for user errors in the response
-    const userErrors = (response as any).cartLinesAdd?.userErrors || [];
-    if (userErrors.length > 0) {
-      throw new Error(userErrors[0].message);
-    }
-
+    // The cart was updated successfully
     revalidateTag(TAGS.cart);
     return 'Success';
   } catch (e) {
