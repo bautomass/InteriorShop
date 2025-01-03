@@ -331,7 +331,10 @@ export function ProductDetails({ product }: { product: Product }) {
     startTransition(() => {
       const variantId = String(selectedVariant.id);
 
-      formAction(variantId, quantity)
+      formAction({
+        merchandiseId: variantId,
+        quantity: quantity
+      })
         .then((result) => {
           if (result === 'Success' && selectedVariant) {
             addCartItem({
