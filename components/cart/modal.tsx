@@ -60,6 +60,12 @@ export default function CartModal({
     }
   };
 
+  console.log('Cart debug:', {
+    hasCart: !!cart,
+    hasLines: (cart?.lines?.length ?? 0) > 0,
+    checkoutUrl: cart?.checkoutUrl
+  });
+
   return (
     <>
       {!isCartPage && (
