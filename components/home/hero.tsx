@@ -8,6 +8,7 @@ import { useHeaderState } from '@/hooks/useHeaderState';
 import { useSearch } from '@/hooks/useSearch';
 import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
@@ -219,9 +220,18 @@ function Hero() {
                       aria-label="Cart"
                       onClick={() => setIsCartOpen(true)}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M3 3H5L5.4 5M5.4 5H21L17 13H7M5.4 5L7 13M7 13L4.707 15.293C4.077 15.923 4.523 17 5.414 17H17M17 17C16.4696 17 15.9609 17.2107 15.5858 17.5858C15.2107 17.9609 15 18.4696 15 19C15 19.5304 15.2107 20.0391 15.5858 20.4142C15.9609 20.7893 16.4696 21 17 21C17.5304 21 18.0391 20.7893 18.4142 20.4142C18.7893 20.0391 19 19.5304 19 19C19 18.4696 18.7893 17.9609 18.4142 17.5858C18.0391 17.2107 17.5304 17 17 17Z" strokeLinecap="round"/>
-                      </svg>
+                      <div className="relative">
+                        <ShoppingCart className="h-5 w-5" />
+                        {(cart?.totalQuantity ?? 0) > 0 && (
+                          <motion.span
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-xs font-medium text-[#6B5E4C]"
+                          >
+                            {cart?.totalQuantity ?? 0}
+                          </motion.span>
+                        )}
+                      </div>
                     </button>
                   </motion.div>
                 ) : isSearchOpen ? (
