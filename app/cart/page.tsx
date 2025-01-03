@@ -90,12 +90,7 @@ export default function CartPage() {
       const result = await formAction({
         merchandiseId: defaultVariant.id,
         quantity: 1,
-        attributes: [
-          {
-            key: '_discount',
-            value: '10'
-          }
-        ]
+        attributes: [{ key: '_discount', value: '10' }]
       });
 
       if (result === 'Success') {
@@ -222,7 +217,7 @@ export default function CartPage() {
                         addToCart(product);
                       }}
                       disabled={isAddingToCart[product.id]}
-                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-6 py-2 text-sm font-medium text-[#6B5E4C] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[#F8F6F3] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-6 py-2 text-sm xl:px-4 xl:py-1.5 xl:text-xs font-medium text-[#6B5E4C] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[#F8F6F3] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isAddingToCart[product.id] ? (
                         <span className="flex items-center gap-2">
