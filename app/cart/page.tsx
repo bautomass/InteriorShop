@@ -214,7 +214,22 @@ export default function CartPage() {
             <motion.div variants={itemVariants} className="mb-8">
               <div className="bg-white rounded-xl shadow-sm ring-1 ring-[#6B5E4C]/5 overflow-hidden">
                 <div className="p-6">
-                  <CartModal initialCart={activeCart} isCartPage={true} />
+                  <CartModal 
+                    initialCart={activeCart} 
+                    isCartPage={true} 
+                    checkoutButton={
+                      <button
+                        onClick={handleCheckout}
+                        disabled={!activeCart?.checkoutUrl}
+                        className="w-full px-6 py-3 text-base font-medium text-white 
+                          bg-[#6B5E4C] rounded-lg shadow-sm hover:bg-[#9e896c] 
+                          transition-colors duration-200 disabled:opacity-50 
+                          disabled:cursor-not-allowed"
+                      >
+                        Proceed to Checkout
+                      </button>
+                    }
+                  />
                 </div>
               </div>
             </motion.div>
@@ -392,19 +407,6 @@ export default function CartPage() {
               Returns Policy
             </a>
           </div>
-        </motion.div>
-
-        <motion.div variants={itemVariants} className="mt-8 text-center">
-          <button
-            onClick={handleCheckout}
-            disabled={!activeCart?.checkoutUrl}
-            className="w-full sm:w-auto px-6 py-3 text-base font-medium text-white 
-              bg-[#6B5E4C] rounded-lg shadow-sm hover:bg-[#9e896c] 
-              transition-colors duration-200 disabled:opacity-50 
-              disabled:cursor-not-allowed"
-          >
-            Proceed to Checkout
-          </button>
         </motion.div>
       </motion.div>
     </div>

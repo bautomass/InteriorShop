@@ -22,13 +22,17 @@ type MerchandiseSearchParams = {
   [key: string]: string;
 };
 
-export default function CartModal({
-  initialCart,
-  isCartPage = false
-}: {
+interface CartModalProps {
   initialCart?: Cart;
   isCartPage?: boolean;
-}) {
+  checkoutButton?: React.ReactNode;
+}
+
+export default function CartModal({
+  initialCart,
+  isCartPage = false,
+  checkoutButton
+}: CartModalProps) {
   const { cart, updateCartItem } = useCart();
   const [isOpen, setIsOpen] = useState(isCartPage);
   const quantityRef = useRef(cart?.totalQuantity);
@@ -220,9 +224,7 @@ export default function CartModal({
                         />
                       </div>
                     </div>
-                    <form action={redirectToCheckout}>
-                      <CheckoutButton />
-                    </form>
+                    {checkoutButton}
                   </div>
                 )}
               </Dialog.Panel>
