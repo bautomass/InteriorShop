@@ -4,6 +4,7 @@ import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import type { Cart, Product } from '@/lib/shopify/types';
 import CartModal from 'components/cart/modal';
 import { motion } from 'framer-motion';
+import { Lock, RotateCcw, Truck } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
@@ -25,6 +26,24 @@ const itemVariants = {
     transition: { duration: 0.5, ease: "easeOut" }
   }
 };
+
+const TRUST_BADGES = [
+  {
+    title: 'Free Shipping',
+    description: 'On all orders',
+    icon: Truck
+  },
+  {
+    title: 'Secure Payments',
+    description: 'SSL encryption',
+    icon: Lock
+  },
+  {
+    title: 'Easy Returns',
+    description: '30 day returns',
+    icon: RotateCcw
+  }
+];
 
 export default function CartPage() {
   const [cart, setCart] = useState<Cart | undefined>();
@@ -82,14 +101,37 @@ export default function CartPage() {
           </p>
         </motion.div>
 
-        {/* Main Cart Content */}
-        <motion.div variants={itemVariants} className="mb-16">
-          <div className="bg-white rounded-xl shadow-sm ring-1 ring-[#6B5E4C]/5 overflow-hidden">
-            <div className="p-6">
-              <CartModal initialCart={cart} isCartPage={true} />
-            </div>
+        {/* Main Content with Trust Badges */}
+        <div className="lg:grid lg:grid-cols-3 lg:gap-8">
+          {/* Cart Content - Takes up 2 columns on large screens */}
+          <div className="lg:col-span-2">
+            <motion.div variants={itemVariants} className="mb-8">
+              <div className="bg-white rounded-xl shadow-sm ring-1 ring-[#6B5E4C]/5 overflow-hidden">
+                <div className="p-6">
+                  <CartModal initialCart={cart} isCartPage={true} />
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
+
+          {/* Trust Badges - Takes up 1 column on large screens */}
+          <motion.div variants={itemVariants} className="space-y-6 lg:pl-8">
+            {TRUST_BADGES.map((badge) => (
+              <div 
+                key={badge.title}
+                className="bg-white p-6 rounded-xl shadow-sm ring-1 ring-[#6B5E4C]/5 flex items-center space-x-4"
+              >
+                <div className="flex-shrink-0 text-[#6B5E4C]">
+                  <badge.icon className="w-6 h-6" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h3 className="text-[#6B5E4C] font-medium">{badge.title}</h3>
+                  <p className="text-sm text-[#8C7E6A]">{badge.description}</p>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
 
         {/* Recently Viewed Section */}
         {recentItems?.length > 0 && (
@@ -101,7 +143,7 @@ export default function CartPage() {
               </p>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {recentItems.slice(0, 7).map((product) => (
                 <motion.div
                   key={product.id}
@@ -114,11 +156,14 @@ export default function CartPage() {
                       alt={product.title}
                       fill
                       className="object-cover transition-transform group-hover:scale-105"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100" />
                     <button 
-                      onClick={() => addToCart(product)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        addToCart(product);
+                      }}
                       className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-6 py-2 text-sm font-medium text-[#6B5E4C] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[#F8F6F3]"
                     >
                       Add to Cart
@@ -137,9 +182,6 @@ export default function CartPage() {
             </div>
             
             <div className="mt-8 text-center">
-              <p className="text-[#8C7E6A] text-sm mb-4">
-                ✨ These items pair perfectly with your cart selections
-              </p>
               <p className="text-[#6B5E4C] font-medium">
                 Free shipping on all orders!
               </p>
