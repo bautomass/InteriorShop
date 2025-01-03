@@ -40,31 +40,22 @@ export function AddToCart({ product }: { product: Product }) {
     async (e: FormEvent) => {
       e.preventDefault();
 
-      if (!selectedVariant || !product.availableForSale || isSubmitting) {
-        console.log('AddToCart: Invalid variant or product not available', {
-          selectedVariant,
-          availableForSale: product.availableForSale,
-          isSubmitting
-        });
-        return;
-      }
+      if (!selectedVariant || !product.availableForSale || isSubmitting) return;
 
       setIsSubmitting(true);
 
       try {
-        const variantId = selectedVariant.id;
-        
         console.log('AddToCart - Submitting:', {
-          variantId,
+          variantId: selectedVariant.id,
           quantity,
           selectedVariant
         });
 
         const result = await formAction({
-          merchandiseId: variantId,
-          quantity: quantity
+          merchandiseId: selectedVariant.id,
+          quantity
         });
-        
+
         console.log('AddToCart - Server Action Result:', result);
 
         if (result === 'Success') {
