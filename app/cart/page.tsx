@@ -8,7 +8,7 @@ import CartModal from 'components/cart/modal';
 import { motion } from 'framer-motion';
 import { Lock, RotateCcw, Truck } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -76,15 +76,22 @@ export default function CartPage() {
 
   const addToCart = async (product: Product) => {
     try {
+      // Get the first available variant
+      const defaultVariant = product.variants[0];
+      
+      if (!defaultVariant?.id) {
+        console.error('No variant available for product:', product.title);
+        return;
+      }
+
       setIsAddingToCart(prev => ({ ...prev, [product.id]: true }));
       
       const result = await formAction({
-        merchandiseId: product.variants[0]?.id || '',
+        merchandiseId: defaultVariant.id,
         quantity: 1
       });
 
       if (result === 'Success') {
-        // Show success state briefly
         setTimeout(() => {
           setIsAddingToCart(prev => ({ ...prev, [product.id]: false }));
         }, 1500);
@@ -100,6 +107,25 @@ export default function CartPage() {
     const discountedPrice = price * (1 - DISCOUNT_PERCENTAGE / 100);
     return discountedPrice.toFixed(2);
   };
+
+  // Function to shuffle array
+  const shuffleArray = (array: (Product | undefined)[]) => {
+    const validProducts = array.filter((item): item is Product => Boolean(item));
+    const shuffled = [...validProducts];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // Get recently viewed items and shuffle them
+  const displayedRecentItems = useMemo(() => {
+    if (!recentItems?.length) return [];
+    // Remove last viewed item and ensure all items are defined
+    const validItems = recentItems.slice(0, -1).filter((item): item is Product => Boolean(item));
+    return shuffleArray(validItems);
+  }, [recentItems]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#F8F6F3]">
@@ -152,7 +178,7 @@ export default function CartPage() {
         </div>
 
         {/* Recently Viewed Section */}
-        {recentItems?.length > 0 && (
+        {displayedRecentItems.length > 0 && (
           <motion.div variants={itemVariants} className="mt-16">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-[#6B5E4C]">Complete Your Collection</h2>
@@ -162,7 +188,7 @@ export default function CartPage() {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {recentItems.slice(0, 7).map((product) => (
+              {displayedRecentItems.slice(0, 7).map((product) => (
                 <motion.div
                   key={product.id}
                   whileHover={{ y: -4 }}
