@@ -1,6 +1,7 @@
 'use client';
 
-import type { Cart } from '@/lib/shopify/types';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import type { Cart, Product } from '@/lib/shopify/types';
 import CartModal from 'components/cart/modal';
 import { motion } from 'framer-motion';
 import { ArrowRight, RefreshCcw, Shield, Truck } from 'lucide-react';
@@ -47,23 +48,41 @@ const features = [
 export default function CartPage() {
   const [cart, setCart] = useState<Cart | undefined>();
   const [isLoading, setIsLoading] = useState(true);
+  const { recentItems } = useRecentlyViewed();
+
+  const fetchCart = async () => {
+    try {
+      const response = await fetch('/api/cart');
+      if (response.ok) {
+        const data = await response.json();
+        setCart(data.cart);
+      }
+    } catch (error) {
+      console.error('Failed to fetch cart:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchCart() {
-      try {
-        const response = await fetch('/api/cart');
-        if (response.ok) {
-          const data = await response.json();
-          setCart(data.cart);
-        }
-      } catch (error) {
-        console.error('Failed to fetch cart:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
     fetchCart();
   }, []);
+
+  // Add to cart handler
+  const addToCart = async (product: Product) => {
+    try {
+      await fetch('/api/cart', {
+        method: 'POST',
+        body: JSON.stringify({
+          merchandiseId: product.variants?.[0]?.id || '',
+          quantity: 1
+        })
+      });
+      fetchCart();
+    } catch (error) {
+      console.error('Failed to add item to cart:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#F8F6F3]">
@@ -187,20 +206,17 @@ export default function CartPage() {
         </div>
 
         {/* Recently Viewed Section */}
-        <motion.div 
-          variants={itemVariants}
-          className="mt-16"
-        >
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-[#6B5E4C]">Complete Your Collection</h2>
-            <p className="text-[#8C7E6A] mt-2">
-              Items you recently viewed - Don't miss out on these perfect additions to your cart
-            </p>
-          </div>
-          
-          <div className="relative">
+        {recentItems.length > 0 && (
+          <motion.div variants={itemVariants} className="mt-16">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-[#6B5E4C]">Complete Your Collection</h2>
+              <p className="text-[#8C7E6A] mt-2">
+                Items you recently viewed - Don't miss out on these perfect additions to your cart
+              </p>
+            </div>
+            
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {recentlyViewed?.slice(0, 7).map((product) => (
+              {recentItems.map((product) => (
                 <motion.div
                   key={product.id}
                   whileHover={{ y: -4 }}
@@ -234,7 +250,7 @@ export default function CartPage() {
               ))}
             </div>
             
-            {recentlyViewed?.length > 0 && (
+            {recentItems.length > 0 && (
               <div className="mt-8 text-center">
                 <p className="text-[#8C7E6A] text-sm mb-4">
                   ✨ Complete your look with these perfectly matching pieces
@@ -244,8 +260,8 @@ export default function CartPage() {
                 </p>
               </div>
             )}
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Help Section */}
         <motion.div 

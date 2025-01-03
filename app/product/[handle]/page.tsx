@@ -1,7 +1,7 @@
 // app/product/[handle]/page.tsx
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 
 import { NavigationHeader } from '@/components/layout/navigation-header';
 import { Footer } from '@/components/layout/site-footer';
@@ -11,6 +11,7 @@ import { ProductTabs } from '@/components/product/product-tabs';
 import { RelatedProductsClient } from '@/components/product/related-products';
 import { CollectionsShowcase } from '@/components/shared/CollectionsShowcase';
 import { SustainabilityShowcase } from '@/components/shared/SustainabilityShowcase';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { ProductProvider } from 'components/product/product-context';
 import { HIDDEN_PRODUCT_TAG } from 'lib/constants';
 import { getProduct, getProductRecommendations } from 'lib/shopify';
@@ -76,6 +77,13 @@ function RelatedProductsLoader() {
 export default async function ProductPage(props: { params: Promise<{ handle: string }> }) {
   const params = await props.params;
   const product = await getProduct(params.handle);
+  const { addToRecentlyViewed } = useRecentlyViewed();
+
+  useEffect(() => {
+    if (product) {
+      addToRecentlyViewed(product);
+    }
+  }, [product]);
 
   if (!product) return notFound();
 
