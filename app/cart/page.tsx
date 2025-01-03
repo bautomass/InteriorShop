@@ -8,8 +8,9 @@ import { addItem } from 'components/cart/actions';
 import { useCart } from 'components/cart/cart-context';
 import CartModal from 'components/cart/modal';
 import { motion } from 'framer-motion';
-import { Lock, RotateCcw, Truck } from 'lucide-react';
+import { ArrowLeft, Home, Lock, RotateCcw, Truck } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 const containerVariants = {
@@ -58,6 +59,7 @@ export default function CartPage() {
   const [message, formAction] = useActionState(addItem, null);
   const [isAddingToCart, setIsAddingToCart] = useState<{[key: string]: boolean}>({});
   const { cart: contextCart, addCartItem } = useCart();
+  const router = useRouter();
 
   const fetchCart = async () => {
     try {
@@ -147,8 +149,40 @@ export default function CartPage() {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8"
+        className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 relative"
       >
+        {/* Navigation Buttons */}
+        <motion.div 
+          variants={itemVariants}
+          className="absolute left-4 top-4 sm:left-6 sm:top-6 lg:left-8 lg:top-8 flex gap-2 z-10"
+        >
+          <button
+            onClick={() => router.back()}
+            className="group flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-white shadow-sm 
+              ring-1 ring-[#6B5E4C]/5 transition-all duration-200 hover:shadow-md
+              hover:bg-[#F8F6F3] text-[#6B5E4C]"
+          >
+            <ArrowLeft 
+              className="w-4 h-4 transition-transform group-hover:-translate-x-1" 
+              strokeWidth={1.5} 
+            />
+            <span className="hidden sm:inline">Back</span>
+          </button>
+          
+          <button
+            onClick={() => router.push('/')}
+            className="group flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-white shadow-sm 
+              ring-1 ring-[#6B5E4C]/5 transition-all duration-200 hover:shadow-md
+              hover:bg-[#F8F6F3] text-[#6B5E4C]"
+          >
+            <Home 
+              className="w-4 h-4 transition-transform group-hover:scale-110" 
+              strokeWidth={1.5} 
+            />
+            <span className="hidden sm:inline">Home</span>
+          </button>
+        </motion.div>
+
         {/* Header */}
         <motion.div variants={itemVariants} className="text-center mb-12">
           <h1 className="text-4xl font-bold text-[#6B5E4C] mb-4">Your Shopping Cart</h1>
