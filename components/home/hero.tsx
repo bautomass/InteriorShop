@@ -4,6 +4,7 @@
 import { PriceRangeFilter } from '@/components/filter/PriceRangeFilter';
 import { SortSelect } from '@/components/filter/SortSelect';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useHeaderState } from '@/hooks/useHeaderState';
 import { useSearch } from '@/hooks/useSearch';
 import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -58,6 +59,7 @@ function Hero() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const searchDropdownRef = useRef<HTMLDivElement>(null);
   const { cart } = useCart();
+  const { state, updateState } = useHeaderState();
 
   const filteredAndSortedResults = useMemo(() => {
     // First, ensure we have the correct types by mapping the products
@@ -206,7 +208,7 @@ function Hero() {
                     <button 
                       className="rounded-md p-1.5 text-white transition-all duration-300 hover:bg-white/20 active:scale-95" 
                       aria-label="Profile"
-                      onClick={() => setIsAccountOpen(true)}
+                      onClick={() => updateState({ isAccountOpen: true })}
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" strokeLinecap="round"/>
@@ -411,7 +413,7 @@ function Hero() {
                       className="flex items-center gap-3 whitespace-nowrap pr-1"
                     >
                       <span className="text-sm text-white">
-                        {cart?.totalQuantity || 0} {cart?.totalQuantity === 1 ? 'item' : 'items'}
+                        {cart?.totalQuantity ?? 0} {cart?.totalQuantity === 1 ? 'item' : 'items'}
                       </span>
                       <Link 
                         href="/cart"
@@ -628,23 +630,61 @@ function Hero() {
                   {/* Search Header */}
                   <div className="sticky top-0 z-10 bg-white border-b border-neutral-200">
                     <div className="p-6">
-                      <div className="relative">
-                        <input
-                          ref={modalSearchInputRef}
-                          type="text"
-                          placeholder="Search products..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full px-4 py-3 text-lg text-neutral-900 bg-neutral-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:bg-white transition-all pr-12"
-                        />
-                        <button
-                          onClick={() => closeModal()}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-neutral-400 hover:text-neutral-600 rounded-full hover:bg-neutral-100 transition-colors"
-                        >
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
+                      <div className="relative flex items-center justify-between">
+                        <div className="flex-1">
+                          <input
+                            ref={modalSearchInputRef}
+                            type="text"
+                            placeholder="Search products..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full px-4 py-3 text-lg text-neutral-900 bg-neutral-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:bg-white transition-all pr-12"
+                          />
+                        </div>
+                        
+                        {/* Icons Section */}
+                        <div className="flex items-center gap-4 ml-4">
+                          {/* Profile Icon */}
+                          <button
+                            onClick={() => updateState({ isAccountOpen: true })}
+                            className="p-2 text-neutral-400 hover:text-neutral-600 rounded-full hover:bg-neutral-100 transition-colors"
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" />
+                            </svg>
+                          </button>
+
+                          {/* Cart Icon with Badge */}
+                          <div className="relative">
+                            <button
+                              onClick={() => updateState({ isCartOpen: true })}
+                              className="p-2 text-neutral-400 hover:text-neutral-600 rounded-full hover:bg-neutral-100 transition-colors"
+                            >
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                              </svg>
+                              {(cart?.totalQuantity ?? 0) > 0 && (
+                                <motion.span
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#9e896c] text-xs font-medium text-white"
+                                >
+                                  {cart?.totalQuantity ?? 0}
+                                </motion.span>
+                              )}
+                            </button>
+                          </div>
+
+                          {/* Close Button */}
+                          <button
+                            onClick={() => closeModal()}
+                            className="p-2 text-neutral-400 hover:text-neutral-600 rounded-full hover:bg-neutral-100 transition-colors"
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
 
