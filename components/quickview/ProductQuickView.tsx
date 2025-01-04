@@ -132,20 +132,30 @@ export const ProductQuickView = memo(({ product, isOpen, onClose }: ProductQuick
       });
 
       if (result === 'Success') {
-        // Then redirect to checkout
-        const response = await fetch('/api/checkout');
-        const { checkoutUrl } = await response.json();
-        
-        if (checkoutUrl) {
-          window.location.href = checkoutUrl;
-        } else {
-          console.error('No checkout URL returned');
+        addCartItem({
+          variant: selectedVariant,
+          product,
+          quantity: 1
+        });
+
+        // Fetch checkout URL with proper error handling
+        try {
+          const response = await fetch('/api/cart/checkout');
+          const data = await response.json();
+          
+          if (data.checkoutUrl) {
+            window.location.href = data.checkoutUrl;
+          } else {
+            console.error('No checkout URL in response:', data);
+          }
+        } catch (error) {
+          console.error('Error fetching checkout URL:', error);
         }
       }
     } catch (error) {
       console.error('Buy now error:', error);
     }
-  }, [selectedVariant, product.availableForSale, formAction]);
+  }, [selectedVariant, product, formAction, addCartItem]);
 
   const findVariantByImage = useCallback((imageUrl: string) => {
     return (product.variants as ExtendedProductVariant[]).find(variant => 
