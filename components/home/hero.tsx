@@ -888,30 +888,83 @@ function Hero() {
               <ChevronRight className="h-6 w-6 text-white" />
             </button>
 
-            {/* Pagination */}
-            <div className="absolute bottom-8 right-8 z-20 flex gap-4">
-              {heroSlides.map((slide, index) => (
-                <button
-                  key={slide.id}
-                  onClick={() => goToSlide(index)}
-                  className={`group relative overflow-hidden rounded-lg border-2 transition-all
-                           ${index === currentSlide 
-                             ? 'border-white w-24 h-16' 
-                             : 'border-white/50 w-20 h-12 hover:border-white'}`}
-                  aria-label={`Go to slide ${index + 1}`}
-                >
-                  <Image
-                    src={slide.image}
-                    alt={slide.alt}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-110"
-                    sizes="(max-width: 768px) 80px, 96px"
-                  />
-                  <div className={`absolute inset-0 bg-black/20 transition-opacity duration-300
-                                ${index === currentSlide ? 'opacity-0' : 'opacity-50 group-hover:opacity-30'}`}
-                  />
-                </button>
-              ))}
+            {/* Enhanced Pagination with Perspective Effect */}
+            <div className="absolute bottom-8 right-8 z-20 flex items-center perspective-[1000px] transform-gpu">
+              <div className="flex items-center gap-1 relative">
+                {heroSlides.map((slide, index) => {
+                  // Calculate perspective transform
+                  const distance = Math.abs(currentSlide - index);
+                  const isActive = index === currentSlide;
+                  const isNextToActive = Math.abs(currentSlide - index) === 1;
+                  
+                  return (
+                    <motion.button
+                      key={slide.id}
+                      onClick={() => goToSlide(index)}
+                      initial={false}
+                      animate={{
+                        scale: isActive ? 1 : 0.9,
+                        rotateY: (currentSlide - index) * 15, // Perspective rotation
+                        z: isActive ? 0 : -100 * distance,
+                        x: isActive ? 0 : (currentSlide - index) * -5, // Slight offset for depth
+                        opacity: distance > 2 ? 0.3 : 1
+                      }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 300,
+                        damping: 30
+                      }}
+                      className={`relative overflow-hidden transform-gpu transition-all duration-300
+                                 ${isActive ? 'w-32 h-20 z-10' : 
+                                   isNextToActive ? 'w-28 h-16 z-[5]' : 
+                                   'w-24 h-14 z-0'}
+                                 ${isActive ? 'border-2 border-white' : 'border border-white/50 hover:border-white'}
+                                `}
+                      aria-label={`Go to slide ${index + 1}`}
+                    >
+                      <div className="absolute inset-0 w-full h-full">
+                        <Image
+                          src={slide.image}
+                          alt={slide.alt}
+                          fill
+                          className={`object-cover transition-transform duration-500
+                                     ${isActive ? 'scale-105' : 'group-hover:scale-105'}`}
+                          sizes="(max-width: 768px) 128px, 96px"
+                        />
+                        <div className={`absolute inset-0 bg-black/20 transition-opacity duration-300
+                                      ${isActive ? 'opacity-0' : 'opacity-50 hover:opacity-30'}`}
+                        />
+                      </div>
+                      
+                      {/* Active Indicator */}
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeThumb"
+                          className="absolute inset-0 border-2 border-white"
+                          transition={{ duration: 0.3 }}
+                        />
+                      )}
+                      
+                      {/* Progress Bar for Active Thumbnail */}
+                      {isActive && (
+                        <motion.div
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: 1 }}
+                          transition={{ duration: 5, ease: 'linear' }}
+                          className="absolute bottom-0 left-0 w-full h-0.5 bg-white origin-left"
+                          onAnimationComplete={() => {
+                            if (currentSlide < heroSlides.length - 1) {
+                              goToSlide(currentSlide + 1);
+                            } else {
+                              goToSlide(0);
+                            }
+                          }}
+                        />
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </section>

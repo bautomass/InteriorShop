@@ -53,3 +53,24 @@ button {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
 }
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.perspective-wrapper {
+  perspective: 1000px;
+  perspective-origin: center;
+}
+
+.thumbnail-transform {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
