@@ -569,6 +569,12 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             className="absolute right-0 top-12 w-[290px] md:w-[420px] rounded-lg bg-white p-5 shadow-xl ring-1 ring-black/5"
                             onMouseEnter={() => handleCartHover(true)}
                             onMouseLeave={() => handleCartHover(false)}
+                            style={{
+                              zIndex: 100,
+                              position: 'fixed',
+                              right: '24px',
+                              top: '64px'
+                            }}
                           >
                             {/* Header Section */}
                             <div className="border-b border-[#6B5E4C]/10 pb-3">
