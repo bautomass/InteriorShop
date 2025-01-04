@@ -259,12 +259,12 @@ function Hero() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute right-0 top-12 w-[308px] md:w-[440px] rounded-lg bg-white p-6 shadow-xl ring-1 ring-black/5"
+                            className="absolute right-0 top-12 w-[290px] md:w-[420px] rounded-lg bg-white p-5 shadow-xl ring-1 ring-black/5"
                             onMouseEnter={() => handleCartHover(true)}
                             onMouseLeave={() => handleCartHover(false)}
                           >
                             {/* Header Section */}
-                            <div className="border-b border-[#6B5E4C]/10 pb-4">
+                            <div className="border-b border-[#6B5E4C]/10 pb-3">
                               <div className="flex justify-between items-center">
                                 <h3 className="text-base md:text-lg font-semibold text-[#6B5E4C]">Shopping Cart</h3>
                                 <div className="flex items-center gap-2">
@@ -275,7 +275,9 @@ function Hero() {
                             </div>
 
                             {/* Items List Section */}
-                            <div className="max-h-[40vh] md:max-h-64 overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#6B5E4C]/20 my-4">
+                            <div className="max-h-[40vh] md:max-h-[50vh] overflow-y-auto my-3 pr-2 
+                              scrollbar-thin scrollbar-thumb-[#6B5E4C]/20 scrollbar-track-transparent 
+                              hover:scrollbar-thumb-[#6B5E4C]/30">
                               {cart.lines.map((item) => (
                                 <motion.div
                                   key={item.id}
@@ -320,7 +322,7 @@ function Hero() {
                             </div>
 
                             {/* Footer Actions Section */}
-                            <div className="border-t border-[#6B5E4C]/10 pt-4 space-y-3">
+                            <div className="border-t border-[#6B5E4C]/10 pt-3 space-y-2.5">
                               <div className="flex justify-between items-center mb-4">
                                 <span className="text-sm md:text-base font-medium text-[#8C7E6A]">Subtotal</span>
                                 <span className="text-base md:text-lg font-semibold text-[#6B5E4C]">
