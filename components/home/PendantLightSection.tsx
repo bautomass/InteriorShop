@@ -282,14 +282,14 @@ const FeaturedProduct = () => {
               </button>
             )}
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {option.values.map((value) => {
               const isSelected = selectedOptions[option.name] === value;
               return (
                 <button
                   key={value}
                   onClick={() => handleOptionChange(option.name, value)}
-                  className={`px-4 py-2 border rounded-md transition-all duration-200
+                  className={`px-3 py-1.5 text-sm border rounded-md transition-all duration-200
                     ${isSelected 
                       ? 'border-[#6B5E4C] bg-[#6B5E4C] text-white' 
                       : 'border-[#B5A48B]/20 text-[#6B5E4C] hover:border-[#6B5E4C]'}`}
