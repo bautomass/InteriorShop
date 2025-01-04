@@ -1,16 +1,69 @@
 'use client';
 
-import { PriceRangeFilter } from '@/components/filter/PriceRangeFilter';
-import { SortSelect } from '@/components/filter/SortSelect';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useHeaderState } from '@/hooks/useHeaderState';
 import { useSearch } from '@/hooks/useSearch';
 import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion, useAnimation } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+// Dynamic imports for modal-specific components
+const PriceRangeFilter = dynamic(() => import('@/components/filter/PriceRangeFilter').then(mod => mod.PriceRangeFilter), { 
+  ssr: false,
+  loading: () => <div className="h-[40px] bg-neutral-100 animate-pulse rounded-lg" />
+});
+
+const SortSelect = dynamic(() => import('@/components/filter/SortSelect').then(mod => mod.SortSelect), {
+  ssr: false,
+  loading: () => <div className="h-[40px] w-48 bg-neutral-100 animate-pulse rounded-lg" />
+});
+
+// Constants for better organization
+const CONSTANTS = {
+  ANIMATION: {
+    DURATION: 500,
+    CAROUSEL_INTERVAL: 5000,
+    DEBOUNCE_DELAY: 300,
+  }
+} as const;
+
+// Custom hooks for better organization
+const useSlideNavigation = (totalSlides: number) => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const goToSlide = useCallback((index: number) => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    
+    const targetIndex = ((index % totalSlides) + totalSlides) % totalSlides;
+    setCurrentSlide(targetIndex);
+    
+    setTimeout(() => setIsAnimating(false), CONSTANTS.ANIMATION.DURATION);
+  }, [isAnimating, totalSlides]);
+
+  return { currentSlide, isAnimating, goToSlide };
+};
+
+// Image preloader hook
+const useImagePreloader = (images: string[]) => {
+  useEffect(() => {
+    const imagePromises = images.map(src => {
+      return new Promise((resolve, reject) => {
+        const img: HTMLImageElement = new (window.Image as { new(): HTMLImageElement })();
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = src;
+      });
+    });
+
+    Promise.all(imagePromises).catch(console.warn);
+  }, [images]);
+};
 
 interface SlideContent {
   id: string;
@@ -192,7 +245,11 @@ const getMenuPosition = (menu: { position?: string; alignment?: string }, slideI
   }
 };
 
-function Hero() {
+interface HeroProps {}
+
+const HeroComponent = function Hero({}: HeroProps): JSX.Element {
+  useImagePreloader(heroSlides.map(slide => [slide.image, slide.mobileImage]).flat());
+
   const { results, isLoading, error, performSearch } = useSearch();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
@@ -208,8 +265,7 @@ function Hero() {
   const { cart } = useCart();
   const { state, updateState } = useHeaderState();
   const [isCartHovered, setIsCartHovered] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const { currentSlide, isAnimating, goToSlide } = useSlideNavigation(heroSlides.length);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const controls = useAnimation();
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -339,18 +395,6 @@ function Hero() {
     setIsCartHovered(isHovering);
   };
 
-  const goToSlide = useCallback((index: number) => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    
-    let targetIndex = index;
-    if (targetIndex < 0) targetIndex = heroSlides.length - 1;
-    if (targetIndex >= heroSlides.length) targetIndex = 0;
-    
-    setCurrentSlide(targetIndex);
-    setTimeout(() => setIsAnimating(false), 500);
-  }, [isAnimating, heroSlides.length]);
-
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches[0]) {
       setTouchStart(e.touches[0].clientX);
@@ -415,6 +459,32 @@ function Hero() {
       setProgressKey(prev => prev + 1);
     }
   };
+
+  // Optimize scroll handling
+  const handleScroll = useCallback((e: WheelEvent) => {
+    if (Math.abs(e.deltaY) > 30) {
+      goToSlide(currentSlide + (e.deltaY > 0 ? 1 : -1));
+    }
+  }, [currentSlide, goToSlide]);
+
+  useEffect(() => {
+    const element = slideRefs.current[currentSlide];
+    if (element) {
+      element.addEventListener('wheel', handleScroll, { passive: true });
+      return () => element.removeEventListener('wheel', handleScroll);
+    }
+  }, [currentSlide, handleScroll]);
+
+  // Optimize autoplay
+  useEffect(() => {
+    if (isMenuHovered) return;
+    
+    const timer = setInterval(() => {
+      goToSlide(currentSlide + 1);
+    }, CONSTANTS.ANIMATION.CAROUSEL_INTERVAL);
+    
+    return () => clearInterval(timer);
+  }, [currentSlide, isMenuHovered, goToSlide]);
 
   return (
     <>
@@ -710,11 +780,11 @@ function Hero() {
                                       {product.featuredImage && (
                                         <div className="relative w-16 h-16 flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100">
                                           <Image
-                                            src={product.featuredImage.url}
-                                            alt={product.featuredImage.altText || product.title}
+                                            src={product.featuredImage?.url || ''}
+                                            alt={product.featuredImage?.altText || product.title}
                                             fill
-                                            sizes="64px"
                                             className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                                           />
                                         </div>
                                       )}
@@ -877,7 +947,7 @@ function Hero() {
                     fill
                     priority={index === 0}
                     quality={90}
-                    className="hidden object-cover md:block"
+                    className="hidden md:block object-cover w-full h-full"
                     sizes="100vw"
                   />
                   <Image
@@ -886,7 +956,7 @@ function Hero() {
                     fill
                     priority={index === 0}
                     quality={90}
-                    className="object-cover md:hidden"
+                    className="block md:hidden object-cover w-full h-full"
                     sizes="100vw"
                   />
 
@@ -1121,10 +1191,9 @@ function Hero() {
                           alt={slide.alt}
                           fill
                           priority={isActive}
-                          className={`object-contain transition-all duration-500 ease-out
-                                     ${isActive ? 'scale-105 brightness-110' : 'hover:scale-105 brightness-90 hover:brightness-100'}`}
-                          sizes="(max-width: 768px) 176px, 112px"
-                          quality={isActive ? 95 : 80}
+                          className="object-cover transition-all duration-500 ease-out"
+                          sizes="(min-width: 768px) 176px, 144px"
+                          quality={90}
                         />
                         <div className={`absolute inset-0 transition-all duration-500
                                       bg-gradient-to-t from-black/30 to-transparent
@@ -1386,11 +1455,11 @@ function Hero() {
                                 <div className="relative aspect-[4/3] bg-neutral-200 overflow-hidden">
                                   {product.featuredImage && (
                                     <Image
-                                      src={product.featuredImage.url}
-                                      alt={product.featuredImage.altText || product.title}
+                                      src={product.featuredImage?.url || ''}
+                                      alt={product.featuredImage?.altText || product.title}
                                       fill
-                                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                                       className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                                     />
                                   )}
                                 </div>
@@ -1432,5 +1501,8 @@ function Hero() {
   );
 }
 
-export default memo(Hero);
+const Hero = memo(HeroComponent);
+Hero.displayName = 'Hero';
+
+export default Hero;
 

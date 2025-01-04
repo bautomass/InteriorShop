@@ -58,15 +58,24 @@ interface CollectionCardProps {
   index: number;
 }
 
-// Performance optimization: Constants outside component
-const SCROLL_AMOUNT_MULTIPLIER = 0.8;
-const CAROUSEL_INTERVAL = 4000; // Slightly longer for better UX
-const INTERSECTION_OPTIONS = { threshold: 0.2, triggerOnce: true };
-const ANIMATION_DURATION = 300;
-const SCROLL_THRESHOLD = 100;
-const RETRY_DELAY = 1000;
-const DEBOUNCE_DELAY = 150;
-const METRICS_UPDATE_DELAY = 100;
+// Performance: Memoize constants and move outside component
+const CONSTANTS = {
+  SCROLL: {
+    MULTIPLIER: 0.8,
+    THRESHOLD: 100,
+    ANIMATION_DURATION: 300,
+  },
+  TIMING: {
+    CAROUSEL_INTERVAL: 4000,
+    RETRY_DELAY: 1000,
+    DEBOUNCE_DELAY: 150,
+    METRICS_UPDATE_DELAY: 100,
+  },
+  INTERSECTION: {
+    threshold: 0.2,
+    triggerOnce: true,
+  },
+} as const;
 
 // Enhanced features array with more engaging content
 const features = [
@@ -155,7 +164,7 @@ const CollectionCard = memo(function CollectionCard({
   inView,
   index
 }: CollectionCardProps) {
-  const { ref, inView: cardInView } = useInView(INTERSECTION_OPTIONS);
+  const { ref, inView: cardInView } = useInView(CONSTANTS.INTERSECTION);
 
   return (
     <Link
@@ -226,7 +235,7 @@ const CollectionCard = memo(function CollectionCard({
 
 // First, add a "View All" card component
 const ViewAllCard = memo(function ViewAllCard({ inView, index }: { inView: boolean; index: number }) {
-  const { ref, inView: cardInView } = useInView(INTERSECTION_OPTIONS);
+  const { ref, inView: cardInView } = useInView(CONSTANTS.INTERSECTION);
 
   return (
     <Link
@@ -289,14 +298,109 @@ const ViewAllCard = memo(function ViewAllCard({ inView, index }: { inView: boole
 
 ViewAllCard.displayName = 'ViewAllCard';
 
-// Add image preloading utility
-const preloadImage = (url: string): Promise<void> => {
-  return new Promise<void>((resolve, reject) => {
-    const img = new (window.Image as { new(): HTMLImageElement })();
-    img.onload = () => resolve();
-    img.onerror = reject;
-    img.src = url;
+// Performance: Create a custom hook for image preloading
+const useImagePreloader = (imageUrls: string[]) => {
+  useEffect(() => {
+    const preloadImages = async () => {
+      const promises = imageUrls.map((url) => {
+        return new Promise<void>((resolve, reject) => {
+          const img = new (Image as any as { new(): HTMLImageElement })();
+          img.onload = () => resolve();
+          img.onerror = reject;
+          img.src = url;
+        });
+      });
+
+      try {
+        await Promise.all(promises);
+      } catch (error) {
+        console.warn('Failed to preload images:', error);
+      }
+    };
+
+    preloadImages();
+  }, [imageUrls]);
+};
+
+// Performance: Create a custom hook for collections with caching
+const useCollections = () => {
+  const [state, setState] = useState<{
+    collections: EnhancedCollection[];
+    isLoading: boolean;
+    error: Error | null;
+  }>({
+    collections: [],
+    isLoading: true,
+    error: null,
   });
+
+  useEffect(() => {
+    let mounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    const fetchCollections = async () => {
+      try {
+        const cachedData = sessionStorage.getItem('collections');
+        if (cachedData) {
+          setState(JSON.parse(cachedData));
+          return;
+        }
+
+        const response = await fetch('/api/collections');
+        if (!mounted) return;
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: { collections: ShopifyCollection[] } = await response.json();
+        if (!mounted) return;
+
+        const mappedCollections = collectionMap
+          .map(mappedItem => {
+            const shopifyCollection = data.collections.find(
+              c => c.handle === mappedItem.handle
+            );
+            
+            if (!shopifyCollection) return null;
+
+            return {
+              ...shopifyCollection,
+              displayTitle: mappedItem.displayTitle,
+              path: `/search/${shopifyCollection.handle}`,
+              order: mappedItem.order,
+              accent: mappedItem.accent,
+              description: mappedItem.description
+            };
+          })
+          .filter((item): item is EnhancedCollection => item !== null)
+          .sort((a, b) => a.order - b.order);
+
+        const newState = {
+          collections: mappedCollections,
+          isLoading: false,
+          error: null,
+        };
+
+        setState(newState);
+        sessionStorage.setItem('collections', JSON.stringify(newState));
+      } catch (error) {
+        console.error('Error fetching collections:', error);
+        if (retryCount < maxRetries) {
+          retryCount++;
+          setTimeout(fetchCollections, CONSTANTS.TIMING.RETRY_DELAY * retryCount);
+        } else {
+          setState(prev => ({ ...prev, isLoading: false, error: error as Error }));
+        }
+      }
+    };
+
+    fetchCollections();
+    return () => { mounted = false; };
+  }, []);
+
+  return state;
 };
 
 function ErrorFallback({ error }: { error: Error }) {
@@ -319,11 +423,18 @@ function ErrorFallback({ error }: { error: Error }) {
   );
 }
 
+const preloadImage = (url: string): Promise<void> => {
+  return new Promise<void>((resolve, reject) => {
+    const img = new (Image as any as { new(): HTMLImageElement })();
+    img.onload = () => resolve();
+    img.onerror = reject;
+    img.src = url;
+  });
+};
+
 // Main AboutHero component with optimizations and enhancements
 const AboutHero = memo(function AboutHero() {
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
-  const [collections, setCollections] = useState<EnhancedCollection[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [scrollPosition, setScrollPosition] = useState<number>(0);
   const [scrollMetrics, setScrollMetrics] = useState<ScrollMetrics>({
     containerWidth: 0,
@@ -338,6 +449,10 @@ const AboutHero = memo(function AboutHero() {
     threshold: 0.1,
     triggerOnce: true
   });
+
+  // Performance: Use custom hooks
+  const { collections, isLoading, error } = useCollections();
+  useImagePreloader(images.map(img => img.url));
 
   // Optimized scroll metrics update
   const updateScrollMetrics = useCallback(() => {
@@ -357,29 +472,29 @@ const AboutHero = memo(function AboutHero() {
     });
   }, [scrollPosition]);
 
-  // Enhanced scroll functionality with smooth animation
-  const scroll = useCallback((direction: 'left' | 'right'): void => {
+  // Performance: Memoize scroll handler
+  const handleScroll = useCallback((direction: 'left' | 'right'): void => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
     const { containerWidth, totalWidth } = scrollMetrics;
-    const scrollAmount = containerWidth * SCROLL_AMOUNT_MULTIPLIER;
+    const scrollAmount = containerWidth * CONSTANTS.SCROLL.MULTIPLIER;
     
-    let newPosition: number;
-    if (direction === 'left') {
-      newPosition = Math.max(0, scrollPosition - scrollAmount);
-    } else {
-      const maxScroll = totalWidth - containerWidth;
-      newPosition = Math.min(maxScroll, scrollPosition + scrollAmount);
-      
-      // Snap to end if close
-      if (totalWidth - (newPosition + containerWidth) < SCROLL_THRESHOLD) {
-        newPosition = maxScroll;
-      }
-    }
+    const newPosition = direction === 'left'
+      ? Math.max(0, scrollPosition - scrollAmount)
+      : Math.min(
+          totalWidth - containerWidth,
+          scrollPosition + scrollAmount
+        );
 
     setScrollPosition(newPosition);
-  }, [scrollPosition, scrollMetrics]);
+    requestAnimationFrame(() => {
+      container.scrollTo({
+        left: newPosition,
+        behavior: 'smooth'
+      });
+    });
+  }, [scrollMetrics, scrollPosition]);
 
   // Update carousel effect
   useEffect(() => {
@@ -401,70 +516,13 @@ const AboutHero = memo(function AboutHero() {
       }
       
       setCurrentImageIndex(nextIndex);
-      timeoutId = setTimeout(advanceCarousel, CAROUSEL_INTERVAL);
+      timeoutId = setTimeout(advanceCarousel, CONSTANTS.TIMING.CAROUSEL_INTERVAL);
     };
 
-    timeoutId = setTimeout(advanceCarousel, CAROUSEL_INTERVAL);
+    timeoutId = setTimeout(advanceCarousel, CONSTANTS.TIMING.CAROUSEL_INTERVAL);
     
     return () => clearTimeout(timeoutId);
   }, [isHovering, currentImageIndex, images]);
-
-  // Enhanced collections fetching with error handling and retry
-  useEffect(() => {
-    let mounted = true;
-    let retryCount = 0;
-    const maxRetries = 3;
-    const retryDelay = 1000;
-
-    const fetchCollections = async () => {
-      try {
-        const response = await fetch('/api/collections');
-        if (!mounted) return;
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data: { collections: ShopifyCollection[] } = await response.json();
-        if (!mounted) return;
-
-        if (data.collections) {
-          const mappedCollections: EnhancedCollection[] = collectionMap
-            .map(mappedItem => {
-              const shopifyCollection = data.collections.find(
-                c => c.handle === mappedItem.handle
-              );
-              
-              if (!shopifyCollection) return null;
-
-              return {
-                ...shopifyCollection,
-                displayTitle: mappedItem.displayTitle,
-                path: `/search/${shopifyCollection.handle}`,
-                order: mappedItem.order,
-                accent: mappedItem.accent,
-                description: mappedItem.description
-              };
-            })
-            .filter((item): item is EnhancedCollection => item !== null)
-            .sort((a, b) => a.order - b.order);
-
-          setCollections(mappedCollections);
-        }
-      } catch (error) {
-        console.error('Error fetching collections:', error);
-        if (retryCount < maxRetries) {
-          retryCount++;
-          setTimeout(fetchCollections, retryDelay * retryCount);
-        }
-      } finally {
-        if (mounted) setIsLoading(false);
-      }
-    };
-
-    fetchCollections();
-    return () => { mounted = false; };
-  }, []);
 
   // Optimized resize handler with proper cleanup
   useEffect(() => {
@@ -474,13 +532,13 @@ const AboutHero = memo(function AboutHero() {
       clearTimeout(resizeTimeoutId);
       resizeTimeoutId = setTimeout(() => {
         updateScrollMetrics();
-      }, DEBOUNCE_DELAY);
+      }, CONSTANTS.TIMING.DEBOUNCE_DELAY);
     };
 
     // Initial metrics update
     const initialTimeoutId = setTimeout(() => {
       updateScrollMetrics();
-    }, METRICS_UPDATE_DELAY);
+    }, CONSTANTS.TIMING.METRICS_UPDATE_DELAY);
 
     window.addEventListener('resize', handleResize);
     
@@ -594,11 +652,11 @@ const AboutHero = memo(function AboutHero() {
 
               {/* Collections section */}
               <div className="flex items-center">
-                <div className="flex items-center gap-6">
+                <div className="group flex items-center gap-6">
                   <h2 className={`relative text-[#6B5E4C] text-2xl font-light transform
                     ${sectionInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
                     motion-safe:transition-all motion-safe:duration-700 motion-safe:delay-300
-                    after:content-[''] after:absolute after:-bottom-2 after:left-0 
+                    after:content-[''] after:absolute after:-bottom-1 after:left-0 
                     after:w-1/3 after:h-[1px] after:bg-[#B5A48B]
                     after:transform after:scale-x-0 after:origin-left
                     after:transition-transform after:duration-500
@@ -609,23 +667,47 @@ const AboutHero = memo(function AboutHero() {
                     before:transform before:scale-x-0 before:origin-right
                     before:transition-transform before:duration-500
                     ${sectionInView ? 'before:scale-x-100' : ''}`}>
-                    <span className="bg-gradient-to-r from-[#6B5E4C] to-[#B5A48B] bg-clip-text text-transparent">
-                      Discover Our Collections:
+                    <span className="relative px-4 py-2">
+                      <span className="relative bg-gradient-to-r from-[#4A3F33] to-[#8B7355] bg-clip-text text-transparent">
+                        Discover Our Collections
+                      </span>
                     </span>
+                    <span className="absolute -bottom-[4px] left-0 h-[1px] w-0 bg-[#B5A48B] 
+                      group-hover:w-full group-hover:translate-x-0
+                      transition-all duration-700 ease-out" />
                   </h2>
                   
                   <Link
                     href="/collections"
-                    className="group inline-flex items-center gap-2 px-5 py-2.5
-                      bg-[#6B5E4C] rounded-lg text-[#eaeadf] text-sm
-                      hover:bg-[#7B6E5C] transition-all duration-300 
-                      transform hover:-translate-y-0.5"
+                    className="group/btn relative inline-flex items-center gap-2 px-6 py-3.5
+                      bg-[#6B5E4C] text-[#eaeadf] text-sm
+                      hover:bg-[#7B6E5C] transition-colors duration-300 
+                      transform hover:-translate-y-0.5
+                      overflow-hidden"
                   >
-                    <span className="text-sm font-medium">Explore Collections</span>
+                    <span className="text-sm font-medium relative z-10">Explore Collections</span>
                     <ArrowRight 
                       className="w-3.5 h-3.5 transform translate-x-0
-                        group-hover:translate-x-1 transition-transform duration-300" 
+                        group-hover/btn:translate-x-1 transition-transform duration-300
+                        relative z-10" 
                     />
+                    {/* Animated border trace - white color and instant on hover */}
+                    <span className="absolute inset-0 before:absolute before:w-[2px] 
+                      before:bg-white before:transition-all before:duration-200
+                      before:left-0 before:bottom-0 before:top-full
+                      group-hover/btn:before:top-0 before:duration-200
+                      after:absolute after:h-[2px] after:bg-white 
+                      after:transition-all after:duration-200
+                      after:top-0 after:left-0 after:right-full
+                      group-hover/btn:after:right-0 after:duration-200 after:delay-200" />
+                    <span className="absolute inset-0 before:absolute before:w-[2px]
+                      before:bg-white before:transition-all before:duration-200
+                      before:right-0 before:top-full before:bottom-0
+                      group-hover/btn:before:top-0 before:duration-200 before:delay-400
+                      after:absolute after:h-[2px] after:bg-white
+                      after:transition-all after:duration-200
+                      after:bottom-0 after:right-0 after:left-full
+                      group-hover/btn:after:left-0 after:duration-200 after:delay-600" />
                   </Link>
                 </div>
               </div>
