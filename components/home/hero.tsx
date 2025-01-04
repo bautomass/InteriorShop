@@ -959,25 +959,38 @@ function Hero() {
                                       ${isActive ? 'opacity-0' : 'opacity-100 hover:opacity-50'}`}
                         />
                         
-                        {/* Active Highlight Effect */}
+                        {/* Active Highlight Effects */}
                         {isActive && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 1.2 }}
-                            animate={{ opacity: [0, 1, 0], scale: 1 }}
-                            transition={{ duration: 0.6, ease: "easeOut" }}
-                            className="absolute inset-0 bg-white/20 pointer-events-none"
-                          />
+                          <>
+                            <motion.div
+                                initial={{ opacity: 0, scale: 1.2 }}
+                                animate={{ opacity: [0, 1, 0], scale: 1 }}
+                                transition={{ duration: 0.6, ease: "easeOut" }}
+                                className="absolute inset-0 bg-white/20 pointer-events-none"
+                              />
+                            {/* Shimmering effect */}
+                            <motion.div
+                              initial={{ x: '-100%', opacity: 0.5 }}
+                              animate={{ x: '100%', opacity: 0 }}
+                              transition={{
+                                duration: 1.5,
+                                repeat: Infinity,
+                                repeatDelay: 3,
+                                ease: "easeInOut"
+                              }}
+                              className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent 
+                                         transform rotate-15 pointer-events-none blur-sm"
+                              style={{
+                                clipPath: 'polygon(5% 0, 95% 0, 85% 100%, 15% 100%)'
+                              }}
+                            />
+                          </>
                         )}
                       </div>
                       
                       {/* Active Indicator with Enhanced Animation */}
                       {isActive && (
                         <>
-                          <motion.div
-                            layoutId="activeThumb"
-                            className="absolute inset-0 ring-2 ring-white/90 ring-offset-1 ring-offset-black/20"
-                            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                          />
                           <motion.div
                             initial={{ scaleX: 0 }}
                             animate={{ scaleX: 1 }}
