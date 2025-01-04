@@ -102,6 +102,13 @@ const formatPrice = (amount: string) => {
   }).format(parseFloat(amount));
 };
 
+// Add helper function at the top level
+const getLoopedIndex = (index: number) => {
+  if (index < 0) return heroSlides.length - 1;
+  if (index >= heroSlides.length) return 0;
+  return index;
+};
+
 function Hero() {
   const { results, isLoading, error, performSearch } = useSearch();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -242,11 +249,26 @@ function Hero() {
   };
 
   const goToSlide = useCallback((index: number) => {
-    if (isAnimating || index === currentSlide) return;
+    if (isAnimating) return;
     setIsAnimating(true);
-    setCurrentSlide(index);
-    setTimeout(() => setIsAnimating(false), 500); // Match duration of slide transition
-  }, [currentSlide, isAnimating]);
+    
+    const targetIndex = getLoopedIndex(index);
+    setCurrentSlide(targetIndex);
+    
+    // Performance optimization: Preload next and previous images
+    const preloadImages = [
+      getLoopedIndex(targetIndex - 1),
+      getLoopedIndex(targetIndex + 1)
+    ].map(i => {
+      const img = new (Image as any as { new(): HTMLImageElement })();
+      if (heroSlides[i]) {
+        img.src = heroSlides[i].image;
+      }
+      return img;
+    });
+    
+    setTimeout(() => setIsAnimating(false), 500);
+  }, [isAnimating]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches[0]) {
@@ -888,55 +910,72 @@ function Hero() {
               <ChevronRight className="h-6 w-6 text-white" />
             </button>
 
-            {/* Enhanced Pagination with Perspective Effect */}
-            <div className="absolute bottom-8 right-8 z-20 flex items-center perspective-[1000px] transform-gpu">
-              <div className="flex items-center gap-1 relative">
-                {heroSlides.map((slide, index) => {
-                  // Calculate perspective transform
-                  const distance = Math.abs(currentSlide - index);
-                  const isActive = index === currentSlide;
-                  const isNextToActive = Math.abs(currentSlide - index) === 1;
+            {/* Enhanced Infinite Pagination with Perspective Effect */}
+            <div className="absolute bottom-16 right-8 z-20 flex items-center perspective-[1200px] transform-gpu">
+              <div 
+                className="flex items-center gap-0.5 relative" 
+                style={{ 
+                  transform: 'rotateX(10deg)',
+                  transformStyle: 'preserve-3d'
+                }}
+              >
+                {[...heroSlides, ...heroSlides, ...heroSlides].slice(
+                  heroSlides.length + currentSlide - 2,
+                  heroSlides.length + currentSlide + 3
+                ).map((slide, arrayIndex) => {
+                  const index = getLoopedIndex(currentSlide + (arrayIndex - 2));
+                  const distance = Math.abs(2 - arrayIndex);
+                  const isActive = arrayIndex === 2;
+                  const isNextToActive = distance === 1;
                   
                   return (
                     <motion.button
-                      key={slide.id}
-                      onClick={() => goToSlide(index)}
+                      key={`${slide.id}-${arrayIndex}`}
+                      onClick={() => goToSlide(getLoopedIndex(currentSlide + (arrayIndex - 2)))}
                       initial={false}
                       animate={{
-                        scale: isActive ? 1 : 0.9,
-                        rotateY: (currentSlide - index) * 15, // Perspective rotation
-                        z: isActive ? 0 : -100 * distance,
-                        x: isActive ? 0 : (currentSlide - index) * -5, // Slight offset for depth
-                        opacity: distance > 2 ? 0.3 : 1
+                        scale: isActive ? 1 : 0.85,
+                        rotateY: (arrayIndex - 2) * 25,
+                        z: isActive ? 20 : -120 * distance,
+                        x: isActive ? 0 : (arrayIndex - 2) * -10,
+                        opacity: distance > 2 ? 0.3 : 1,
+                        filter: `brightness(${isActive ? 100 : 70}%)`
                       }}
                       transition={{
                         type: 'spring',
-                        stiffness: 300,
-                        damping: 30
+                        stiffness: 400,
+                        damping: 30,
+                        mass: 0.8
                       }}
-                      className={`relative overflow-hidden transform-gpu transition-all duration-300
-                                 ${isActive ? 'w-32 h-20 z-10' : 
-                                   isNextToActive ? 'w-28 h-16 z-[5]' : 
-                                   'w-24 h-14 z-0'}
-                                 ${isActive ? 'border-2 border-white' : 'border border-white/50 hover:border-white'}
+                      className={`relative transform-gpu transition-all duration-300
+                                 will-change-transform
+                                 ${isActive ? 'w-36 h-24' : 
+                                   isNextToActive ? 'w-32 h-20' : 
+                                   'w-28 h-16'}
+                                 ${isActive ? 'border-2 border-white' : 'border border-white/30'}
                                 `}
+                      style={{
+                        transformStyle: 'preserve-3d',
+                        backfaceVisibility: 'hidden'
+                      }}
                       aria-label={`Go to slide ${index + 1}`}
                     >
-                      <div className="absolute inset-0 w-full h-full">
+                      <div className="absolute inset-0 w-full h-full overflow-hidden">
                         <Image
                           src={slide.image}
                           alt={slide.alt}
                           fill
+                          loading="eager"
                           className={`object-cover transition-transform duration-500
-                                     ${isActive ? 'scale-105' : 'group-hover:scale-105'}`}
-                          sizes="(max-width: 768px) 128px, 96px"
+                                     ${isActive ? 'scale-105' : 'hover:scale-105'}`}
+                          sizes="(max-width: 768px) 144px, 96px"
+                          quality={isActive ? 90 : 70}
                         />
-                        <div className={`absolute inset-0 bg-black/20 transition-opacity duration-300
-                                      ${isActive ? 'opacity-0' : 'opacity-50 hover:opacity-30'}`}
+                        <div className={`absolute inset-0 bg-black/10 transition-opacity duration-300
+                                      ${isActive ? 'opacity-0' : 'opacity-30 hover:opacity-0'}`}
                         />
                       </div>
                       
-                      {/* Active Indicator */}
                       {isActive && (
                         <motion.div
                           layoutId="activeThumb"
@@ -945,19 +984,15 @@ function Hero() {
                         />
                       )}
                       
-                      {/* Progress Bar for Active Thumbnail */}
                       {isActive && (
                         <motion.div
                           initial={{ scaleX: 0 }}
                           animate={{ scaleX: 1 }}
                           transition={{ duration: 5, ease: 'linear' }}
-                          className="absolute bottom-0 left-0 w-full h-0.5 bg-white origin-left"
+                          className="absolute bottom-0 left-0 w-full h-0.5 bg-white/80 origin-left"
+                          style={{ backfaceVisibility: 'hidden' }}
                           onAnimationComplete={() => {
-                            if (currentSlide < heroSlides.length - 1) {
-                              goToSlide(currentSlide + 1);
-                            } else {
-                              goToSlide(0);
-                            }
+                            goToSlide(getLoopedIndex(currentSlide + 1));
                           }}
                         />
                       )}
