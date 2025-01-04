@@ -729,8 +729,8 @@ function Hero() {
                   />
 
                   {/* Slide Content */}
-                  {slide.lampImage && (
-                    <motion.div
+                  {index === 0 && slide.lampImage && (
+                    <motion.div 
                       initial={{ opacity: 0, y: -50 }}
                       animate={{ 
                         opacity: currentSlide === index ? 1 : 0,
@@ -748,7 +748,74 @@ function Hero() {
                       }}
                       className="absolute left-[15%] top-[0%] z-10 w-[120px] origin-top md:w-[180px]"
                     >
-                      {/* ... existing lamp content ... */}
+                      <div className="relative">
+                        <Image
+                          src={slide.lampImage}
+                          alt=""
+                          width={180}
+                          height={180}
+                          priority
+                          className="h-auto w-full"
+                        />
+                        
+                        {/* Interactive Product Dot */}
+                        <div className="group absolute bottom-[20%] left-[65%] -translate-x-1/2 translate-y-1/2">
+                          {/* Pulsating Dot */}
+                          <div className="relative inline-flex">
+                            {/* Pulse rings */}
+                            <div className="absolute -inset-1.5
+                                          w-7 h-7 rounded-full bg-[#dcd5ca]/60
+                                          animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
+                            <div className="absolute -inset-1.5
+                                          w-7 h-7 rounded-full bg-[#ebe7e0]/50
+                                          animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
+                            
+                            {/* Main dot */}
+                            <div className="relative w-4 h-4 rounded-full 
+                                          bg-[#ebe7e0] border-2 border-[#9c826b]
+                                          shadow-[0_0_10px_rgba(199,186,168,0.8)]
+                                          transition-all duration-500 ease-in-out
+                                          group-hover:scale-125" />
+
+                            {/* Hover Button */}
+                            <div className="absolute left-6 top-2">
+                              <motion.div
+                                initial={{ opacity: 0, x: -20, scale: 0.95 }}
+                                whileHover={{ scale: 1.05 }}
+                                animate={{ opacity: 0, x: -20 }}
+                                className="group-hover:animate-slideIn"
+                              >
+                                <Link 
+                                  href="/product/sleek-curve-japandi-glow-minimalist-pendant-light"
+                                  className="invisible relative flex items-center gap-2 
+                                           bg-[#ebe7e0]/95 backdrop-blur-sm shadow-lg rounded-lg p-2
+                                           border border-[#b39e86] 
+                                           transition-all duration-500 ease-out
+                                           group-hover:visible hover:bg-[#dcd5ca]/95"
+                                >
+                                  <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
+                                    View Product
+                                  </span>
+                                  <svg 
+                                    className="w-4 h-4 text-[#9c826b] transition-all duration-300
+                                            group-hover:translate-x-1" 
+                                    fill="none" 
+                                    viewBox="0 0 24 24" 
+                                    stroke="currentColor"
+                                  >
+                                    <path 
+                                      strokeLinecap="round" 
+                                      strokeLinejoin="round" 
+                                      strokeWidth={2} 
+                                      d="M13 7l5 5m0 0l-5 5m5-5H6" 
+                                    />
+                                  </svg>
+                                </Link>
+                              </motion.div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </motion.div>
                   )}
 
