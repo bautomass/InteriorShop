@@ -2,7 +2,6 @@
 import { Pinterest } from '@/components/icons/Pinterest';
 import { X } from '@/components/icons/X';
 import SizeGuideModal from '@/components/modals/SizeGuideModal';
-import { ProductQuickView } from '@/components/quickview/ProductQuickView';
 import ProductReviews from '@/components/reviews/ProductReviews';
 import { useActionState } from '@/hooks/useActionState';
 import type { Product, ProductVariant } from '@/lib/shopify/types';
@@ -72,7 +71,6 @@ const FeaturedProduct = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({});
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
-  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -701,22 +699,26 @@ const FeaturedProduct = () => {
                   className="flex items-center gap-2"
                 >
                   <div className="flex items-center">
-                    {[...Array(5)].map((_, index) => (
-                      <Star
-                        key={index}
-                        className={`w-4 h-4 ${
-                          index < 4 || (index === 4 && 0.9 >= 0.5)
-                            ? 'text-yellow-400 fill-yellow-400'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
+                    {[...Array(5)].map((_, index) => {
+                      // Calculate fill percentage for the last star
+                      const fillPercentage = index === 4 ? (4.8 % 1) * 100 : 100;
+                      return (
+                        <div key={index} className="relative w-4 h-4">
+                          {/* Background star (empty) */}
+                          <Star className="absolute w-4 h-4 text-gray-200" />
+                          {/* Foreground star (filled) */}
+                          <div className="absolute w-4 h-4 overflow-hidden" style={{ width: `${fillPercentage}%` }}>
+                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                   <button 
                     onClick={() => setIsReviewsExpanded(!isReviewsExpanded)}
                     className="text-sm text-[#6B5E4C] hover:underline"
                   >
-                    4.9 (128 reviews)
+                    4.8 (37 reviews)
                   </button>
                 </motion.div>
 
@@ -819,18 +821,6 @@ const FeaturedProduct = () => {
                 transition={{ delay: 0.9 }}
                 className="flex items-center gap-3"
               >
-                {/* Quick View Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setIsQuickViewOpen(true)}
-                  className="h-12 px-4 border-2 border-[#6B5E4C] text-[#6B5E4C] 
-                             rounded-md hover:bg-[#6B5E4C]/5 transition-colors duration-300
-                             w-[120px]"
-                >
-                  Quick View
-                </motion.button>
-                
                 {/* Quantity Selector */}
                 <div className="flex h-12 items-center rounded-md border-2 border-[#6B5E4C]/20
                                 w-[100px]">
@@ -910,14 +900,6 @@ const FeaturedProduct = () => {
           </motion.div>
         </div>
       </section>
-
-      {isQuickViewOpen && product && (
-        <ProductQuickView
-          product={product}
-          isOpen={isQuickViewOpen}
-          onClose={() => setIsQuickViewOpen(false)}
-        />
-      )}
 
       <SizeGuideModal 
         isOpen={isSizeGuideOpen} 
