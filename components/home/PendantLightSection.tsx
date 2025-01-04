@@ -3,13 +3,33 @@ import { Pinterest } from '@/components/icons/Pinterest';
 import { X } from '@/components/icons/X';
 import { ProductQuickView } from '@/components/quickview/ProductQuickView';
 import ProductReviews from '@/components/reviews/ProductReviews';
+import { useActionState } from '@/hooks/useActionState';
 import type { Product, ProductVariant } from '@/lib/shopify/types';
+import { addItem } from 'components/cart/actions';
+import { useCart } from 'components/cart/cart-context';
 import { motion } from 'framer-motion';
-import { ArrowRight, CircleOff, Facebook, Link as LinkIcon, Mail, Package, ShieldCheck, Star } from 'lucide-react';
+import { CircleOff, Facebook, Link as LinkIcon, Mail, Minus, Package, Plus, ShieldCheck, ShoppingCart, Star } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useInView } from 'react-intersection-observer';
 
+const blinkAnimation = {
+  initial: { scale: 1 },
+  hover: {
+    scale: 1.2,
+    opacity: [1, 0.5, 1],
+    transition: {
+      opacity: {
+        duration: 1,
+        repeat: Infinity,
+        ease: "easeInOut"
+      },
+      scale: {
+        duration: 0.2
+      }
+    }
+  }
+};
 
 interface SelectedOptions {
   [key: string]: string;
@@ -64,6 +84,10 @@ const FeaturedProduct = () => {
   const [canScrollRight, setCanScrollRight] = useState(false);
   const thumbnailsRef = useRef<HTMLDivElement>(null);
   const [shareCount, setShareCount] = useState(67);
+  const [quantity, setQuantity] = useState(1);
+  const { addCartItem } = useCart();
+  const [isPending, startTransition] = useTransition();
+  const [message, formAction] = useActionState(addItem, null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -351,6 +375,39 @@ const FeaturedProduct = () => {
         break;
     }
   };
+
+  const incrementQuantity = () => {
+    setQuantity((prev) => prev + 1);
+  };
+
+  const decrementQuantity = () => {
+    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+  };
+
+  const handleAddToCart = useCallback(() => {
+    if (!selectedVariant || !product?.availableForSale) return;
+
+    startTransition(() => {
+      const variantId = String(selectedVariant.id);
+
+      formAction({
+        merchandiseId: variantId,
+        quantity: quantity
+      })
+        .then((result) => {
+          if (result === 'Success' && selectedVariant) {
+            addCartItem({
+              variant: selectedVariant,
+              product: product,
+              quantity
+            });
+          } else {
+            console.error('Add to cart failed:', result);
+          }
+        })
+        .catch((error) => console.error('Add to cart error:', error));
+    });
+  }, [selectedVariant, product, quantity, formAction, addCartItem]);
 
   if (loading || !product) {
     return (
@@ -745,28 +802,77 @@ const FeaturedProduct = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
               transition={{ delay: 0.9 }}
-              className="flex flex-col sm:flex-row gap-3 sm:gap-4"
+              className="flex flex-col gap-3"
             >
+              {/* Quick View Button */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setIsQuickViewOpen(true)}
-                className="w-full sm:flex-1 px-6 sm:px-8 py-3 sm:py-4 bg-[#6B5E4C] text-white 
-                           rounded-md hover:bg-[#5A4D3B] transition-colors duration-300"
+                className="w-full h-12 px-6 border-2 border-[#6B5E4C] text-[#6B5E4C] 
+                           rounded-md hover:bg-[#6B5E4C]/5 transition-colors duration-300"
               >
                 Quick View
               </motion.button>
-              <motion.button
-                onClick={() => window.location.href = `/product/${product!.handle}`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full sm:flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 
-                           py-3 sm:py-4 border border-[#6B5E4C] text-[#6B5E4C] rounded-md 
-                           group hover:bg-[#6B5E4C] hover:text-white transition-all duration-300"
-              >
-                View Details
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transform group-hover:translate-x-1 transition-transform" />
-              </motion.button>
+              
+              {/* Add to Cart Row */}
+              <div className="flex items-center gap-3">
+                {/* Quantity Selector */}
+                <div className="flex h-12 items-center rounded-md border-2 border-[#6B5E4C]/20">
+                  <button
+                    onClick={decrementQuantity}
+                    className="flex h-full items-center justify-center px-2 text-[#6B5E4C] 
+                             transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </button>
+                  <div className="w-8 text-center text-sm font-medium text-[#6B5E4C]">{quantity}</div>
+                  <button
+                    onClick={incrementQuantity}
+                    className="flex h-full items-center justify-center px-2 text-[#6B5E4C] 
+                             transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
+                </div>
+
+                {/* Add to Cart Button */}
+                <motion.button
+                  onClick={handleAddToCart}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={!selectedVariant || !product?.availableForSale || isPending}
+                  className={`group relative h-12 flex-1 flex items-center justify-center gap-2 
+                             overflow-hidden rounded-md px-6 text-sm font-medium text-white 
+                             shadow-md transition-all duration-300 hover:shadow-lg ${
+                    !selectedVariant || !product?.availableForSale || isPending
+                      ? 'cursor-not-allowed bg-gray-400'
+                      : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
+                  }`}
+                >
+                  <motion.div
+                    variants={blinkAnimation}
+                    initial="initial"
+                    animate={isPending ? "initial" : "hover"}
+                    className="relative z-10"
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                  </motion.div>
+                  <span className="relative z-10 font-medium">
+                    {isPending
+                      ? 'Adding...'
+                      : !selectedVariant
+                        ? 'Select options'
+                        : !product?.availableForSale
+                          ? 'Out of Stock'
+                          : 'Add to Cart'}
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C] 
+                                opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                </motion.button>
+              </div>
             </motion.div>
 
             {/* Tags */}
