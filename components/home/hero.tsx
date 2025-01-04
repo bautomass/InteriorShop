@@ -40,9 +40,18 @@ const useSlideNavigation = (totalSlides: number) => {
     if (isAnimating) return;
     setIsAnimating(true);
     
-    const targetIndex = ((index % totalSlides) + totalSlides) % totalSlides;
-    setCurrentSlide(targetIndex);
+    // Preload next slide images
+    const nextIndex = ((index % totalSlides) + totalSlides) % totalSlides;
+    const nextSlide = heroSlides[nextIndex];
+    if (nextSlide) {
+      const imagesToPreload = [nextSlide.image, nextSlide.mobileImage].filter(Boolean);
+      imagesToPreload.forEach(src => {
+        const img = new window.Image();
+        img.src = src;
+      });
+    }
     
+    setCurrentSlide(nextIndex);
     setTimeout(() => setIsAnimating(false), CONSTANTS.ANIMATION.DURATION);
   }, [isAnimating, totalSlides]);
 
@@ -52,16 +61,14 @@ const useSlideNavigation = (totalSlides: number) => {
 // Image preloader hook
 const useImagePreloader = (images: string[]) => {
   useEffect(() => {
-    const imagePromises = images.map(src => {
-      return new Promise((resolve, reject) => {
-        const img: HTMLImageElement = new (window.Image as { new(): HTMLImageElement })();
-        img.onload = resolve;
-        img.onerror = reject;
+    const preloadImages = () => {
+      images.forEach(src => {
+        const img = new window.Image();
         img.src = src;
       });
-    });
+    };
 
-    Promise.all(imagePromises).catch(console.warn);
+    preloadImages();
   }, [images]);
 };
 

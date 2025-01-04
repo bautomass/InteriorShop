@@ -1,9 +1,12 @@
 // components/quickview/ProductQuickView.tsx
+import { useActionState } from '@/hooks/useActionState'
 import type { Product, ProductVariant } from '@/lib/shopify/types'
 import { cn } from '@/lib/utils'
+import { addItem } from 'components/cart/actions'
+import { useCart } from 'components/cart/cart-context'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, ChevronUp, CreditCard, ShoppingCart, Star, X } from 'lucide-react'
-import { memo, useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState, useTransition } from 'react'
 import { ProductGallery } from './ProductGallery'
 import { TrustBadges } from './TrustBadges'
 
@@ -42,6 +45,9 @@ export const ProductQuickView = memo(({ product, isOpen, onClose }: ProductQuick
   const [rating, setRating] = useState<number>(0)
   const shortDescription = product.description.slice(0, 200)
   const hasLongDescription = product.description.length > 200
+  const { addCartItem } = useCart();
+  const [isPending, startTransition] = useTransition();
+  const [message, formAction] = useActionState(addItem, null);
 
   useEffect(() => {
     const defaultOptions: Record<string, string> = {}
@@ -88,13 +94,58 @@ export const ProductQuickView = memo(({ product, isOpen, onClose }: ProductQuick
     }
   }, [isOpen])
 
-  const handleAddToCart = async () => {
-    // Add to cart logic
-  }
+  const handleAddToCart = useCallback(async () => {
+    if (!selectedVariant || !product.availableForSale) return;
 
-  const handleBuyNow = async () => {
-    // Buy now logic
-  }
+    startTransition(() => {
+      const variantId = String(selectedVariant.id);
+
+      formAction({
+        merchandiseId: variantId,
+        quantity: 1
+      })
+        .then((result) => {
+          if (result === 'Success' && selectedVariant) {
+            addCartItem({
+              variant: selectedVariant,
+              product,
+              quantity: 1
+            });
+            // Optional: Close modal after adding to cart
+            onClose();
+          } else {
+            console.error('Add to cart failed:', result);
+          }
+        })
+        .catch((error) => console.error('Add to cart error:', error));
+    });
+  }, [selectedVariant, product, formAction, addCartItem, onClose]);
+
+  const handleBuyNow = useCallback(async () => {
+    if (!selectedVariant || !product.availableForSale) return;
+
+    try {
+      // First add to cart
+      const result = await formAction({
+        merchandiseId: String(selectedVariant.id),
+        quantity: 1
+      });
+
+      if (result === 'Success') {
+        // Then redirect to checkout
+        const response = await fetch('/api/checkout');
+        const { checkoutUrl } = await response.json();
+        
+        if (checkoutUrl) {
+          window.location.href = checkoutUrl;
+        } else {
+          console.error('No checkout URL returned');
+        }
+      }
+    } catch (error) {
+      console.error('Buy now error:', error);
+    }
+  }, [selectedVariant, product.availableForSale, formAction]);
 
   const findVariantByImage = useCallback((imageUrl: string) => {
     return (product.variants as ExtendedProductVariant[]).find(variant => 
@@ -263,29 +314,36 @@ export const ProductQuickView = memo(({ product, isOpen, onClose }: ProductQuick
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleAddToCart}
+                      disabled={!selectedVariant || !product.availableForSale || isPending}
                       className={cn(
                         "flex-1 flex items-center justify-center",
-                        "px-3 py-2 sm:px-6 sm:py-3", // Smaller on mobile, larger on desktop
-                        "text-xs sm:text-base", // Smaller text on mobile, larger on desktop
+                        "px-3 py-2 sm:px-6 sm:py-3",
+                        "text-xs sm:text-base",
                         "bg-primary-900 hover:bg-primary-800 dark:bg-primary-100 dark:hover:bg-primary-200",
                         "text-white dark:text-primary-900",
-                        "rounded-md transition-all duration-200"
+                        "rounded-md transition-all duration-200",
+                        (!selectedVariant || !product.availableForSale || isPending) && 
+                          "opacity-50 cursor-not-allowed"
                       )}
                     >
                       <ShoppingCart className="h-3.5 w-3.5 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
-                      Add to Cart
+                      {isPending ? 'Adding...' : 'Add to Cart'}
                     </motion.button>
+                    
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleBuyNow}
+                      disabled={!selectedVariant || !product.availableForSale || isPending}
                       className={cn(
                         "flex-1 flex items-center justify-center",
-                        "px-3 py-2 sm:px-6 sm:py-3", // Smaller on mobile, larger on desktop
-                        "text-xs sm:text-base", // Smaller text on mobile, larger on desktop
+                        "px-3 py-2 sm:px-6 sm:py-3",
+                        "text-xs sm:text-base",
                         "bg-accent-500 hover:bg-accent-600",
                         "text-white rounded-md",
-                        "transition-all duration-200"
+                        "transition-all duration-200",
+                        (!selectedVariant || !product.availableForSale || isPending) && 
+                          "opacity-50 cursor-not-allowed"
                       )}
                     >
                       <CreditCard className="h-3.5 w-3.5 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
