@@ -1,32 +1,35 @@
 'use client'
 import { Pinterest } from '@/components/icons/Pinterest';
 import { X } from '@/components/icons/X';
-import SizeGuideModal from '@/components/modals/SizeGuideModal';
-import ProductReviews from '@/components/reviews/ProductReviews';
 import { useActionState } from '@/hooks/useActionState';
 import type { Product, ProductVariant } from '@/lib/shopify/types';
 import { addItem } from 'components/cart/actions';
 import { useCart } from 'components/cart/cart-context';
 import { motion } from 'framer-motion';
 import { CircleOff, Facebook, Info, Link as LinkIcon, Mail, Minus, Package, Plus, ShieldCheck, ShoppingCart, Star } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { memo, useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useInView } from 'react-intersection-observer';
 
-const blinkAnimation = {
+const SizeGuideModal = dynamic(() => import('@/components/modals/SizeGuideModal'), {
+  loading: () => <div className="animate-pulse bg-gray-200 h-full w-full rounded-lg" />,
+  ssr: false
+});
+
+const ProductReviews = dynamic(() => import('@/components/reviews/ProductReviews'), {
+  loading: () => <div className="animate-pulse bg-gray-200 h-24 w-full rounded-lg" />,
+  ssr: false
+});
+
+const mobileBlinkAnimation = {
   initial: { scale: 1 },
   hover: {
-    scale: 1.2,
+    scale: 1.1,
     opacity: [1, 0.5, 1],
     transition: {
-      opacity: {
-        duration: 1,
-        repeat: Infinity,
-        ease: "easeInOut"
-      },
-      scale: {
-        duration: 0.2
-      }
+      opacity: { duration: 0.8, repeat: Infinity, ease: "easeInOut" },
+      scale: { duration: 0.15 }
     }
   }
 };
@@ -88,6 +91,8 @@ const FeaturedProduct = () => {
   const [isPending, startTransition] = useTransition();
   const [message, formAction] = useActionState(addItem, null);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -273,10 +278,17 @@ const FeaturedProduct = () => {
               <button
                 onClick={() => setIsSizeGuideOpen(true)}
                 className="flex items-center gap-1 text-xs text-[#8C7E6A] hover:text-[#6B5E4C] 
-                           group transition-colors"
+                           group transition-colors relative"
               >
                 <span className="hover:underline">(SIZE GUIDE)</span>
                 <Info className="w-3 h-3 opacity-70 group-hover:opacity-100 transition-opacity" />
+                
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 
+                                 bg-[#6B5E4C] text-white text-xs rounded whitespace-nowrap
+                                 opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                                 pointer-events-none">
+                  Click to see size guide
+                </span>
               </button>
             )}
           </div>
@@ -421,6 +433,44 @@ const FeaturedProduct = () => {
     });
   }, [selectedVariant, product, quantity, formAction, addCartItem]);
 
+  const handleTouchStart = (e: React.TouchEvent): void => {
+    if (e.targetTouches[0]) {
+      setTouchStart(e.targetTouches[0].clientX);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent): void => {
+    if (e.targetTouches[0]) {
+      setTouchEnd(e.targetTouches[0].clientX);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && product) {
+      const newIndex = activeImage === product.images.length - 1 ? 0 : activeImage + 1;
+      setActiveImage(newIndex);
+      scrollToActiveThumbnail(newIndex);
+    }
+    if (isRightSwipe && product) {
+      const newIndex = activeImage === 0 ? product.images.length - 1 : activeImage - 1;
+      setActiveImage(newIndex);
+      scrollToActiveThumbnail(newIndex);
+    }
+
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
+  const getImagePriority = (index: number): boolean => {
+    return product ? (index === activeImage || index === (activeImage + 1) % product.images.length) : false;
+  };
+
   if (loading || !product) {
     return (
       <div className="w-full py-16 bg-[#F9F7F4]">
@@ -459,7 +509,12 @@ const FeaturedProduct = () => {
               className="flex flex-col gap-3 sm:gap-4 order-2 lg:order-1"
             >
               {/* Main Image */}
-              <div className="relative aspect-square rounded-lg sm:rounded-2xl overflow-hidden group">
+              <div 
+                className="relative aspect-square rounded-lg sm:rounded-2xl overflow-hidden group"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
                 <motion.div 
                   animate={{ scale: 1.05 }}
                   transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
@@ -470,7 +525,7 @@ const FeaturedProduct = () => {
                     alt={product.images[activeImage]?.altText || product.title}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    priority
+                    priority={getImagePriority(activeImage)}
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
                 </motion.div>
@@ -858,7 +913,7 @@ const FeaturedProduct = () => {
                   }`}
                 >
                   <motion.div
-                    variants={blinkAnimation}
+                    variants={mobileBlinkAnimation}
                     initial="initial"
                     animate={isPending ? "initial" : "hover"}
                     className="relative z-10"
@@ -909,4 +964,4 @@ const FeaturedProduct = () => {
   );
 };
 
-export default FeaturedProduct;
+export default memo(FeaturedProduct);
