@@ -35,7 +35,38 @@ const heroSlides: SlideContent[] = [
     lampImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/lamp-el.svg',
     productLink: '/product/sleek-curve-japandi-glow-minimalist-pendant-light'
   },
-  // Add more slides as needed
+  {
+    id: 'slide-2',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room.jpg?v=1735991821',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room.jpg?v=1735991821',
+    alt: 'Modern Room Design',
+    title: 'Transform Your Space',
+    subtitle: 'Discover timeless elegance'
+  },
+  {
+    id: 'slide-3',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/arche.jpg?v=1735991822',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/arche.jpg?v=1735991822',
+    alt: 'Architectural Beauty',
+    title: 'Architectural Beauty',
+    subtitle: 'Where form meets function'
+  },
+  {
+    id: 'slide-4',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/stool.png?v=1735991822',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/stool.png?v=1735991822',
+    alt: 'Minimalist Living',
+    title: 'Minimalist Living',
+    subtitle: 'Less is more'
+  },
+  {
+    id: 'slide-5',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair.jpg?v=1735991822',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair.jpg?v=1735991822',
+    alt: 'Comfort Redefined',
+    title: 'Comfort Redefined',
+    subtitle: 'Experience luxury in every detail'
+  }
 ];
 
 // Base Product interface definition
