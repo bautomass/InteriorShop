@@ -259,45 +259,58 @@ function Hero() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute right-0 top-12 w-[308px] md:w-[440px] rounded-lg bg-white p-4 shadow-xl ring-1 ring-black/5"
+                            className="absolute right-0 top-12 w-[308px] md:w-[440px] rounded-lg bg-white p-6 shadow-xl ring-1 ring-black/5"
                             onMouseEnter={() => handleCartHover(true)}
                             onMouseLeave={() => handleCartHover(false)}
                           >
-                            <div className="mb-3 flex justify-between text-sm font-medium text-[#6B5E4C]">
-                              <span>Cart ({cart.totalQuantity})</span>
-                              <span>{formatPrice(cart.cost.totalAmount.amount)}</span>
+                            {/* Header Section */}
+                            <div className="border-b border-[#6B5E4C]/10 pb-4">
+                              <div className="flex justify-between items-center">
+                                <h3 className="text-base md:text-lg font-semibold text-[#6B5E4C]">Shopping Cart</h3>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm text-[#8C7E6A]">({cart.totalQuantity} items)</span>
+                                  <span className="text-sm font-medium text-[#6B5E4C]">{formatPrice(cart.cost.totalAmount.amount)}</span>
+                                </div>
+                              </div>
                             </div>
-                            
-                            <div className="max-h-[40vh] md:max-h-64 space-y-3 overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#6B5E4C]/20">
+
+                            {/* Items List Section */}
+                            <div className="max-h-[40vh] md:max-h-64 overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#6B5E4C]/20 my-4">
                               {cart.lines.map((item) => (
                                 <motion.div
                                   key={item.id}
                                   layout
-                                  className="flex gap-2 md:gap-3 rounded-md p-2 hover:bg-[#6B5E4C]/5"
+                                  className="flex gap-3 md:gap-4 rounded-md p-3 hover:bg-[#6B5E4C]/5 border-b border-[#6B5E4C]/10 last:border-b-0"
                                 >
+                                  {/* Product Image */}
                                   {item.merchandise.product.featuredImage && (
-                                    <div className="relative h-14 w-14 md:h-16 md:w-16 flex-shrink-0 overflow-hidden rounded-md">
+                                    <div className="relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-md bg-[#F8F7F6]">
                                       <Image
                                         src={item.merchandise.product.featuredImage.url}
                                         alt={item.merchandise.product.title}
                                         fill
                                         className="object-cover"
-                                        sizes="(min-width: 768px) 64px, 56px"
+                                        sizes="(min-width: 768px) 80px, 64px"
                                       />
                                     </div>
                                   )}
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-xs md:text-sm font-medium text-[#6B5E4C] line-clamp-1">
-                                      {item.merchandise.product.title}
-                                    </p>
-                                    <p className="text-xs text-[#8C7E6A] line-clamp-1">
-                                      {item.merchandise.title}
-                                    </p>
-                                    <div className="mt-1 flex items-center justify-between">
-                                      <span className="text-xs text-[#6B5E4C]">
-                                        Qty: {item.quantity}
-                                      </span>
-                                      <span className="text-xs md:text-sm font-medium text-[#6B5E4C]">
+                                  
+                                  {/* Product Details */}
+                                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                    <div>
+                                      <h4 className="text-sm md:text-base font-medium text-[#6B5E4C] line-clamp-1">
+                                        {item.merchandise.product.title}
+                                      </h4>
+                                      <p className="text-xs md:text-sm text-[#8C7E6A] line-clamp-1 mt-0.5">
+                                        Variant: {item.merchandise.title}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center justify-between mt-2">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs md:text-sm text-[#8C7E6A]">Qty:</span>
+                                        <span className="text-xs md:text-sm font-medium text-[#6B5E4C]">{item.quantity}</span>
+                                      </div>
+                                      <span className="text-sm md:text-base font-medium text-[#6B5E4C]">
                                         {formatPrice(item.cost.totalAmount.amount)}
                                       </span>
                                     </div>
@@ -306,10 +319,17 @@ function Hero() {
                               ))}
                             </div>
 
-                            <div className="mt-4 space-y-2">
+                            {/* Footer Actions Section */}
+                            <div className="border-t border-[#6B5E4C]/10 pt-4 space-y-3">
+                              <div className="flex justify-between items-center mb-4">
+                                <span className="text-sm md:text-base font-medium text-[#8C7E6A]">Subtotal</span>
+                                <span className="text-base md:text-lg font-semibold text-[#6B5E4C]">
+                                  {formatPrice(cart.cost.totalAmount.amount)}
+                                </span>
+                              </div>
                               <button
                                 onClick={() => setIsCartOpen(true)}
-                                className="w-full rounded-md bg-[#6B5E4C] px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-white transition-colors hover:bg-[#5A4D3B]"
+                                className="w-full rounded-md bg-[#6B5E4C] px-4 py-2.5 text-sm md:text-base font-medium text-white transition-colors hover:bg-[#5A4D3B]"
                               >
                                 View Cart
                               </button>
@@ -320,7 +340,7 @@ function Hero() {
                                   }
                                 }}
                                 disabled={!cart?.checkoutUrl}
-                                className="w-full rounded-md bg-[#6B5E4C]/10 px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-[#6B5E4C] transition-colors hover:bg-[#6B5E4C]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="w-full rounded-md bg-[#6B5E4C]/10 px-4 py-2.5 text-sm md:text-base font-medium text-[#6B5E4C] transition-colors hover:bg-[#6B5E4C]/20 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 Checkout
                               </button>
