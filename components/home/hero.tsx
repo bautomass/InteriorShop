@@ -252,22 +252,11 @@ function Hero() {
     if (isAnimating) return;
     setIsAnimating(true);
     
-    const targetIndex = getLoopedIndex(index);
-    setCurrentSlide(targetIndex);
+    // Normalize the index to always move forward
+    const nextIndex = ((index % heroSlides.length) + heroSlides.length) % heroSlides.length;
+    setCurrentSlide(nextIndex);
     
-    // Performance optimization: Preload next and previous images
-    const preloadImages = [
-      getLoopedIndex(targetIndex - 1),
-      getLoopedIndex(targetIndex + 1)
-    ].map(i => {
-      const img = new (Image as any as { new(): HTMLImageElement })();
-      if (heroSlides[i]) {
-        img.src = heroSlides[i].image;
-      }
-      return img;
-    });
-    
-    setTimeout(() => setIsAnimating(false), 500);
+    setTimeout(() => setIsAnimating(false), 600);
   }, [isAnimating]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -309,7 +298,7 @@ function Hero() {
     <>
       <div className={`${isModalOpen ? 'blur-sm transition-all duration-200' : ''}`}>
         <section 
-          className="relative min-h-screen w-full overflow-hidden"
+          className="relative h-[90vh] w-full overflow-hidden"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
         >
@@ -735,7 +724,7 @@ function Hero() {
           </motion.div>
 
           {/* Updated Hero Content */}
-          <div className="relative h-screen w-full overflow-hidden">
+          <div className="relative h-[90vh] w-full overflow-hidden">
             <div className="flex h-full">
               {heroSlides.map((slide, index) => (
                 <motion.div
@@ -890,116 +879,142 @@ function Hero() {
               ))}
             </div>
             
-            {/* Navigation Arrows */}
-            <button
-              onClick={() => goToSlide(currentSlide - 1)}
-              disabled={currentSlide === 0 || isAnimating}
-              className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-2 
-                       backdrop-blur-sm transition-all hover:bg-white/20 disabled:opacity-50"
-              aria-label="Previous slide"
-            >
-              <ChevronLeft className="h-6 w-6 text-white" />
-            </button>
-            <button
-              onClick={() => goToSlide(currentSlide + 1)}
-              disabled={currentSlide === heroSlides.length - 1 || isAnimating}
-              className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-2 
-                       backdrop-blur-sm transition-all hover:bg-white/20 disabled:opacity-50"
-              aria-label="Next slide"
-            >
-              <ChevronRight className="h-6 w-6 text-white" />
-            </button>
-
-            {/* Enhanced Infinite Pagination with Perspective Effect */}
-            <div className="absolute bottom-16 right-8 z-20 flex items-center perspective-[1200px] transform-gpu">
-              <div 
-                className="flex items-center gap-0.5 relative" 
-                style={{ 
-                  transform: 'rotateX(10deg)',
-                  transformStyle: 'preserve-3d'
-                }}
+            {/* Enhanced Professional Pagination with Navigation */}
+            <div className="absolute bottom-2 right-8 z-20 flex items-center gap-6 perspective-[1200px] transform-gpu scale-90">
+              {/* Previous Button */}
+              <motion.button
+                onClick={() => goToSlide(currentSlide - 1)}
+                disabled={isAnimating}
+                className="relative group"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                {[...heroSlides, ...heroSlides, ...heroSlides].slice(
-                  heroSlides.length + currentSlide - 2,
-                  heroSlides.length + currentSlide + 3
-                ).map((slide, arrayIndex) => {
-                  const index = getLoopedIndex(currentSlide + (arrayIndex - 2));
-                  const distance = Math.abs(2 - arrayIndex);
-                  const isActive = arrayIndex === 2;
-                  const isNextToActive = distance === 1;
+                <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
+                                group-hover:bg-black/60 transition-all duration-300 -z-10" />
+                <div className="p-3 text-white flex items-center overflow-hidden">
+                  <ChevronLeft className="h-5 w-5 transition-transform group-hover:-translate-x-0.5" />
+                  <div className="w-0 group-hover:w-20 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
+                    <span className="text-sm font-medium pl-2 opacity-0 group-hover:opacity-100 
+                                  transition-opacity duration-200 delay-100">
+                      Previous
+                    </span>
+                  </div>
+                </div>
+              </motion.button>
+
+              {/* Thumbnails */}
+              <div className="flex items-center gap-2">
+                {[...Array(3)].map((_, i) => {
+                  const slideIndex = getLoopedIndex(currentSlide - 1 + i);
+                  const slide = heroSlides[slideIndex];
+                  if (!slide) return null;
+                  const isActive = i === 1;
                   
                   return (
                     <motion.button
-                      key={`${slide.id}-${arrayIndex}`}
-                      onClick={() => goToSlide(getLoopedIndex(currentSlide + (arrayIndex - 2)))}
+                      key={`${slide.id}-${i}`}
+                      onClick={() => goToSlide(slideIndex)}
                       initial={false}
                       animate={{
-                        scale: isActive ? 1 : 0.85,
-                        rotateY: (arrayIndex - 2) * 25,
-                        z: isActive ? 20 : -120 * distance,
-                        x: isActive ? 0 : (arrayIndex - 2) * -10,
-                        opacity: distance > 2 ? 0.3 : 1,
-                        filter: `brightness(${isActive ? 100 : 70}%)`
+                        scale: isActive ? 1 : 0.92,
+                        rotateY: (i - 1) * 10,
+                        z: isActive ? 0 : -20,
+                        opacity: 1,
+                        y: isActive ? -8 : 0,
+                        filter: isActive ? 'brightness(100%)' : 'brightness(90%)'
+                      }}
+                      whileHover={{ 
+                        scale: isActive ? 1 : 0.96,
+                        rotateY: (i - 1) * 8,
+                        z: isActive ? 0 : -15,
+                        opacity: 1,
+                        y: isActive ? -8 : -4
                       }}
                       transition={{
                         type: 'spring',
-                        stiffness: 400,
+                        stiffness: 350,
                         damping: 30,
-                        mass: 0.8
+                        mass: 0.8,
+                        filter: { duration: 0.3 }
                       }}
-                      className={`relative transform-gpu transition-all duration-300
-                                 will-change-transform
-                                 ${isActive ? 'w-36 h-24' : 
-                                   isNextToActive ? 'w-32 h-20' : 
-                                   'w-28 h-16'}
-                                 ${isActive ? 'border-2 border-white' : 'border border-white/30'}
+                      className={`relative overflow-hidden transform-gpu transition-all duration-300
+                                 rounded-sm shadow-lg p-0
+                                 ${isActive ? 'w-44 h-24 ring-2 ring-white/90 ring-offset-1 ring-offset-black/20' : 
+                                   'w-40 h-20 ring-1 ring-white/50'}
                                 `}
-                      style={{
-                        transformStyle: 'preserve-3d',
-                        backfaceVisibility: 'hidden'
-                      }}
-                      aria-label={`Go to slide ${index + 1}`}
                     >
-                      <div className="absolute inset-0 w-full h-full overflow-hidden">
+                      <div className="absolute inset-0 w-full h-full">
                         <Image
                           src={slide.image}
                           alt={slide.alt}
                           fill
-                          loading="eager"
-                          className={`object-cover transition-transform duration-500
-                                     ${isActive ? 'scale-105' : 'hover:scale-105'}`}
-                          sizes="(max-width: 768px) 144px, 96px"
-                          quality={isActive ? 90 : 70}
+                          priority={isActive}
+                          className={`object-contain transition-all duration-500 ease-out
+                                     ${isActive ? 'scale-105 brightness-110' : 'hover:scale-105 brightness-90 hover:brightness-100'}`}
+                          sizes="(max-width: 768px) 176px, 112px"
+                          quality={isActive ? 95 : 80}
                         />
-                        <div className={`absolute inset-0 bg-black/10 transition-opacity duration-300
-                                      ${isActive ? 'opacity-0' : 'opacity-30 hover:opacity-0'}`}
+                        <div className={`absolute inset-0 transition-all duration-500
+                                      bg-gradient-to-t from-black/30 to-transparent
+                                      ${isActive ? 'opacity-0' : 'opacity-100 hover:opacity-50'}`}
                         />
+                        
+                        {/* Active Highlight Effect */}
+                        {isActive && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 1.2 }}
+                            animate={{ opacity: [0, 1, 0], scale: 1 }}
+                            transition={{ duration: 0.6, ease: "easeOut" }}
+                            className="absolute inset-0 bg-white/20 pointer-events-none"
+                          />
+                        )}
                       </div>
                       
+                      {/* Active Indicator with Enhanced Animation */}
                       {isActive && (
-                        <motion.div
-                          layoutId="activeThumb"
-                          className="absolute inset-0 border-2 border-white"
-                          transition={{ duration: 0.3 }}
-                        />
-                      )}
-                      
-                      {isActive && (
-                        <motion.div
-                          initial={{ scaleX: 0 }}
-                          animate={{ scaleX: 1 }}
-                          transition={{ duration: 5, ease: 'linear' }}
-                          className="absolute bottom-0 left-0 w-full h-0.5 bg-white/80 origin-left"
-                          style={{ backfaceVisibility: 'hidden' }}
-                          onAnimationComplete={() => {
-                            goToSlide(getLoopedIndex(currentSlide + 1));
-                          }}
-                        />
+                        <>
+                          <motion.div
+                            layoutId="activeThumb"
+                            className="absolute inset-0 ring-2 ring-white/90 ring-offset-1 ring-offset-black/20"
+                            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                          />
+                          <motion.div
+                            initial={{ scaleX: 0 }}
+                            animate={{ scaleX: 1 }}
+                            transition={{ duration: 5, ease: [0.4, 0, 0.2, 1] }}
+                            className="absolute bottom-0 left-0 w-full h-[2px] bg-white shadow-glow origin-left"
+                            style={{ boxShadow: '0 0 10px rgba(255,255,255,0.5)' }}
+                            onAnimationComplete={() => {
+                              goToSlide((currentSlide + 1) % heroSlides.length);
+                            }}
+                          />
+                        </>
                       )}
                     </motion.button>
                   );
                 })}
               </div>
+
+              {/* Next Button */}
+              <motion.button
+                onClick={() => goToSlide(currentSlide + 1)}
+                disabled={isAnimating}
+                className="relative group"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
+                                group-hover:bg-black/60 transition-all duration-300 -z-10" />
+                <div className="p-3 text-white flex items-center overflow-hidden">
+                  <div className="w-0 group-hover:w-20 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
+                    <span className="text-sm font-medium pr-2 opacity-0 group-hover:opacity-100 
+                                  transition-opacity duration-200 delay-100">
+                      Next
+                    </span>
+                  </div>
+                  <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                </div>
+              </motion.button>
             </div>
           </div>
         </section>

@@ -74,3 +74,20 @@ button {
   transform-style: preserve-3d;
   backface-visibility: hidden;
 }
+
+.transform-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumbnail-slider {
+    transition-duration: 0.1s;
+  }
+}
+
+.thumbnail-hover {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
