@@ -1,4 +1,3 @@
-//components/home/hero.tsx
 'use client';
 
 import { PriceRangeFilter } from '@/components/filter/PriceRangeFilter';
@@ -22,6 +21,16 @@ interface SlideContent {
   subtitle?: string;
   lampImage?: string;
   productLink?: string;
+  menu: {
+    items: Array<{
+      label: string;
+      link: string;
+      description?: string;
+    }>;
+    position?: 'left' | 'right';
+    style?: 'minimal' | 'elegant' | 'modern' | 'classic' | 'bold';
+    alignment?: 'top' | 'middle' | 'center';
+  };
 }
 
 const heroSlides: SlideContent[] = [
@@ -33,39 +42,89 @@ const heroSlides: SlideContent[] = [
     title: 'Modern Living',
     subtitle: 'Discover our collection',
     lampImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/lamp-el.svg',
-    productLink: '/product/sleek-curve-japandi-glow-minimalist-pendant-light'
+    productLink: '/product/sleek-curve-japandi-glow-minimalist-pendant-light',
+    menu: {
+      items: [
+        { label: 'Modern Lighting', link: '/collections/lighting', description: 'Illuminate your space' },
+        { label: 'Living Room', link: '/collections/living-room', description: 'Create comfort' },
+        { label: 'New Arrivals', link: '/collections/new', description: 'Latest designs' }
+      ],
+      position: 'right',
+      style: 'elegant',
+      alignment: 'top'
+    }
   },
   {
     id: 'slide-2',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room.jpg',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/simple-room-chair.jpg',
     mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room.jpg',
     alt: 'Modern Room Design',
     title: 'Transform Your Space',
-    subtitle: 'Discover timeless elegance'
+    subtitle: 'Discover timeless elegance',
+    menu: {
+      items: [
+        { label: 'Dining Sets', link: '/collections/dining', description: 'Gather in elegance' },
+        { label: 'Table Collection', link: '/collections/tables', description: 'Centerpiece designs' },
+        { label: 'Seating Solutions', link: '/collections/chairs', description: 'Comfort meets style' }
+      ],
+      position: 'left',
+      style: 'modern',
+      alignment: 'center'
+    }
   },
   {
     id: 'slide-3',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/arche.jpg',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/wall-room.jpg',
     mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/arche.jpg',
     alt: 'Architectural Beauty',
     title: 'Architectural Beauty',
-    subtitle: 'Where form meets function'
+    subtitle: 'Where form meets function',
+    menu: {
+      items: [
+        { label: 'Wall Art', link: '/collections/wall-art', description: 'Statement pieces' },
+        { label: 'Sculptures', link: '/collections/sculptures', description: 'Artistic expression' },
+        { label: 'Designer Collection', link: '/collections/designer', description: 'Signature works' }
+      ],
+      position: 'right',
+      style: 'bold',
+      alignment: 'top'
+    }
   },
   {
     id: 'slide-4',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/stool.png',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/table-sets.jpg',
     mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/stool.png',
     alt: 'Minimalist Living',
     title: 'Minimalist Living',
-    subtitle: 'Less is more'
+    subtitle: 'Less is more',
+    menu: {
+      items: [
+        { label: 'Minimalist Decor', link: '/collections/minimalist', description: 'Simple elegance' },
+        { label: 'Storage Solutions', link: '/collections/storage', description: 'Hidden beauty' },
+        { label: 'Accent Pieces', link: '/collections/accents', description: 'Perfect details' }
+      ],
+      position: 'right',
+      style: 'minimal',
+      alignment: 'middle'
+    }
   },
   {
     id: 'slide-5',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair.jpg',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair_f650c3ec-9c09-4940-9ee0-926176e22986.jpg',
     mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair.jpg',
     alt: 'Comfort Redefined',
     title: 'Comfort Redefined',
-    subtitle: 'Experience luxury in every detail'
+    subtitle: 'Experience luxury in every detail',
+    menu: {
+      items: [
+        { label: 'Luxury Seating', link: '/collections/luxury', description: 'Premium comfort' },
+        { label: 'Designer Chairs', link: '/collections/designer-chairs', description: 'Iconic pieces' },
+        { label: 'Custom Orders', link: '/collections/custom', description: 'Made for you' }
+      ],
+      position: 'right',
+      style: 'classic',
+      alignment: 'center'
+    }
   }
 ];
 
@@ -109,6 +168,30 @@ const getLoopedIndex = (index: number) => {
   return index;
 };
 
+// Add the style helper function
+const getMenuStyles = (style: string | undefined, index: number) => {
+  const baseStyles = 'py-3 px-6';
+  // Use minimal style for all slides
+  return `${baseStyles} hover:pr-12 text-right`;
+};
+
+const getMenuPosition = (menu: { position?: string; alignment?: string }, slideId: string) => {
+  switch (slideId) {
+    case 'slide-1':
+      return 'right-16 top-24';
+    case 'slide-2':
+      return 'left-16 top-24';
+    case 'slide-3':
+      return 'right-16 top-24';
+    case 'slide-4':
+      return 'right-16 top-24';
+    case 'slide-5':
+      return 'right-16 top-24';
+    default:
+      return `${menu.position === 'left' ? 'left-16' : 'right-16'} top-1/2 -translate-y-1/2`;
+  }
+};
+
 function Hero() {
   const { results, isLoading, error, performSearch } = useSearch();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -130,7 +213,13 @@ function Hero() {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const controls = useAnimation();
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const autoPlayRef = useRef<NodeJS.Timeout>();
+  const autoPlayRef = useRef<NodeJS.Timeout | null>();
+  const [isPaused, setIsPaused] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const filteredAndSortedResults = useMemo(() => {
     // First, ensure we have the correct types by mapping the products
@@ -252,12 +341,13 @@ function Hero() {
     if (isAnimating) return;
     setIsAnimating(true);
     
-    // Normalize the index to always move forward
-    const nextIndex = ((index % heroSlides.length) + heroSlides.length) % heroSlides.length;
-    setCurrentSlide(nextIndex);
+    let targetIndex = index;
+    if (targetIndex < 0) targetIndex = heroSlides.length - 1;
+    if (targetIndex >= heroSlides.length) targetIndex = 0;
     
-    setTimeout(() => setIsAnimating(false), 600);
-  }, [isAnimating]);
+    setCurrentSlide(targetIndex);
+    setTimeout(() => setIsAnimating(false), 500);
+  }, [isAnimating, heroSlides.length]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches[0]) {
@@ -281,18 +371,51 @@ function Hero() {
     }
   };
 
+  const togglePause = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setIsPaused(prev => {
+      const newPausedState = !prev;
+      
+      if (newPausedState) {
+        // Pausing
+        if (autoPlayRef.current) {
+          clearInterval(autoPlayRef.current);
+          autoPlayRef.current = null;
+        }
+      } else {
+        // Resuming
+        autoPlayRef.current = setInterval(() => {
+          goToSlide((currentSlide + 1) % heroSlides.length);
+        }, 5000);
+      }
+      
+      return newPausedState;
+    });
+  }, [goToSlide, currentSlide, heroSlides.length]);
+
   useEffect(() => {
-    autoPlayRef.current = setInterval(() => {
-      const nextSlide = (currentSlide + 1) % heroSlides.length;
-      goToSlide(nextSlide);
-    }, 5000);
+    const startAutoPlay = () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+      }
+      
+      if (!isPaused) {
+        autoPlayRef.current = setInterval(() => {
+          goToSlide((currentSlide + 1) % heroSlides.length);
+        }, 5000);
+      }
+    };
+
+    startAutoPlay();
 
     return () => {
       if (autoPlayRef.current) {
         clearInterval(autoPlayRef.current);
       }
     };
-  }, [currentSlide, goToSlide]);
+  }, [isPaused, currentSlide, goToSlide, heroSlides.length]);
 
   return (
     <>
@@ -302,6 +425,9 @@ function Hero() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
         >
+          {/* Add subtle overlay */}
+          <div className="absolute inset-0 bg-black/10" />
+
           {/* Top Navigation Icons */}
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
@@ -765,7 +891,7 @@ function Hero() {
                     sizes="100vw"
                   />
 
-                  {/* Slide Content */}
+                  {/* Lamp Image (only for first slide) */}
                   {index === 0 && slide.lampImage && (
                     <motion.div 
                       initial={{ opacity: 0, y: -50 }}
@@ -785,95 +911,90 @@ function Hero() {
                       }}
                       className="absolute left-[15%] top-[0%] z-10 w-[120px] origin-top md:w-[180px]"
                     >
-                      <div className="relative">
-                        <Image
-                          src={slide.lampImage}
-                          alt=""
-                          width={180}
-                          height={180}
-                          priority
-                          className="h-auto w-full"
-                        />
-                        
-                        {/* Interactive Product Dot */}
-                        <div className="group absolute bottom-[20%] left-[65%] -translate-x-1/2 translate-y-1/2">
-                          {/* Pulsating Dot */}
-                          <div className="relative inline-flex">
-                            {/* Pulse rings */}
-                            <div className="absolute -inset-1.5
-                                          w-7 h-7 rounded-full bg-[#dcd5ca]/60
-                                          animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
-                            <div className="absolute -inset-1.5
-                                          w-7 h-7 rounded-full bg-[#ebe7e0]/50
-                                          animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
-                            
-                            {/* Main dot */}
-                            <div className="relative w-4 h-4 rounded-full 
-                                          bg-[#ebe7e0] border-2 border-[#9c826b]
-                                          shadow-[0_0_10px_rgba(199,186,168,0.8)]
-                                          transition-all duration-500 ease-in-out
-                                          group-hover:scale-125" />
-
-                            {/* Hover Button */}
-                            <div className="absolute left-6 top-2">
-                              <motion.div
-                                initial={{ opacity: 0, x: -20, scale: 0.95 }}
-                                whileHover={{ scale: 1.05 }}
-                                animate={{ opacity: 0, x: -20 }}
-                                className="group-hover:animate-slideIn"
-                              >
-                                <Link 
-                                  href="/product/sleek-curve-japandi-glow-minimalist-pendant-light"
-                                  className="invisible relative flex items-center gap-2 
-                                           bg-[#ebe7e0]/95 backdrop-blur-sm shadow-lg rounded-lg p-2
-                                           border border-[#b39e86] 
-                                           transition-all duration-500 ease-out
-                                           group-hover:visible hover:bg-[#dcd5ca]/95"
-                                >
-                                  <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
-                                    View Product
-                                  </span>
-                                  <svg 
-                                    className="w-4 h-4 text-[#9c826b] transition-all duration-300
-                                            group-hover:translate-x-1" 
-                                    fill="none" 
-                                    viewBox="0 0 24 24" 
-                                    stroke="currentColor"
-                                  >
-                                    <path 
-                                      strokeLinecap="round" 
-                                      strokeLinejoin="round" 
-                                      strokeWidth={2} 
-                                      d="M13 7l5 5m0 0l-5 5m5-5H6" 
-                                    />
-                                  </svg>
-                                </Link>
-                              </motion.div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <Image
+                        src={slide.lampImage}
+                        alt="Decorative lamp"
+                        width={180}
+                        height={400}
+                        className="w-full"
+                      />
                     </motion.div>
                   )}
 
-                  {/* Slide Text */}
+                  {/* Slide Menu with Title */}
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, x: slide.menu.position === 'left' ? -50 : 50 }}
                     animate={{
                       opacity: currentSlide === index ? 1 : 0,
-                      y: currentSlide === index ? 0 : 20,
+                      x: currentSlide === index ? 0 : (slide.menu.position === 'left' ? -50 : 50)
                     }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className="absolute bottom-32 left-8 z-10 max-w-xl"
+                    transition={{ duration: 0.7, delay: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                    className={`absolute ${getMenuPosition(slide.menu, slide.id)} z-20 max-w-[460px] p-7 rounded-xl 
+                               bg-black/10 backdrop-blur-[2px] shadow-2xl shadow-black/5 border border-white/5`}
                   >
-                    <h2 className="text-4xl font-bold text-white md:text-6xl">
-                      {slide.title}
-                    </h2>
-                    {slide.subtitle && (
-                      <p className="mt-4 text-lg text-white/90 md:text-xl">
-                        {slide.subtitle}
-                      </p>
-                    )}
+                    {/* Title Group with refined typography */}
+                    <motion.div
+                      className={`mb-7 ${slide.menu.position === 'right' ? 'text-right' : 'text-left'}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <h2 className="text-[2.5rem] leading-[1.1] tracking-normal text-white font-light 
+                                     [text-shadow:_0_1px_2px_rgba(0,0,0,0.1)]">
+                        {slide.title}
+                      </h2>
+                      {slide.subtitle && (
+                        <p className="mt-3 text-xl text-white/90 font-light tracking-wide">
+                          {slide.subtitle}
+                        </p>
+                      )}
+                    </motion.div>
+
+                    {/* Menu Items with adjusted spacing */}
+                    <div className="space-y-3">
+                      {slide.menu.items.map((item, idx) => (
+                        <motion.div
+                          key={item.label}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.6 + (idx * 0.1) }}
+                          className={`group cursor-pointer ${
+                            slide.menu.position === 'right' ? 'text-right' : 'text-left'
+                          }`}
+                        >
+                          <Link 
+                            href={item.link}
+                            className={`relative block transition-all duration-500 py-3.5 px-7 rounded-lg 
+                                     ${slide.menu.position === 'right' ? 'hover:pr-14' : 'hover:pl-14'} 
+                                     hover:bg-white/5`}
+                          >
+                            <span className="block text-2xl font-light tracking-wide text-white/90 
+                                           group-hover:text-white transition-colors duration-500">
+                              {item.label}
+                            </span>
+                            {item.description && (
+                              <span className="block mt-1 text-sm text-white/60 group-hover:text-white/80 
+                                             transition-colors duration-500 font-light tracking-wide">
+                                {item.description}
+                              </span>
+                            )}
+                            <motion.div
+                              className={`absolute ${slide.menu.position === 'right' ? '-right-8' : '-left-8'} 
+                                       top-1/2 -translate-y-1/2 w-6 h-[1px] bg-white/40 
+                                       origin-${slide.menu.position === 'right' ? 'right' : 'left'} scale-x-0 
+                                       group-hover:scale-x-100 group-hover:bg-white transition-all duration-500`}
+                              layoutId={`menu-line-${index}-${idx}`}
+                            />
+                            <motion.div 
+                              className={`absolute ${slide.menu.position === 'right' ? 'right-4' : 'left-4'} 
+                                       top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-white/0 
+                                       group-hover:bg-white scale-0 group-hover:scale-100 
+                                       transition-all duration-500 delay-100`}
+                            />
+                          </Link>
+                        </motion.div>
+                      ))}
+                    </div>
                   </motion.div>
                 </motion.div>
               ))}
@@ -903,7 +1024,7 @@ function Hero() {
               </motion.button>
 
               {/* Thumbnails */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 relative">
                 {[...Array(3)].map((_, i) => {
                   const slideIndex = getLoopedIndex(currentSlide - 1 + i);
                   const slide = heroSlides[slideIndex];
@@ -911,37 +1032,26 @@ function Hero() {
                   const isActive = i === 1;
                   
                   return (
-                    <motion.button
+                    <motion.div
                       key={`${slide.id}-${i}`}
                       onClick={() => goToSlide(slideIndex)}
                       initial={false}
                       animate={{
-                        scale: isActive ? 1 : 0.92,
-                        rotateY: (i - 1) * 10,
-                        z: isActive ? 0 : -20,
-                        opacity: 1,
-                        y: isActive ? -8 : 0,
-                        filter: isActive ? 'brightness(100%)' : 'brightness(90%)'
+                        scale: isActive ? 1 : 0.9,
+                        rotateY: (i - 1) * 12,
+                        z: isActive ? 0 : -30,
+                        y: isActive ? -4 : 0
                       }}
                       whileHover={{ 
-                        scale: isActive ? 1 : 0.96,
-                        rotateY: (i - 1) * 8,
-                        z: isActive ? 0 : -15,
-                        opacity: 1,
-                        y: isActive ? -8 : -4
+                        scale: isActive ? 1.02 : 0.95,
+                        y: isActive ? -8 : -4,
+                        transition: { duration: 0.2 }
                       }}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 350,
-                        damping: 30,
-                        mass: 0.8,
-                        filter: { duration: 0.3 }
-                      }}
-                      className={`relative overflow-hidden transform-gpu transition-all duration-300
-                                 rounded-sm shadow-lg p-0
-                                 ${isActive ? 'w-44 h-24 ring-2 ring-white/90 ring-offset-1 ring-offset-black/20' : 
-                                   'w-40 h-20 ring-1 ring-white/50'}
-                                `}
+                      className={`relative overflow-hidden cursor-pointer
+                                 transition-shadow duration-300
+                                 ${isActive ? 
+                                   'w-44 h-24 shadow-lg hover:shadow-xl z-10' : 
+                                   'w-36 h-20 shadow-md hover:shadow-lg z-0'}`}
                     >
                       <div className="absolute inset-0 w-full h-full">
                         <Image
@@ -992,18 +1102,37 @@ function Hero() {
                       {isActive && (
                         <>
                           <motion.div
+                            layoutId="activeThumb"
+                            className="absolute inset-0 border-2 border-white"
+                            transition={{ duration: 0.3 }}
+                          />
+                          
+                          <motion.div
                             initial={{ scaleX: 0 }}
                             animate={{ scaleX: 1 }}
-                            transition={{ duration: 5, ease: [0.4, 0, 0.2, 1] }}
-                            className="absolute bottom-0 left-0 w-full h-[2px] bg-white shadow-glow origin-left"
-                            style={{ boxShadow: '0 0 10px rgba(255,255,255,0.5)' }}
+                            transition={{ duration: 5, ease: "linear" }}
+                            className="absolute bottom-0 left-0 w-full h-0.5 bg-white
+                                     origin-left shadow-[0_0_8px_rgba(255,255,255,0.5)]"
                             onAnimationComplete={() => {
-                              goToSlide((currentSlide + 1) % heroSlides.length);
+                              goToSlide(currentSlide + 1);
                             }}
+                          />
+                          
+                          <motion.div
+                            initial={{ x: '-100%' }}
+                            animate={{ x: '100%' }}
+                            transition={{
+                              duration: 1,
+                              repeat: Infinity,
+                              repeatDelay: 3
+                            }}
+                            className="absolute inset-y-0 w-1/3 bg-gradient-to-r 
+                                     from-transparent via-white/30 to-transparent
+                                     transform -skew-x-12 pointer-events-none"
                           />
                         </>
                       )}
-                    </motion.button>
+                    </motion.div>
                   );
                 })}
               </div>
@@ -1017,7 +1146,7 @@ function Hero() {
                 whileTap={{ scale: 0.95 }}
               >
                 <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
-                                group-hover:bg-black/60 transition-all duration-300 -z-10" />
+                               group-hover:bg-black/60 transition-all duration-300 -z-10" />
                 <div className="p-3 text-white flex items-center overflow-hidden">
                   <div className="w-0 group-hover:w-20 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
                     <span className="text-sm font-medium pr-2 opacity-0 group-hover:opacity-100 
