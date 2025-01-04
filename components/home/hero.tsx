@@ -37,32 +37,32 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-2',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room.jpg?v=1735991821',
-    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room.jpg?v=1735991821',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room.jpg',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room.jpg',
     alt: 'Modern Room Design',
     title: 'Transform Your Space',
     subtitle: 'Discover timeless elegance'
   },
   {
     id: 'slide-3',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/arche.jpg?v=1735991822',
-    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/arche.jpg?v=1735991822',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/arche.jpg',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/arche.jpg',
     alt: 'Architectural Beauty',
     title: 'Architectural Beauty',
     subtitle: 'Where form meets function'
   },
   {
     id: 'slide-4',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/stool.png?v=1735991822',
-    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/stool.png?v=1735991822',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/stool.png',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/stool.png',
     alt: 'Minimalist Living',
     title: 'Minimalist Living',
     subtitle: 'Less is more'
   },
   {
     id: 'slide-5',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair.jpg?v=1735991822',
-    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair.jpg?v=1735991822',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair.jpg',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair.jpg',
     alt: 'Comfort Redefined',
     title: 'Comfort Redefined',
     subtitle: 'Experience luxury in every detail'
