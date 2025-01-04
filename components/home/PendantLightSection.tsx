@@ -802,77 +802,76 @@ const FeaturedProduct = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
               transition={{ delay: 0.9 }}
-              className="flex flex-col gap-3"
+              className="flex items-center gap-3"
             >
               {/* Quick View Button */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setIsQuickViewOpen(true)}
-                className="w-full h-12 px-6 border-2 border-[#6B5E4C] text-[#6B5E4C] 
-                           rounded-md hover:bg-[#6B5E4C]/5 transition-colors duration-300"
+                className="h-12 px-4 border-2 border-[#6B5E4C] text-[#6B5E4C] 
+                           rounded-md hover:bg-[#6B5E4C]/5 transition-colors duration-300
+                           w-[120px]"
               >
                 Quick View
               </motion.button>
               
-              {/* Add to Cart Row */}
-              <div className="flex items-center gap-3">
-                {/* Quantity Selector */}
-                <div className="flex h-12 items-center rounded-md border-2 border-[#6B5E4C]/20">
-                  <button
-                    onClick={decrementQuantity}
-                    className="flex h-full items-center justify-center px-2 text-[#6B5E4C] 
-                             transition-colors duration-200 hover:bg-[#6B5E4C]/5"
-                    aria-label="Decrease quantity"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </button>
-                  <div className="w-8 text-center text-sm font-medium text-[#6B5E4C]">{quantity}</div>
-                  <button
-                    onClick={incrementQuantity}
-                    className="flex h-full items-center justify-center px-2 text-[#6B5E4C] 
-                             transition-colors duration-200 hover:bg-[#6B5E4C]/5"
-                    aria-label="Increase quantity"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </button>
-                </div>
-
-                {/* Add to Cart Button */}
-                <motion.button
-                  onClick={handleAddToCart}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  disabled={!selectedVariant || !product?.availableForSale || isPending}
-                  className={`group relative h-12 flex-1 flex items-center justify-center gap-2 
-                             overflow-hidden rounded-md px-6 text-sm font-medium text-white 
-                             shadow-md transition-all duration-300 hover:shadow-lg ${
-                    !selectedVariant || !product?.availableForSale || isPending
-                      ? 'cursor-not-allowed bg-gray-400'
-                      : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
-                  }`}
+              {/* Quantity Selector */}
+              <div className="flex h-12 items-center rounded-md border-2 border-[#6B5E4C]/20
+                              w-[100px]">
+                <button
+                  onClick={decrementQuantity}
+                  className="flex h-full items-center justify-center px-2 text-[#6B5E4C] 
+                           transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+                  aria-label="Decrease quantity"
                 >
-                  <motion.div
-                    variants={blinkAnimation}
-                    initial="initial"
-                    animate={isPending ? "initial" : "hover"}
-                    className="relative z-10"
-                  >
-                    <ShoppingCart className="h-4 w-4" />
-                  </motion.div>
-                  <span className="relative z-10 font-medium">
-                    {isPending
-                      ? 'Adding...'
-                      : !selectedVariant
-                        ? 'Select options'
-                        : !product?.availableForSale
-                          ? 'Out of Stock'
-                          : 'Add to Cart'}
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C] 
-                                opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                </motion.button>
+                  <Minus className="h-3 w-3" />
+                </button>
+                <div className="w-8 text-center text-sm font-medium text-[#6B5E4C]">{quantity}</div>
+                <button
+                  onClick={incrementQuantity}
+                  className="flex h-full items-center justify-center px-2 text-[#6B5E4C] 
+                           transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="h-3 w-3" />
+                </button>
               </div>
+
+              {/* Add to Cart Button */}
+              <motion.button
+                onClick={handleAddToCart}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={!selectedVariant || !product?.availableForSale || isPending}
+                className={`group relative h-12 flex-1 flex items-center justify-center gap-2 
+                           overflow-hidden rounded-md px-6 text-sm font-medium text-white 
+                           shadow-md transition-all duration-300 hover:shadow-lg ${
+                  !selectedVariant || !product?.availableForSale || isPending
+                    ? 'cursor-not-allowed bg-gray-400'
+                    : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
+                }`}
+              >
+                <motion.div
+                  variants={blinkAnimation}
+                  initial="initial"
+                  animate={isPending ? "initial" : "hover"}
+                  className="relative z-10"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                </motion.div>
+                <span className="relative z-10 font-medium">
+                  {isPending
+                    ? 'Adding...'
+                    : !selectedVariant
+                      ? 'Select options'
+                      : !product?.availableForSale
+                        ? 'Out of Stock'
+                        : 'Add to Cart'}
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C] 
+                              opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              </motion.button>
             </motion.div>
 
             {/* Tags */}
