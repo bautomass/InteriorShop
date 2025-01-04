@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
@@ -525,17 +525,17 @@ const AboutHero = memo(function AboutHero() {
         {/* Added z-index to keep content on top */}
         <div className="relative z-10 max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-            {/* Left Column */}
-            <div className="lg:col-span-5 space-y-8">
-              <div className="space-y-8">
+            {/* Left Column - with reduced spacing */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="space-y-6">
                 <h1 className="text-[#6B5E4C] text-5xl font-light leading-tight">
                   Beauty in Simplicity
-                  <span className="block mt-2 text-2xl text-[#8C7E6A]">
+                  <span className="block mt-1.5 text-2xl text-[#8C7E6A]">
                     Warmth in Minimalism
                   </span>
                 </h1>
                 
-                <div className="space-y-4 text-[#8C7E6A] text-lg">
+                <div className="space-y-3 text-[#8C7E6A] text-lg">
                   <p>
                     Welcome to our store dedicated to those who find beauty in simplicity and warmth in the minimalist approach.
                   </p>
@@ -545,8 +545,8 @@ const AboutHero = memo(function AboutHero() {
                 </div>
               </div>
 
-              {/* Enhanced features section */}
-              <div className="flex gap-4">
+              {/* Features section */}
+              <div className="flex gap-3">
                 {features.map((feature) => (
                   <div
                     key={feature.id}
@@ -583,7 +583,7 @@ const AboutHero = memo(function AboutHero() {
                 ))}
               </div>
 
-              {/* Enhanced quote section */}
+              {/* Quote section */}
               <blockquote className="relative pl-6">
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#B5A48B] to-transparent" />
                 <p className="italic text-[#8C7E6A] text-lg">
@@ -591,6 +591,44 @@ const AboutHero = memo(function AboutHero() {
                 </p>
                 <cite className="block mt-2 text-[#6B5E4C] not-italic">— Leonardo da Vinci</cite>
               </blockquote>
+
+              {/* Collections section */}
+              <div className="flex items-center">
+                <div className="flex items-center gap-6">
+                  <h2 className={`relative text-[#6B5E4C] text-2xl font-light transform
+                    ${sectionInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+                    motion-safe:transition-all motion-safe:duration-700 motion-safe:delay-300
+                    after:content-[''] after:absolute after:-bottom-2 after:left-0 
+                    after:w-1/3 after:h-[1px] after:bg-[#B5A48B]
+                    after:transform after:scale-x-0 after:origin-left
+                    after:transition-transform after:duration-500
+                    ${sectionInView ? 'after:scale-x-100' : ''}
+                    hover:after:w-full hover:after:transition-all hover:after:duration-700
+                    before:content-[''] before:absolute before:-top-1 before:right-0 
+                    before:w-1/4 before:h-[1px] before:bg-[#B5A48B]/50
+                    before:transform before:scale-x-0 before:origin-right
+                    before:transition-transform before:duration-500
+                    ${sectionInView ? 'before:scale-x-100' : ''}`}>
+                    <span className="bg-gradient-to-r from-[#6B5E4C] to-[#B5A48B] bg-clip-text text-transparent">
+                      Discover Our Collections:
+                    </span>
+                  </h2>
+                  
+                  <Link
+                    href="/collections"
+                    className="group inline-flex items-center gap-2 px-5 py-2.5
+                      bg-[#6B5E4C] rounded-lg text-[#eaeadf] text-sm
+                      hover:bg-[#7B6E5C] transition-all duration-300 
+                      transform hover:-translate-y-0.5"
+                  >
+                    <span className="text-sm font-medium">Explore Collections</span>
+                    <ArrowRight 
+                      className="w-3.5 h-3.5 transform translate-x-0
+                        group-hover:translate-x-1 transition-transform duration-300" 
+                    />
+                  </Link>
+                </div>
+              </div>
             </div>
 
             {/* Right Column - Enhanced Image Gallery */}
@@ -657,93 +695,6 @@ const AboutHero = memo(function AboutHero() {
                           : 'bg-white/40 hover:bg-white/60'}`}
                     />
                   ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Enhanced Collections Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className={`text-[#6B5E4C] text-2xl font-light transform
-                ${sectionInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
-                motion-safe:transition-all motion-safe:duration-700 motion-safe:delay-300`}>
-                Our Signature Collections:
-              </h2>
-              
-              <div className="flex items-center gap-4" role="navigation" aria-label="Collection navigation">
-                {!scrollMetrics.isAtStart && (
-                  <button
-                    onClick={() => scroll('left')}
-                    className="w-10 h-10 flex items-center justify-center rounded-full 
-                      bg-white/90 backdrop-blur-sm shadow-lg transform transition-all 
-                      duration-300 hover:scale-105 focus:outline-none focus:ring-2 
-                      focus:ring-[#6B5E4C] focus:ring-offset-2"
-                    aria-label="View previous collections"
-                    disabled={scrollMetrics.isAtStart}
-                  >
-                    <ArrowLeft className="w-5 h-5 text-[#6B5E4C]" aria-hidden="true" />
-                  </button>
-                )}
-
-                {!scrollMetrics.isAtEnd && (
-                  <button
-                    onClick={() => scroll('right')}
-                    className="w-10 h-10 flex items-center justify-center rounded-full 
-                      bg-white/90 backdrop-blur-sm shadow-lg transform transition-all 
-                      duration-300 hover:scale-105 focus:outline-none focus:ring-2 
-                      focus:ring-[#6B5E4C] focus:ring-offset-2"
-                    aria-label="View more collections"
-                    disabled={scrollMetrics.isAtEnd}
-                  >
-                    <ArrowRight className="w-5 h-5 text-[#6B5E4C]" aria-hidden="true" />
-                  </button>
-                )}
-              </div>
-            </div>
-            
-            <div className="relative">
-              <div 
-                ref={scrollContainerRef}
-                className="overflow-hidden"
-              >
-                <div 
-                  className="flex gap-4 py-2 transition-transform duration-300 ease-out"
-                  style={{ 
-                    transform: `translateX(-${scrollPosition}px)`,
-                    willChange: 'transform'
-                  }}
-                >
-                  {isLoading ? (
-                    Array.from({ length: 6 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="animate-pulse bg-white/50 rounded-xl h-16 w-[200px] flex-shrink-0"
-                      />
-                    ))
-                  ) : collections.length > 0 ? (
-                    <>
-                      {collections.map((collection, index) => (
-                        <div key={collection.handle} className="flex-shrink-0">
-                          <CollectionCard 
-                            collection={collection}
-                            inView={sectionInView}
-                            index={index}
-                          />
-                        </div>
-                      ))}
-                      <div className="flex-shrink-0">
-                        <ViewAllCard 
-                          inView={sectionInView}
-                          index={collections.length}
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <div className="w-full text-center p-12 bg-white/50 rounded-xl">
-                      <p className="text-[#6B5E4C] text-sm">No collections found</p>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
