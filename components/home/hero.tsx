@@ -241,27 +241,12 @@ function Hero() {
     setIsCartHovered(isHovering);
   };
 
-  const goToSlide = useCallback(async (index: number) => {
+  const goToSlide = useCallback((index: number) => {
     if (isAnimating || index === currentSlide) return;
-    
     setIsAnimating(true);
-    const direction = index > currentSlide ? 1 : -1;
-    
-    await controls.start({
-      x: -direction * 100 + '%',
-      transition: { duration: 0.5, ease: 'easeInOut' }
-    });
-    
     setCurrentSlide(index);
-    
-    await controls.set({ x: direction * 100 + '%' });
-    await controls.start({
-      x: 0,
-      transition: { duration: 0.5, ease: 'easeInOut' }
-    });
-    
-    setIsAnimating(false);
-  }, [currentSlide, controls, isAnimating]);
+    setTimeout(() => setIsAnimating(false), 500); // Match duration of slide transition
+  }, [currentSlide, isAnimating]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches[0]) {
@@ -728,16 +713,26 @@ function Hero() {
           </motion.div>
 
           {/* Updated Hero Content */}
-          <div className="relative h-screen w-full">
-            <motion.div
-              animate={controls}
-              className="absolute inset-0 flex"
-            >
+          <div className="relative h-screen w-full overflow-hidden">
+            <div className="flex h-full">
               {heroSlides.map((slide, index) => (
-                <div
+                <motion.div
                   key={slide.id}
                   ref={el => slideRefs.current[index] = el}
-                  className="relative h-full w-full flex-shrink-0"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    left: `${index * 100}%`
+                  }}
+                  animate={{
+                    x: `${-currentSlide * 100}%`
+                  }}
+                  transition={{
+                    duration: 0.5,
+                    ease: "easeInOut"
+                  }}
+                  className="flex-shrink-0"
                 >
                   {/* Background Images */}
                   <Image
@@ -869,10 +864,10 @@ function Hero() {
                       </p>
                     )}
                   </motion.div>
-                </div>
+                </motion.div>
               ))}
-            </motion.div>
-
+            </div>
+            
             {/* Navigation Arrows */}
             <button
               onClick={() => goToSlide(currentSlide - 1)}
