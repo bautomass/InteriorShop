@@ -1,6 +1,5 @@
 'use client';
 
-import { heroSlides } from '@/data/hero-slides';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useHeaderState } from '@/hooks/useHeaderState';
 import { useSearch } from '@/hooks/useSearch';
@@ -12,19 +11,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-declare global {
-  interface Window {
-    Image: {
-      new(): HTMLImageElement;
-    }
-  }
-}
-
-// Lazy load non-critical components
+// Dynamic imports for modal-specific components
 const PriceRangeFilter = dynamic(() => import('@/components/filter/PriceRangeFilter').then(mod => mod.PriceRangeFilter), { 
   ssr: false,
-  loading: () => <div className="h-[40px] bg-neutral-100 animate-pulse rounded-lg" />,
-  suspense: true // Add suspense mode
+  loading: () => <div className="h-[40px] bg-neutral-100 animate-pulse rounded-lg" />
 });
 
 const SortSelect = dynamic(() => import('@/components/filter/SortSelect').then(mod => mod.SortSelect), {
@@ -56,7 +46,7 @@ const useSlideNavigation = (totalSlides: number) => {
     if (nextSlide) {
       const imagesToPreload = [nextSlide.image, nextSlide.mobileImage].filter(Boolean);
       imagesToPreload.forEach(src => {
-        const img = document.createElement('img');
+        const img = new window.Image();
         img.src = src;
       });
     }
@@ -71,31 +61,14 @@ const useSlideNavigation = (totalSlides: number) => {
 // Image preloader hook
 const useImagePreloader = (images: string[]) => {
   useEffect(() => {
-    const preloadImages = async () => {
-      const imagePromises = images
-        .filter(src => src && typeof src === 'string') // Validate URLs
-        .map(src => {
-          return new Promise((resolve, reject) => {
-            const img = document.createElement('img');
-            img.onload = resolve;
-            img.onerror = () => {
-              console.warn(`Failed to preload: ${src}`);
-              resolve(null); // Resolve instead of reject to prevent Promise.all from failing
-            };
-            img.src = src;
-          });
-        });
-
-      try {
-        await Promise.all(imagePromises);
-      } catch (error) {
-        // Silently handle errors to prevent console spam
-      }
+    const preloadImages = () => {
+      images.forEach(src => {
+        const img = new window.Image();
+        img.src = src;
+      });
     };
 
-    if (images?.length) {
-      requestIdleCallback(() => preloadImages());
-    }
+    preloadImages();
   }, [images]);
 };
 
@@ -119,6 +92,101 @@ interface SlideContent {
     alignment?: 'top' | 'middle' | 'center';
   };
 }
+
+const heroSlides: SlideContent[] = [
+  {
+    id: 'slide-1',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile_image_banner.jpg',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile_banner_simple_interior_ideas_ec3c6bf6-8b9a-47e4-be91-214ef01ede8f.jpg',
+    alt: 'Simple Interior Ideas',
+    title: 'Modern Living',
+    subtitle: 'Discover our collection',
+    lampImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/lamp-el.svg',
+    productLink: '/product/sleek-curve-japandi-glow-minimalist-pendant-light',
+    menu: {
+      items: [
+        { label: 'Modern Lighting', link: '/collections/lighting', description: 'Illuminate your space' },
+        { label: 'Living Room', link: '/collections/living-room', description: 'Create comfort' },
+        { label: 'New Arrivals', link: '/collections/new', description: 'Latest designs' }
+      ],
+      position: 'right',
+      style: 'elegant',
+      alignment: 'top'
+    }
+  },
+  {
+    id: 'slide-2',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/simple-room-chair.jpg',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room.jpg',
+    alt: 'Modern Room Design',
+    title: 'Transform Your Space',
+    subtitle: 'Discover timeless elegance',
+    menu: {
+      items: [
+        { label: 'Dining Sets', link: '/collections/dining', description: 'Gather in elegance' },
+        { label: 'Table Collection', link: '/collections/tables', description: 'Centerpiece designs' },
+        { label: 'Seating Solutions', link: '/collections/chairs', description: 'Comfort meets style' }
+      ],
+      position: 'left',
+      style: 'modern',
+      alignment: 'center'
+    }
+  },
+  {
+    id: 'slide-3',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/wall-room.jpg',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/arche.jpg',
+    alt: 'Architectural Beauty',
+    title: 'Architectural Beauty',
+    subtitle: 'Where form meets function',
+    menu: {
+      items: [
+        { label: 'Wall Art', link: '/collections/wall-art', description: 'Statement pieces' },
+        { label: 'Sculptures', link: '/collections/sculptures', description: 'Artistic expression' },
+        { label: 'Designer Collection', link: '/collections/designer', description: 'Signature works' }
+      ],
+      position: 'right',
+      style: 'bold',
+      alignment: 'top'
+    }
+  },
+  {
+    id: 'slide-4',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/table-sets.jpg',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/stool.png',
+    alt: 'Minimalist Living',
+    title: 'Minimalist Living',
+    subtitle: 'Less is more',
+    menu: {
+      items: [
+        { label: 'Minimalist Decor', link: '/collections/minimalist', description: 'Simple elegance' },
+        { label: 'Storage Solutions', link: '/collections/storage', description: 'Hidden beauty' },
+        { label: 'Accent Pieces', link: '/collections/accents', description: 'Perfect details' }
+      ],
+      position: 'right',
+      style: 'minimal',
+      alignment: 'middle'
+    }
+  },
+  {
+    id: 'slide-5',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair_f650c3ec-9c09-4940-9ee0-926176e22986.jpg',
+    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair.jpg',
+    alt: 'Comfort Redefined',
+    title: 'Comfort Redefined',
+    subtitle: 'Experience luxury in every detail',
+    menu: {
+      items: [
+        { label: 'Luxury Seating', link: '/collections/luxury', description: 'Premium comfort' },
+        { label: 'Designer Chairs', link: '/collections/designer-chairs', description: 'Iconic pieces' },
+        { label: 'Custom Orders', link: '/collections/custom', description: 'Made for you' }
+      ],
+      position: 'right',
+      style: 'classic',
+      alignment: 'center'
+    }
+  }
+];
 
 // Base Product interface definition
 interface BaseProduct {
@@ -185,25 +253,6 @@ const getMenuPosition = (menu: { position?: string; alignment?: string }, slideI
 };
 
 interface HeroProps {}
-
-interface CartPreviewProps {
-  cart: any; // Replace 'any' with your actual cart type
-  onClose: () => void;
-}
-
-const CartPreview = memo(({ cart, onClose }: CartPreviewProps) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      transition={{ duration: 0.2 }}
-      className="fixed right-24 top-64 w-[290px] md:w-[420px] rounded-lg bg-white/90 backdrop-blur-sm p-5 shadow-xl ring-1 ring-black/5 transform-gpu"
-    >
-      {/* Cart content */}
-    </motion.div>
-  );
-});
 
 const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   useImagePreloader(heroSlides.map(slide => [slide.image, slide.mobileImage]).flat());
@@ -444,52 +493,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     return () => clearInterval(timer);
   }, [currentSlide, isMenuHovered, goToSlide]);
 
-  // Replace heavy animations with CSS transforms
-  const slideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? '100%' : '-100%',
-      opacity: 0
-    }),
-    center: {
-      x: 0,
-      opacity: 1
-    },
-    exit: (direction: number) => ({
-      x: direction < 0 ? '100%' : '-100%',
-      opacity: 0
-    })
-  };
-
-  const CartPreview = memo(({ cart, onClose }: CartPreviewProps) => {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 10 }}
-        transition={{ duration: 0.2 }}
-        className="fixed right-24 top-64 w-[290px] md:w-[420px] rounded-lg bg-white/90 backdrop-blur-sm p-5 shadow-xl ring-1 ring-black/5 transform-gpu"
-      >
-        {/* Cart content */}
-      </motion.div>
-    );
-  });
-
-  useEffect(() => {
-    // Monitor LCP
-    new PerformanceObserver((entryList) => {
-      for (const entry of entryList.getEntries()) {
-        console.log('LCP:', entry.startTime, entry);
-      }
-    }).observe({ entryTypes: ['largest-contentful-paint'] });
-
-    // Monitor CLS
-    new PerformanceObserver((entryList) => {
-      for (const entry of entryList.getEntries()) {
-        console.log('Layout shift:', entry);
-      }
-    }).observe({ entryTypes: ['layout-shift'] });
-  }, []);
-
   return (
     <>
       <div className={`${isModalOpen ? 'blur-sm transition-all duration-200' : ''}`}>
@@ -565,10 +568,106 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       {/* Cart Preview Popup */}
                       <AnimatePresence>
                         {isCartHovered && cart?.lines && (cart.lines as any[]).length > 0 && (
-                          <CartPreview
-                            cart={cart}
-                            onClose={() => handleCartHover(false)}
-                          />
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute right-0 top-12 w-[290px] md:w-[420px] rounded-lg bg-white p-5 shadow-xl ring-1 ring-black/5"
+                            onMouseEnter={() => handleCartHover(true)}
+                            onMouseLeave={() => handleCartHover(false)}
+                            style={{
+                              zIndex: 100,
+                              position: 'fixed',
+                              right: '24px',
+                              top: '64px'
+                            }}
+                          >
+                            {/* Header Section */}
+                            <div className="border-b border-[#6B5E4C]/10 pb-3">
+                              <div className="flex justify-between items-center">
+                                <h3 className="text-base md:text-lg font-semibold text-[#6B5E4C]">Shopping Cart</h3>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm text-[#8C7E6A]">({cart.totalQuantity} items)</span>
+                                  <span className="text-sm font-medium text-[#6B5E4C]">{formatPrice(cart.cost.totalAmount.amount)}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Items List Section */}
+                            <div className="max-h-[40vh] md:max-h-[50vh] overflow-y-auto my-3 pr-2 
+                              scrollbar-thin scrollbar-thumb-[#6B5E4C]/20 scrollbar-track-transparent 
+                              hover:scrollbar-thumb-[#6B5E4C]/30">
+                              {cart.lines.map((item) => (
+                                <motion.div
+                                  key={item.id}
+                                  layout
+                                  className="flex gap-3 md:gap-4 rounded-md p-3 hover:bg-[#6B5E4C]/5 border-b border-[#6B5E4C]/10 last:border-b-0"
+                                >
+                                  {/* Product Image */}
+                                  {item.merchandise.product.featuredImage && (
+                                    <div className="relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-md bg-[#F8F7F6]">
+                                      <Image
+                                        src={item.merchandise.product.featuredImage.url}
+                                        alt={item.merchandise.product.title}
+                                        fill
+                                        className="object-cover"
+                                        sizes="(min-width: 768px) 80px, 64px"
+                                      />
+                                    </div>
+                                  )}
+                                  
+                                  {/* Product Details */}
+                                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                    <div>
+                                      <h4 className="text-sm md:text-base font-medium text-[#6B5E4C] line-clamp-1">
+                                        {item.merchandise.product.title}
+                                      </h4>
+                                      <p className="text-xs md:text-sm text-[#8C7E6A] line-clamp-1 mt-0.5">
+                                        Variant: {item.merchandise.title}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center justify-between mt-2">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs md:text-sm text-[#8C7E6A]">Qty:</span>
+                                        <span className="text-xs md:text-sm font-medium text-[#6B5E4C]">{item.quantity}</span>
+                                      </div>
+                                      <span className="text-sm md:text-base font-medium text-[#6B5E4C]">
+                                        {formatPrice(item.cost.totalAmount.amount)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
+
+                            {/* Footer Actions Section */}
+                            <div className="border-t border-[#6B5E4C]/10 pt-3 space-y-2.5">
+                              <div className="flex justify-between items-center mb-4">
+                                <span className="text-sm md:text-base font-medium text-[#8C7E6A]">Subtotal</span>
+                                <span className="text-base md:text-lg font-semibold text-[#6B5E4C]">
+                                  {formatPrice(cart.cost.totalAmount.amount)}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => setIsCartOpen(true)}
+                                className="w-full rounded-md bg-[#6B5E4C] px-4 py-2.5 text-sm md:text-base font-medium text-white transition-colors hover:bg-[#5A4D3B]"
+                              >
+                                View Cart
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (cart?.checkoutUrl) {
+                                    window.location.href = cart.checkoutUrl;
+                                  }
+                                }}
+                                disabled={!cart?.checkoutUrl}
+                                className="w-full rounded-md bg-[#6B5E4C]/10 px-4 py-2.5 text-sm md:text-base font-medium text-[#6B5E4C] transition-colors hover:bg-[#6B5E4C]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                Checkout
+                              </button>
+                            </div>
+                          </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
@@ -845,14 +944,12 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                     position: 'absolute',
                     left: `${index * 100}%`
                   }}
-                  custom={index - currentSlide}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
+                  animate={{
+                    x: `${-currentSlide * 100}%`
+                  }}
                   transition={{
-                    x: { type: "tween", duration: 0.5, ease: "easeInOut" },
-                    opacity: { duration: 0.2 }
+                    duration: 0.5,
+                    ease: "easeInOut"
                   }}
                   className="flex-shrink-0"
                 >
@@ -862,26 +959,16 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                     alt={slide.alt}
                     fill
                     priority={index === 0}
-                    quality={75}
-                    loading={index === 0 ? "eager" : "lazy"}
+                    quality={90}
                     className="hidden md:block object-cover w-full h-full"
-                    sizes="(max-width: 768px) 100vw, 100vw"
-                    placeholder="blur"
-                    blurDataURL={`data:image/svg+xml;base64,...`}
-                    fetchPriority="high"
-                    onLoadingComplete={(img) => {
-                      if (index === 0) {
-                        window.performance?.mark && window.performance.mark('lcp-image-loaded');
-                      }
-                    }}
+                    sizes="100vw"
                   />
                   <Image
                     src={slide.mobileImage}
                     alt={slide.alt}
                     fill
                     priority={index === 0}
-                    quality={75}
-                    loading={index === 0 ? "eager" : "lazy"}
+                    quality={90}
                     className="block md:hidden object-cover w-full h-full"
                     sizes="100vw"
                   />
@@ -1119,7 +1206,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           priority={isActive}
                           className="object-cover transition-all duration-500 ease-out"
                           sizes="(min-width: 768px) 176px, 144px"
-                          quality={75}
+                          quality={90}
                         />
                         <div className={`absolute inset-0 transition-all duration-500
                                       bg-gradient-to-t from-black/30 to-transparent
