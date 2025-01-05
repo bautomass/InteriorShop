@@ -4,14 +4,16 @@ import { useActionState } from '@/hooks/useActionState';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import type { Cart, Product } from '@/lib/shopify/types';
 import * as Tooltip from '@radix-ui/react-tooltip';
+import { BlobProviderParams, PDFDownloadLink } from '@react-pdf/renderer';
 import { addItem } from 'components/cart/actions';
 import { useCart } from 'components/cart/cart-context';
 import CartModal from 'components/cart/modal';
+import InvoicePDF from 'components/invoice/InvoicePDF';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Home, Lock, RotateCcw, Truck } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -230,6 +232,32 @@ export default function CartPage() {
                 </div>
               </div>
             ))}
+
+            {/* New Invoice Section */}
+            {activeCart?.lines && activeCart.lines.length > 0 && (
+              <motion.div
+                variants={itemVariants}
+                className="bg-white p-6 rounded-xl shadow-sm ring-1 ring-[#6B5E4C]/5"
+              >
+                <h3 className="text-[#6B5E4C] font-medium mb-4">Need an Invoice?</h3>
+                <p className="text-sm text-[#8C7E6A] mb-4">
+                  Download a detailed invoice for your records or company purchases.
+                </p>
+                <PDFDownloadLink
+                  document={<InvoicePDF cart={activeCart} />}
+                  fileName={`invoice-${activeCart.id}.pdf`}
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#6B5E4C] hover:bg-[#8C7E6A] transition-colors duration-200"
+                >
+                  {React.createElement(function RenderPDF(props: BlobProviderParams) {
+                    return (
+                      <span>
+                        {props.loading ? 'Preparing Invoice...' : 'Download Invoice'}
+                      </span>
+                    );
+                  })}
+                </PDFDownloadLink>
+              </motion.div>
+            )}
           </motion.div>
         </div>
 

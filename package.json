@@ -22,6 +22,7 @@
     "@radix-ui/react-slider": "^1.2.1",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.6",
+    "@react-pdf/renderer": "^4.1.6",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/typography": "^0.5.15",
