@@ -6,7 +6,6 @@ import type { Product } from '@/lib/shopify/types';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, LayoutGrid, LayoutList, X } from 'lucide-react';
-import Link from 'next/link';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import type { Swiper as SwiperType } from 'swiper';
@@ -129,19 +128,14 @@ const GridView = memo(({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Link 
-              href={`/product/${product.handle}`}
-              className="block h-full w-full"
-            >
-              <ProductCard 
-                product={product} 
-                onQuickView={(e) => {
-                  e.preventDefault();
-                  onQuickView(e, product);
-                }}
-                cardsToShow={cardsToShow}
-              />
-            </Link>
+            <ProductCard 
+              product={product} 
+              onQuickView={(e) => {
+                e.preventDefault();
+                onQuickView(e, product);
+              }}
+              cardsToShow={cardsToShow}
+            />
           </motion.div>
         ))}
       </div>
@@ -374,19 +368,14 @@ export default function NewArrivalsCollection() {
                   >
                     {sortedProducts.map((product) => (
                       <SwiperSlide key={product.id}>
-                        <Link 
-                          href={`/product/${product.handle}`}
-                          className="block h-full w-full"
-                        >
-                          <ProductCard 
-                            product={product} 
-                            onQuickView={(e) => {
-                              e.preventDefault();
-                              quickView.openQuickView(product);
-                            }}
-                            cardsToShow={cardsToShow}
-                          />
-                        </Link>
+                        <ProductCard 
+                          product={product} 
+                          onQuickView={(e) => {
+                            e.preventDefault();
+                            quickView.openQuickView(product);
+                          }}
+                          cardsToShow={cardsToShow}
+                        />
                       </SwiperSlide>
                     ))}
                   </Swiper>

@@ -4,6 +4,7 @@ import type { Product } from '@/lib/shopify/types';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 const ImageGallery = memo(({ product }: { product: Product }) => {
@@ -199,17 +200,31 @@ export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardPr
         <ImageGallery product={product} />
         <div className="p-4">
           <div className="inline-flex px-2 py-1 rounded-full 
-                        text-xs font-medium tracking-wide
-                        bg-primary-100/80 dark:bg-primary-700/80
-                        text-primary-800 dark:text-primary-100">
+                          text-xs font-medium tracking-wide
+                          bg-primary-100/80 dark:bg-primary-700/80
+                          text-primary-800 dark:text-primary-100">
             {category}
           </div>
 
-          <h3 className="font-semibold text-base tracking-tight mt-2 
-                       text-primary-900 dark:text-primary-100 
-                       line-clamp-1">
-            {product.title}
-          </h3>
+          <Link 
+            href={`/products/${product.handle}`}
+            className="block mt-2 group/title relative isolate"
+          >
+            <h3 className="font-semibold text-base tracking-tight 
+                           text-primary-900 dark:text-primary-100 
+                           line-clamp-1 cursor-pointer
+                           transition-all duration-300
+                           group-hover/title:text-accent-500
+                           group-hover/title:translate-x-1">
+              {product.title}
+            </h3>
+            
+            <div className="absolute -bottom-0.5 left-0 right-0 h-px
+                              bg-gradient-to-r from-accent-500/0 via-accent-500/70 to-accent-500/0
+                              origin-center transition-all duration-300
+                              opacity-0 scale-x-0
+                              group-hover/title:opacity-100 group-hover/title:scale-x-100" />
+          </Link>
           
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -240,7 +255,7 @@ export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardPr
                   ${parseFloat(product.compareAtPriceRange.minVariantPrice.amount).toFixed(2)}
                 </span>
                 <span className="text-xs text-[#FF6B6B] font-medium px-2 py-0.5 
-                               bg-[#FF6B6B]/10 rounded-full">
+                                 bg-[#FF6B6B]/10 rounded-full">
                   Save {Math.round(((parseFloat(product.compareAtPriceRange.minVariantPrice.amount) - 
                                    parseFloat(product.priceRange.minVariantPrice.amount)) / 
                                    parseFloat(product.compareAtPriceRange.minVariantPrice.amount)) * 100)}%
@@ -250,8 +265,8 @@ export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardPr
           </div>
           
           <p className="text-sm leading-relaxed mt-2
-                      text-primary-600/90 dark:text-primary-300/90 
-                      line-clamp-2 min-h-[2.5rem]">
+                        text-primary-600/90 dark:text-primary-300/90 
+                        line-clamp-2 min-h-[2.5rem]">
             {product.description}
           </p>
           
