@@ -72,10 +72,10 @@ const InvoicePDF = ({ cart }: InvoicePDFProps) => (
               <Text style={styles.tableCell}>{line.merchandise.product.title}</Text>
               <Text style={styles.tableCell}>{line.quantity}</Text>
               <Text style={styles.tableCell}>
-                ${line.merchandise.price.amount}
+                ${(parseFloat(line.cost.totalAmount.amount) / line.quantity).toFixed(2)}
               </Text>
               <Text style={styles.tableCell}>
-                ${(parseFloat(line.merchandise.price.amount) * line.quantity).toFixed(2)}
+                ${line.cost.totalAmount.amount}
               </Text>
             </View>
           ))}
