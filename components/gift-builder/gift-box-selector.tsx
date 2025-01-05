@@ -12,7 +12,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useGiftBuilder } from './context';
 
 // Enhanced Types
-interface GiftBoxImage {
+export interface GiftBoxImage {
   url: string;
   altText: string;
   width?: number;
@@ -32,6 +32,7 @@ interface GiftBoxVariant {
     value: string;
   }>;
   image?: GiftBoxImage;
+  featuredImage?: GiftBoxImage;
 }
 
 interface GiftBox {
@@ -60,6 +61,7 @@ interface ImageGalleryProps {
   onSelect: (index: number) => void;
   selectedVariant?: GiftBoxVariant;
   className?: string;
+  boxTitle: string;
 }
 
 interface CustomDropdownProps {
@@ -76,6 +78,7 @@ interface BoxSelectionPayload extends GiftBox {
   price: number;
   maxProducts: number;
   selectedOptions: SelectedOptions;
+  featuredImage: GiftBoxImage;
 }
 
 // Enhanced Animation Variants
@@ -151,7 +154,8 @@ function ImageGallery({
   selectedIndex,
   onSelect,
   selectedVariant,
-  className = ''
+  className = '',
+  boxTitle
 }: ImageGalleryProps) {
   const shouldReduceMotion = useReducedMotion();
   const [isLoading, setIsLoading] = useState(true);
@@ -239,7 +243,7 @@ function ImageGallery({
   };
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-6 ${className}`}>
       {/* Main Image */}
       <div className="group relative aspect-square w-full overflow-hidden rounded-2xl border border-primary-100/20 bg-gradient-to-b from-primary-50 to-white shadow-lg dark:from-primary-900/50 dark:to-primary-800">
         <AnimatePresence mode="wait" initial={false}>
@@ -254,7 +258,7 @@ function ImageGallery({
           >
             <Image
               src={currentImages[selectedIndex]?.url ?? ''}
-              alt={currentImages[selectedIndex]?.altText ?? ''}
+              alt={currentImages[selectedIndex]?.altText ?? `${boxTitle} - view ${selectedIndex + 1}`}
               fill
               className={`transform-gpu object-cover transition-transform duration-700 will-change-transform ${
                 !isLoading && 'group-hover:scale-105'
@@ -313,11 +317,11 @@ function ImageGallery({
 
       {/* Enhanced Thumbnails */}
       {currentImages.length > 1 && (
-        <div className="relative">
+        <div className="relative px-1">
           <div className="relative overflow-hidden">
             <motion.div
               ref={thumbnailsRef}
-              className="flex gap-2 overflow-x-hidden scroll-smooth px-1 pb-2 sm:gap-3"
+              className="flex gap-2 overflow-x-hidden scroll-smooth pb-3 pt-1 sm:gap-3"
             >
               {currentImages.map((image, index) => (
                 <motion.button
@@ -331,12 +335,12 @@ function ImageGallery({
                         ? 'ring-2 ring-accent-500 ring-offset-2 ring-offset-white dark:ring-offset-primary-900'
                         : 'ring-1 ring-primary-200/50 hover:ring-primary-300 dark:ring-primary-700 dark:hover:ring-primary-600'
                     }`}
-                  aria-label={`View ${image.altText}`}
+                  aria-label={`View ${image.altText || 'gift box image'}`}
                   aria-pressed={selectedIndex === index}
                 >
                   <Image
                     src={image.url}
-                    alt={image.altText}
+                    alt={image.altText || `${boxTitle} thumbnail ${index + 1}`}
                     fill
                     className="object-cover"
                     sizes="80px"
@@ -625,34 +629,45 @@ function BoxOptionsSelector({
   }, []);
 
   return (
-    <div className={`${isMobile ? 'space-y-6 p-6' : 'grid grid-cols-2 gap-8 p-8'}`}>
-      {/* Image Gallery */}
-      <ImageGallery
-        images={box.images}
-        selectedIndex={selectedImageIndex}
-        onSelect={setSelectedImageIndex}
-        selectedVariant={selectedVariant || undefined}
-        className={isMobile ? '' : 'sticky top-8'}
-      />
+    <div className={`${
+      isMobile 
+        ? 'flex flex-col space-y-6 p-4 sm:p-6'
+        : 'grid grid-cols-2 gap-8 p-8'
+    }`}>
+      {/* Image Gallery - Made sticky only on desktop */}
+      <div className={isMobile ? 'order-1' : 'sticky top-8'}>
+        <ImageGallery
+          images={box.images}
+          selectedIndex={selectedImageIndex}
+          onSelect={setSelectedImageIndex}
+          selectedVariant={selectedVariant || undefined}
+          boxTitle={box.title}
+        />
+      </div>
 
-      {/* Options and Actions */}
-      <div className="space-y-6">
+      {/* Options and Actions - Improved mobile layout */}
+      <div className={`space-y-6 ${isMobile ? 'order-2' : ''}`}>
         <motion.div variants={fadeIn} className="space-y-4">
-          {box.options.map((option) => {
-            const availableValues: string[] = Array.from(availableOptions[option.name] || new Set());
+          {/* Options Grid for better mobile layout */}
+          <div className={`grid gap-4 ${
+            box.options.length > 1 && !isMobile ? 'grid-cols-2' : 'grid-cols-1'
+          }`}>
+            {box.options.map((option) => {
+              const availableValues: string[] = Array.from(availableOptions[option.name] || new Set());
 
-            return (
-              <CustomDropdown
-                key={option.name}
-                id={`${box.id}-${option.name}`}
-                label={option.name}
-                value={selectedOptions[option.name] || ''}
-                onChange={(value) => handleOptionSelect(option.name, value)}
-                options={availableValues}
-                placeholder={`Select ${option.name}`}
-              />
-            );
-          })}
+              return (
+                <CustomDropdown
+                  key={option.name}
+                  id={`${box.id}-${option.name}`}
+                  label={option.name}
+                  value={selectedOptions[option.name] || ''}
+                  onChange={(value) => handleOptionSelect(option.name, value)}
+                  options={availableValues}
+                  placeholder={`Select ${option.name}`}
+                />
+              );
+            })}
+          </div>
         </motion.div>
 
         {selectedVariant && (
@@ -669,34 +684,40 @@ function BoxOptionsSelector({
           </motion.div>
         )}
 
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => selectedVariant && handleComplete(selectedVariant)}
-          disabled={!isComplete || isSubmitting}
-          className={`mt-6 w-full rounded-xl px-6 py-3.5 text-sm font-medium shadow-lg transition-all ${
-            isSubmitting
-              ? 'bg-accent-500 text-white hover:bg-accent-600'
-              : isComplete
+        {/* Fixed bottom button on mobile */}
+        <motion.div className={`${
+          isMobile 
+            ? 'sticky bottom-0 -mx-4 border-t border-primary-100 bg-white p-4 dark:border-primary-800 dark:bg-primary-900 sm:-mx-6 sm:p-6' 
+            : ''
+        }`}>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => selectedVariant && handleComplete(selectedVariant)}
+            disabled={!isComplete || isSubmitting}
+            className={`w-full rounded-xl px-6 py-3.5 text-sm font-medium shadow-lg transition-all ${
+              isSubmitting
                 ? 'bg-accent-500 text-white hover:bg-accent-600'
-                : 'bg-primary-100 text-primary-400 dark:bg-primary-800'
-          }`}
-          aria-label={isSubmitting ? 'Processing...' : isComplete ? 'Confirm selection' : 'Complete all options to continue'}
-        >
-          {isSubmitting ? (
-            <span className="flex items-center justify-center gap-2">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              Processing...
-            </span>
-          ) : isComplete ? (
-            <span className="flex items-center justify-center gap-2">
-              <ShoppingBag className="h-4 w-4" />
-              Confirm Selection
-            </span>
-          ) : (
-            'Select All Options'
-          )}
-        </motion.button>
+                : isComplete
+                  ? 'bg-accent-500 text-white hover:bg-accent-600'
+                  : 'bg-primary-100 text-primary-400 dark:bg-primary-800'
+            }`}
+          >
+            {isSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Processing...
+              </span>
+            ) : isComplete ? (
+              <span className="flex items-center justify-center gap-2">
+                <ShoppingBag className="h-4 w-4" />
+                Confirm Selection
+              </span>
+            ) : (
+              'Select All Options'
+            )}
+          </motion.button>
+        </motion.div>
       </div>
     </div>
   );
@@ -709,7 +730,10 @@ function GiftBoxCard({ box, isSelected, onCustomize, hoveredBox, onHover }: Gift
   }, [box.variants]);
 
   return (
-    <motion.div className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-500 dark:bg-primary-900">
+    <motion.div 
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-500 dark:bg-primary-900"
+      whileHover={{ scale: 1.02 }}
+    >
       {/* Selection Indicator */}
       <AnimatePresence>
         {isSelected && (
@@ -724,21 +748,42 @@ function GiftBoxCard({ box, isSelected, onCustomize, hoveredBox, onHover }: Gift
         )}
       </AnimatePresence>
 
-      {/* Image Container - wider aspect ratio */}
-      <div className="relative aspect-[16/9] overflow-hidden">
+      {/* Image Container */}
+      <div className="relative aspect-square overflow-hidden">
         {box.featuredImage ? (
           <>
             <Image
               src={box.featuredImage.url}
-              alt={box.featuredImage.altText}
+              alt={box.featuredImage.altText || `${box.title} gift box`}
               fill
-              className="transform-gpu object-cover transition-all duration-700 will-change-transform 
-                group-hover:scale-105 group-hover:filter group-hover:brightness-110"
-              sizes="(max-width: 640px) 90vw, (max-width: 768px) 45vw, (max-width: 1024px) 30vw, 400px"
+              className="transform-gpu object-cover transition-all duration-500 will-change-transform 
+                group-hover:scale-105 group-hover:brightness-75"
+              sizes="(max-width: 640px) 90vw, (max-width: 768px) 45vw, 400px"
               priority={true}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent 
-              opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+            
+            {/* Customize Button Overlay - Fixed pointer events and transitions */}
+            <div 
+              className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center 
+                bg-black/0 transition-all duration-300 group-hover:bg-black/20"
+            >
+              <div className="pointer-events-auto translate-y-4 opacity-0 transition-transform duration-300 
+                ease-out group-hover:translate-y-0 group-hover:opacity-100">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onCustomize();
+                  }}
+                  className="inline-flex items-center gap-2 rounded-xl bg-white/95 px-6 py-3.5 
+                    text-sm font-medium text-accent-500 shadow-lg backdrop-blur-sm 
+                    transition-colors hover:bg-white hover:text-accent-600 active:scale-95"
+                >
+                  <span>Customize Box</span>
+                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </button>
+              </div>
+            </div>
           </>
         ) : (
           <div className="flex h-full items-center justify-center bg-primary-50 dark:bg-primary-800/50">
@@ -747,8 +792,8 @@ function GiftBoxCard({ box, isSelected, onCustomize, hoveredBox, onHover }: Gift
         )}
 
         {/* Price Badge */}
-        <div className="absolute bottom-3 right-3 overflow-hidden rounded-xl bg-white/95 
-          shadow-lg backdrop-blur-md transition-transform duration-300 group-hover:scale-105
+        <div className="absolute bottom-4 right-4 z-20 overflow-hidden rounded-xl bg-white/95 
+          shadow-lg backdrop-blur-md transition-transform duration-300
           dark:bg-primary-900/95">
           <div className="px-3.5 py-2">
             <p className="text-base font-medium text-accent-500">
@@ -756,27 +801,6 @@ function GiftBoxCard({ box, isSelected, onCustomize, hoveredBox, onHover }: Gift
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex flex-1 flex-col p-5">
-        <div className="flex-1">
-          <h3 className="text-xl font-semibold leading-tight text-primary-900 dark:text-primary-50">
-            {box.title}
-          </h3>
-        </div>
-        
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={onCustomize}
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl 
-            bg-accent-500 px-5 py-3 text-sm font-medium text-white shadow-md 
-            transition-all hover:bg-accent-600 hover:shadow-lg hover:shadow-accent-500/10"
-        >
-          <span>Customize Box</span>
-          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </motion.button>
       </div>
     </motion.div>
   );
@@ -854,6 +878,7 @@ function GiftBoxSelectorContent() {
   const { state, dispatch } = useGiftBuilder();
   const [hoveredBox, setHoveredBox] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState<string | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const shouldReduceMotion = useReducedMotion();
 
   const {
@@ -869,6 +894,18 @@ function GiftBoxSelectorContent() {
     refetchOnWindowFocus: false
   });
 
+  const handleNext = () => {
+    if (giftBoxes) {
+      setCurrentIndex((prev) => (prev + 1) % giftBoxes.length);
+    }
+  };
+
+  const handlePrev = () => {
+    if (giftBoxes) {
+      setCurrentIndex((prev) => (prev - 1 + giftBoxes.length) % giftBoxes.length);
+    }
+  };
+
   const getMaxProducts = useCallback((variantTitle: string) => {
     if (variantTitle.toLowerCase().includes('small')) return 3;
     if (variantTitle.toLowerCase().includes('medium')) return 6;
@@ -883,7 +920,8 @@ function GiftBoxSelectorContent() {
         variantId: variant.id,
         price: variant.price,
         maxProducts: getMaxProducts(variant.title),
-        selectedOptions: options
+        selectedOptions: options,
+        featuredImage: variant.image || box.featuredImage
       } as BoxSelectionPayload
     });
     dispatch({ type: 'SET_STEP', payload: 2 });
@@ -903,7 +941,7 @@ function GiftBoxSelectorContent() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: shouldReduceMotion ? 0 : 0.3 }}
-      className="mx-auto max-w-[1400px] space-y-8 px-4 sm:px-6 lg:px-8"
+      className="mx-auto max-w-[800px] space-y-8 px-4 sm:px-6 lg:px-8"
     >
       {/* Header */}
       <div className="text-center">
@@ -928,45 +966,93 @@ function GiftBoxSelectorContent() {
         </motion.p>
       </div>
 
-      {/* Gift Box Grid - wider cards */}
-      <motion.div
-        variants={fadeIn}
-        initial="initial"
-        animate="animate"
-        className="mx-auto grid gap-6 sm:grid-cols-2"
-      >
-        {giftBoxes?.map((box) => (
-          <React.Fragment key={box.id}>
-            <div className="flex justify-center">
-              <div className="w-full max-w-2xl">
-                <GiftBoxCard
-                  box={box}
-                  isSelected={state.selectedBox?.id === box.id}
-                  onCustomize={() => setOpenModal(box.id)}
-                  hoveredBox={hoveredBox}
-                  onHover={setHoveredBox}
-                />
-              </div>
-            </div>
-
-            <Modal
-              isOpen={openModal === box.id}
-              onClose={() => setOpenModal(null)}
-              title={`Customize ${box.title}`}
+      {/* Single Card with Navigation */}
+      {giftBoxes && (
+        <div className="relative mx-auto max-w-md">
+          {/* Navigation Arrows */}
+          <div className="absolute inset-y-0 -left-4 -right-4 z-10 flex items-center justify-between sm:-left-8 sm:-right-8">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={handlePrev}
+              className="rounded-full bg-white/90 p-2 text-primary-900 shadow-lg backdrop-blur-sm 
+                transition-all hover:bg-white dark:bg-primary-800/90 dark:text-white sm:p-3"
+              aria-label="Previous box"
             >
-              <BoxOptionsSelector
-                box={box}
-                initialOptions={
-                  (state.selectedBox as BoxSelectionPayload)?.selectedOptions ?? {}
-                }
-                onComplete={(variant, options) => {
-                  handleComplete(box, variant, options);
-                }}
+              <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={handleNext}
+              className="rounded-full bg-white/90 p-2 text-primary-900 shadow-lg backdrop-blur-sm 
+                transition-all hover:bg-white dark:bg-primary-800/90 dark:text-white sm:p-3"
+              aria-label="Next box"
+            >
+              <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+            </motion.button>
+          </div>
+
+          {/* Current Card */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentIndex}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              className="w-full cursor-pointer"
+              onClick={() => setOpenModal(giftBoxes[currentIndex].id)}
+            >
+              <GiftBoxCard
+                box={giftBoxes[currentIndex]}
+                isSelected={state.selectedBox?.id === giftBoxes[currentIndex].id}
+                onCustomize={() => setOpenModal(giftBoxes[currentIndex].id)}
+                hoveredBox={hoveredBox}
+                onHover={setHoveredBox}
               />
-            </Modal>
-          </React.Fragment>
-        ))}
-      </motion.div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Progress Indicators */}
+          <div className="mt-4 flex justify-center gap-2">
+            {giftBoxes.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`h-1.5 w-8 rounded-full transition-all ${
+                  index === currentIndex
+                    ? 'bg-accent-500'
+                    : 'bg-primary-200 hover:bg-primary-300 dark:bg-primary-700 dark:hover:bg-primary-600'
+                }`}
+                aria-label={`Go to box ${index + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* Box Counter */}
+          <div className="mt-2 text-center">
+            <p className="text-sm font-medium text-primary-600 dark:text-primary-300">
+              Box {currentIndex + 1} of {giftBoxes.length}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Modals */}
+      {giftBoxes?.map((box) => (
+        <Modal
+          key={box.id}
+          isOpen={openModal === box.id}
+          onClose={() => setOpenModal(null)}
+          title={`Customize ${box.title}`}
+        >
+          <BoxOptionsSelector
+            box={box}
+            initialOptions={(state.selectedBox as BoxSelectionPayload)?.selectedOptions ?? {}}
+            onComplete={(variant, options) => handleComplete(box, variant, options)}
+          />
+        </Modal>
+      ))}
     </motion.div>
   );
 }

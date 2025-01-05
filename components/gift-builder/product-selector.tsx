@@ -1,25 +1,27 @@
 // components/gift-builder/product-selector.tsx
 'use client';
 
-import { useDebounce } from '@/hooks/use-debounce';
-import type { ProductVariant, Product as ShopifyProduct } from '@/lib/shopify/types';
-import type { GiftProduct } from '@/types/gift-builder';
-import { motion } from 'framer-motion';
-import { Check, Minus, Package, Plus, Search } from 'lucide-react';
+import { ProductModal } from '@/components/gift-builder/product-modal';
+import { getProductsByCollectionQuery } from '@/lib/shopify/queries/product';
+import { Collection, ProductVariant, ShopifyProduct } from '@/lib/shopify/types';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Package } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
+import { CollectionCarousel } from './collection-carousel';
 import { useGiftBuilder } from './context';
-
-interface Collection {
-  id: string;
-  title: string;
-}
 
 type Product = {
   id: string;
   variantId: string;
   title: string;
-  price: number;
+  priceRange: {
+    minVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
+  };
   image?: {
     url: string;
     altText: string;
@@ -30,17 +32,49 @@ type Product = {
   };
   variant: ProductVariant;
   originalProduct: ShopifyProduct;
+  availableForSale: boolean;
+  quantity?: number;
+  sku?: string;
+  weight?: number;
+  requiresShipping?: boolean;
 };
+
+const EXCLUDED_COLLECTIONS = [
+  'all-products',
+  'all',
+  'carpet-collection',
+  'blinds-shades-collection',
+  'freshfreshfresh',
+  'organic-decoration',
+  'gift-boxes-1',
+  'home-collection',
+  'lamps',
+  'new-arrivals',
+  'anturam-eco-wooden-stools'
+];
+
+const SYSTEM_COLLECTIONS = [
+  { handle: 'all-products', title: 'All Products' },
+  { handle: 'all', title: 'All' },
+  // Add any other variations you see in the logs
+];
 
 export function ProductSelector() {
   const { state, dispatch } = useGiftBuilder();
-  const [searchQuery, setSearchQuery] = useState('');
+  const { editingProductId, selectedProducts } = state;
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
-  const debouncedSearch = useDebounce(searchQuery, 300);
-
-  const [products, setProducts] = useState<Product[]>([]); // This would be fetched from your API
+  const [products, setProducts] = useState<Product[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [collections, setCollections] = useState<Collection[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // Add console.log to check selected collection
+  const handleCollectionSelect = (collectionId: string | null) => {
+    console.log('Collection selected:', collectionId);
+    setSelectedCollection(collectionId);
+  };
 
   // Fetch collections on mount
   useEffect(() => {
@@ -48,7 +82,29 @@ export function ProductSelector() {
       try {
         const response = await fetch('/api/collections');
         const data = await response.json();
-        setCollections(data.collections);
+        
+        const filteredCollections = data.collections
+          .filter((c: any) => {
+            // Check against system collections
+            const isSystemCollection = SYSTEM_COLLECTIONS.some(
+              sys => c.handle === sys.handle || c.title === sys.title
+            );
+            if (isSystemCollection) return false;
+            
+            // Check against excluded collections
+            if (EXCLUDED_COLLECTIONS.includes(c.handle)) return false;
+            
+            return true;
+          })
+          .map((c: any) => ({
+            ...c,
+            handle: c.handle || '',
+            description: c.description || '',
+            seo: c.seo || {},
+            updatedAt: c.updatedAt || new Date().toISOString(),
+          }));
+        
+        setCollections(filteredCollections);
       } catch (error) {
         console.error('Failed to fetch collections:', error);
       }
@@ -56,197 +112,223 @@ export function ProductSelector() {
     fetchCollections();
   }, []);
 
-  // Update product fetching logic
+  // Fetch products when collection is selected
   useEffect(() => {
-    async function fetchProducts() {
+    if (selectedCollection) {
       setIsLoading(true);
-      try {
-        const params = new URLSearchParams();
-        if (debouncedSearch) params.append('search', debouncedSearch);
-        if (selectedCollection) params.append('collection', selectedCollection);
+      setProducts([]); // Clear existing products
+      setCursor(null); // Reset pagination
+      fetchProducts();
+    }
+  }, [selectedCollection]);
 
-        const response = await fetch(`/api/products?${params}`);
-        const data = await response.json();
-        setProducts(data.products);
-      } catch (error) {
-        console.error('Failed to fetch products:', error);
+  const fetchProducts = async () => {
+    if (isLoading || !selectedCollection) return; // Add check for selectedCollection
+    
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/shop/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: getProductsByCollectionQuery,
+          variables: {
+            collection: selectedCollection,
+            first: 12,
+            after: cursor
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Safely access nested properties
+      const collectionProducts = data?.body?.data?.collection?.products;
+      
+      if (collectionProducts?.edges) {
+        const newProducts = collectionProducts.edges.map((edge: any) => ({
+          ...edge.node,
+          uniqueId: `${edge.node.id}-${Date.now()}-${Math.random()}`,
+          image: edge.node.images?.edges?.[0]?.node || edge.node.featuredImage || {
+            url: '',
+            altText: 'Product image not available'
+          }
+        }));
+        
+        setProducts(prev => [...prev, ...newProducts]);
+        setHasMore(collectionProducts.pageInfo.hasNextPage);
+        if (collectionProducts.pageInfo.hasNextPage) {
+          setCursor(collectionProducts.pageInfo.endCursor);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+      setHasMore(false);
+      setProducts([]); // Clear products on error
+    } finally {
       setIsLoading(false);
     }
-    fetchProducts();
-  }, [debouncedSearch, selectedCollection]);
+  };
 
-  const handleSearch = useCallback((term: string) => {
-    setSearchQuery(term);
-    // Implement product search logic
-  }, []);
+  // Load more when scrolled to bottom
+  const { ref: loadMoreRef, inView } = useInView({
+    threshold: 0.5,
+    triggerOnce: false
+  });
 
-  const handleAddProduct = useCallback(
-    (product: Product) => {
-      if (!state.selectedBox) return;
-      if (state.selectedProducts.length >= state.selectedBox.maxProducts) return;
+  useEffect(() => {
+    if (inView && hasMore && !isLoading) {
+      fetchProducts();
+    }
+  }, [inView, hasMore, isLoading]);
 
-      const giftProduct: GiftProduct = {
-        id: product.id,
-        variantId: product.variantId,
-        title: product.title,
-        price: product.price,
-        image: product.image,
-        collection: product.collection,
-        variant: product.variant,
-        originalProduct: product.originalProduct
-      };
+  // Safe effect that only runs when editing
+  useEffect(() => {
+    if (editingProductId && !selectedProduct) {  // Only run if we're editing and no product is selected
+      const productToEdit = selectedProducts.find(p => p.id === editingProductId);
+      if (productToEdit && productToEdit.originalProduct) {
+        const originalProduct = productToEdit.originalProduct as unknown as ShopifyProduct;
+        setSelectedProduct({
+          id: productToEdit.id,
+          variantId: productToEdit.variantId,
+          collection: productToEdit.collection,
+          variant: productToEdit.variant,
+          originalProduct: originalProduct,
+          title: productToEdit.title,
+          image: productToEdit.image,
+          availableForSale: true,
+          priceRange: {
+            minVariantPrice: {
+              amount: productToEdit.price.toString(),
+              currencyCode: 'USD'
+            }
+          }
+        });
+      }
+    }
+  }, [editingProductId, selectedProducts, selectedProduct]);
 
-      dispatch({ type: 'ADD_PRODUCT', payload: giftProduct });
-    },
-    [dispatch, state.selectedBox, state.selectedProducts.length]
-  );
-
-  const handleRemoveProduct = useCallback(
-    (productId: string) => {
-      dispatch({ type: 'REMOVE_PRODUCT', payload: productId });
-    },
-    [dispatch]
-  );
+  // Safe modal close that preserves existing behavior
+  const handleModalClose = () => {
+    setSelectedProduct(null);
+    if (editingProductId) {
+      dispatch({ type: 'EDIT_PRODUCT', payload: '' });
+    }
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="space-y-8"
-    >
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-primary-900 dark:text-primary-50">
-          Add Products to Your Gift
-          {state.selectedBox && (
-            <span className="ml-2 text-lg text-primary-500">
-              ({state.selectedProducts.length}/{state.selectedBox.maxProducts} items)
-            </span>
-          )}
-        </h2>
-        <p className="mt-2 text-primary-600 dark:text-primary-300">
-          Choose up to {state.selectedBox?.maxProducts} items for your gift box
-        </p>
-      </div>
-
-      {/* Search and Filter */}
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-primary-400" />
-          <input
-            type="search"
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="w-full rounded-lg border border-primary-200 bg-white py-3 pl-12 pr-4 placeholder:text-primary-400 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 dark:border-primary-700 dark:bg-primary-800"
+    <div className="h-full space-y-6">
+      {/* Container that matches product grid width */}
+      <div className="mx-auto max-w-[900px] px-4"> {/* Reduced from 1200px to 900px */}
+        {/* Horizontal Collection Carousel */}
+        <div className="w-full overflow-hidden border-b border-primary-200 bg-white/50 pb-4 dark:border-primary-700 dark:bg-primary-800/50">
+          <CollectionCarousel
+            collections={collections}
+            selectedCollection={selectedCollection}
+            onSelect={handleCollectionSelect}
           />
         </div>
 
-        <select
-          value={selectedCollection || ''}
-          onChange={(e) => setSelectedCollection(e.target.value || null)}
-          className="rounded-lg border border-primary-200 bg-white px-4 py-3 dark:border-primary-700 dark:bg-primary-800"
-        >
-          <option value="">All Collections</option>
-          {collections.map((collection) => (
-            <option key={collection.id} value={collection.id}>
-              {collection.title}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Products Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {products.map((product) => (
-          <motion.div
-            key={product.id}
-            layout
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="group relative overflow-hidden rounded-lg border border-primary-200 bg-white dark:border-primary-700 dark:bg-primary-800"
-          >
-            <div className="relative aspect-square overflow-hidden">
-              {product.image ? (
-                <Image
-                  src={product.image.url}
-                  alt={product.image.altText}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center bg-primary-100 dark:bg-primary-800">
-                  <Package className="h-12 w-12 text-primary-400" />
+        {/* Products Grid */}
+        <div className="relative space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((product) => (
+              <motion.button
+                key={product.id}
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                onClick={() => setSelectedProduct(product)}
+                className="group relative overflow-hidden rounded-lg border border-primary-200 bg-white p-4 text-left transition-all hover:border-accent-500 dark:border-primary-700 dark:bg-primary-800"
+              >
+                <div className="relative aspect-square overflow-hidden rounded-lg">
+                  {product.image?.url ? (
+                    <Image
+                      src={product.image.url}
+                      alt={product.image.altText || 'Product image'}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-primary-100 dark:bg-primary-800">
+                      <Package className="h-12 w-12 text-primary-400" />
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+                
+                <div className="mt-4">
+                  <h3 className="text-sm font-medium text-primary-900 dark:text-primary-100">
+                    {product.title}
+                  </h3>
+                  {product.priceRange?.minVariantPrice?.amount && (
+                    <p className="mt-1 text-sm text-primary-500 dark:text-primary-400">
+                      ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                    </p>
+                  )}
+                </div>
 
-            <div className="p-4">
-              <h3 className="text-lg font-semibold text-primary-900 dark:text-primary-50">
-                {product.title}
-              </h3>
-              <p className="mt-1 text-sm text-primary-600 dark:text-primary-300">
-                {product.collection.title}
-              </p>
-              <div className="mt-4 flex items-center justify-between">
-                <p className="text-lg font-bold text-accent-500">${product.price.toFixed(2)}</p>
-                {state.selectedProducts.some((p) => p.id === product.id) ? (
-                  <button
-                    onClick={() => handleRemoveProduct(product.id)}
-                    className="rounded-full bg-red-500 p-2 text-white transition-colors hover:bg-red-600"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleAddProduct(product)}
-                    disabled={
-                      !state.selectedBox ||
-                      state.selectedProducts.length >= state.selectedBox.maxProducts
-                    }
-                    className="rounded-full bg-accent-500 p-2 text-white transition-colors hover:bg-accent-600 disabled:bg-primary-200 dark:disabled:bg-primary-700"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
+                {!product.availableForSale && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                    <span className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white">
+                      Out of Stock
+                    </span>
+                  </div>
                 )}
-              </div>
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className="flex justify-center py-8">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
             </div>
-          </motion.div>
-        ))}
+          )}
+
+          {/* Infinite scroll trigger */}
+          <div ref={loadMoreRef} className="h-4" />
+
+          {/* Empty state */}
+          {!isLoading && products.length === 0 && (
+            <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-primary-200 dark:border-primary-700">
+              <Package className="h-12 w-12 text-primary-400" />
+              <p className="mt-4 text-center text-primary-600 dark:text-primary-300">
+                No products found in this collection.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Continue Button */}
-      {state.selectedProducts.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex justify-center"
-        >
-          <button
-            onClick={() => dispatch({ type: 'SET_STEP', payload: 3 })}
-            className="inline-flex items-center gap-2 rounded-full bg-accent-500 px-8 py-3 font-medium text-white transition-colors hover:bg-accent-600"
-          >
-            Review Your Gift
-            <Check className="h-5 w-5" />
-          </button>
-        </motion.div>
-      )}
-
-      {/* Empty State */}
-      {products.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-primary-200 dark:border-primary-700"
-        >
-          <Package className="h-12 w-12 text-primary-400" />
-          <p className="mt-4 text-center text-primary-600 dark:text-primary-300">
-            No products found. Try adjusting your search or filters.
-          </p>
-        </motion.div>
-      )}
-    </motion.div>
+      {/* Product Modal */}
+      <AnimatePresence>
+        {selectedProduct && (
+          <ProductModal
+            product={selectedProduct as unknown as import('@/lib/shopify/types').Product}
+            onClose={handleModalClose}
+            onAdd={(product) => {
+              if (editingProductId) {
+                dispatch({ type: 'REMOVE_PRODUCT', payload: editingProductId });
+                dispatch({ type: 'ADD_PRODUCT', payload: { ...product } });
+              } else {
+                // Preserve original add behavior
+                dispatch({ type: 'ADD_PRODUCT', payload: { ...product } });
+              }
+              handleModalClose();
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

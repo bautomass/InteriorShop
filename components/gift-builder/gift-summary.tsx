@@ -1,149 +1,138 @@
 // components/gift-builder/gift-summary.tsx
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
-import { Gift, Package, Sparkles, Tag } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Gift, Settings2, Sparkles, X } from 'lucide-react';
+import Image from 'next/image';
 import { useGiftBuilder } from './context';
 
 export function GiftSummary() {
-  const { state } = useGiftBuilder();
+  const { state, dispatch } = useGiftBuilder();
   const { selectedBox, selectedProducts, totalPrice, discount } = state;
+
+  const handleRemoveProduct = (productId: string) => {
+    dispatch({ type: 'REMOVE_PRODUCT', payload: productId });
+  };
+
+  const handleEditProduct = (productId: string) => {
+    dispatch({ type: 'EDIT_PRODUCT', payload: productId });
+  };
 
   const subtotal = selectedBox
     ? selectedBox.price + selectedProducts.reduce((sum, product) => sum + product.price, 0)
     : 0;
+  const remainingSlots = selectedBox ? selectedBox.maxProducts - selectedProducts.length : 0;
+  const isBoxFull = selectedBox && remainingSlots === 0;
 
-  const discountPercentage = discount ? (discount / subtotal) * 100 : 0;
+  // Calculate current discount tier
+  const getDiscountTier = (itemCount: number) => {
+    if (itemCount >= 10) return 20;
+    if (itemCount >= 7) return 15;
+    if (itemCount >= 5) return 10;
+    if (itemCount >= 3) return 5;
+    return 0;
+  };
+
+  const currentDiscountTier = getDiscountTier(selectedProducts.length);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="sticky top-8 rounded-2xl border border-primary-200 bg-white p-6 shadow-sm dark:border-primary-700 dark:bg-primary-800"
+      className="sticky top-8 flex max-h-[calc(100vh-6rem)] flex-col rounded-lg border border-primary-200 bg-white p-4 shadow-sm dark:border-primary-700 dark:bg-primary-800"
     >
-      <h3 className="flex items-center gap-2 text-lg font-bold text-primary-900 dark:text-primary-50">
-        <Gift className="h-5 w-5" />
-        Gift Summary
-      </h3>
-
-      {/* Selected Box */}
-      <div className="mt-6 space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Package className="h-4 w-4 text-primary-500" />
-            <span className="text-sm text-primary-600 dark:text-primary-300">Gift Box:</span>
-          </div>
-          <div className="text-right">
-            <AnimatePresence mode="wait">
-              {selectedBox ? (
-                <motion.div
-                  key="box-selected"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="font-medium text-primary-900 dark:text-primary-50"
-                >
-                  {selectedBox.title}
-                  <p className="text-sm text-primary-500">${selectedBox.price.toFixed(2)}</p>
-                </motion.div>
-              ) : (
-                <motion.span
-                  key="no-box"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-sm text-primary-400"
-                >
-                  Not selected
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* Products */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Tag className="h-4 w-4 text-primary-500" />
-            <span className="text-sm text-primary-600 dark:text-primary-300">
-              Products ({selectedProducts.length}):
+      {/* Header */}
+      <div className="flex-none">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="flex items-center gap-2 text-base font-bold">
+            <Gift className="h-4 w-4" />
+            Gift Summary
+          </h3>
+          {selectedBox && (
+            <span className="text-sm text-primary-500">
+              {remainingSlots} slot{remainingSlots !== 1 ? 's' : ''} left
             </span>
-          </div>
-          <div className="text-right">
-            <AnimatePresence mode="wait">
-              {selectedProducts.length > 0 ? (
-                <motion.div
-                  key="products-selected"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="font-medium text-primary-900 dark:text-primary-50"
-                >
-                  ${selectedProducts.reduce((sum, product) => sum + product.price, 0).toFixed(2)}
-                </motion.div>
-              ) : (
-                <motion.span
-                  key="no-products"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-sm text-primary-400"
-                >
-                  No products added
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </div>
+          )}
         </div>
 
-        {/* Discount */}
-        {discount > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="flex items-start justify-between gap-4 text-accent-500"
-          >
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" />
-              <span className="text-sm">Discount ({discountPercentage.toFixed(0)}%):</span>
-            </div>
-            <span className="font-medium">-${discount.toFixed(2)}</span>
-          </motion.div>
-        )}
-
-        {/* Total */}
-        <div className="border-t border-primary-100 pt-4 dark:border-primary-700">
-          <div className="flex items-start justify-between gap-4">
-            <span className="text-sm font-medium text-primary-900 dark:text-primary-50">
-              Total:
-            </span>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={totalPrice}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="text-xl font-bold text-primary-900 dark:text-primary-50"
-              >
-                ${(subtotal - discount).toFixed(2)}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* Progressive Discount Info */}
         {selectedBox && (
-          <div className="rounded-lg bg-accent-50 p-4 dark:bg-accent-900/10">
-            <h4 className="flex items-center gap-2 font-medium text-accent-700 dark:text-accent-300">
-              <Sparkles className="h-4 w-4" />
-              Volume Discount
-            </h4>
-            <div className="mt-2 space-y-1 text-sm text-accent-600 dark:text-accent-300">
-              <p>3+ items: 5% off</p>
-              <p>5+ items: 10% off</p>
-              <p>7+ items: 15% off</p>
-              <p>10 items: 20% off</p>
+          <div className="mt-3 flex items-center gap-3 rounded-md bg-primary-50/50 p-2 dark:bg-primary-800/50">
+            {selectedBox.featuredImage && (
+              <Image
+                src={selectedBox.featuredImage.url}
+                alt={selectedBox.title}
+                width={40}
+                height={40}
+                className="rounded object-cover"
+              />
+            )}
+            <div className="flex-1">
+              <div className="text-sm font-medium">{selectedBox.title}</div>
+              <div className="text-xs text-primary-500">${selectedBox.price.toFixed(2)}</div>
             </div>
-            {selectedProducts.length > 0 && (
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-accent-200 dark:bg-accent-800">
+          </div>
+        )}
+      </div>
+
+      {/* Product List - Scrollable */}
+      <div className="mt-3 flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-primary-200 dark:scrollbar-thumb-primary-700">
+        {selectedProducts.length > 0 && (
+          <div className="space-y-2">
+            {selectedProducts.map((product) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                className="group flex items-center gap-2 rounded-md bg-primary-50/30 p-2 text-sm dark:bg-primary-800/30"
+              >
+                {product.featuredImage && (
+                  <Image
+                    src={product.featuredImage.url}
+                    alt={product.title}
+                    width={32}
+                    height={32}
+                    className="rounded object-cover"
+                  />
+                )}
+                <span className="flex-1 truncate">{product.title}</span>
+                <span className="text-xs text-primary-500">${product.price.toFixed(2)}</span>
+                <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  <button
+                    type="button"
+                    className="h-6 w-6 rounded-full hover:bg-primary-100 dark:hover:bg-primary-700"
+                    onClick={() => handleEditProduct(product.id)}
+                    aria-label={`Edit ${product.title} options`}
+                  >
+                    <Settings2 className="h-3.5 w-3.5 m-auto text-primary-500 hover:text-primary-900" />
+                  </button>
+                  <button
+                    type="button"
+                    className="h-6 w-6 rounded-full hover:bg-primary-100 dark:hover:bg-primary-700"
+                    onClick={() => handleRemoveProduct(product.id)}
+                    aria-label={`Remove ${product.title}`}
+                  >
+                    <X className="h-4 w-4 m-auto text-primary-500 hover:text-primary-900" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="flex-none">
+        {selectedBox && (
+          <div className="mt-3 rounded-md bg-accent-50/50 p-2 text-xs dark:bg-accent-900/10">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1 font-medium text-accent-700 dark:text-accent-300">
+                <Sparkles className="h-3 w-3" />
+                Volume Discount: {currentDiscountTier}%
+              </span>
+            </div>
+            <div className="mt-2">
+              <div className="h-1.5 overflow-hidden rounded-full bg-accent-200 dark:bg-accent-800">
                 <motion.div
                   className="h-full bg-accent-500"
                   initial={{ width: 0 }}
@@ -152,9 +141,16 @@ export function GiftSummary() {
                   }}
                 />
               </div>
-            )}
+            </div>
           </div>
         )}
+
+        <div className="mt-3 flex items-center justify-between border-t border-primary-100 pt-3 dark:border-primary-700">
+          {discount > 0 && (
+            <span className="text-xs text-accent-500">-${discount.toFixed(2)} discount</span>
+          )}
+          <span className="text-lg font-bold">${(subtotal - discount).toFixed(2)}</span>
+        </div>
       </div>
     </motion.div>
   );

@@ -1,20 +1,22 @@
 // components/gift-builder/context.tsx
 'use client';
 
-import { GiftBoxVariant, GiftBuilderState, GiftProduct } from '@/types/gift-builder';
+import { BoxSelectionPayload, GiftBuilderState, GiftProduct } from '@/types/gift-builder';
 import { createContext, ReactNode, useContext, useReducer } from 'react';
 
 type Action =
   | { type: 'SET_STEP'; payload: number }
-  | { type: 'SELECT_BOX'; payload: GiftBoxVariant }
+  | { type: 'SELECT_BOX'; payload: BoxSelectionPayload }
   | { type: 'ADD_PRODUCT'; payload: GiftProduct }
   | { type: 'REMOVE_PRODUCT'; payload: string }
+  | { type: 'EDIT_PRODUCT'; payload: string }
   | { type: 'RESET' };
 
 const initialState: GiftBuilderState = {
   step: 1,
   selectedBox: null,
   selectedProducts: [],
+  editingProductId: null,
   totalPrice: 0,
   discount: 0
 };
@@ -50,7 +52,7 @@ function giftBuilderReducer(state: GiftBuilderState, action: Action): GiftBuilde
       const newProducts = [...state.selectedProducts, action.payload];
       const newTotalPrice =
         (state.selectedBox?.price || 0) +
-        newProducts.reduce((sum, product) => sum + product.price, 0);
+        newProducts.reduce((sum, product) => sum + (product.price || 0), 0);
       const newDiscount = calculateDiscount(newTotalPrice, newProducts.length);
 
       return {
@@ -75,6 +77,13 @@ function giftBuilderReducer(state: GiftBuilderState, action: Action): GiftBuilde
         discount: newDiscount
       };
     }
+
+    case 'EDIT_PRODUCT':
+      return {
+        ...state,
+        editingProductId: action.payload,
+        step: 2
+      };
 
     case 'RESET':
       return initialState;

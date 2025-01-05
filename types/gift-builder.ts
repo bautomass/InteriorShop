@@ -1,16 +1,23 @@
 // types/gift-builder.ts
-import { Product as ShopifyProduct, ProductVariant } from 'lib/shopify/types';
+import { ProductVariant, Product as ShopifyProduct } from 'lib/shopify/types';
+
+export interface GiftBoxImage {
+  url: string;
+  altText: string;
+  width?: number;
+  height?: number;
+}
 
 export interface GiftBoxVariant {
   id: string;
-  variantId: string;
   title: string;
   price: number;
-  image?: {
-    url: string;
-    altText: string;
-  };
-  maxProducts: number;
+  selectedOptions: Array<{
+    name: string;
+    value: string;
+  }>;
+  image?: GiftBoxImage;
+  featuredImage?: GiftBoxImage;
 }
 
 export interface GiftProduct {
@@ -28,12 +35,24 @@ export interface GiftProduct {
   };
   variant: ProductVariant;
   originalProduct: ShopifyProduct;
+  featuredImage?: GiftBoxImage;
+}
+
+export interface BoxSelectionPayload {
+  id: string;
+  title: string;
+  price: number;
+  variantId: string;
+  maxProducts: number;
+  selectedOptions: { [key: string]: string };
+  featuredImage: GiftBoxImage;
 }
 
 export interface GiftBuilderState {
   step: number;
-  selectedBox: GiftBoxVariant | null;
+  selectedBox: BoxSelectionPayload | null;
   selectedProducts: GiftProduct[];
+  editingProductId: string | null;
   totalPrice: number;
   discount: number;
 }

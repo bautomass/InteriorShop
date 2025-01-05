@@ -42,19 +42,21 @@ export function GiftBuilder() {
         variants={pageVariants}
         layout
         whileHover={{ scale: undefined }}
+        role="main"
+        aria-label="Gift Builder Interface"
       >
         <div className="mb-8 sm:mb-12 text-center">
           <h1 className="mb-2 sm:mb-4 text-3xl sm:text-4xl font-bold text-primary-900 dark:text-primary-50">
             Create Your Perfect Gift
           </h1>
-          <p className="text-base sm:text-lg text-primary-600 dark:text-primary-300">
+          <p className="text-base sm:text-lg text-primary-600 dark:text-primary-300" role="doc-subtitle">
             Craft a unique gift experience in just a few simple steps
           </p>
         </div>
 
         <ProgressBar steps={steps} currentStep={state.step} />
 
-        <div className="mt-6 sm:mt-8 flex flex-col lg:flex-row gap-6 lg:gap-8">
+        <div className="mt-6 sm:mt-8 flex flex-col lg:flex-row gap-6 lg:gap-8" role="region" aria-label="Gift Builder Content">
           <div className="flex-1 order-2 lg:order-1">
             <AnimatePresence 
               mode="wait"
@@ -66,7 +68,7 @@ export function GiftBuilder() {
             </AnimatePresence>
           </div>
 
-          <div className="w-full lg:w-80 flex-shrink-0 order-1 lg:order-2 sticky top-4">
+          <div className="w-full lg:w-80 flex-shrink-0 order-1 lg:order-2 sticky top-4" role="complementary" aria-label="Gift Summary">
             <GiftSummary />
           </div>
         </div>
