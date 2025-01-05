@@ -96,7 +96,7 @@ interface SlideContent {
 const heroSlides: SlideContent[] = [
   {
     id: 'slide-1',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile_image_banner.jpg',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/main-hero-slide1.jpg',
     mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile_banner_simple_interior_ideas_ec3c6bf6-8b9a-47e4-be91-214ef01ede8f.jpg',
     alt: 'Simple Interior Ideas',
     title: 'Modern Living',
@@ -238,7 +238,7 @@ const getMenuStyles = (style: string | undefined, index: number) => {
 const getMenuPosition = (menu: { position?: string; alignment?: string }, slideId: string) => {
   switch (slideId) {
     case 'slide-1':
-      return 'right-16 top-24';
+      return 'right-[155px] top-24';
     case 'slide-2':
       return 'left-16 top-24';
     case 'slide-3':

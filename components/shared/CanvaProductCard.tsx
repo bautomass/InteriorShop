@@ -1,5 +1,6 @@
 "use client"
 
+import { ProductVariantModal } from '@/components/quickview/ProductVariantModal';
 import type { Product } from '@/lib/shopify/types';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -487,11 +488,41 @@ const getRandomReviews = (pool: ReadonlyArray<ReviewContent>, count: number): Re
     .slice(0, count);
 };
 
+// Add this new component for partial star display
+const PartialStar = ({ fill }: { fill: number }) => {
+  return (
+    <div className="relative w-4 h-4">
+      {/* Background star (gray) */}
+      <Star className="absolute w-full h-full text-gray-300 fill-gray-300" />
+      {/* Foreground star (yellow) with precise clipping */}
+      <div 
+        className="absolute w-full h-full overflow-hidden"
+        style={{ 
+          clipPath: `inset(0 ${100 - (fill * 100)}% 0 0)`,
+          transition: 'clip-path 0.2s ease-out'
+        }}
+      >
+        <Star className="w-full h-full text-yellow-400 fill-yellow-400" />
+      </div>
+    </div>
+  );
+};
+
+// Update the review generation to ensure consistent ratings
 const generateProductReviews = (product: ExtendedProduct): ReviewData => {
   const reviewCount = Math.floor(Math.random() * (17 - 4 + 1)) + 4;
-  const baseRating = 4.7;
-  const maxVariation = 0.3;
-  const rating = Math.min(5, baseRating + (Math.random() * maxVariation));
+  
+  // Generate individual ratings that will average to a clean number
+  const baseRating = 4.5; // You can adjust this base rating
+  const variance = 0.5; // Maximum variance from base rating
+  
+  const individualRatings = Array(reviewCount).fill(0).map(() => {
+    const rating = baseRating + (Math.random() * 2 - 1) * variance;
+    return Math.round(rating * 10) / 10; // Round to 1 decimal place
+  });
+  
+  // Calculate exact average
+  const rating = Number((individualRatings.reduce((a, b) => a + b, 0) / reviewCount).toFixed(1));
 
   const description = product.description?.toLowerCase() || '';
   const title = product.title?.toLowerCase() || '';
@@ -534,20 +565,14 @@ const generateProductReviews = (product: ExtendedProduct): ReviewData => {
 
   // Generate reviews
   for (let i = 0; i < reviewCount; i++) {
-    const reviewRating = Math.min(5, baseRating + (Math.random() * maxVariation));
-    const month = months[Math.floor(Math.random() * months.length)]!;
-    const day = Math.floor(Math.random() * 28) + 1;
-    const year = 2024;
-    const author = names[Math.floor(Math.random() * names.length)]!;
-    const content = selectedReviews[i] ?? 'Great product!';
-
+    const monthIndex = Math.floor(Math.random() * months.length);
     reviews.push({
       id: `review-${i}`,
-      author,
-      rating: reviewRating,
-      date: `${month} ${day}, ${year}`,
+      author: names[Math.floor(Math.random() * names.length)] as typeof names[number],
+      rating: individualRatings[i] ?? 5,
+      date: `${months[monthIndex % months.length] as typeof months[number]} ${Math.floor(Math.random() * 28) + 1}, 2024`,
       title: 'Verified Purchase',
-      content,
+      content: selectedReviews[i] ?? 'Great product!',
       verified: Math.random() > 0.2
     });
   }
@@ -557,6 +582,36 @@ const generateProductReviews = (product: ExtendedProduct): ReviewData => {
     reviewCount,
     reviews
   };
+};
+
+// Update the star display in the ProductCard
+const StarRating = ({ rating }: { rating: number }) => {
+  return (
+    <div className="flex items-center">
+      {[...Array(5)].map((_, i) => {
+        const fillAmount = Math.min(Math.max(rating - i, 0), 1);
+        return <PartialStar key={i} fill={fillAmount} />;
+      })}
+    </div>
+  );
+};
+
+// Update the star display in the ReviewsModal
+const ReviewStars = ({ rating, size = "default" }: { rating: number, size?: "small" | "default" }) => {
+  const starClass = size === "small" ? "w-3.5 h-3.5" : "w-4 h-4";
+  
+  return (
+    <div className="flex items-center">
+      {[...Array(5)].map((_, i) => {
+        const fillAmount = Math.min(Math.max(rating - i, 0), 1);
+        return (
+          <div key={i} className={`relative ${starClass}`}>
+            <PartialStar fill={fillAmount} />
+          </div>
+        );
+      })}
+    </div>
+  );
 };
 
 const ReviewsModal = ({ reviews, onClose, product }: { 
@@ -607,19 +662,7 @@ const ReviewsModal = ({ reviews, onClose, product }: {
                 Customer Reviews
               </h3>
               <div className="flex items-center gap-2 mt-1">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={cn(
-                        "w-4 h-4",
-                        i < Math.floor(reviews.rating) 
-                          ? "text-yellow-400 fill-yellow-400" 
-                          : "text-gray-300 fill-gray-300"
-                      )}
-                    />
-                  ))}
-                </div>
+                <ReviewStars rating={reviews.rating} />
                 <span className="text-sm font-medium text-primary-600 dark:text-primary-400">
                   {reviews.rating.toFixed(1)} out of 5
                 </span>
@@ -653,19 +696,7 @@ const ReviewsModal = ({ reviews, onClose, product }: {
                       {review.title}
                     </h4>
                     <div className="flex items-center gap-2 mt-1">
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={cn(
-                              "w-3.5 h-3.5",
-                              i < review.rating 
-                                ? "text-yellow-400 fill-yellow-400" 
-                                : "text-gray-300 fill-gray-300"
-                            )}
-                          />
-                        ))}
-                      </div>
+                      <ReviewStars rating={review.rating} size="small" />
                       <span className="text-sm text-primary-500 dark:text-primary-500">
                         {review.author}
                       </span>
@@ -712,6 +743,7 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
   const [showGallery, setShowGallery] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
   const reviewData = useMemo(() => generateProductReviews(product), [product]);
+  const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
 
   // Memoize images array
   const images = useMemo(() => {
@@ -735,6 +767,16 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
     e.preventDefault();
     e.stopPropagation();
     setShowGallery(true);
+  }, []);
+
+  const handleAddToCart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsVariantModalOpen(true);
+  }, []);
+
+  const handleModalClose = useCallback(() => {
+    setIsVariantModalOpen(false);
   }, []);
 
   return (
@@ -792,13 +834,22 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
 
             <Link
               href={`/product/${product.handle}`}
-              className="hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+              className="hover:text-primary-700 dark:hover:text-primary-300 transition-colors group/title relative isolate"
             >
               <h3 className="font-semibold text-base tracking-tight mt-2 
                          text-primary-900 dark:text-primary-100 
-                         line-clamp-1">
+                         line-clamp-1 cursor-pointer
+                         transition-all duration-300
+                         group-hover/title:text-accent-500
+                         group-hover/title:translate-x-1">
                 {product.title}
               </h3>
+              
+              <div className="absolute -bottom-0.5 left-0 right-0 h-px
+                              bg-gradient-to-r from-accent-500/0 via-accent-500/70 to-accent-500/0
+                              origin-center transition-all duration-300
+                              opacity-0 scale-x-0
+                              group-hover/title:opacity-100 group-hover/title:scale-x-100" />
             </Link>
             
             <div className="flex items-center justify-between mt-1">
@@ -848,19 +899,7 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
                 }}
                 className="flex items-center gap-1 hover:opacity-80 transition-opacity"
               >
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={cn(
-                        "w-3.5 h-3.5",
-                        i < Math.floor(reviewData.rating) 
-                          ? "text-yellow-400 fill-yellow-400" 
-                          : "text-gray-300 fill-gray-300"
-                      )}
-                    />
-                  ))}
-                </div>
+                <StarRating rating={reviewData.rating} />
                 <span className="text-sm text-primary-600 dark:text-primary-400">
                   ({reviewData.reviewCount})
                 </span>
@@ -878,6 +917,7 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
               cardsToShow >= 5 ? "flex-col" : "flex-row"
             )}>
               <motion.button
+                onClick={handleAddToCart}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={cn(
@@ -895,6 +935,10 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
                               bg-gradient-to-r from-transparent via-white/20 to-transparent
                               -translate-x-full group-hover:translate-x-full
                               transition-all duration-1000 ease-in-out" />
+
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100
+                              bg-gradient-to-t from-black/10 to-transparent
+                              transition-opacity duration-300" />
 
                 <svg 
                   className="w-3.5 h-3.5 relative
@@ -914,9 +958,14 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
 
                 <span className="font-medium text-xs relative
                               transform group-hover:-translate-y-px
-                              transition-transform duration-300 ease-out">
+                              transition-transform duration-300 ease-out
+                              text-shadow-sm">
                   Add to Cart
                 </span>
+
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100
+                              ring-2 ring-white/20
+                              transition-opacity duration-300" />
               </motion.button>
 
               <motion.button
@@ -965,6 +1014,15 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
           product={product}
         />
       )}
+
+      <ProductVariantModal
+        isOpen={isVariantModalOpen}
+        onClose={handleModalClose}
+        product={product}
+        onAddToCart={(variantId, quantity) => {
+          // This is handled inside the modal now
+        }}
+      />
     </>
   )
 })

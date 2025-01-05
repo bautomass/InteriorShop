@@ -1,16 +1,31 @@
 'use client'
 import { ProductQuickView } from '@/components/quickview/ProductQuickView';
 import ProductReviews from '@/components/reviews/ProductReviews';
+import { useActionState } from '@/hooks/useActionState';
 import type { Product, ProductVariant } from '@/lib/shopify/types';
+import { addItem } from 'components/cart/actions';
+import { useCart } from 'components/cart/cart-context';
 import { motion } from 'framer-motion';
-import { ArrowRight, CircleOff, Package, ShieldCheck, Star } from 'lucide-react';
+import { CircleOff, Minus, Package, Plus, ShieldCheck, ShoppingCart, Star } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 interface SelectedOptions {
   [key: string]: string;
 }
+
+const mobileBlinkAnimation = {
+  initial: { scale: 1 },
+  hover: {
+    scale: 1.1,
+    opacity: [1, 0.5, 1],
+    transition: {
+      opacity: { duration: 0.8, repeat: Infinity, ease: "easeInOut" },
+      scale: { duration: 0.15 }
+    }
+  }
+};
 
 const getStoredShareCount = () => {
   if (typeof window === 'undefined') return 45;
@@ -61,6 +76,11 @@ const FeaturedProduct = () => {
   const [canScrollRight, setCanScrollRight] = useState(false);
   const thumbnailsRef = useRef<HTMLDivElement>(null);
   const [shareCount, setShareCount] = useState(45);
+  const [quantity, setQuantity] = useState(1);
+  const { addCartItem } = useCart();
+  const [isPending, startTransition] = useTransition();
+  const [message, formAction] = useActionState(addItem, null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -287,6 +307,43 @@ const FeaturedProduct = () => {
     </motion.div>
   );
 
+  const incrementQuantity = () => {
+    setQuantity((prev) => prev + 1);
+  };
+
+  const decrementQuantity = () => {
+    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+  };
+
+  const handleAddToCart = useCallback(() => {
+    if (!selectedVariant || !product?.availableForSale) return;
+
+    startTransition(() => {
+      const variantId = String(selectedVariant.id);
+
+      formAction({
+        merchandiseId: variantId,
+        quantity: quantity
+      })
+        .then((result) => {
+          if (result === 'Success' && selectedVariant) {
+            addCartItem({
+              variant: selectedVariant,
+              product: product,
+              quantity
+            });
+            // Show success message
+            setShowSuccess(true);
+            // Hide after 3 seconds
+            setTimeout(() => setShowSuccess(false), 3000);
+          } else {
+            console.error('Add to cart failed:', result);
+          }
+        })
+        .catch((error) => console.error('Add to cart error:', error));
+    });
+  }, [selectedVariant, product, quantity, formAction, addCartItem]);
+
   if (loading || !product) {
     return (
       <div className="w-full py-16 bg-[#F9F7F4]">
@@ -477,28 +534,76 @@ const FeaturedProduct = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
               transition={{ delay: 0.9 }}
-              className="flex flex-col sm:flex-row gap-3 sm:gap-4"
+              className="flex items-center gap-3"
             >
+              {/* Quantity Selector */}
+              <div className="flex h-12 items-center rounded-md border-2 border-[#6B5E4C]/20 w-[100px]">
+                <button
+                  onClick={decrementQuantity}
+                  className="flex h-full items-center justify-center px-2 text-[#6B5E4C] 
+                            transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="h-3 w-3" />
+                </button>
+                <div className="w-8 text-center text-sm font-medium text-[#6B5E4C]">
+                  {quantity}
+                </div>
+                <button
+                  onClick={incrementQuantity}
+                  className="flex h-full items-center justify-center px-2 text-[#6B5E4C] 
+                            transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="h-3 w-3" />
+                </button>
+              </div>
+
+              {/* Add to Cart Button */}
               <motion.button
+                onClick={handleAddToCart}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setIsQuickViewOpen(true)}
-                className="w-full sm:flex-1 px-6 sm:px-8 py-3 sm:py-4 bg-[#6B5E4C] text-white 
-                           rounded-md hover:bg-[#5A4D3B] transition-colors duration-300"
+                disabled={!selectedVariant || !product?.availableForSale || isPending}
+                className={`group relative h-12 flex-1 flex items-center justify-center gap-2 
+                            overflow-hidden rounded-md px-6 text-sm font-medium text-white 
+                            shadow-md transition-all duration-300 hover:shadow-lg ${
+                  !selectedVariant || !product?.availableForSale || isPending
+                    ? 'cursor-not-allowed bg-gray-400'
+                    : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
+                }`}
               >
-                Quick View
+                <motion.div
+                  variants={mobileBlinkAnimation}
+                  initial="initial"
+                  animate={isPending ? "initial" : "hover"}
+                  className="relative z-10"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                </motion.div>
+                <span className="relative z-10 font-medium">
+                  {isPending
+                    ? 'Adding...'
+                    : !selectedVariant
+                      ? 'Select options'
+                      : !product?.availableForSale
+                        ? 'Out of Stock'
+                        : 'Add to Cart'}
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C] 
+                              opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               </motion.button>
-              <motion.button
-                onClick={() => window.location.href = `/product/${product!.handle}`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full sm:flex-1 flex items-center justify-center gap-2 px-6 sm:px-8 
-                           py-3 sm:py-4 border border-[#6B5E4C] text-[#6B5E4C] rounded-md 
-                           group hover:bg-[#6B5E4C] hover:text-white transition-all duration-300"
-              >
-                View Details
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transform group-hover:translate-x-1 transition-transform" />
-              </motion.button>
+
+              {showSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute bottom-full left-0 right-0 mb-2 p-2 bg-green-500 text-white text-sm rounded-md"
+                >
+                  Added to cart successfully!
+                </motion.div>
+              )}
             </motion.div>
 
             {/* Tags */}
@@ -686,6 +791,32 @@ const FeaturedProduct = () => {
           isOpen={isQuickViewOpen}
           onClose={() => setIsQuickViewOpen(false)}
         />
+      )}
+
+      {showSuccess && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 
+                     bg-[#6B5E4C] text-white rounded-lg shadow-lg 
+                     flex items-center gap-2 backdrop-blur-sm border border-white/10"
+        >
+          <svg 
+            className="w-5 h-5 text-green-400" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M5 13l4 4L19 7" 
+            />
+          </svg>
+          <span className="font-medium">Added to cart successfully!</span>
+        </motion.div>
       )}
     </section>
   );

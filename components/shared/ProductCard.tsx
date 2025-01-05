@@ -1,11 +1,12 @@
 // /components/shared/ProductCard.tsx
 "use client"
+import { ProductVariantModal } from '@/components/quickview/ProductVariantModal';
 import type { Product } from '@/lib/shopify/types';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 
 const ImageGallery = memo(({ product }: { product: Product }) => {
   const [activeImage, setActiveImage] = useState(0)
@@ -180,189 +181,213 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardProps) => {
+  const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
+
   const handleQuickView = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     onQuickView(e)
-  }, [product, onQuickView])
+  }, [onQuickView])
 
-  const category = useMemo(() => determineProductCategory(product), [product])
+  const handleAddToCart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsVariantModalOpen(true);
+  }, []);
+
+  const handleModalClose = useCallback(() => {
+    setIsVariantModalOpen(false);
+  }, []);
 
   return (
-    <motion.div
-      whileHover={{ y: -8 }}
-      className="relative group h-full bg-white dark:bg-primary-800/50 backdrop-blur-sm 
-                 rounded-sm shadow-lg transition-all duration-500 
-                 hover:shadow-xl hover:shadow-primary-900/10 dark:hover:shadow-primary-100/10 
-                 min-w-[200px] w-full"
-    >
-      <div className="relative">
-        <ImageGallery product={product} />
-        <div className="p-4">
-          <div className="inline-flex px-2 py-1 rounded-full 
-                          text-xs font-medium tracking-wide
-                          bg-primary-100/80 dark:bg-primary-700/80
-                          text-primary-800 dark:text-primary-100">
-            {category}
-          </div>
+    <>
+      <motion.div
+        whileHover={{ y: -8 }}
+        className="relative group h-full bg-white dark:bg-primary-800/50 backdrop-blur-sm 
+                   rounded-sm shadow-lg transition-all duration-500 
+                   hover:shadow-xl hover:shadow-primary-900/10 dark:hover:shadow-primary-100/10 
+                   min-w-[200px] w-full"
+      >
+        <div className="relative">
+          <ImageGallery product={product} />
+          <div className="p-4">
+            {product.tags && product.tags[0] && (
+              <div className="inline-flex px-2 py-1 rounded-full 
+                            text-xs font-medium tracking-wide
+                            bg-primary-100/80 dark:bg-primary-700/80
+                            text-primary-800 dark:text-primary-100">
+                {product.tags[0]}
+              </div>
+            )}
 
-          <Link 
-            href={`/products/${product.handle}`}
-            className="block mt-2 group/title relative isolate"
-          >
-            <h3 className="font-semibold text-base tracking-tight 
-                           text-primary-900 dark:text-primary-100 
-                           line-clamp-1 cursor-pointer
-                           transition-all duration-300
-                           group-hover/title:text-accent-500
-                           group-hover/title:translate-x-1">
-              {product.title}
-            </h3>
+            <Link 
+              href={`/products/${product.handle}`}
+              className="block mt-2 group/title relative isolate"
+            >
+              <h3 className="font-semibold text-base tracking-tight 
+                             text-primary-900 dark:text-primary-100 
+                             line-clamp-1 cursor-pointer
+                             transition-all duration-300
+                             group-hover/title:text-accent-500
+                             group-hover/title:translate-x-1">
+                {product.title}
+              </h3>
+              
+              <div className="absolute -bottom-0.5 left-0 right-0 h-px
+                                bg-gradient-to-r from-accent-500/0 via-accent-500/70 to-accent-500/0
+                                origin-center transition-all duration-300
+                                opacity-0 scale-x-0
+                                group-hover/title:opacity-100 group-hover/title:scale-x-100" />
+            </Link>
             
-            <div className="absolute -bottom-0.5 left-0 right-0 h-px
-                              bg-gradient-to-r from-accent-500/0 via-accent-500/70 to-accent-500/0
-                              origin-center transition-all duration-300
-                              opacity-0 scale-x-0
-                              group-hover/title:opacity-100 group-hover/title:scale-x-100" />
-          </Link>
-          
-          <div className="flex items-center gap-2">
-            <div className="relative">
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                {product.compareAtPriceRange?.minVariantPrice && 
+                 parseFloat(product.compareAtPriceRange.minVariantPrice.amount) > parseFloat(product.priceRange.minVariantPrice.amount) && (
+                  <motion.div 
+                    initial={{ scale: 0.8, opacity: 0, rotate: -12 }}
+                    animate={{ 
+                      scale: [0.8, 1.1, 1],
+                      opacity: 1,
+                      rotate: [-12, -15, -12]
+                    }}
+                    className="absolute -top-3 -left-2 bg-gradient-to-r from-[#FF6B6B] to-[#FF8B8B] 
+                               text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full 
+                               shadow-sm transform -rotate-12"
+                  >
+                    Sale
+                  </motion.div>
+                )}
+                <p className="text-lg font-bold tracking-tight text-accent-500 dark:text-accent-400">
+                  ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                </p>
+              </div>
               {product.compareAtPriceRange?.minVariantPrice && 
                parseFloat(product.compareAtPriceRange.minVariantPrice.amount) > parseFloat(product.priceRange.minVariantPrice.amount) && (
-                <motion.div 
-                  initial={{ scale: 0.8, opacity: 0, rotate: -12 }}
-                  animate={{ 
-                    scale: [0.8, 1.1, 1],
-                    opacity: 1,
-                    rotate: [-12, -15, -12]
-                  }}
-                  className="absolute -top-3 -left-2 bg-gradient-to-r from-[#FF6B6B] to-[#FF8B8B] 
-                             text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full 
-                             shadow-sm transform -rotate-12"
-                >
-                  Sale
-                </motion.div>
+                <>
+                  <span className="text-sm text-[#8C7E6A] line-through decoration-[#FF6B6B]/40">
+                    ${parseFloat(product.compareAtPriceRange.minVariantPrice.amount).toFixed(2)}
+                  </span>
+                  <span className="text-xs text-[#FF6B6B] font-medium px-2 py-0.5 
+                                   bg-[#FF6B6B]/10 rounded-full">
+                    Save {Math.round(((parseFloat(product.compareAtPriceRange.minVariantPrice.amount) - 
+                                     parseFloat(product.priceRange.minVariantPrice.amount)) / 
+                                     parseFloat(product.compareAtPriceRange.minVariantPrice.amount)) * 100)}%
+                  </span>
+                </>
               )}
-              <p className="text-lg font-bold tracking-tight text-accent-500 dark:text-accent-400">
-                ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
-              </p>
             </div>
-            {product.compareAtPriceRange?.minVariantPrice && 
-             parseFloat(product.compareAtPriceRange.minVariantPrice.amount) > parseFloat(product.priceRange.minVariantPrice.amount) && (
-              <>
-                <span className="text-sm text-[#8C7E6A] line-through decoration-[#FF6B6B]/40">
-                  ${parseFloat(product.compareAtPriceRange.minVariantPrice.amount).toFixed(2)}
-                </span>
-                <span className="text-xs text-[#FF6B6B] font-medium px-2 py-0.5 
-                                 bg-[#FF6B6B]/10 rounded-full">
-                  Save {Math.round(((parseFloat(product.compareAtPriceRange.minVariantPrice.amount) - 
-                                   parseFloat(product.priceRange.minVariantPrice.amount)) / 
-                                   parseFloat(product.compareAtPriceRange.minVariantPrice.amount)) * 100)}%
-                </span>
-              </>
-            )}
-          </div>
-          
-          <p className="text-sm leading-relaxed mt-2
-                        text-primary-600/90 dark:text-primary-300/90 
-                        line-clamp-2 min-h-[2.5rem]">
-            {product.description}
-          </p>
-          
-          <div className={cn(
-            "flex gap-2 mt-3",
-            cardsToShow >= 5 ? "flex-col" : "flex-row"
-          )}>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className={cn(
-                "relative px-3 py-1.5",
-                "bg-[#8B9D8B] hover:bg-[#7A8C7A]",
-                "text-white rounded-sm",
-                "transition-all duration-300",
-                "flex items-center justify-center gap-1.5",
-                "overflow-hidden shadow-sm hover:shadow-md",
-                "group",
-                cardsToShow >= 5 ? "w-full" : "flex-1"
-              )}
-            >
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100
-                            bg-gradient-to-r from-transparent via-white/20 to-transparent
-                            -translate-x-full group-hover:translate-x-full
-                            transition-all duration-1000 ease-in-out" />
-
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100
-                            bg-gradient-to-t from-black/10 to-transparent
-                            transition-opacity duration-300" />
-
-              <svg 
-                className="w-3.5 h-3.5 relative
-                          transform group-hover:-translate-y-px
-                          transition-transform duration-300 ease-out" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
+            
+            <p className="text-sm leading-relaxed mt-2
+                          text-primary-600/90 dark:text-primary-300/90 
+                          line-clamp-2 min-h-[2.5rem]">
+              {product.description}
+            </p>
+            
+            <div className={cn(
+              "flex gap-2 mt-3",
+              cardsToShow >= 5 ? "flex-col" : "flex-row"
+            )}>
+              <motion.button
+                onClick={handleAddToCart}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={cn(
+                  "relative px-3 py-1.5",
+                  "bg-[#8B9D8B] hover:bg-[#7A8C7A]",
+                  "text-white rounded-sm",
+                  "transition-all duration-300",
+                  "flex items-center justify-center gap-1.5",
+                  "overflow-hidden shadow-sm hover:shadow-md",
+                  "group",
+                  cardsToShow >= 5 ? "w-full" : "flex-1"
+                )}
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" 
-                />
-              </svg>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100
+                              bg-gradient-to-r from-transparent via-white/20 to-transparent
+                              -translate-x-full group-hover:translate-x-full
+                              transition-all duration-1000 ease-in-out" />
 
-              <span className="font-medium text-xs relative
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100
+                              bg-gradient-to-t from-black/10 to-transparent
+                              transition-opacity duration-300" />
+
+                <svg 
+                  className="w-3.5 h-3.5 relative
                             transform group-hover:-translate-y-px
-                            transition-transform duration-300 ease-out
-                            text-shadow-sm">
-                Add to Cart
-              </span>
+                            transition-transform duration-300 ease-out" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" 
+                  />
+                </svg>
 
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100
-                            ring-2 ring-white/20
-                            transition-opacity duration-300" />
-            </motion.button>
+                <span className="font-medium text-xs relative
+                              transform group-hover:-translate-y-px
+                              transition-transform duration-300 ease-out
+                              text-shadow-sm">
+                  Add to Cart
+                </span>
 
-            <motion.button
-              onClick={handleQuickView}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className={cn(
-                "relative px-3 py-1.5",
-                "bg-[#4A4A4A] hover:bg-[#3A3A3A]",
-                "text-white rounded-sm",
-                "transition-all duration-300",
-                "flex items-center justify-center",
-                "overflow-hidden shadow-sm hover:shadow-md",
-                "group",
-                cardsToShow >= 5 ? "w-full" : "w-[100px]",
-                "text-xs font-medium"
-              )}
-            >
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100
-                            bg-gradient-to-r from-transparent via-white/10 to-transparent
-                            -translate-x-full group-hover:translate-x-full
-                            transition-all duration-1000 ease-in-out" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100
+                              ring-2 ring-white/20
+                              transition-opacity duration-300" />
+              </motion.button>
 
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100
-                            bg-gradient-to-t from-black/10 to-transparent
-                            transition-opacity duration-300" />
+              <motion.button
+                onClick={handleQuickView}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={cn(
+                  "relative px-3 py-1.5",
+                  "bg-[#4A4A4A] hover:bg-[#3A3A3A]",
+                  "text-white rounded-sm",
+                  "transition-all duration-300",
+                  "flex items-center justify-center",
+                  "overflow-hidden shadow-sm hover:shadow-md",
+                  "group",
+                  cardsToShow >= 5 ? "w-full" : "w-[100px]",
+                  "text-xs font-medium"
+                )}
+              >
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100
+                              bg-gradient-to-r from-transparent via-white/10 to-transparent
+                              -translate-x-full group-hover:translate-x-full
+                              transition-all duration-1000 ease-in-out" />
 
-              <span className="relative transform group-hover:-translate-y-px
-                            transition-transform duration-300 ease-out">
-                Quick View
-              </span>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100
+                              bg-gradient-to-t from-black/10 to-transparent
+                              transition-opacity duration-300" />
 
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100
-                            ring-2 ring-white/10
-                            transition-opacity duration-300" />
-            </motion.button>
+                <span className="relative transform group-hover:-translate-y-px
+                              transition-transform duration-300 ease-out">
+                  Quick View
+                </span>
+
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100
+                              ring-2 ring-white/10
+                              transition-opacity duration-300" />
+              </motion.button>
+            </div>
           </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+
+      <ProductVariantModal
+        isOpen={isVariantModalOpen}
+        onClose={handleModalClose}
+        product={product}
+        onAddToCart={(variantId, quantity) => {
+          // This is handled inside the modal now
+        }}
+      />
+    </>
   )
 }
 
