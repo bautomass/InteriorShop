@@ -238,7 +238,7 @@ const getMenuStyles = (style: string | undefined, index: number) => {
 const getMenuPosition = (menu: { position?: string; alignment?: string }, slideId: string) => {
   switch (slideId) {
     case 'slide-1':
-      return 'right-[155px] top-24';
+      return 'right-[160px] top-32';
     case 'slide-2':
       return 'left-16 top-24';
     case 'slide-3':
