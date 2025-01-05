@@ -8,7 +8,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ProductOption } from 'lib/shopify/types';
 import { Check, ChevronLeft, ChevronRight, Package, RefreshCcw, ShoppingBag, X } from 'lucide-react';
 import Image from 'next/image';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Dispatch, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useGiftBuilder } from './context';
 
 // Enhanced Types
@@ -27,6 +27,7 @@ interface GiftBoxVariant {
   id: string;
   title: string;
   price: number;
+  maxProducts: number;
   selectedOptions: Array<{
     name: string;
     value: string;
@@ -79,6 +80,7 @@ interface BoxSelectionPayload extends GiftBox {
   maxProducts: number;
   selectedOptions: SelectedOptions;
   featuredImage: GiftBoxImage;
+  products: any[];
 }
 
 // Enhanced Animation Variants
@@ -560,11 +562,15 @@ const CustomDropdown = ({
 function BoxOptionsSelector({
   box,
   onComplete,
-  initialOptions = {}
+  initialOptions = {},
+  dispatch,
+  setOpenModal
 }: {
   box: GiftBox;
   onComplete: (variant: GiftBoxVariant, options: SelectedOptions) => void;
   initialOptions?: SelectedOptions;
+  dispatch: Dispatch<any>;
+  setOpenModal: (id: string | null) => void;
 }) {
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>(initialOptions);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
@@ -599,18 +605,36 @@ function BoxOptionsSelector({
     return options;
   }, [box?.variants, selectedOptions]);
 
-  const handleComplete = async (variant: GiftBoxVariant) => {
-    if (isSubmitting) return;
-    
+  const handleComplete = async (
+    box: GiftBox,
+    variant: GiftBoxVariant,
+    selectedOptions: SelectedOptions,
+    dispatch: Dispatch<any>,
+    setOpenModal: (id: string | null) => void
+  ) => {
     try {
-      setIsSubmitting(true);
-      setError(null);
-      await onComplete(variant, selectedOptions);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to complete selection');
-      console.error('Error completing selection:', err);
-    } finally {
-      setIsSubmitting(false);
+      const payload: BoxSelectionPayload = {
+        id: box.id,
+        handle: box.handle,
+        title: box.title,
+        description: box.description,
+        images: box.images,
+        variantId: variant.id,
+        price: variant.price,
+        maxProducts: variant.maxProducts || 4,
+        selectedOptions,
+        featuredImage: variant.image || variant.featuredImage || box.featuredImage,
+        products: [],
+        variants: box.variants,
+        options: box.options
+      };
+
+      dispatch({ type: 'SELECT_BOX', payload });
+      dispatch({ type: 'SET_STEP', payload: 'products' });
+      setOpenModal(null);
+    } catch (error) {
+      console.error('Error completing selection:', error);
+      throw error;
     }
   };
 
@@ -693,7 +717,7 @@ function BoxOptionsSelector({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => selectedVariant && handleComplete(selectedVariant)}
+            onClick={() => selectedVariant && handleComplete(box, selectedVariant, selectedOptions, dispatch, setOpenModal)}
             disabled={!isComplete || isSubmitting}
             className={`w-full rounded-xl px-6 py-3.5 text-sm font-medium shadow-lg transition-all ${
               isSubmitting
@@ -730,79 +754,98 @@ function GiftBoxCard({ box, isSelected, onCustomize, hoveredBox, onHover }: Gift
   }, [box.variants]);
 
   return (
-    <motion.div 
-      className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-500 dark:bg-primary-900"
-      whileHover={{ scale: 1.02 }}
-    >
-      {/* Selection Indicator */}
-      <AnimatePresence>
-        {isSelected && (
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="absolute right-4 top-4 z-20 rounded-full bg-accent-500 p-1.5 shadow-lg"
-          >
-            <Check className="h-5 w-5 text-white" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden">
-        {box.featuredImage ? (
-          <>
-            <Image
-              src={box.featuredImage.url}
-              alt={box.featuredImage.altText || `${box.title} gift box`}
-              fill
-              className="transform-gpu object-cover transition-all duration-500 will-change-transform 
-                group-hover:scale-105 group-hover:brightness-75"
-              sizes="(max-width: 640px) 90vw, (max-width: 768px) 45vw, 400px"
-              priority={true}
-            />
-            
-            {/* Customize Button Overlay - Fixed pointer events and transitions */}
-            <div 
-              className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center 
-                bg-black/0 transition-all duration-300 group-hover:bg-black/20"
+    <div className="relative">
+      <motion.div 
+        className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-md 
+          transition-shadow duration-300 hover:shadow-xl dark:bg-primary-900"
+        whileHover={{ scale: 1.02 }}
+        transition={{ duration: 0.3 }}
+      >
+        {/* Selection Indicator */}
+        <AnimatePresence>
+          {isSelected && (
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="absolute right-4 top-4 z-30 rounded-full bg-accent-500 p-1.5 shadow-lg"
             >
-              <div className="pointer-events-auto translate-y-4 opacity-0 transition-transform duration-300 
-                ease-out group-hover:translate-y-0 group-hover:opacity-100">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onCustomize();
-                  }}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white/95 px-6 py-3.5 
-                    text-sm font-medium text-accent-500 shadow-lg backdrop-blur-sm 
-                    transition-colors hover:bg-white hover:text-accent-600 active:scale-95"
-                >
-                  <span>Customize Box</span>
-                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="flex h-full items-center justify-center bg-primary-50 dark:bg-primary-800/50">
-            <Package className="h-10 w-10 text-primary-300" />
-          </div>
-        )}
+              <Check className="h-5 w-5 text-white" />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Price Badge */}
-        <div className="absolute bottom-4 right-4 z-20 overflow-hidden rounded-xl bg-white/95 
-          shadow-lg backdrop-blur-md transition-transform duration-300
-          dark:bg-primary-900/95">
-          <div className="px-3.5 py-2">
-            <p className="text-base font-medium text-accent-500">
-              From ${startingPrice.toFixed(2)}
-            </p>
+        {/* Image Container */}
+        <div className="relative aspect-square w-full overflow-hidden">
+          {box.featuredImage ? (
+            <>
+              <Image
+                src={box.featuredImage.url}
+                alt={box.featuredImage.altText || `${box.title} gift box`}
+                fill
+                className="transform-gpu object-cover transition-all duration-500 will-change-transform 
+                  group-hover:scale-105"
+                sizes="(max-width: 640px) 90vw, (max-width: 768px) 45vw, 400px"
+                priority={true}
+              />
+              
+              {/* Dark Overlay - Separate from button container */}
+              <div 
+                className="absolute inset-0 bg-black/0 transition-colors duration-300 
+                  group-hover:bg-black/30"
+              />
+              
+              {/* Button Container - Separate layer */}
+              <div 
+                className="absolute inset-0 z-20 flex items-center justify-center"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <div 
+                  className="transform opacity-0 transition-all duration-300 ease-out 
+                    group-hover:translate-y-0 group-hover:opacity-100"
+                  style={{ transform: 'translateY(1rem)' }}
+                >
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onCustomize();
+                    }}
+                    className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 
+                      text-sm font-medium text-accent-500 shadow-lg 
+                      transition-all duration-200
+                      hover:bg-white hover:text-accent-600 hover:shadow-xl
+                      active:scale-95 active:shadow-md"
+                  >
+                    <span>Customize Box</span>
+                    <ChevronRight className="h-4 w-4 transition-transform duration-200 
+                      group-hover:translate-x-0.5" />
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex h-full items-center justify-center bg-primary-50 dark:bg-primary-800/50">
+              <Package className="h-10 w-10 text-primary-300" />
+            </div>
+          )}
+
+          {/* Price Badge */}
+          <div className="absolute bottom-4 right-4 z-20 overflow-hidden rounded-xl bg-white/95 
+            shadow-lg backdrop-blur-sm transition-all duration-300
+            dark:bg-primary-900/95">
+            <div className="px-3.5 py-2">
+              <p className="text-base font-medium text-accent-500">
+                From ${startingPrice.toFixed(2)}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
 
@@ -878,7 +921,6 @@ function GiftBoxSelectorContent() {
   const { state, dispatch } = useGiftBuilder();
   const [hoveredBox, setHoveredBox] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState<string | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const shouldReduceMotion = useReducedMotion();
 
   const {
@@ -894,38 +936,37 @@ function GiftBoxSelectorContent() {
     refetchOnWindowFocus: false
   });
 
-  const handleNext = () => {
-    if (giftBoxes) {
-      setCurrentIndex((prev) => (prev + 1) % giftBoxes.length);
-    }
-  };
-
-  const handlePrev = () => {
-    if (giftBoxes) {
-      setCurrentIndex((prev) => (prev - 1 + giftBoxes.length) % giftBoxes.length);
-    }
-  };
-
-  const getMaxProducts = useCallback((variantTitle: string) => {
-    if (variantTitle.toLowerCase().includes('small')) return 3;
-    if (variantTitle.toLowerCase().includes('medium')) return 6;
-    return 10;
-  }, []);
-
-  const handleComplete = (box: GiftBox, variant: GiftBoxVariant, options: SelectedOptions) => {
-    dispatch({
-      type: 'SELECT_BOX',
-      payload: {
-        ...box,
+  const handleComplete = async (
+    box: GiftBox,
+    variant: GiftBoxVariant,
+    selectedOptions: SelectedOptions,
+    dispatch: Dispatch<any>,
+    setOpenModal: (id: string | null) => void
+  ) => {
+    try {
+      const payload: BoxSelectionPayload = {
+        id: box.id,
+        handle: box.handle,
+        title: box.title,
+        description: box.description,
+        images: box.images,
         variantId: variant.id,
         price: variant.price,
-        maxProducts: getMaxProducts(variant.title),
-        selectedOptions: options,
-        featuredImage: variant.image || box.featuredImage
-      } as BoxSelectionPayload
-    });
-    dispatch({ type: 'SET_STEP', payload: 2 });
-    setOpenModal(null);
+        maxProducts: variant.maxProducts || 4,
+        selectedOptions,
+        featuredImage: variant.image || variant.featuredImage || box.featuredImage,
+        products: [],
+        variants: box.variants,
+        options: box.options
+      };
+
+      dispatch({ type: 'SELECT_BOX', payload });
+      dispatch({ type: 'SET_STEP', payload: 'products' });
+      setOpenModal(null);
+    } catch (error) {
+      console.error('Error completing selection:', error);
+      throw error;
+    }
   };
 
   if (isLoading) {
@@ -941,7 +982,7 @@ function GiftBoxSelectorContent() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: shouldReduceMotion ? 0 : 0.3 }}
-      className="mx-auto max-w-[800px] space-y-8 px-4 sm:px-6 lg:px-8"
+      className="mx-auto max-w-[1200px] space-y-8 px-4 sm:px-6 lg:px-8"
     >
       {/* Header */}
       <div className="text-center">
@@ -966,75 +1007,19 @@ function GiftBoxSelectorContent() {
         </motion.p>
       </div>
 
-      {/* Single Card with Navigation */}
+      {/* Grid of Cards */}
       {giftBoxes && (
-        <div className="relative mx-auto max-w-md">
-          {/* Navigation Arrows */}
-          <div className="absolute inset-y-0 -left-4 -right-4 z-10 flex items-center justify-between sm:-left-8 sm:-right-8">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handlePrev}
-              className="rounded-full bg-white/90 p-2 text-primary-900 shadow-lg backdrop-blur-sm 
-                transition-all hover:bg-white dark:bg-primary-800/90 dark:text-white sm:p-3"
-              aria-label="Previous box"
-            >
-              <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handleNext}
-              className="rounded-full bg-white/90 p-2 text-primary-900 shadow-lg backdrop-blur-sm 
-                transition-all hover:bg-white dark:bg-primary-800/90 dark:text-white sm:p-3"
-              aria-label="Next box"
-            >
-              <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
-            </motion.button>
-          </div>
-
-          {/* Current Card */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="w-full cursor-pointer"
-              onClick={() => setOpenModal(giftBoxes[currentIndex].id)}
-            >
-              <GiftBoxCard
-                box={giftBoxes[currentIndex]}
-                isSelected={state.selectedBox?.id === giftBoxes[currentIndex].id}
-                onCustomize={() => setOpenModal(giftBoxes[currentIndex].id)}
-                hoveredBox={hoveredBox}
-                onHover={setHoveredBox}
-              />
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Progress Indicators */}
-          <div className="mt-4 flex justify-center gap-2">
-            {giftBoxes.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`h-1.5 w-8 rounded-full transition-all ${
-                  index === currentIndex
-                    ? 'bg-accent-500'
-                    : 'bg-primary-200 hover:bg-primary-300 dark:bg-primary-700 dark:hover:bg-primary-600'
-                }`}
-                aria-label={`Go to box ${index + 1}`}
-              />
-            ))}
-          </div>
-
-          {/* Box Counter */}
-          <div className="mt-2 text-center">
-            <p className="text-sm font-medium text-primary-600 dark:text-primary-300">
-              Box {currentIndex + 1} of {giftBoxes.length}
-            </p>
-          </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {giftBoxes.map((box) => (
+            <GiftBoxCard
+              key={box.id}
+              box={box}
+              isSelected={state.selectedBox?.id === box.id}
+              onCustomize={() => setOpenModal(box.id)}
+              hoveredBox={hoveredBox}
+              onHover={setHoveredBox}
+            />
+          ))}
         </div>
       )}
 
@@ -1048,8 +1033,10 @@ function GiftBoxSelectorContent() {
         >
           <BoxOptionsSelector
             box={box}
+            dispatch={dispatch}
+            setOpenModal={setOpenModal}
             initialOptions={(state.selectedBox as BoxSelectionPayload)?.selectedOptions ?? {}}
-            onComplete={(variant, options) => handleComplete(box, variant, options)}
+            onComplete={(variant, options) => handleComplete(box, variant, options, dispatch, setOpenModal)}
           />
         </Modal>
       ))}
