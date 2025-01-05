@@ -76,9 +76,9 @@ export function GiftReview() {
         {state.selectedBox && (
           <div className="flex items-center gap-4">
             <div className="relative h-24 w-24 overflow-hidden rounded-lg">
-              {state.selectedBox.image?.url ? (
+              {state.selectedBox?.featuredImage?.url ? (
                 <Image
-                  src={state.selectedBox.image.url}
+                  src={state.selectedBox.featuredImage.url}
                   alt={state.selectedBox.title}
                   fill
                   className="object-cover"
