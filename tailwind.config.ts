@@ -79,7 +79,15 @@ const config: Config = {
             opacity: '1', 
             transform: 'translate(0, -50%) scale(1)'
           },
-        }
+        },
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
       },
       animation: {
         fadeIn: 'fadeIn .3s ease-in-out',
@@ -88,7 +96,9 @@ const config: Config = {
         wiggle: 'wiggle 1s ease-in-out infinite',
         'text-shimmer': 'text-shimmer 3s ease infinite',
         ping: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
-        slideIn: 'slideIn 0.3s ease-out forwards'
+        slideIn: 'slideIn 0.3s ease-out forwards',
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
       },
       transitionTimingFunction: {
         'out-expo': 'cubic-bezier(0.23, 1, 0.32, 1)',
