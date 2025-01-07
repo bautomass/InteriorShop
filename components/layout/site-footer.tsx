@@ -205,7 +205,7 @@ export function Footer() {
         <div className="py-6 border-t border-[#B5A48B]/20">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="text-sm text-[#8C7E6A]">
-              © {new Date().getFullYear()} Your Store Name. All rights reserved.
+              © {new Date().getFullYear()} Simple Interior Ideas. All rights reserved.
             </div>
             <ul className="flex flex-wrap items-center gap-4 sm:gap-6">
               {footerLinks.legal.map((link) => (
