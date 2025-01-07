@@ -1124,7 +1124,7 @@ export default function LampsCollection() {
                     pagination={{
                       clickable: true,
                       dynamicBullets: true,
-                      horizontalClass: 'swiper-pagination-horizontal !mt-6',
+                      horizontalClass: 'swiper-pagination-horizontal',
                       bulletActiveClass: '!bg-primary-900 scale-110',
                       bulletClass: 'inline-block !w-2.5 !h-2.5 rounded-full !bg-primary-300/50 mx-1 transition-all duration-300',
                     }}
