@@ -636,7 +636,6 @@ export default function AnturamStoolsCollection() {
                             quickView.openQuickView(product);
                           }}
                           cardsToShow={cardsToShow}
-                          href={`/product/${product.handle}`}
                         />
                       </SwiperSlide>
                     ))}
