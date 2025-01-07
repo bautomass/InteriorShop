@@ -1125,8 +1125,8 @@ export default function LampsCollection() {
                       clickable: true,
                       dynamicBullets: true,
                       horizontalClass: 'swiper-pagination-horizontal',
-                      bulletActiveClass: '!bg-primary-900 scale-110',
-                      bulletClass: 'inline-block !w-2.5 !h-2.5 rounded-full !bg-primary-300/50 mx-1 transition-all duration-300',
+                      bulletActiveClass: '!bg-primary-900',
+                      bulletClass: 'inline-block !w-2.5 !h-2.5 rounded-full !bg-primary-300/50 mx-1 transition-transform duration-300 hover:scale-110 active:scale-110',
                     }}
                     navigation={{
                       prevEl: '.custom-swiper-button-prev',
