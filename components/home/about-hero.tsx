@@ -302,14 +302,7 @@ ViewAllCard.displayName = 'ViewAllCard';
 const useImagePreloader = (imageUrls: string[]) => {
   useEffect(() => {
     const preloadImages = async () => {
-      const promises = imageUrls.map((url) => {
-        return new Promise<void>((resolve, reject) => {
-          const img = new (Image as any as { new(): HTMLImageElement })();
-          img.onload = () => resolve();
-          img.onerror = reject;
-          img.src = url;
-        });
-      });
+      const promises = imageUrls.map((url) => preloadImage(url));
 
       try {
         await Promise.all(promises);
@@ -423,9 +416,10 @@ function ErrorFallback({ error }: { error: Error }) {
   );
 }
 
+// Update the preloadImage function
 const preloadImage = (url: string): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
-    const img = new (Image as any as { new(): HTMLImageElement })();
+    const img = new (window.Image || HTMLImageElement)();
     img.onload = () => resolve();
     img.onerror = reject;
     img.src = url;

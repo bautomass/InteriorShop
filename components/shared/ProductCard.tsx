@@ -178,6 +178,7 @@ interface ProductCardProps {
   product: Product;
   cardsToShow: number;
   onQuickView: (e: React.MouseEvent<Element>) => void;
+  className?: string; 
 }
 
 export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardProps) => {

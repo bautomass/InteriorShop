@@ -1,5 +1,6 @@
+//page/cart.tsx
 'use client';
-
+import InvoiceSection from '@/components/invoice/InvoiceSection';
 import { useActionState } from '@/hooks/useActionState';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import type { Cart, Product } from '@/lib/shopify/types';
@@ -214,8 +215,9 @@ export default function CartPage() {
             </motion.div>
           </div>
 
-          {/* Trust Badges - Takes up 1 column on large screens */}
+          {/* Trust Badges and Invoice Section - Takes up 1 column on large screens */}
           <motion.div variants={itemVariants} className="space-y-6 lg:pl-8">
+            {/* Trust Badges */}
             {TRUST_BADGES.map((badge) => (
               <div 
                 key={badge.title}
@@ -230,6 +232,21 @@ export default function CartPage() {
                 </div>
               </div>
             ))}
+            
+            {/* Invoice Section */}
+            {activeCart && activeCart.lines && activeCart.lines.length > 0 && (
+              <InvoiceSection 
+                cart={activeCart} 
+                onDownloadPDF={() => {
+                  // Implement PDF download logic
+                  console.log('Downloading PDF...');
+                }}
+                onDownloadCSV={() => {
+                  // Implement CSV download logic
+                  console.log('Downloading CSV...');
+                }}
+              />
+            )}
           </motion.div>
         </div>
 
@@ -246,7 +263,7 @@ export default function CartPage() {
             <div className="flex justify-center">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 sm:gap-6 max-w-[2100px]">
                 {displayedRecentItems.slice(0, 7).map((product) => (
-                  <Tooltip.Provider delayDuration={200}>
+                  <Tooltip.Provider key={product.id} delayDuration={200}>
                     <motion.div
                       key={product.id}
                       initial={{ opacity: 0, y: 20 }}

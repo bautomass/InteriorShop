@@ -1,4 +1,6 @@
 'use client'
+import { Pinterest } from '@/components/icons/Pinterest';
+import { X } from '@/components/icons/X';
 import { ProductQuickView } from '@/components/quickview/ProductQuickView';
 import ProductReviews from '@/components/reviews/ProductReviews';
 import { useActionState } from '@/hooks/useActionState';
@@ -6,13 +8,18 @@ import type { Product, ProductVariant } from '@/lib/shopify/types';
 import { addItem } from 'components/cart/actions';
 import { useCart } from 'components/cart/cart-context';
 import { motion } from 'framer-motion';
-import { CircleOff, Minus, Package, Plus, ShieldCheck, ShoppingCart, Star } from 'lucide-react';
+import { CircleOff, Facebook, Info, Link as LinkIcon, Mail, Minus, Package, Plus, ShieldCheck, ShoppingCart, Star } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 interface SelectedOptions {
   [key: string]: string;
+}
+
+interface VariantImageMapping {
+  [key: string]: number; // variant value -> image index
 }
 
 const mobileBlinkAnimation = {
@@ -59,6 +66,11 @@ const getStoredShareCount = () => {
   return count;
 };
 
+const StyleGuideModal = dynamic(() => import('@/components/modals/StyleGuideModal'), {
+  loading: () => <div className="animate-pulse bg-gray-200 h-full w-full rounded-lg" />,
+  ssr: false
+});
+
 const FeaturedProduct = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({});
@@ -81,6 +93,8 @@ const FeaturedProduct = () => {
   const [isPending, startTransition] = useTransition();
   const [message, formAction] = useActionState(addItem, null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [variantImageMap, setVariantImageMap] = useState<VariantImageMapping>({});
+  const [isStyleGuideOpen, setIsStyleGuideOpen] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -88,6 +102,13 @@ const FeaturedProduct = () => {
         const response = await fetch('/api/products/japandi-simplicity-ceramic-vase-shaped-ornaments');
         const productData = await response.json();
         if (productData) {
+          console.log('Fetched product data:', {
+            images: productData.images,
+            variants: productData.variants.map(v => ({
+              options: v.selectedOptions,
+              id: v.id
+            }))
+          });
           setProduct(productData);
         }
       } catch (error) {
@@ -99,6 +120,25 @@ const FeaturedProduct = () => {
 
     fetchProduct();
   }, []);
+
+  useEffect(() => {
+    if (product) {
+      console.log('Building variant image mapping...');
+      
+      // Manual mapping of variants to image indices
+      const imageMapping: VariantImageMapping = {
+        'White-1': 4,  // First white variant -> first image
+        'White-2': 3,  // Second white variant -> second image
+        'White-3': 2,  // Third white variant -> third image
+        'Black-1': 7,  // First black variant -> fourth image
+        'Black-2': 6,  // Second black variant -> fifth image
+        'Black-3': 5   // Third black variant -> sixth image
+      };
+
+      console.log('Image mapping created:', imageMapping);
+      setVariantImageMap(imageMapping);
+    }
+  }, [product]);
 
   const highlights = [
     { 
@@ -203,34 +243,23 @@ const FeaturedProduct = () => {
   };
 
   const handleOptionChange = (optionName: string, value: string) => {
+    console.log('Option changed:', optionName, value);
+    console.log('Current variant image map:', variantImageMap);
+    
     setSelectedOptions(prev => ({
       ...prev,
       [optionName]: value
     }));
 
     // Update image based on variant selection
-    if (optionName === "Style") {  // Assuming the option name is "Style"
-      switch (value) {
-        case 'White-1':
-          setActiveImage(0); // Index of white-1 image
-          break;
-        case 'White-2':
-          setActiveImage(1); // Index of white-2 image
-          break;
-        case 'White-3':
-          setActiveImage(2); // Index of white-3 image
-          break;
-        case 'Black-1':
-          setActiveImage(3); // Index of black-1 image
-          break;
-        case 'Black-2':
-          setActiveImage(4); // Index of black-2 image
-          break;
-        case 'Black-3':
-          setActiveImage(5); // Index of black-3 image
-          break;
+    if (optionName === "Style") {
+      const imageIndex = variantImageMap[value];
+      console.log('Found image index:', imageIndex, 'for value:', value);
+      
+      if (imageIndex !== undefined) {
+        setActiveImage(imageIndex);
+        scrollToActiveThumbnail(imageIndex);
       }
-      scrollToActiveThumbnail(activeImage);
     }
   };
 
@@ -282,17 +311,36 @@ const FeaturedProduct = () => {
     >
       {product?.options.map((option) => (
         <div key={option.name} className="space-y-2">
-          <label className="block text-sm font-medium text-[#6B5E4C]">
-            {option.name}
-          </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <label className="block text-sm font-medium text-[#6B5E4C]">
+              {option.name}
+            </label>
+            {option.name === "Style" && (
+              <button
+                onClick={() => setIsStyleGuideOpen(true)}
+                className="flex items-center gap-1 text-xs text-[#8C7E6A] hover:text-[#6B5E4C] 
+                           group transition-colors relative"
+              >
+                <span className="hover:underline">(STYLE GUIDE)</span>
+                <Info className="w-3 h-3 opacity-70 group-hover:opacity-100 transition-opacity" />
+                
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 
+                                bg-[#6B5E4C] text-white text-xs rounded whitespace-nowrap
+                                opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                                pointer-events-none">
+                  Click to see style guide
+                </span>
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
             {option.values.map((value) => {
               const isSelected = selectedOptions[option.name] === value;
               return (
                 <button
                   key={value}
                   onClick={() => handleOptionChange(option.name, value)}
-                  className={`px-4 py-2 border rounded-md transition-all duration-200
+                  className={`px-3 py-1.5 text-xs border rounded-md transition-all duration-200
                     ${isSelected 
                       ? 'border-[#6B5E4C] bg-[#6B5E4C] text-white' 
                       : 'border-[#B5A48B]/20 text-[#6B5E4C] hover:border-[#6B5E4C]'}`}
@@ -332,10 +380,8 @@ const FeaturedProduct = () => {
               product: product,
               quantity
             });
-            // Show success message
             setShowSuccess(true);
-            // Hide after 3 seconds
-            setTimeout(() => setShowSuccess(false), 3000);
+            setTimeout(() => setShowSuccess(false), 2500);
           } else {
             console.error('Add to cart failed:', result);
           }
@@ -417,22 +463,26 @@ const FeaturedProduct = () => {
                 className="flex items-center gap-2"
               >
                 <div className="flex items-center">
-                  {[...Array(5)].map((_, index) => (
-                    <Star
-                      key={index}
-                      className={`w-4 h-4 ${
-                        index < 4 || (index === 4 && 0.9 >= 0.5)
-                          ? 'text-yellow-400 fill-yellow-400'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
+                  {[...Array(5)].map((_, index) => {
+                    // Calculate fill percentage for the last star
+                    const fillPercentage = index === 4 ? (4.8 % 1) * 100 : 100;
+                    return (
+                      <div key={index} className="relative w-4 h-4">
+                        {/* Background star (empty) */}
+                        <Star className="absolute w-4 h-4 text-gray-200" />
+                        {/* Foreground star (filled) */}
+                        <div className="absolute w-4 h-4 overflow-hidden" style={{ width: `${fillPercentage}%` }}>
+                          <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
                 <button 
                   onClick={() => setIsReviewsExpanded(!isReviewsExpanded)}
                   className="text-sm text-[#6B5E4C] hover:underline"
                 >
-                  4.9 (128 reviews)
+                  4.8 (17 reviews)
                 </button>
               </motion.div>
 
@@ -596,12 +646,49 @@ const FeaturedProduct = () => {
 
               {showSuccess && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute bottom-full left-0 right-0 mb-2 p-2 bg-green-500 text-white text-sm rounded-md"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4"
                 >
-                  Added to cart successfully!
+                  <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
+                  <motion.div
+                    initial={{ y: 20 }}
+                    animate={{ y: 0 }}
+                    className="relative bg-white rounded-xl shadow-xl max-w-sm w-full mx-auto p-6 border border-[#B5A48B]/20"
+                  >
+                    <div className="flex flex-col items-center text-center space-y-4">
+                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                        <svg 
+                          className="w-6 h-6 text-green-600" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            strokeWidth={2} 
+                            d="M5 13l4 4L19 7" 
+                          />
+                        </svg>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-medium text-[#6B5E4C]">Added to Cart!</h3>
+                        <p className="text-sm text-[#8C7E6A]">{product.title}</p>
+                        <p className="text-sm font-medium text-[#B5A48B]">
+                          ${parseFloat(selectedVariant?.price.amount || '0').toFixed(2)} × {quantity}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShowSuccess(false)}
+                        className="w-full py-2 px-4 bg-[#6B5E4C] text-white rounded-lg hover:bg-[#5A4D3B] 
+                                 transition-colors duration-200 text-sm font-medium"
+                      >
+                        Continue Shopping
+                      </button>
+                    </div>
+                  </motion.div>
                 </motion.div>
               )}
             </motion.div>
@@ -781,6 +868,55 @@ const FeaturedProduct = () => {
                 ))}
               </motion.div>
             </div>
+
+            <div className="mt-6 pt-6 border-t border-[#6B5E4C]/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-[#6B5E4C]">Share this product:</span>
+                  <span className="text-xs text-[#8C7E6A] bg-[#6B5E4C]/5 px-2 py-0.5 rounded-full">
+                    {shareCount} shares
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => handleShare('facebook')}
+                    className="p-2 rounded-full hover:bg-[#6B5E4C]/5 transition-colors duration-200"
+                    aria-label="Share on Facebook"
+                  >
+                    <Facebook className="w-5 h-5 text-[#6B5E4C]" />
+                  </button>
+                  <button
+                    onClick={() => handleShare('twitter')}
+                    className="p-2 rounded-full hover:bg-[#6B5E4C]/5 transition-colors duration-200"
+                    aria-label="Share on X (formerly Twitter)"
+                  >
+                    <X className="w-5 h-5 text-[#6B5E4C]" />
+                  </button>
+                  <button
+                    onClick={() => handleShare('pinterest')}
+                    className="p-2 rounded-full hover:bg-[#6B5E4C]/5 transition-colors duration-200"
+                    aria-label="Share on Pinterest"
+                  >
+                    <Pinterest className="w-5 h-5 text-[#6B5E4C]" />
+                  </button>
+                  <button
+                    onClick={() => handleShare('email')}
+                    className="p-2 rounded-full hover:bg-[#6B5E4C]/5 transition-colors duration-200"
+                    aria-label="Share via Email"
+                  >
+                    <Mail className="w-5 h-5 text-[#6B5E4C]" />
+                  </button>
+                  <div className="w-px h-5 bg-[#6B5E4C]/10" />
+                  <button
+                    onClick={() => handleShare('copy')}
+                    className="p-2 rounded-full hover:bg-[#6B5E4C]/5 transition-colors duration-200"
+                    aria-label="Copy link"
+                  >
+                    <LinkIcon className="w-5 h-5 text-[#6B5E4C]" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </motion.div>
       </div>
@@ -793,31 +929,10 @@ const FeaturedProduct = () => {
         />
       )}
 
-      {showSuccess && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 
-                     bg-[#6B5E4C] text-white rounded-lg shadow-lg 
-                     flex items-center gap-2 backdrop-blur-sm border border-white/10"
-        >
-          <svg 
-            className="w-5 h-5 text-green-400" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M5 13l4 4L19 7" 
-            />
-          </svg>
-          <span className="font-medium">Added to cart successfully!</span>
-        </motion.div>
-      )}
+      <StyleGuideModal 
+        isOpen={isStyleGuideOpen} 
+        onClose={() => setIsStyleGuideOpen(false)} 
+      />
     </section>
   );
 };

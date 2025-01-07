@@ -65,9 +65,8 @@ export function EditItemQuantityButton({
 
   const actionWithVariant = formAction.bind(null, payload);
 
-  const clientAction = async (e: React.MouseEvent) => {
+  const clientAction = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (isPending) return;
 
     try {
@@ -82,15 +81,8 @@ export function EditItemQuantityButton({
   };
 
   return (
-    <form>
-      <button
-        onClick={clientAction}
-        type="submit"
-        aria-label={type === 'plus' ? 'Increase item quantity' : 'Reduce item quantity'}
-        disabled={isPending}
-      >
-        <SubmitButton type={type} isPending={isPending} />
-      </button>
+    <form onSubmit={clientAction}>
+      <SubmitButton type={type} isPending={isPending} />
       <p aria-live="polite" className="sr-only" role="status">
         {message}
       </p>

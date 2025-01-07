@@ -1,18 +1,18 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter } from 'lucide-react';
+import { Facebook, Instagram, Mail, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useInView } from 'react-intersection-observer';
 
 const footerLinks = {
   shop: [
-    { label: 'All Products', href: '/products' },
-    { label: 'New Arrivals', href: '/products/new' },
-    { label: 'Best Sellers', href: '/products/best-sellers' },
+    { label: 'All Products', href: '/collections/all-products' },
+    { label: 'New Arrivals', href: '/collections/new-arrivals' },
+    { label: 'Best Sellers', href: '/collections/best-sellers' },
     { label: 'Collections', href: '/collections' },
-    { label: 'Sale Items', href: '/products/sale' }
+    { label: 'Sale Items', href: '/collections/sale' }
   ],
   support: [
     { label: 'Contact Us', href: '/contact' },
@@ -39,8 +39,6 @@ const footerLinks = {
 const socialLinks = [
   { icon: Facebook, href: 'https://facebook.com', label: 'Facebook' },
   { icon: Instagram, href: 'https://instagram.com', label: 'Instagram' },
-  { icon: Twitter, href: 'https://twitter.com', label: 'Twitter' },
-  { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn' }
 ];
 
 export function Footer() {
@@ -63,7 +61,7 @@ export function Footer() {
           >
             <Link href="/" className="block mb-6">
               <Image
-                src="/logo.png" // Add your logo path
+                src="/logo.png"
                 alt="Company Logo"
                 width={120}
                 height={40}
@@ -76,15 +74,11 @@ export function Footer() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm text-[#8C7E6A]">
                 <MapPin className="w-4 h-4 text-[#B5A48B]" />
-                <span>123 Artisan Street, Craft City, CC 12345</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-[#8C7E6A]">
-                <Phone className="w-4 h-4 text-[#B5A48B]" />
-                <span>+1 (555) 123-4567</span>
+                <span>Brivibas Street 432, Riga, LV-1040</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-[#8C7E6A]">
                 <Mail className="w-4 h-4 text-[#B5A48B]" />
-                <span>support@yourstore.com</span>
+                <span>info@simpleinteriors.com</span>
               </div>
             </div>
           </motion.div>

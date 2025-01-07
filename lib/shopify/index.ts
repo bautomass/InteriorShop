@@ -105,7 +105,7 @@ export async function shopifyFetch<T>({
     };
   } catch (error) {
     throw new Error(
-      `Shop API Error: ${error instanceof Error ? error.message : 'Unknown error'} | Query: ${query.slice(0, 100)}`
+      `Shop API Error: ${error instanceof Error ? error.message : 'Unknown error'} | Query: ${query.slice(0, 250)}`
     );
   }
 }
@@ -478,21 +478,27 @@ export async function getProductRecommendations(productId: string): Promise<Prod
 }
 
 export async function getProducts({
-  query,
-  reverse,
-  sortKey
+  query = '',
+  reverse = false,
+  sortKey = 'TITLE',
+  first = 400,
+  collection = ''
 }: {
   query?: string;
   reverse?: boolean;
   sortKey?: string;
-}): Promise<Product[]> {
+  first?: number;
+  collection?: string;
+} = {}): Promise<Product[]> {
   const res = await shopifyFetch<ShopifyProductsOperation>({
     query: getProductsQuery,
     tags: [TAGS.products],
     variables: {
       query,
       reverse,
-      sortKey
+      sortKey,
+      first,
+      collection
     }
   });
 

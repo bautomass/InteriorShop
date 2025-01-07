@@ -629,19 +629,15 @@ export default function AnturamStoolsCollection() {
                   >
                     {products.map((product) => (
                       <SwiperSlide key={product.id}>
-                        <Link 
+                        <ProductCard 
+                          product={product} 
+                          onQuickView={(e) => {
+                            e.preventDefault();
+                            quickView.openQuickView(product);
+                          }}
+                          cardsToShow={cardsToShow}
                           href={`/product/${product.handle}`}
-                          className="block h-full w-full"
-                        >
-                          <ProductCard 
-                            product={product} 
-                            onQuickView={(e) => {
-                              e.preventDefault();
-                              quickView.openQuickView(product);
-                            }}
-                            cardsToShow={cardsToShow}
-                          />
-                        </Link>
+                        />
                       </SwiperSlide>
                     ))}
                   </Swiper>
