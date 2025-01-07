@@ -115,24 +115,6 @@ const heroSlides: SlideContent[] = [
     }
   },
   {
-    id: 'slide-2',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/simple-room-chair.jpg',
-    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room.jpg',
-    alt: 'Modern Room Design',
-    title: 'Transform Your Space',
-    subtitle: 'Discover timeless elegance',
-    menu: {
-      items: [
-        { label: 'Dining Sets', link: '/collections/dining', description: 'Gather in elegance' },
-        { label: 'Table Collection', link: '/collections/tables', description: 'Centerpiece designs' },
-        { label: 'Seating Solutions', link: '/collections/chairs', description: 'Comfort meets style' }
-      ],
-      position: 'left',
-      style: 'modern',
-      alignment: 'center'
-    }
-  },
-  {
     id: 'slide-3',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/wall-room.jpg',
     mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/arche.jpg',
@@ -166,24 +148,6 @@ const heroSlides: SlideContent[] = [
       position: 'right',
       style: 'minimal',
       alignment: 'middle'
-    }
-  },
-  {
-    id: 'slide-5',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair_f650c3ec-9c09-4940-9ee0-926176e22986.jpg',
-    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/chair.jpg',
-    alt: 'Comfort Redefined',
-    title: 'Comfort Redefined',
-    subtitle: 'Experience luxury in every detail',
-    menu: {
-      items: [
-        { label: 'Luxury Seating', link: '/collections/luxury', description: 'Premium comfort' },
-        { label: 'Designer Chairs', link: '/collections/designer-chairs', description: 'Iconic pieces' },
-        { label: 'Custom Orders', link: '/collections/custom', description: 'Made for you' }
-      ],
-      position: 'right',
-      style: 'classic',
-      alignment: 'center'
     }
   }
 ];

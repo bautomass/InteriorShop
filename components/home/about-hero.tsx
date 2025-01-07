@@ -645,37 +645,30 @@ const AboutHero = memo(function AboutHero() {
               </blockquote>
 
               {/* Collections section */}
-              <div className="flex items-center">
-                <div className="group flex items-center gap-6">
-                  <h2 className={`relative text-[#6B5E4C] text-2xl font-light transform
+              <div className="flex items-center justify-center">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 items-center w-full sm:w-auto">
+                  <h2 className={`relative text-[#6B5E4C] text-3xl sm:text-2xl font-medium sm:font-light transform text-center sm:text-left
                     ${sectionInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
-                    motion-safe:transition-all motion-safe:duration-700 motion-safe:delay-300
-                    after:content-[''] after:absolute after:-bottom-1 after:left-0 
-                    after:w-1/3 after:h-[1px] after:bg-[#B5A48B]
-                    after:transform after:scale-x-0 after:origin-left
-                    after:transition-transform after:duration-500
-                    ${sectionInView ? 'after:scale-x-100' : ''}
-                    hover:after:w-full hover:after:transition-all hover:after:duration-700
-                    before:content-[''] before:absolute before:-top-1 before:right-0 
-                    before:w-1/4 before:h-[1px] before:bg-[#B5A48B]/50
-                    before:transform before:scale-x-0 before:origin-right
-                    before:transition-transform before:duration-500
-                    ${sectionInView ? 'before:scale-x-100' : ''}`}>
+                    motion-safe:transition-all motion-safe:duration-700 motion-safe:delay-300`}>
                     <span className="relative px-4 py-2">
-                      <span className="relative bg-gradient-to-r from-[#4A3F33] to-[#8B7355] bg-clip-text text-transparent">
+                      <span className="relative bg-gradient-to-r from-[#4A3F33] to-[#8B7355] bg-clip-text text-transparent
+                        before:content-[''] before:absolute before:-top-1 before:left-0 
+                        before:w-full before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-[#B5A48B]/40 before:to-[#B5A48B]/40
+                        after:content-[''] after:absolute after:-bottom-1 after:left-0 
+                        after:w-full after:h-[1px] after:bg-gradient-to-r after:from-[#B5A48B]/40 after:via-[#B5A48B]/40 after:to-transparent">
                         Discover Our Collections
                       </span>
                     </span>
-                    <span className="absolute -bottom-[4px] left-0 h-[1px] w-0 bg-[#B5A48B] 
-                      group-hover:w-full group-hover:translate-x-0
-                      transition-all duration-700 ease-out" />
                   </h2>
                   
                   <Link
                     href="/collections"
-                    className="group/btn relative inline-flex items-center gap-2 px-6 py-3.5
+                    className="group/btn relative inline-flex items-center justify-center sm:justify-start gap-2 
+                      w-[90%] sm:w-auto px-6 py-3.5
                       bg-[#6B5E4C] text-[#eaeadf] text-sm
-                      hover:bg-[#7B6E5C] transition-colors duration-300 
+                      border border-[#B5A48B]/20
+                      hover:bg-[#7B6E5C] hover:border-[#B5A48B]/40 
+                      transition-all duration-300 
                       transform hover:-translate-y-0.5
                       overflow-hidden"
                   >
@@ -685,23 +678,10 @@ const AboutHero = memo(function AboutHero() {
                         group-hover/btn:translate-x-1 transition-transform duration-300
                         relative z-10" 
                     />
-                    {/* Animated border trace - white color and instant on hover */}
-                    <span className="absolute inset-0 before:absolute before:w-[2px] 
-                      before:bg-white before:transition-all before:duration-200
-                      before:left-0 before:bottom-0 before:top-full
-                      group-hover/btn:before:top-0 before:duration-200
-                      after:absolute after:h-[2px] after:bg-white 
-                      after:transition-all after:duration-200
-                      after:top-0 after:left-0 after:right-full
-                      group-hover/btn:after:right-0 after:duration-200 after:delay-200" />
-                    <span className="absolute inset-0 before:absolute before:w-[2px]
-                      before:bg-white before:transition-all before:duration-200
-                      before:right-0 before:top-full before:bottom-0
-                      group-hover/btn:before:top-0 before:duration-200 before:delay-400
-                      after:absolute after:h-[2px] after:bg-white
-                      after:transition-all after:duration-200
-                      after:bottom-0 after:right-0 after:left-full
-                      group-hover/btn:after:left-0 after:duration-200 after:delay-600" />
+                    {/* Shimmer effect overlay */}
+                    <div className="absolute top-0 -left-[100%] w-[120%] h-full 
+                      bg-gradient-to-r from-transparent via-white/20 to-transparent
+                      group-hover/btn:left-[100%] transition-all duration-1000 ease-in-out" />
                   </Link>
                 </div>
               </div>

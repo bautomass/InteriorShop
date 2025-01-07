@@ -19,7 +19,8 @@ import { useInView } from 'react-intersection-observer';
 import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/navigation';
-import { Autoplay, Navigation } from 'swiper/modules';
+import 'swiper/css/pagination';
+import { Autoplay, Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 type ViewSettings = {
@@ -1075,8 +1076,8 @@ export default function LampsCollection() {
           </div>
 
           {/* Products Section */}
-          <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen px-10">
-            <div className="relative mx-auto max-w-[1700px] px-10">
+          <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen px-2 sm:px-10">
+            <div className="relative mx-auto max-w-[1700px] px-2 sm:px-10">
               {/* View Controls - Desktop only */}
               <div className="relative hidden h-12 lg:block">
                 <div className="flex items-center justify-between">
@@ -1108,9 +1109,9 @@ export default function LampsCollection() {
                   onMouseEnter={() => setIsSlideHovered(true)}
                   onMouseLeave={() => setIsSlideHovered(false)}
                 >
-                  {/* Existing Swiper Component */}
+                  {/* Replace your existing Swiper component with this */}
                   <Swiper
-                    modules={[Autoplay, Navigation]}
+                    modules={[Autoplay, Navigation, Pagination]}
                     spaceBetween={16}
                     slidesPerView={cardsToShow}
                     loop={false}
@@ -1120,6 +1121,13 @@ export default function LampsCollection() {
                       disableOnInteraction: false,
                       pauseOnMouseEnter: true
                     }}
+                    pagination={{
+                      clickable: true,
+                      dynamicBullets: true,
+                      horizontalClass: 'swiper-pagination-horizontal !mt-6',
+                      bulletActiveClass: '!bg-primary-900 scale-110',
+                      bulletClass: 'inline-block !w-2.5 !h-2.5 rounded-full !bg-primary-300/50 mx-1 transition-all duration-300',
+                    }}
                     navigation={{
                       prevEl: '.custom-swiper-button-prev',
                       nextEl: '.custom-swiper-button-next',
@@ -1128,7 +1136,7 @@ export default function LampsCollection() {
                     breakpoints={{
                       0: {
                         slidesPerView: 1,
-                        spaceBetween: 16
+                        spaceBetween: 8,
                       },
                       480: {
                         slidesPerView: 2,
@@ -1143,17 +1151,19 @@ export default function LampsCollection() {
                         spaceBetween: 16
                       }
                     }}
-                    className="px-0"
-                    onSwiper={(swiper) => {
-                      handleSwiperInit(swiper);
-                    }}
+                    className="[&_.swiper-pagination]:!relative [&_.swiper-pagination]:!bottom-0 [&_.swiper-pagination]:block 
+                               [&_.swiper-pagination]:sm:!hidden [&_.swiper-pagination-horizontal]:!mt-6"
+                    onSwiper={handleSwiperInit}
                     onSlideChange={(swiper) => {
                       setIsBeginning(swiper.isBeginning);
                       setIsEnd(swiper.isEnd);
                     }}
                   >
                     {sortedProducts.map((product) => (
-                      <SwiperSlide key={product.id}>
+                      <SwiperSlide 
+                        key={product.id}
+                        className="w-full"
+                      >
                         <ProductCard
                           product={product}
                           onQuickView={() => handleQuickView(product)}
@@ -1165,7 +1175,7 @@ export default function LampsCollection() {
 
                   {/* Navigation Buttons */}
                   <button
-                    className="custom-swiper-button-prev group absolute left-0 top-1/2 isolate z-20 flex h-14 w-10 -translate-x-full -translate-y-1/2 cursor-pointer items-center justify-center overflow-hidden rounded-l-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50"
+                    className="custom-swiper-button-prev group absolute left-0 top-1/2 isolate z-20 hidden h-14 w-10 -translate-x-full -translate-y-1/2 cursor-pointer items-center justify-center overflow-hidden rounded-l-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50 sm:flex"
                     aria-label="Previous slide"
                     disabled={isBeginning}
                   >
@@ -1188,7 +1198,7 @@ export default function LampsCollection() {
                   </button>
 
                   <button
-                    className="custom-swiper-button-next group absolute right-0 top-1/2 isolate z-20 flex h-14 w-10 -translate-y-1/2 translate-x-full cursor-pointer items-center justify-center overflow-hidden rounded-r-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50"
+                    className="custom-swiper-button-next group absolute right-0 top-1/2 isolate z-20 hidden h-14 w-10 -translate-y-1/2 translate-x-full cursor-pointer items-center justify-center overflow-hidden rounded-r-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50 sm:flex"
                     aria-label="Next slide"
                     disabled={isEnd}
                   >
