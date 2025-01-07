@@ -104,7 +104,10 @@ const FeaturedProduct = () => {
         if (productData) {
           console.log('Fetched product data:', {
             images: productData.images,
-            variants: productData.variants.map(v => ({
+            variants: productData.variants.map((v: { 
+              selectedOptions: any; 
+              id: string;
+            }) => ({
               options: v.selectedOptions,
               id: v.id
             }))
