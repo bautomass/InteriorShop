@@ -1369,7 +1369,7 @@ export default function LampsCollection() {
 
                       {/* Updated Thumbnail Navigation Buttons */}
                       <button
-                        className="thumb-prev absolute left-0 top-0 z-10 flex h-[60px] w-10 items-center justify-center bg-gradient-to-r from-primary-900/40 via-primary-900/20 to-transparent transition-all duration-300 hover:from-primary-900/60"
+                        className="thumb-prev absolute left-0 top-0 z-10 flex h-full w-10 items-center justify-center bg-gradient-to-r from-primary-900/40 via-primary-900/20 to-transparent transition-all duration-300 hover:from-primary-900/60"
                         aria-label="Previous thumbnails"
                       >
                         <div className="flex h-full items-center justify-center">
@@ -1377,7 +1377,7 @@ export default function LampsCollection() {
                         </div>
                       </button>
                       <button
-                        className="thumb-next absolute right-0 top-0 z-10 flex h-[60px] w-10 items-center justify-center bg-gradient-to-l from-primary-900/40 via-primary-900/20 to-transparent transition-all duration-300 hover:from-primary-900/60"
+                        className="thumb-next absolute right-0 top-0 z-10 flex h-full w-10 items-center justify-center bg-gradient-to-l from-primary-900/40 via-primary-900/20 to-transparent transition-all duration-300 hover:from-primary-900/60"
                         aria-label="Next thumbnails"
                       >
                         <div className="flex h-full items-center justify-center">
