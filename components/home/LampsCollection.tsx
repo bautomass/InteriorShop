@@ -19,8 +19,7 @@ import { useInView } from 'react-intersection-observer';
 import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import { Autoplay, Navigation, Pagination } from 'swiper/modules';
+import { Autoplay, Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 type ViewSettings = {
@@ -489,18 +488,20 @@ const ProductCard = memo(
                   )}
               </div>
 
-              <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm leading-relaxed text-primary-600/90">
+              <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm leading-relaxed text-primary-600/90 [@media(max-width:700px)]:hidden">
                 {product.description}
               </p>
 
               <div
                 className={cn(
                   'mt-3 flex gap-2',
+                  // Stack vertically below 600px
+                  '[@media(max-width:600px)]:flex-col',
                   // Stack vertically only when there are 5 or more cards in a row
                   cardsToShow >= 5 ? 'flex-col' : 'flex-row'
                 )}
               >
-                {/* Add to Cart Button with prevented navigation */}
+                {/* Add to Cart Button */}
                 <motion.button
                   onClick={handleAddToCart}
                   whileHover={{ scale: 1.02 }}
@@ -513,7 +514,8 @@ const ProductCard = memo(
                     'flex items-center justify-center gap-1.5',
                     'overflow-hidden shadow-sm hover:shadow-md',
                     'group',
-                    // Adjust width based on number of cards
+                    // Adjust width based on number of cards and screen size
+                    '[@media(max-width:600px)]:w-full',
                     cardsToShow >= 5 ? 'w-full' : 'flex-1'
                   )}
                 >
@@ -555,7 +557,8 @@ const ProductCard = memo(
                     'flex items-center justify-center',
                     'overflow-hidden shadow-sm hover:shadow-md',
                     'group',
-                    // Adjust width based on number of cards
+                    // Adjust width based on number of cards and screen size
+                    '[@media(max-width:600px)]:w-full',
                     cardsToShow >= 5 ? 'w-full' : 'w-[100px]',
                     'text-xs font-medium'
                   )}
@@ -772,10 +775,12 @@ export default function LampsCollection() {
     threshold: 0.1,
     triggerOnce: false
   });
-  const [swiper, setSwiper] = useState<SwiperType | null>(null);
+  const [mainSwiper, setSwiper] = useState<SwiperType | null>(null);
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
   const [isGridView, setIsGridView] = useState(false);
+  const [activeThumbIndex, setActiveThumbIndex] = useState(0);
+  const [thumbSwiper, setThumbSwiper] = useState<SwiperType | null>(null);
 
   // Banner images with proper loading and error handling
   const bannerImages = [
@@ -889,11 +894,11 @@ export default function LampsCollection() {
   }, []);
 
   useEffect(() => {
-    if (swiper) {
-      swiper.update(); // Update swiper when products change
-      setIsEnd(swiper.isEnd);
+    if (mainSwiper) {
+      mainSwiper.update(); // Update swiper when products change
+      setIsEnd(mainSwiper.isEnd);
     }
-  }, [swiper, products]);
+  }, [mainSwiper, products]);
 
   const handleQuickView = useCallback(
     (product: Product) => {
@@ -954,7 +959,10 @@ export default function LampsCollection() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.2 }}
-                    className="group relative aspect-[4/5] overflow-hidden rounded-md"
+                    className={cn(
+                      "group relative aspect-[4/5] overflow-hidden rounded-md",
+                      index !== bannerImages.length - 1 ? "hidden md:block" : ""
+                    )}
                   >
                     <Image
                       src={image.src}
@@ -965,8 +973,13 @@ export default function LampsCollection() {
                       priority={true}
                     />
 
-                    {index === 1 ? (
-                      <div className="absolute inset-0 translate-y-full bg-gradient-to-t from-primary-900/95 via-primary-900/80 to-transparent transition-transform duration-500 ease-out group-hover:translate-y-0">
+                    {(index === 1 || (index === 2 && window.innerWidth < 768)) && (
+                      <div className={cn(
+                        "absolute inset-0 bg-gradient-to-t from-primary-900/95 via-primary-900/80 to-transparent",
+                        "transition-transform duration-500 ease-out",
+                        "md:translate-y-full md:group-hover:translate-y-0",
+                        index === 2 ? "translate-y-0 md:hidden" : "translate-y-full md:block"
+                      )}>
                         <div className="absolute inset-0 flex flex-col justify-end p-6">
                           <div className="space-y-4">
                             <div className="h-0.5 w-12 bg-accent-300/60" />
@@ -1027,8 +1040,6 @@ export default function LampsCollection() {
                           <div className="absolute bottom-4 left-4 h-8 w-8 border-b-2 border-l-2 border-accent-300/40" />
                         </div>
                       </div>
-                    ) : (
-                      <div className="absolute inset-0 bg-black/20 transition-colors duration-300 group-hover:bg-black/40" />
                     )}
 
                     {/* Keep the existing pulsing dot for the last image */}
@@ -1076,9 +1087,9 @@ export default function LampsCollection() {
           </div>
 
           {/* Products Section */}
-          <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen px-2 sm:px-10">
-            <div className="relative mx-auto max-w-[1700px] px-2 sm:px-10">
-              {/* View Controls - Desktop only */}
+          <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen px-10 [@media(max-width:700px)]:px-4">
+            <div className="relative mx-auto max-w-[1700px] px-10 [@media(max-width:700px)]:px-2">
+              {/* View Controls - Desktop */}
               <div className="relative hidden h-12 lg:block">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -1096,6 +1107,88 @@ export default function LampsCollection() {
                 </div>
               </div>
 
+              {/* Mobile Sort Controls and Pagination */}
+              <div className="mb-4 flex items-center justify-between lg:hidden">
+                {/* Existing Sort Controls */}
+                <div className="inline-flex items-center rounded-lg border border-primary-200 bg-white shadow-sm" role="group">
+                  <span className="border-r border-primary-200 px-2 text-xs font-medium text-primary-600">
+                    Price
+                  </span>
+                  <button
+                    onClick={() => handlePriceSort('asc')}
+                    className="flex items-center gap-0.5 border-r border-primary-200 px-2 py-1.5 text-xs font-medium text-primary-700 transition-colors hover:bg-primary-50 active:bg-primary-100"
+                    aria-label="Sort price low to high"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" className="fill-current">
+                      <path d="M12 5l0 14M5 12l7-7 7 7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handlePriceSort('desc')}
+                    className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium text-primary-700 transition-colors hover:bg-primary-50 active:bg-primary-100"
+                    aria-label="Sort price high to low"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" className="fill-current">
+                      <path d="M12 19l0-14M5 12l7 7 7-7" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* New Pagination Dots */}
+                <div className="flex items-center">
+                  <button
+                    onClick={() => mainSwiper?.slidePrev()}
+                    className="mr-2 flex h-6 w-6 items-center justify-center rounded-full text-primary-600 transition-colors hover:bg-primary-50"
+                    disabled={isBeginning}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+
+                  <div className="relative flex items-center">
+                    {/* Left Gradient Fade */}
+                    <div className="absolute left-0 z-10 h-full w-4 bg-gradient-to-r from-primary-50 to-transparent" />
+
+                    {/* Dots Container with max width */}
+                    <div className="flex items-center gap-1.5 overflow-hidden px-1">
+                      {sortedProducts.map((_, idx) => {
+                        // Show only 7 dots around the active index
+                        const startIdx = Math.max(0, Math.min(activeThumbIndex - 3, sortedProducts.length - 7));
+                        const endIdx = Math.min(startIdx + 7, sortedProducts.length);
+                        if (idx < startIdx || idx >= endIdx) return null;
+
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              mainSwiper?.slideTo(idx);
+                              setActiveThumbIndex(idx);
+                            }}
+                            className={cn(
+                              'h-1.5 rounded-full transition-all duration-200',
+                              activeThumbIndex === idx
+                                ? 'w-4 bg-primary-600'
+                                : 'w-1.5 bg-primary-300 hover:bg-primary-400',
+                            )}
+                            aria-label={`Go to slide ${idx + 1}`}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    {/* Right Gradient Fade */}
+                    <div className="absolute right-0 z-10 h-full w-4 bg-gradient-to-l from-primary-50 to-transparent" />
+                  </div>
+
+                  <button
+                    onClick={() => mainSwiper?.slideNext()}
+                    className="ml-2 flex h-6 w-6 items-center justify-center rounded-full text-primary-600 transition-colors hover:bg-primary-50"
+                    disabled={isEnd}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
               {/* Conditional Rendering */}
               {isGridView ? (
                 <GridView
@@ -1104,122 +1197,196 @@ export default function LampsCollection() {
                   onQuickView={handleQuickView}
                 />
               ) : (
-                <div
-                  className="relative"
-                  onMouseEnter={() => setIsSlideHovered(true)}
-                  onMouseLeave={() => setIsSlideHovered(false)}
-                >
-                  {/* Replace your existing Swiper component with this */}
-                  <Swiper
-                    modules={[Autoplay, Navigation, Pagination]}
-                    spaceBetween={16}
-                    slidesPerView={cardsToShow}
-                    loop={false}
-                    speed={1000}
-                    autoplay={{
-                      delay: 6000,
-                      disableOnInteraction: false,
-                      pauseOnMouseEnter: true
-                    }}
-                    pagination={{
-                      clickable: true,
-                      dynamicBullets: true,
-                      horizontalClass: 'swiper-pagination-horizontal',
-                      bulletActiveClass: '!bg-primary-900',
-                      bulletClass: 'inline-block !w-2.5 !h-2.5 rounded-full !bg-primary-300/50 mx-1 transition-transform duration-300 hover:scale-110 active:scale-110',
-                    }}
-                    navigation={{
-                      prevEl: '.custom-swiper-button-prev',
-                      nextEl: '.custom-swiper-button-next',
-                      enabled: true
-                    }}
-                    breakpoints={{
-                      0: {
-                        slidesPerView: 1,
-                        spaceBetween: 8,
-                      },
-                      480: {
-                        slidesPerView: 2,
-                        spaceBetween: 16
-                      },
-                      768: {
-                        slidesPerView: 3,
-                        spaceBetween: 16
-                      },
-                      1024: {
-                        slidesPerView: cardsToShow,
-                        spaceBetween: 16
-                      }
-                    }}
-                    className="[&_.swiper-pagination]:!relative [&_.swiper-pagination]:!bottom-0 [&_.swiper-pagination]:block 
-                               [&_.swiper-pagination]:sm:!hidden [&_.swiper-pagination-horizontal]:!mt-6"
-                    onSwiper={handleSwiperInit}
-                    onSlideChange={(swiper) => {
-                      setIsBeginning(swiper.isBeginning);
-                      setIsEnd(swiper.isEnd);
-                    }}
+                <>
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setIsSlideHovered(true)}
+                    onMouseLeave={() => setIsSlideHovered(false)}
                   >
-                    {sortedProducts.map((product) => (
-                      <SwiperSlide 
-                        key={product.id}
-                        className="w-full"
+                    {/* Existing Swiper Component */}
+                    <Swiper
+                      modules={[Autoplay, Navigation]}
+                      spaceBetween={16}
+                      slidesPerView={cardsToShow}
+                      loop={false}
+                      speed={1000}
+                      autoplay={{
+                        delay: 6000,
+                        disableOnInteraction: false,
+                        pauseOnMouseEnter: true
+                      }}
+                      navigation={{
+                        prevEl: '.custom-swiper-button-prev',
+                        nextEl: '.custom-swiper-button-next',
+                        enabled: true
+                      }}
+                      breakpoints={{
+                        0: {
+                          slidesPerView: 1.2,
+                          spaceBetween: 16
+                        },
+                        480: {
+                          slidesPerView: 2,
+                          spaceBetween: 16
+                        },
+                        768: {
+                          slidesPerView: 3,
+                          spaceBetween: 16
+                        },
+                        1024: {
+                          slidesPerView: cardsToShow,
+                          spaceBetween: 16
+                        }
+                      }}
+                      className="px-0"
+                      onSwiper={(swiper) => {
+                        handleSwiperInit(swiper);
+                        // Store swiper instance for thumbnail navigation
+                        setSwiper(swiper);
+                      }}
+                      onSlideChange={(swiper) => {
+                        setIsBeginning(swiper.isBeginning);
+                        setIsEnd(swiper.isEnd);
+                        setActiveThumbIndex(swiper.activeIndex);
+                        // Sync thumbnail swiper
+                        if (thumbSwiper && thumbSwiper.activeIndex !== swiper.activeIndex) {
+                          thumbSwiper.slideTo(swiper.activeIndex);
+                        }
+                      }}
+                    >
+                      {sortedProducts.map((product) => (
+                        <SwiperSlide key={product.id}>
+                          <ProductCard
+                            product={product}
+                            onQuickView={() => handleQuickView(product)}
+                            cardsToShow={cardsToShow}
+                          />
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+
+                    {/* Navigation Buttons - Hidden below 700px */}
+                    <button
+                      className="custom-swiper-button-prev group absolute left-0 top-1/2 isolate z-20 hidden [@media(min-width:700px)]:flex h-14 w-10 -translate-x-full -translate-y-1/2 cursor-pointer items-center justify-center overflow-hidden rounded-l-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50"
+                      aria-label="Previous slide"
+                      disabled={isBeginning}
+                    >
+                      <div className="relative z-20 transition-all duration-300 group-hover:-translate-x-0.5 group-hover:drop-shadow-[0_0_8px_rgba(199,186,168,0.5)] group-active:scale-90">
+                        {isBeginning ? (
+                          <div className="relative">
+                            <ChevronLeft className="h-6 w-6 text-primary-100 transition-opacity duration-200 group-hover:opacity-0" />
+                            <X className="absolute inset-0 h-6 w-6 scale-110 stroke-[2.5] text-red-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                          </div>
+                        ) : (
+                          <ChevronLeft className="h-6 w-6 text-primary-100" />
+                        )}
+                      </div>
+
+                      {/* Animated border with more visible colors */}
+                      <div className="absolute inset-0 z-30 rounded-l-md bg-gradient-to-r from-accent-300/50 to-transparent opacity-0 transition-opacity duration-300 [mask-image:linear-gradient(to_right,white_2px,transparent_2px)] group-hover:opacity-100" />
+
+                      {/* Additional glow effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary-300/30 via-primary-400/20 to-transparent opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100" />
+                    </button>
+
+                    <button
+                      className="custom-swiper-button-next group absolute right-0 top-1/2 isolate z-20 hidden [@media(min-width:700px)]:flex h-14 w-10 -translate-y-1/2 translate-x-full cursor-pointer items-center justify-center overflow-hidden rounded-r-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50"
+                      aria-label="Next slide"
+                      disabled={isEnd}
+                    >
+                      <div className="relative z-20 transition-all duration-300 group-hover:translate-x-0.5 group-hover:drop-shadow-[0_0_8px_rgba(199,186,168,0.5)] group-active:scale-90">
+                        {isEnd ? (
+                          <div className="relative">
+                            <ChevronRight className="h-6 w-6 text-primary-100 transition-opacity duration-200 group-hover:opacity-0" />
+                            <X className="absolute inset-0 h-6 w-6 scale-110 stroke-[2.5] text-red-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                          </div>
+                        ) : (
+                          <ChevronRight className="h-6 w-6 text-primary-100" />
+                        )}
+                      </div>
+
+                      {/* Animated border with more visible colors */}
+                      <div className="absolute inset-0 z-30 rounded-r-md bg-gradient-to-l from-accent-300/50 to-transparent opacity-0 transition-opacity duration-300 [mask-image:linear-gradient(to_left,white_2px,transparent_2px)] group-hover:opacity-100" />
+
+                      {/* Additional glow effect */}
+                      <div className="absolute inset-0 bg-gradient-to-l from-primary-300/30 via-primary-400/20 to-transparent opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100" />
+                    </button>
+                  </div>
+
+                  {/* Thumbnail Navigation - Only visible below 500px */}
+                  <div className="mt-4 hidden [@media(max-width:500px)]:block">
+                    <div className="relative">
+                      <Swiper
+                        modules={[Navigation]}
+                        spaceBetween={8}
+                        slidesPerView={5.5}
+                        className="thumbnail-swiper"
+                        navigation={{
+                          prevEl: '.thumb-prev',
+                          nextEl: '.thumb-next'
+                        }}
+                        breakpoints={{
+                          0: { slidesPerView: 4.5 },
+                          400: { slidesPerView: 5.5 }
+                        }}
+                        centeredSlides={true}
+                        slideToClickedSlide={true}
+                        onSwiper={setThumbSwiper}
+                        onSlideChange={(swiper) => {
+                          setActiveThumbIndex(swiper.activeIndex);
+                          // Sync main swiper
+                          if (swiper && swiper.activeIndex !== activeThumbIndex) {
+                            mainSwiper?.slideTo(swiper.activeIndex);
+                          }
+                        }}
                       >
-                        <ProductCard
-                          product={product}
-                          onQuickView={() => handleQuickView(product)}
-                          cardsToShow={cardsToShow}
-                        />
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
+                        {sortedProducts.map((product, index) => (
+                          <SwiperSlide key={`thumb-${product.id}`}>
+                            <button
+                              onClick={() => {
+                                mainSwiper?.slideTo(index);
+                                setActiveThumbIndex(index);
+                              }}
+                              className={cn(
+                                'relative aspect-square w-full overflow-hidden rounded-sm',
+                                'border transition-all duration-300',
+                                activeThumbIndex === index
+                                  ? 'border-primary-600 opacity-100 ring-1 ring-primary-500/50'
+                                  : 'border-transparent opacity-70 hover:opacity-100'
+                              )}
+                            >
+                              <Image
+                                src={product.featuredImage?.url || ''}
+                                alt={`${product.title} thumbnail`}
+                                fill
+                                sizes="(max-width: 500px) 20vw, 0vw"
+                                className="object-cover"
+                              />
+                            </button>
+                          </SwiperSlide>
+                        ))}
+                      </Swiper>
 
-                  {/* Navigation Buttons */}
-                  <button
-                    className="custom-swiper-button-prev group absolute left-0 top-1/2 isolate z-20 hidden h-14 w-10 -translate-x-full -translate-y-1/2 cursor-pointer items-center justify-center overflow-hidden rounded-l-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50 sm:flex"
-                    aria-label="Previous slide"
-                    disabled={isBeginning}
-                  >
-                    <div className="relative z-20 transition-all duration-300 group-hover:-translate-x-0.5 group-hover:drop-shadow-[0_0_8px_rgba(199,186,168,0.5)] group-active:scale-90">
-                      {isBeginning ? (
-                        <div className="relative">
-                          <ChevronLeft className="h-6 w-6 text-primary-100 transition-opacity duration-200 group-hover:opacity-0" />
-                          <X className="absolute inset-0 h-6 w-6 scale-110 stroke-[2.5] text-red-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                      {/* Updated Thumbnail Navigation Buttons */}
+                      <button
+                        className="thumb-prev absolute left-0 top-0 z-10 flex h-[60px] w-10 items-center justify-center bg-gradient-to-r from-primary-900/40 via-primary-900/20 to-transparent transition-all duration-300 hover:from-primary-900/60"
+                        aria-label="Previous thumbnails"
+                      >
+                        <div className="flex h-full items-center justify-center">
+                          <ChevronLeft className="h-5 w-5 text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.3)]" />
                         </div>
-                      ) : (
-                        <ChevronLeft className="h-6 w-6 text-primary-100" />
-                      )}
-                    </div>
-
-                    {/* Animated border with more visible colors */}
-                    <div className="absolute inset-0 z-30 rounded-l-md bg-gradient-to-r from-accent-300/50 to-transparent opacity-0 transition-opacity duration-300 [mask-image:linear-gradient(to_right,white_2px,transparent_2px)] group-hover:opacity-100" />
-
-                    {/* Additional glow effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary-300/30 via-primary-400/20 to-transparent opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100" />
-                  </button>
-
-                  <button
-                    className="custom-swiper-button-next group absolute right-0 top-1/2 isolate z-20 hidden h-14 w-10 -translate-y-1/2 translate-x-full cursor-pointer items-center justify-center overflow-hidden rounded-r-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50 sm:flex"
-                    aria-label="Next slide"
-                    disabled={isEnd}
-                  >
-                    <div className="relative z-20 transition-all duration-300 group-hover:translate-x-0.5 group-hover:drop-shadow-[0_0_8px_rgba(199,186,168,0.5)] group-active:scale-90">
-                      {isEnd ? (
-                        <div className="relative">
-                          <ChevronRight className="h-6 w-6 text-primary-100 transition-opacity duration-200 group-hover:opacity-0" />
-                          <X className="absolute inset-0 h-6 w-6 scale-110 stroke-[2.5] text-red-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                      </button>
+                      <button
+                        className="thumb-next absolute right-0 top-0 z-10 flex h-[60px] w-10 items-center justify-center bg-gradient-to-l from-primary-900/40 via-primary-900/20 to-transparent transition-all duration-300 hover:from-primary-900/60"
+                        aria-label="Next thumbnails"
+                      >
+                        <div className="flex h-full items-center justify-center">
+                          <ChevronRight className="h-5 w-5 text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.3)]" />
                         </div>
-                      ) : (
-                        <ChevronRight className="h-6 w-6 text-primary-100" />
-                      )}
+                      </button>
                     </div>
-
-                    {/* Animated border with more visible colors */}
-                    <div className="absolute inset-0 z-30 rounded-r-md bg-gradient-to-l from-accent-300/50 to-transparent opacity-0 transition-opacity duration-300 [mask-image:linear-gradient(to_left,white_2px,transparent_2px)] group-hover:opacity-100" />
-
-                    {/* Additional glow effect */}
-                    <div className="absolute inset-0 bg-gradient-to-l from-primary-300/30 via-primary-400/20 to-transparent opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100" />
-                  </button>
-                </div>
+                  </div>
+                </>
               )}
             </div>
           </div>
