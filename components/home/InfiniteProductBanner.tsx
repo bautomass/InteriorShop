@@ -70,15 +70,19 @@ const ProductCard = memo(function ProductCard({ product, snippet }: ProductCardP
           </motion.div>
         )}
 
-        <Image
-          src={product.featuredImage.url}
-          alt={product.featuredImage.altText || product.title}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 640px) 200px, 260px"
-          loading="eager"
-          quality={75}
-        />
+        {product.featuredImage ? (
+          <Image
+            src={product.featuredImage.url}
+            alt={product.featuredImage.altText || product.title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+          />
+        ) : (
+          <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
+            <span className="text-neutral-400">No image</span>
+          </div>
+        )}
         
         <div className="absolute top-2 sm:top-3 right-2 sm:right-3 opacity-0 group-hover:opacity-100 
                       group-hover:translate-x-2 group-hover:-translate-y-2
