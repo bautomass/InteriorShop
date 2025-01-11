@@ -302,6 +302,7 @@ const MobileHero = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [loading, setLoading] = useState(true);  // Add this line
 
   // Fetch collections when menu opens
   useEffect(() => {
@@ -317,6 +318,24 @@ const MobileHero = () => {
         .catch(error => console.error('Error fetching collections:', error));
     }
   }, [isNavOpen]);
+
+  // Add this near the top of the MobileHero component
+  useEffect(() => {
+    // Preload collections
+    fetch('/api/collections')
+      .then(res => res.json())
+      .then(data => {
+        const filteredCollections = data.collections.filter(
+          (collection: Collection) => !EXCLUDED_HANDLES.includes(collection.handle.toLowerCase())
+        );
+        setCollections(filteredCollections);
+        setLoading(false);  // Add this line
+      })
+      .catch(error => {
+        console.error('Error prefetching collections:', error);
+        setLoading(false);  // Add this line
+      });
+  }, []); // Run once on mount
 
   const email = 'info@simpleinteriorideas.com';
   const workingHours = 'Mon-Fri: 9-18';
@@ -827,22 +846,26 @@ const MobileHero = () => {
 
               {/* Collections Grid */}
               <div className="flex-1 overflow-y-auto">
-                <div className="grid grid-cols-2 gap-3 p-4">
-                  {collections.map((collection) => (
-                    <Link
-                      key={collection.handle}
-                      href={`/collections/${collection.handle}`}
-                      onClick={() => setIsNavOpen(false)}
-                      className="group relative block overflow-hidden rounded-[12px] border border-neutral-100 bg-white/80 p-2.5 transition-all duration-300 hover:border-neutral-200 hover:bg-white hover:shadow-md"
-                    >
-                      <div className="relative z-10">
-                        <h3 className="text-sm font-medium text-neutral-800 transition-colors group-hover:text-[#9e896c]">
-                          {collection.title}
-                        </h3>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+                {loading ? (
+                  <LoadingChair />
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 p-4">
+                    {collections.map((collection) => (
+                      <Link
+                        key={collection.handle}
+                        href={`/collections/${collection.handle}`}
+                        onClick={() => setIsNavOpen(false)}
+                        className="group relative block overflow-hidden rounded-[12px] border border-neutral-100 bg-white/80 p-2.5 transition-all duration-300 hover:border-neutral-200 hover:bg-white hover:shadow-md"
+                      >
+                        <div className="relative z-10">
+                          <h3 className="text-sm font-medium text-neutral-800 transition-colors group-hover:text-[#9e896c]">
+                            {collection.title}
+                          </h3>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Footer Navigation - Adjusted width */}
@@ -2300,4 +2323,60 @@ const Hero = memo(HeroComponent);
 Hero.displayName = 'Hero';
 
 export default Hero;
+
+// Add this SVG component near the top of the file
+const LoadingChair = () => (
+  <motion.div 
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="flex flex-col items-center justify-center py-12"
+  >
+    <motion.svg
+      width="120"
+      height="120"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-[#9e896c]"
+      animate={{
+        rotateY: [0, 360],
+        scale: [1, 1.1, 1],
+      }}
+      transition={{
+        duration: 3,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+    >
+      <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16M3 21h18M7 10h10M7 14h10" />
+      <path d="M5 21V8a2 2 0 012-2h10a2 2 0 012 2v13" />
+    </motion.svg>
+    <motion.p
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
+      className="mt-4 text-sm text-[#9e896c] font-medium"
+    >
+      Loading Collections...
+    </motion.p>
+    <motion.div
+      className="mt-3 h-0.5 w-16 bg-[#9e896c]/20 rounded-full overflow-hidden"
+    >
+      <motion.div
+        className="h-full w-full bg-[#9e896c]"
+        animate={{
+          x: ["-100%", "100%"],
+        }}
+        transition={{
+          repeat: Infinity,
+          duration: 1.5,
+          ease: "easeInOut",
+        }}
+      />
+    </motion.div>
+  </motion.div>
+);
 
