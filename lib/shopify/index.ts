@@ -60,14 +60,45 @@ const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
 
 type ExtractVariables<T> = T extends { variables: object } ? T['variables'] : never;
 
+
+
+
+
+// export async function shopifyFetch<T>({
+//   cache = 'force-cache',
+//   headers,
+//   query,
+//   tags,
+//   variables
+// }: {
+//   cache?: RequestCache;
+//   headers?: HeadersInit;
+//   query: string;
+//   tags?: string[];
+//   variables?: ExtractVariables<T>;
+// }): Promise<{ status: number; body: T } | never> {
+//   try {
+//     const result = await fetch(endpoint, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'X-Shopify-Storefront-Access-Token': key,
+//         ...headers
+//       },
+//       body: JSON.stringify({
+//         ...(query && { query }),
+//         ...(variables && { variables })
+//       }),
+//       cache,
+//       next: tags ? { tags, revalidate: 60 } : undefined
+//     });
+
 export async function shopifyFetch<T>({
-  cache = 'force-cache',
   headers,
   query,
   tags,
   variables
 }: {
-  cache?: RequestCache;
   headers?: HeadersInit;
   query: string;
   tags?: string[];
@@ -85,7 +116,6 @@ export async function shopifyFetch<T>({
         ...(query && { query }),
         ...(variables && { variables })
       }),
-      cache,
       next: tags ? { tags, revalidate: 60 } : undefined
     });
 
