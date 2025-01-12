@@ -719,31 +719,31 @@ export const MobileHero = () => {
               </div>
 
               {/* Bottom Info Section */}
-              <div className="w-[calc(100%-3px)] px-3 py-3 mb-[15px] bg-gradient-to-b from-neutral-50/80 
-                              to-white/80 border-t border-neutral-100 rounded-br-[21px]">
-                <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
-                  {/* Working Hours */}
-                  <div className="flex items-center gap-1.5">
-                    <div className="p-1 rounded-full bg-[#9e896c]/10 flex-shrink-0">
-                      <Clock className="h-3 w-3 text-[#9e896c]" />
-                    </div>
-                    <span className="text-[11px] text-neutral-600 truncate">{workingHours}</span>
+              <div className="w-[calc(100%-3px)] px-3.5 py-4 mb-[15px] bg-gradient-to-b from-neutral-50/80 
+                to-white/80 border-t border-neutral-100 rounded-br-[21px]">
+              <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                {/* Working Hours */}
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-full bg-[#9e896c]/10 flex-shrink-0">
+                    <Clock className="h-3.5 w-3.5 text-[#9e896c]" />
                   </div>
+                  <span className="text-xs text-neutral-600 truncate">{workingHours}</span>
+                </div>
 
-                  {/* Email */}
-                  <div className="flex items-center gap-1.5 justify-end">
-                    <div className="p-1 rounded-full bg-[#9e896c]/10 flex-shrink-0">
-                      <Mail className="h-3 w-3 text-[#9e896c]" />
-                    </div>
-                    <a 
-                      href={`mailto:${email}`} 
-                      className="text-[11px] text-neutral-600 hover:text-[#9e896c] transition-colors truncate"
-                    >
-                      {email}
-                    </a>
+                {/* Email */}
+                <div className="flex items-center gap-2 justify-end">
+                  <div className="p-1.5 rounded-full bg-[#9e896c]/10 flex-shrink-0">
+                    <Mail className="h-3.5 w-3.5 text-[#9e896c]" />
                   </div>
+                  <a 
+                    href={`mailto:${email}`} 
+                    className="text-xs text-neutral-600 hover:text-[#9e896c] transition-colors truncate"
+                  >
+                    {email}
+                  </a>
                 </div>
               </div>
+            </div>
             </div>
           )}
         </motion.div>
