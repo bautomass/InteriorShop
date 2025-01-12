@@ -2,7 +2,6 @@
 import { HIDDEN_PRODUCT_TAG, SHOPIFY_GRAPHQL_API_ENDPOINT, TAGS } from 'lib/constants';
 import { ensureStartsWith } from 'lib/utils';
 import { revalidateTag } from 'next/cache';
-import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   addToCartMutation,
@@ -64,47 +63,18 @@ type ExtractVariables<T> = T extends { variables: object } ? T['variables'] : ne
 
 
 
-// export async function shopifyFetch<T>({
-//   cache = 'force-cache',
-//   headers,
-//   query,
-//   tags,
-//   variables
-// }: {
-//   cache?: RequestCache;
-//   headers?: HeadersInit;
-//   query: string;
-//   tags?: string[];
-//   variables?: ExtractVariables<T>;
-// }): Promise<{ status: number; body: T } | never> {
-//   try {
-//     const result = await fetch(endpoint, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         'X-Shopify-Storefront-Access-Token': key,
-//         ...headers
-//       },
-//       body: JSON.stringify({
-//         ...(query && { query }),
-//         ...(variables && { variables })
-//       }),
-//       cache,
-//       next: tags ? { tags, revalidate: 60 } : undefined
-//     });
-
 export async function shopifyFetch<T>({
+  cache = 'force-cache',
   headers,
   query,
   tags,
-  variables,
-  next
+  variables
 }: {
+  cache?: RequestCache;
   headers?: HeadersInit;
   query: string;
   tags?: string[];
   variables?: ExtractVariables<T>;
-  next?: { revalidate?: number };
 }): Promise<{ status: number; body: T } | never> {
   try {
     const result = await fetch(endpoint, {
@@ -118,7 +88,8 @@ export async function shopifyFetch<T>({
         ...(query && { query }),
         ...(variables && { variables })
       }),
-      next: next || (tags ? { tags, revalidate: 60 } : undefined)
+      cache,
+      next: tags ? { tags, revalidate: 60 } : undefined
     });
 
     const body = await result.json();
@@ -141,6 +112,7 @@ export async function shopifyFetch<T>({
     );
   }
 }
+
 
 const removeEdgesAndNodes = <T>(array: Connection<T>): T[] => {
   return array.edges.map((edge) => edge?.node);
