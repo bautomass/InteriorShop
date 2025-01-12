@@ -1512,6 +1512,56 @@ description?: string;
 {error}
 </div>
 )}
+
+{/* Navigation Buttons - Added opposite to carousel thumbnails */}
+<div className="absolute bottom-20 left-8 z-20 hidden lg:flex items-center gap-4">
+  <motion.div 
+    className="flex items-center gap-4 perspective-[1200px] transform-gpu"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.6 }}
+  >
+    <Link
+      href="/story"
+      aria-label="Read our story"
+      className="relative group inline-flex items-center justify-center px-6 py-3 
+                bg-white/90 backdrop-blur-sm text-[#9e896c]
+                hover:bg-[#9e896c] hover:text-white
+                transition-all duration-300 shadow-lg shadow-black/5
+                focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2"
+    >
+      <span className="relative text-sm font-medium">
+        Our Story
+      </span>
+      <motion.div
+        className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
+        initial={false}
+        animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
+        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+      />
+    </Link>
+
+    <Link
+      href="/collections/all-products"
+      aria-label="Browse all products"
+      className="relative group inline-flex items-center justify-center px-6 py-3
+                bg-[#9e896c]/90 backdrop-blur-sm text-white
+                hover:bg-[#9e896c] 
+                transition-all duration-300 shadow-lg shadow-black/5
+                focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2"
+    >
+      <span className="relative text-sm font-medium">
+        All Products
+      </span>
+      <motion.div
+        className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
+        initial={false}
+        animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
+        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+      />
+    </Link>
+  </motion.div>
+</div>
 </>
 );
 };
