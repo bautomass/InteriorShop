@@ -296,30 +296,32 @@ export const MobileHero = () => {
   }, []);
 
   return (
-    <div className="relative h-[80vh] lg:hidden">
+    <div className="relative h-[100vh] lg:hidden">
       <Image
         src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-banner.png?v=1736585444"
         alt="Mobile Hero"
         fill={true}
         priority
         className="object-cover"
-        sizes="100vw"
+        sizes="(max-width: 768px) 100vw, 768px"
+        quality={100}
+        loading="eager"
+        placeholder="blur"
+        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx0fHRsdHSIeHx8dISkgJSUlICQpKjIuMCYxKicqKi4/NDQ1Nyc5OTkyPj85MUU1Nkf/2wBDAR"
       />
 
       {/* Mobile Navigation Container */}
       <div className={`${isScrolled ? 'fixed bottom-0' : 'absolute top-0'} left-0 right-0 z-[9999] transition-[top,bottom] duration-300`}>
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div 
           className={`w-full backdrop-blur-sm shadow-lg 
-                     relative border-r-[3px] border-white
-                     before:absolute before:inset-0 before:-z-10 
-                     before:bg-[#eaeadf]
-                     before:border-r-[3px] 
-                     before:border-black/10
-                     transition-[background,shadow,transform] duration-500
-                     ${isScrolled ? 'border-t-[3px] border-l-[3px] rounded-tl-[24px] rounded-tr-[24px] before:border-t-[3px] before:border-l-[3px] before:rounded-tl-[24px] before:rounded-tr-[24px]' : 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]'}
-                     ${(isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) ? 'h-screen' : 'h-auto'}`}
+                      relative border-r-[3px] border-white
+                      before:absolute before:inset-0 before:-z-10 
+                      before:bg-[#eaeadf]
+                      before:border-r-[3px] 
+                      before:border-black/10
+                      transition-[background,shadow,transform] duration-500
+                      ${isScrolled ? 'border-t-[3px] border-l-[3px] rounded-tl-[24px] rounded-tr-[24px] before:border-t-[3px] before:border-l-[3px] before:rounded-tl-[24px] before:rounded-tr-[24px]' : 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]'}
+                      ${(isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) ? 'h-screen' : 'h-auto'}`}
         >
           {/* Header Section */}
           <div className="flex items-center justify-between p-4">
@@ -829,7 +831,7 @@ export const MobileHero = () => {
             </div>
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
