@@ -328,7 +328,7 @@ export const MobileHero = () => {
       </div>
 
       <Image
-        src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.jpg?v=1736678417"
+        src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
         alt="Mobile Hero"
         fill={true}
         priority
