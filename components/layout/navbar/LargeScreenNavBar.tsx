@@ -297,6 +297,19 @@ export const DesktopHeader = () => {
     setIsCurrencyOpen(false);
   }, []);
 
+  useEffect(() => {
+    if (isNavOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup function to ensure we restore scrolling when component unmounts
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isNavOpen]);
+
   return (
     <div className={`hidden lg:block relative ${(isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) ? 'h-[100vh]' : 'h-auto'}`}>
       {/* Main Navigation Container */}
@@ -586,7 +599,7 @@ export const DesktopHeader = () => {
                     {loading ? (
                       <LoadingChair />
                     ) : (
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-2 gap-4">
                         {collections.map((collection) => (
                           <Link
                             key={collection.handle}
@@ -611,8 +624,104 @@ export const DesktopHeader = () => {
                   </div>
 
                   {/* Right Sidebar */}
-                  <div className="w-[320px] border-l border-neutral-100">
-                    {/* ... keep existing sidebar content ... */}
+                  <div className="w-[320px] border-l border-neutral-100 py-6 px-4">
+                    <div className="space-y-8">
+                      {/* Shop Section */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-neutral-400 mb-3">Shop</h3>
+                        <ul className="space-y-2">
+                          <li>
+                            <Link href="/products" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              All Products
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/collections/new-arrivals" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              New Arrivals
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/collections/best-sellers" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              Best Sellers
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/collections" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              Collections
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/collections/sale" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              Sale Items
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+
+                      {/* Support Section */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-neutral-400 mb-3">Support</h3>
+                        <ul className="space-y-2">
+                          <li>
+                            <Link href="/contact" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              Contact Us
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/faq" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              FAQs
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/shipping" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              Shipping Info
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/returns" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              Returns & Exchanges
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/tracking" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              Track Order
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+
+                      {/* Company Section */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-neutral-400 mb-3">Company</h3>
+                        <ul className="space-y-2">
+                          <li>
+                            <Link href="/about" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              About Us
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/our-story" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              Our Story
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/sustainability" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              Sustainability
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/careers" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              Careers
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/terms" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                              Terms of Service
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
