@@ -806,7 +806,7 @@ export const MobileHero = () => {
                   <div className="space-y-3">
                     {[
                       { title: 'Help & Information', items: [
-                        { label: 'FAQs', href: '/faqs' },
+                        { label: 'FAQs', href: '/faq' },
                         { label: 'Shipping Info', href: '/shipping' },
                         { label: 'Returns & Exchanges', href: '/returns' },
                       ]},
