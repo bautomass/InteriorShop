@@ -236,7 +236,7 @@ export const DesktopHeader = () => {
       } finally {
         setIsSearching(false);
       }
-    }, 300),
+    }, 100),
     []
   );
 
@@ -304,429 +304,550 @@ export const DesktopHeader = () => {
       document.body.style.overflow = 'unset';
     }
 
-    // Cleanup function to ensure we restore scrolling when component unmounts
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, [isNavOpen]);
 
   return (
-    <div className={`hidden lg:block relative ${(isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) ? 'h-[100vh]' : 'h-auto'}`}>
-      {/* Main Navigation Container */}
-      <div className={`${isScrolled ? 'fixed bottom-0' : 'absolute top-0'} left-0 right-0 z-[9999] transition-[top,bottom] duration-300`}>
+    <div 
+      className={`hidden lg:block relative ${
+        (isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) 
+          ? 'h-[100vh]' 
+          : 'h-auto'
+      }`}
+    >
+      <div 
+        className={`${
+          isScrolled ? 'fixed bottom-0' : 'absolute top-0'
+        } left-0 right-0 z-[9999] transition-[top,bottom] duration-300`}
+      >
         <div 
           className={`w-full backdrop-blur-sm shadow-lg 
-                      relative border-r-[3px] border-white
-                      before:absolute before:inset-0 before:-z-10 
-                      before:bg-[#eaeadf]
-                      before:border-r-[3px] 
-                      before:border-black/10
-                      transition-[background,shadow,transform] duration-500
-                      ${isScrolled ? 'border-t-[3px] border-l-[3px] rounded-tl-[24px] rounded-tr-[24px] before:border-t-[3px] before:border-l-[3px] before:rounded-tl-[24px] before:rounded-tr-[24px]' : 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]'}
-                      ${(isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) ? 'h-screen' : 'h-auto'}`}
+            relative border-r-[3px] border-white
+            before:absolute before:inset-0 before:-z-10 
+            before:bg-[#eaeadf]
+            before:border-r-[3px] 
+            before:border-black/10
+            transition-[background,shadow,transform] duration-500
+            ${
+              isScrolled 
+                ? 'border-t-[3px] border-l-[3px] rounded-tl-[24px] rounded-tr-[24px] before:border-t-[3px] before:border-l-[3px] before:rounded-tl-[24px] before:rounded-tr-[24px]' 
+                : 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]'
+            }
+            ${
+              (isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) 
+                ? 'h-screen' 
+                : 'h-auto'
+            }`}
         >
-          {/* Header Section */}
-          <div className="flex items-center justify-between p-4 container mx-auto">
-            {/* Left side with Logo and Burger */}
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setIsNavOpen(!isNavOpen)}
-                className="flex items-center gap-2.5"
-                aria-label="Toggle menu"
-              >
-                <BurgerIcon isOpen={isNavOpen} />
-                <span 
-                  className="text-sm font-medium text-neutral-700"
-                  style={{
-                    transition: 'color 0.3s',
-                    color: isNavOpen ? '#9e896c' : ''
-                  }}
-                >
-                  {isNavOpen ? 'Close' : 'Menu'}
-                </span>
-              </button>
-              <Link href="/" className="flex-shrink-0 ml-6">
-                <span className="text-xl font-semibold text-neutral-900">Simple Interior Ideas</span>
-              </Link>
-            </div>
-
-            {/* Center Promos Section */}
-            <div className="flex-1 max-w-md mx-auto">
-              <div className="relative h-6 overflow-hidden">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentPromoIndex}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
-                    <div className="flex items-center gap-2 text-sm">
-                      {promos[currentPromoIndex]?.icon}
-                      <span>{promos[currentPromoIndex]?.text}</span>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-
-            {/* Right Icons Section */}
-            <div className="flex items-center gap-4">
-              {/* Search Icon/Input */}
-              <AnimatePresence mode="wait">
-                {!isSearchOpen ? (
-                  <motion.button 
-                    key="search-icon"
-                    onClick={() => handlePanelChange('search')}
-                    className="p-2 rounded-full hover:bg-black/5 transition-colors"
-                  >
-                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" />
-                    </svg>
-                  </motion.button>
-                ) : (
-                  <motion.div
-                    key="search-input"
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    className="flex-1 min-w-[280px]"
-                  >
-                    <div className="relative">
-                      <input
-                        ref={searchInputRef}
-                        type="text"
-                        value={searchQuery}
-                        onChange={handleSearchInput}
-                        placeholder="Search..."
-                        className="w-full px-4 py-2 rounded-lg bg-neutral-100/80 
-                                 placeholder-neutral-500 focus:outline-none focus:ring-2 
-                                 focus:ring-[#9e896c] text-neutral-900"
-                      />
-                      <button
-                        onClick={() => {
-                          setIsSearchOpen(false);
-                          setSearchQuery('');
-                        }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 
-                                 rounded-full hover:bg-neutral-200/80 transition-colors"
-                      >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Currency Selector */}
-              <div className="relative currency-dropdown">
+          <div className="flex flex-col h-full">
+            <div className="flex items-center justify-between p-4 container mx-auto">
+              {/* Left side with Logo and Burger */}
+              <div className="flex items-center gap-4">
                 <button
-                  onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
-                  className="flex items-center gap-1 rounded-md p-1 text-sm 
-                           hover:bg-white/10 transition-colors"
+                  onClick={() => setIsNavOpen(!isNavOpen)}
+                  className="flex items-center gap-2.5"
+                  aria-label="Toggle menu"
                 >
-                  <DollarSign className="h-4 w-4" />
-                  <span>{selectedCurrency.code}</span>
-                  <ChevronDown className={`h-3 w-3 transform transition-transform 
-                                        duration-200 ${isCurrencyOpen ? 'rotate-180' : ''}`}
-                  />
+                  <BurgerIcon isOpen={isNavOpen} />
+                  <span 
+                    className="text-sm font-medium text-neutral-700"
+                    style={{
+                      transition: 'color 0.3s',
+                      color: isNavOpen ? '#9e896c' : ''
+                    }}
+                  >
+                    {isNavOpen ? 'Close' : 'Menu'}
+                  </span>
                 </button>
+                <Link href="/" className="flex-shrink-0 ml-6">
+                  <span className="text-xl font-semibold text-neutral-900">Simple Interior Ideas</span>
+                </Link>
+              </div>
 
-                <AnimatePresence>
-                  {isCurrencyOpen && (
+              {/* Center Promos Section */}
+              <div className="flex-1 max-w-md mx-auto">
+                <div className="relative h-6 overflow-hidden">
+                  <AnimatePresence mode="wait">
                     <motion.div
-                      initial={{ opacity: 0, y: -10 }}
+                      key={currentPromoIndex}
+                      initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 top-full z-50 mt-2 w-24 rounded-md 
-                               bg-white shadow-lg ring-1 ring-black/5"
+                      exit={{ opacity: 0, y: -20 }}
+                      className="absolute inset-0 flex items-center justify-center"
                     >
-                      {currencies.map((currency) => (
+                      <div className="flex items-center gap-2 text-sm">
+                        {promos[currentPromoIndex]?.icon}
+                        <span>{promos[currentPromoIndex]?.text}</span>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Right Icons Section */}
+              <div className="flex items-center gap-4">
+                {/* Search Icon/Input */}
+                <AnimatePresence mode="wait">
+                  {!isSearchOpen ? (
+                    <motion.button 
+                      key="search-icon"
+                      onClick={() => handlePanelChange('search')}
+                      className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                    >
+                      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" />
+                      </svg>
+                    </motion.button>
+                  ) : (
+                    <motion.div
+                      key="search-input"
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      className="flex-1 min-w-[280px]"
+                    >
+                      <div className="relative">
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          value={searchQuery}
+                          onChange={handleSearchInput}
+                          placeholder="Search..."
+                          className="w-full px-4 py-2 rounded-lg bg-neutral-100/80 
+                                   placeholder-neutral-500 focus:outline-none focus:ring-2 
+                                   focus:ring-[#9e896c] text-neutral-900"
+                        />
                         <button
-                          key={currency.code}
-                          onClick={() => handleCurrencySelect(currency)}
-                          className="flex w-full items-center justify-between px-4 py-2 
-                                   text-left text-sm text-gray-900 transition-colors 
-                                   hover:bg-gray-100"
+                          onClick={() => {
+                            setIsSearchOpen(false);
+                            setSearchQuery('');
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 
+                                   rounded-full hover:bg-neutral-200/80 transition-colors"
                         >
-                          <span>{currency.code}</span>
-                          {selectedCurrency.code === currency.code && (
-                            <Check className="h-4 w-4" />
-                          )}
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
                         </button>
-                      ))}
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
 
-              <Link
-                href="/tracking"
-                className="text-sm hover:underline"
-              >
-                Track Order
-              </Link>
+                {/* Currency Selector */}
+                <div className="relative currency-dropdown">
+                  <button
+                    onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
+                    className="flex items-center gap-1 rounded-md p-1 text-sm 
+                             hover:bg-white/10 transition-colors"
+                  >
+                    <DollarSign className="h-4 w-4" />
+                    <span>{selectedCurrency.code}</span>
+                    <ChevronDown className={`h-3 w-3 transform transition-transform 
+                                          duration-200 ${isCurrencyOpen ? 'rotate-180' : ''}`}
+                    />
+                  </button>
 
-              {/* Account */}
-              <button
-                onClick={() => handlePanelChange('account')}
-                className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
-              >
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" />
-                </svg>
-              </button>
+                  <AnimatePresence>
+                    {isCurrencyOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute right-0 top-full z-50 mt-2 w-24 rounded-md 
+                                 bg-white shadow-lg ring-1 ring-black/5"
+                      >
+                        {currencies.map((currency) => (
+                          <button
+                            key={currency.code}
+                            onClick={() => handleCurrencySelect(currency)}
+                            className="flex w-full items-center justify-between px-4 py-2 
+                                     text-left text-sm text-gray-900 transition-colors 
+                                     hover:bg-gray-100"
+                          >
+                            <span>{currency.code}</span>
+                            {selectedCurrency.code === currency.code && (
+                              <Check className="h-4 w-4" />
+                            )}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
-              {/* Cart with Hover Preview */}
-              <div 
-                className="relative"
-                onMouseEnter={() => handleCartHover(true)}
-                onMouseLeave={() => handleCartHover(false)}
-              >
-                <button
-                  onClick={() => handlePanelChange('cart')}
-                  className="p-2 rounded-full hover:bg-neutral-100 transition-colors relative"
+                <Link
+                  href="/tracking"
+                  className="text-sm hover:underline"
                 >
-                  <ShoppingCart className="w-6 h-6" />
-                  {(cart?.totalQuantity ?? 0) > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#9e896c] rounded-full 
-                                   flex items-center justify-center text-white text-xs">
-                      {cart?.totalQuantity ?? 0}
-                    </span>
-                  )}
+                  Track Order
+                </Link>
+
+                {/* Account */}
+                <button
+                  onClick={() => handlePanelChange('account')}
+                  className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
+                >
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" />
+                  </svg>
                 </button>
 
-                {/* Cart Preview Popup */}
-                <AnimatePresence>
-                  {isCartHovered && cart?.lines && (cart.lines as any[]).length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 top-full mt-2 w-[400px] bg-white rounded-lg shadow-xl z-50"
-                    >
-                      <div className="p-4">
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-lg font-medium text-neutral-900">Cart</h3>
-                          <span className="text-sm text-neutral-500">
-                            {cart.totalQuantity} {cart.totalQuantity === 1 ? 'item' : 'items'}
-                          </span>
-                        </div>
+                {/* Cart with Hover Preview */}
+                <div 
+                  className="relative"
+                  onMouseEnter={() => handleCartHover(true)}
+                  onMouseLeave={() => handleCartHover(false)}
+                >
+                  <button
+                    onClick={() => handlePanelChange('cart')}
+                    className="p-2 rounded-full hover:bg-neutral-100 transition-colors relative"
+                  >
+                    <ShoppingCart className="w-6 h-6" />
+                    {(cart?.totalQuantity ?? 0) > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#9e896c] rounded-full 
+                                     flex items-center justify-center text-white text-xs">
+                        {cart?.totalQuantity ?? 0}
+                      </span>
+                    )}
+                  </button>
 
-                        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                          {(cart.lines as any[]).map((item: any) => (
-                            <div key={item.id} className="flex gap-4">
-                              {item.merchandise.product.featuredImage && (
-                                <div className="relative w-20 h-20 bg-neutral-100 rounded-md overflow-hidden">
-                                  <Image
-                                    src={item.merchandise.product.featuredImage.url}
-                                    alt={item.merchandise.product.title}
-                                    fill
-                                    className="object-cover"
-                                    sizes="80px"
-                                  />
-                                </div>
-                              )}
-                              <div className="flex-1">
-                                <h4 className="text-sm font-medium text-neutral-900">
-                                  {item.merchandise.product.title}
-                                </h4>
-                                <p className="text-sm text-neutral-500 mt-1">
-                                  {item.merchandise.title}
-                                </p>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-sm text-neutral-500">
-                                    Qty: {item.quantity}
-                                  </span>
-                                  <span className="text-sm font-medium text-neutral-900">
-                                    ${parseFloat(item.cost.totalAmount.amount).toFixed(2)}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="mt-4 pt-4 border-t border-neutral-200">
+                  {/* Cart Preview Popup */}
+                  <AnimatePresence>
+                    {isCartHovered && cart?.lines && (cart.lines as any[]).length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute right-0 top-full mt-2 w-[400px] bg-white rounded-lg shadow-xl z-50"
+                      >
+                        <div className="p-4">
                           <div className="flex justify-between items-center mb-4">
-                            <span className="text-sm font-medium text-neutral-600">Subtotal</span>
-                            <span className="text-base font-medium text-neutral-900">
-                              ${parseFloat(cart.cost.totalAmount.amount).toFixed(2)}
+                            <h3 className="text-lg font-medium text-neutral-900">Cart</h3>
+                            <span className="text-sm text-neutral-500">
+                              {cart.totalQuantity} {cart.totalQuantity === 1 ? 'item' : 'items'}
                             </span>
                           </div>
-                          
-                          <div className="space-y-2">
-                            <button
-                              onClick={() => setIsCartOpen(true)}
-                              className="w-full py-2 bg-white border border-[#9e896c] text-[#9e896c] 
-                                       rounded-lg hover:bg-[#9e896c]/5 transition-colors text-sm font-medium"
-                            >
-                              View Cart
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (cart?.checkoutUrl) {
-                                  window.location.href = cart.checkoutUrl;
-                                }
-                              }}
-                              disabled={!cart?.checkoutUrl}
-                              className="w-full py-2 bg-[#9e896c] text-white rounded-lg 
-                                       hover:bg-[#8a775d] transition-colors text-sm font-medium
-                                       disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              Checkout
-                            </button>
+
+                          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                            {(cart.lines as any[]).map((item: any) => (
+                              <div key={item.id} className="flex gap-4">
+                                {item.merchandise.product.featuredImage && (
+                                  <div className="relative w-20 h-20 bg-neutral-100 rounded-md overflow-hidden">
+                                    <Image
+                                      src={item.merchandise.product.featuredImage.url}
+                                      alt={item.merchandise.product.title}
+                                      fill
+                                      className="object-cover"
+                                      sizes="80px"
+                                    />
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <h4 className="text-sm font-medium text-neutral-900">
+                                    {item.merchandise.product.title}
+                                  </h4>
+                                  <p className="text-sm text-neutral-500 mt-1">
+                                    {item.merchandise.title}
+                                  </p>
+                                  <div className="flex justify-between items-center mt-2">
+                                    <span className="text-sm text-neutral-500">
+                                      Qty: {item.quantity}
+                                    </span>
+                                    <span className="text-sm font-medium text-neutral-900">
+                                      ${parseFloat(item.cost.totalAmount.amount).toFixed(2)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="mt-4 pt-4 border-t border-neutral-200">
+                            <div className="flex justify-between items-center mb-4">
+                              <span className="text-sm font-medium text-neutral-600">Subtotal</span>
+                              <span className="text-base font-medium text-neutral-900">
+                                ${parseFloat(cart.cost.totalAmount.amount).toFixed(2)}
+                              </span>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <button
+                                onClick={() => setIsCartOpen(true)}
+                                className="w-full py-2 bg-white border border-[#9e896c] text-[#9e896c] 
+                                         rounded-lg hover:bg-[#9e896c]/5 transition-colors text-sm font-medium"
+                              >
+                                View Cart
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (cart?.checkoutUrl) {
+                                    window.location.href = cart.checkoutUrl;
+                                  }
+                                }}
+                                disabled={!cart?.checkoutUrl}
+                                className="w-full py-2 bg-[#9e896c] text-white rounded-lg 
+                                         hover:bg-[#8a775d] transition-colors text-sm font-medium
+                                         disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                Checkout
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation Menu Content */}
-          {isNavOpen && (
-            <div className="flex lg:container lg:mx-auto lg:px-4">
-              <div className="flex flex-col h-[calc(100vh-5rem)] w-full">
-                {/* Desktop Grid Layout */}
-                <div className="flex gap-8 flex-1 overflow-hidden">
-                  {/* Collections Grid */}
-                  <div className="flex-1 overflow-y-auto py-6">
-                    {loading ? (
-                      <LoadingChair />
-                    ) : (
-                      <div className="grid grid-cols-2 gap-4">
-                        {collections.map((collection) => (
-                          <Link
-                            key={collection.handle}
-                            href={`/collections/${collection.handle}`}
-                            onClick={() => setIsNavOpen(false)}
-                            className="group relative block py-3 px-4 rounded-lg transition-all duration-300
-                                     hover:bg-neutral-50 border border-transparent hover:border-neutral-100"
-                          >
-                            <div className="relative z-10 flex items-center gap-3">
-                              <span className="text-neutral-400 group-hover:text-[#9e896c] transition-colors duration-300">
-                                {getIcon(collection.handle)}
-                              </span>
-                              <h3 className="text-sm font-medium text-neutral-600 transition-colors duration-300
-                                          group-hover:text-[#9e896c] group-hover:translate-x-0.5">
-                                {collection.title}
-                              </h3>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
+                      </motion.div>
                     )}
-                  </div>
-
-                  {/* Right Sidebar */}
-                  <div className="w-[320px] border-l border-neutral-100 py-6 px-4">
-                    <div className="space-y-8">
-                      {/* Shop Section */}
-                      <div>
-                        <h3 className="text-sm font-semibold text-neutral-400 mb-3">Shop</h3>
-                        <ul className="space-y-2">
-                          <li>
-                            <Link href="/products" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              All Products
-                            </Link>
-                          </li>
-                          <li>
-                            <Link href="/collections/new-arrivals" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              New Arrivals
-                            </Link>
-                          </li>
-                          <li>
-                            <Link href="/collections/best-sellers" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              Best Sellers
-                            </Link>
-                          </li>
-                          <li>
-                            <Link href="/collections" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              Collections
-                            </Link>
-                          </li>
-                          <li>
-                            <Link href="/collections/sale" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              Sale Items
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Support Section */}
-                      <div>
-                        <h3 className="text-sm font-semibold text-neutral-400 mb-3">Support</h3>
-                        <ul className="space-y-2">
-                          <li>
-                            <Link href="/contact" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              Contact Us
-                            </Link>
-                          </li>
-                          <li>
-                            <Link href="/faq" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              FAQs
-                            </Link>
-                          </li>
-                          <li>
-                            <Link href="/shipping" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              Shipping Info
-                            </Link>
-                          </li>
-                          <li>
-                            <Link href="/returns" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              Returns & Exchanges
-                            </Link>
-                          </li>
-                          <li>
-                            <Link href="/tracking" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              Track Order
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Company Section */}
-                      <div>
-                        <h3 className="text-sm font-semibold text-neutral-400 mb-3">Company</h3>
-                        <ul className="space-y-2">
-                          <li>
-                            <Link href="/about" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              About Us
-                            </Link>
-                          </li>
-                          <li>
-                            <Link href="/our-story" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              Our Story
-                            </Link>
-                          </li>
-                          <li>
-                            <Link href="/sustainability" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              Sustainability
-                            </Link>
-                          </li>
-                          <li>
-                            <Link href="/careers" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              Careers
-                            </Link>
-                          </li>
-                          <li>
-                            <Link href="/terms" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                              Terms of Service
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
+                  </AnimatePresence>
                 </div>
               </div>
             </div>
-          )}
+
+            {/* Navigation Menu Content */}
+            <AnimatePresence>
+              {isNavOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex-1 overflow-hidden border-t border-neutral-200"
+                >
+                  <div className="container mx-auto p-4">
+                    <div className="flex gap-8">
+                      {/* Left side - Collections Grid */}
+                      <div className="flex-1">
+                        <div className="grid grid-cols-2 gap-4">
+                          {collections.map((collection) => (
+                            <Link
+                              key={collection.handle}
+                              href={`/collections/${collection.handle}`}
+                              onClick={() => setIsNavOpen(false)}
+                              className="group relative block py-3 px-4 rounded-lg transition-all duration-300
+                                       hover:bg-neutral-50 border border-transparent hover:border-neutral-100"
+                            >
+                              <div className="relative z-10 flex items-center gap-2">
+                                <span className="text-neutral-400 group-hover:text-[#9e896c] transition-colors duration-300">
+                                  {getIcon(collection.handle)}
+                                </span>
+                                <h3 className="text-sm font-medium text-neutral-600 transition-colors duration-300
+                                           group-hover:text-[#9e896c]">
+                                  {collection.title}
+                                </h3>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Right Sidebar */}
+                      <div className="w-[320px] border-l border-neutral-100 pl-8">
+                        <div className="space-y-8">
+                          {/* Shop Section */}
+                          <div>
+                            <h3 className="text-sm font-semibold text-neutral-400 mb-3">Shop</h3>
+                            <ul className="space-y-2">
+                              <li>
+                                <Link href="/products" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  All Products
+                                </Link>
+                              </li>
+                              <li>
+                                <Link href="/collections/new-arrivals" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  New Arrivals
+                                </Link>
+                              </li>
+                              <li>
+                                <Link href="/collections/best-sellers" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  Best Sellers
+                                </Link>
+                              </li>
+                              <li>
+                                <Link href="/collections" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  Collections
+                                </Link>
+                              </li>
+                              <li>
+                                <Link href="/collections/sale" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  Sale Items
+                                </Link>
+                              </li>
+                            </ul>
+                          </div>
+
+                          {/* Support Section */}
+                          <div>
+                            <h3 className="text-sm font-semibold text-neutral-400 mb-3">Support</h3>
+                            <ul className="space-y-2">
+                              <li>
+                                <Link href="/contact" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  Contact Us
+                                </Link>
+                              </li>
+                              <li>
+                                <Link href="/faqs" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  FAQs
+                                </Link>
+                              </li>
+                              <li>
+                                <Link href="/shipping" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  Shipping Info
+                                </Link>
+                              </li>
+                              <li>
+                                <Link href="/returns" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  Returns & Exchanges
+                                </Link>
+                              </li>
+                              <li>
+                                <Link href="/tracking" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  Track Order
+                                </Link>
+                              </li>
+                            </ul>
+                          </div>
+
+                          {/* Company Section */}
+                          <div>
+                            <h3 className="text-sm font-semibold text-neutral-400 mb-3">Company</h3>
+                            <ul className="space-y-2">
+                              <li>
+                                <Link href="/about" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  About Us
+                                </Link>
+                              </li>
+                              <li>
+                                <Link href="/our-story" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  Our Story
+                                </Link>
+                              </li>
+                              <li>
+                                <Link href="/sustainability" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  Sustainability
+                                </Link>
+                              </li>
+                              <li>
+                                <Link href="/careers" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  Careers
+                                </Link>
+                              </li>
+                              <li>
+                                <Link href="/terms" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
+                                  Terms of Service
+                                </Link>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Search Results Section */}
+            <AnimatePresence>
+              {isSearchOpen && searchQuery && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex-1 overflow-hidden border-t border-neutral-200"
+                >
+                  <div className="container mx-auto p-4">
+                    <div className="h-[calc(100vh-6rem)] overflow-y-auto">
+                      {/* Loading State */}
+                      {isSearching && (
+                        <div className="flex justify-center py-4">
+                          <div className="w-6 h-6 border-2 border-[#9e896c] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      )}
+
+                      {/* Results */}
+                      {!isSearching && (searchResults.collections.length > 0 || searchResults.products.length > 0) ? (
+                        <div className="space-y-8">
+                          {/* Collections Section */}
+                          {searchResults.collections.length > 0 && (
+                            <div>
+                              <h3 className="text-sm font-medium text-neutral-500 mb-3">Collections</h3>
+                              <div className="grid grid-cols-3 gap-4">
+                                {searchResults.collections.map((collection) => (
+                                  <Link
+                                    key={collection.handle}
+                                    href={`/collections/${collection.handle}`}
+                                    onClick={() => {
+                                      setIsSearchOpen(false);
+                                      setSearchQuery('');
+                                    }}
+                                    className="group block p-4 rounded-lg border border-neutral-200 hover:border-neutral-300 transition-all"
+                                  >
+                                    <h4 className="text-sm font-medium text-neutral-900 group-hover:text-[#9e896c]">
+                                      {collection.title}
+                                    </h4>
+                                    {collection.description && (
+                                      <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
+                                        {collection.description}
+                                      </p>
+                                    )}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Products Section */}
+                          {searchResults.products.length > 0 && (
+                            <div>
+                              <h3 className="text-sm font-medium text-neutral-500 mb-3">Products</h3>
+                              <div className="grid grid-cols-4 gap-4">
+                                {searchResults.products.map((product) => (
+                                  <Link
+                                    key={product.handle}
+                                    href={`/product/${product.handle}`}
+                                    onClick={() => {
+                                      setIsSearchOpen(false);
+                                      setSearchQuery('');
+                                    }}
+                                    className="group block overflow-hidden rounded-lg border border-neutral-200 hover:border-neutral-300 transition-all"
+                                  >
+                                    {product.featuredImage && (
+                                      <div className="relative aspect-square bg-neutral-100">
+                                        <Image
+                                          src={product.featuredImage.url}
+                                          alt={product.featuredImage.altText || product.title}
+                                          fill={true}
+                                          className="object-cover"
+                                          sizes="(max-width: 1280px) 25vw, 20vw"
+                                        />
+                                      </div>
+                                    )}
+                                    <div className="p-3">
+                                      <h4 className="text-sm font-medium text-neutral-900 group-hover:text-[#9e896c] line-clamp-1">
+                                        {product.title}
+                                      </h4>
+                                      <p className="text-sm text-neutral-500 mt-1">
+                                        ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                                      </p>
+                                    </div>
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : !isSearching && searchQuery ? (
+                        <div className="text-center py-8">
+                          <p className="text-neutral-600">No results found</p>
+                          <p className="text-sm text-neutral-400 mt-1">Try adjusting your search</p>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
