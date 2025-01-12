@@ -41,6 +41,10 @@ const config: Config = {
           from: { opacity: '0' },
           to: { opacity: '1' }
         },
+        fadeInSoft: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' }
+        },
         marquee: {
           '0%': { transform: 'translateX(0%)' },
           '100%': { transform: 'translateX(-100%)' }
@@ -91,6 +95,7 @@ const config: Config = {
       },
       animation: {
         fadeIn: 'fadeIn .3s ease-in-out',
+        'fadeInSoft': 'fadeInSoft 0.3s ease-out forwards',
         carousel: 'marquee 60s linear infinite',
         blink: 'blink 1.4s both infinite',
         wiggle: 'wiggle 1s ease-in-out infinite',

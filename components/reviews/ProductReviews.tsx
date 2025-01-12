@@ -47,11 +47,11 @@ const sampleReviews: Review[] = [
 ];
 
 interface ProductReviewsProps {
-  isExpanded: boolean;
+  productId: string;
   onToggle: () => void;
 }
 
-const ProductReviews = ({ isExpanded, onToggle }: ProductReviewsProps) => {
+const ProductReviews = ({ productId, onToggle }: ProductReviewsProps) => {
   const renderStars = (rating: number) => {
     return [...Array(5)].map((_, index) => (
       <Star
