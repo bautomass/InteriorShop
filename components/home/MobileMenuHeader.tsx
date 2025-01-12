@@ -6,7 +6,37 @@ import { Collection } from '@/lib/shopify/types';
 import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
 import { debounce } from 'lodash';
-import { ArrowRight, Clock, DollarSign, Mail, ShoppingCart, Sparkles, Truck } from 'lucide-react';
+// import { ArrowRight, Clock, DollarSign, Mail, ShoppingCart, Sparkles, Truck } from 'lucide-react';
+import {
+  Armchair,
+  ArrowRight,
+  ArrowUpSquare,
+  CircleDot,
+  Clock,
+  DollarSign,
+  Flame,
+  Flower2,
+  Frame,
+  Gift,
+  Grid,
+  Image as ImageIcon,
+  Lamp,
+  Mail,
+  Package,
+  PanelRightClose,
+  Shirt,
+  ShoppingBasket,
+  ShoppingCart,
+  Sparkles,
+  Square,
+  Star,
+  Tag,
+  Truck,
+  UtensilsCrossed,
+  Watch,
+  Wine
+} from 'lucide-react';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -270,7 +300,7 @@ export const MobileHero = () => {
       <Image
         src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-banner.png?v=1736585444"
         alt="Mobile Hero"
-        fill
+        fill={true}
         priority
         className="object-cover"
         sizes="100vw"
@@ -450,7 +480,7 @@ export const MobileHero = () => {
                                       <Image
                                         src={product.featuredImage.url}
                                         alt={product.featuredImage.altText || product.title}
-                                        fill
+                                        fill={true}
                                         className="object-cover"
                                         sizes="(max-width: 640px) 50vw, 33vw"
                                       />
@@ -562,7 +592,7 @@ export const MobileHero = () => {
                                 <Image
                                   src={item.merchandise.product.featuredImage.url}
                                   alt={item.merchandise.product.title}
-                                  fill
+                                  fill={true}
                                   className="object-cover"
                                   sizes="80px"
                                 />
@@ -658,26 +688,79 @@ export const MobileHero = () => {
               {/* Collections Grid */}
               <div className="flex-1 overflow-y-auto">
               {loading ? (
-              <LoadingChair />
-            ) : (
-              <div className="grid grid-cols-2 gap-2 p-3">
-                {collections.map((collection) => (
-                  <Link
-                    key={collection.handle}
-                    href={`/collections/${collection.handle}`}
-                    onClick={() => setIsNavOpen(false)}
-                    className="group relative block py-3 px-2.5 transition-all duration-300 border-b border-neutral-100/50"
-                  >
-                    <div className="relative z-10">
-                      <h3 className="text-[13px] font-medium text-neutral-600 transition-colors duration-300
-                                    group-hover:text-[#9e896c] group-hover:translate-x-1">
-                        {collection.title}
-                      </h3>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
+                <LoadingChair />
+              ) : (
+                <div className="grid grid-cols-2 gap-2 p-3">
+                  {collections.map((collection) => {
+                    // Icon mapping function
+                    const getIcon = (handle: string) => {
+                      switch (handle.toLowerCase()) {
+                        case 'all':
+                          return <Grid className="h-4 w-4" />;
+                        case 'accessories':
+                          return <Watch className="h-4 w-4" />;
+                        case 'baskets-rattan':
+                          return <ShoppingBasket className="h-4 w-4" />;
+                        case 'best-sellers':
+                          return <Star className="h-4 w-4" />;
+                        case 'candles-candle-holders':
+                          return <Flame className="h-4 w-4" />;
+                        case 'canvas':
+                          return <ImageIcon className="h-4 w-4" />;
+                        case 'carpet-collection':
+                          return <Square className="h-4 w-4" />;
+                        case 'blinds-shades-collection':
+                          return <PanelRightClose className="h-4 w-4" />;
+                        case 'dried-flowers':
+                          return <Flower2 className="h-4 w-4" />;
+                        case 'kitchen-accessories':
+                          return <UtensilsCrossed className="h-4 w-4" />;
+                        case 'organic-decoration':
+                          return <Armchair className="h-4 w-4" />;
+                        case 'gift-boxes-1':
+                          return <Gift className="h-4 w-4" />;
+                        case 'gifts':
+                          return <Package className="h-4 w-4" />;
+                        case 'lamps':
+                          return <Lamp className="h-4 w-4" />;
+                        case 'decorative-lantern-collection':
+                          return <Flame className="h-4 w-4" />;
+                        case 'sale':
+                          return <Tag className="h-4 w-4" />;
+                        case 'textiles-collection':
+                          return <Shirt className="h-4 w-4" />;
+                        case 'ceramic-vases':
+                          return <Wine className="h-4 w-4" />;
+                        case 'wall-decor-collection':
+                          return <Frame className="h-4 w-4" />;
+                        case 'anturam-eco-wooden-stools':
+                          return <ArrowUpSquare className="h-4 w-4" />;
+                        default:
+                          return <CircleDot className="h-4 w-4" />;
+                      }
+                    };
+
+                    return (
+                      <Link
+                        key={collection.handle}
+                        href={`/collections/${collection.handle}`}
+                        onClick={() => setIsNavOpen(false)}
+                        className="group relative block py-3 px-2.5 transition-all duration-300 border-b border-neutral-100/50"
+                      >
+                        <div className="relative z-10 flex items-center gap-2">
+                          <span className="text-neutral-400 group-hover:text-[#9e896c] transition-colors duration-300">
+                            {getIcon(collection.handle)}
+                          </span>
+                          <h3 className="text-[13px] font-medium text-neutral-600 transition-colors duration-300
+                                        group-hover:text-[#9e896c] group-hover:translate-x-0.5">
+                            {collection.title}
+                          </h3>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
               </div>
 
               {/* Footer Navigation */}
