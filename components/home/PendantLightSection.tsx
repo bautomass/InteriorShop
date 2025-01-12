@@ -489,6 +489,47 @@ const FeaturedProduct = () => {
                       In Stock
                     </span>
                   )}
+                  <motion.span 
+                    initial={{ scale: 1 }}
+                    animate={{ 
+                      scale: [1, 1.05, 1],
+                      transition: {
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }
+                    }}
+                    className="px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-medium rounded-full
+                             flex items-center gap-1 relative overflow-hidden group"
+                  >
+                    <motion.div
+                      initial={{ opacity: 0.6 }}
+                      animate={{ 
+                        opacity: [0.6, 1, 0.6],
+                        transition: {
+                          duration: 1.5,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }
+                      }}
+                      className="absolute inset-0 bg-gradient-to-t from-transparent to-white/20"
+                    />
+                    <span className="relative z-10">Catching On</span>
+                    <motion.span
+                      initial={{ rotate: -10 }}
+                      animate={{ 
+                        rotate: [0, 10, 0],
+                        transition: {
+                          duration: 0.3,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }
+                      }}
+                      className="relative z-10"
+                    >
+                      🔥
+                    </motion.span>
+                  </motion.span>
                 </div>
 
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-[#6B5E4C]">
