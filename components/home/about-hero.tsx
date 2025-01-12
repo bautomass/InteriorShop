@@ -580,7 +580,7 @@ const AboutHero = memo(function AboutHero() {
             {/* Left Column - with reduced spacing */}
             <div className="lg:col-span-5 space-y-6">
               <div className="space-y-6">
-                <h1 className="text-[#6B5E4C] text-5xl font-light leading-tight">
+                <h1 className="text-[#6B5E4C] text-4xl font-light leading-tight">
                   Beauty in Simplicity
                   <span className="block mt-1.5 text-2xl text-[#8C7E6A]">
                     Warmth in Minimalism

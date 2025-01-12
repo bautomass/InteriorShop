@@ -324,7 +324,7 @@ export const MobileHero = () => {
         >
           {/* Header Section */}
           <div className="flex items-center justify-between p-4">
-          <button
+            <button
               onClick={() => setIsNavOpen(!isNavOpen)}
               className="flex items-center gap-2.5"
               aria-label="Toggle menu"
