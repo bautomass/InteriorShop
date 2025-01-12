@@ -170,6 +170,10 @@ export const MobileHero = () => {
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [expandedSections, setExpandedSections] = useState({
+    'Help & Information': true,
+    'Legal': false
+  });
 
   // Constants
   const email = 'info@simpleinteriorideas.com';
@@ -293,6 +297,13 @@ export const MobileHero = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const toggleSection = (title: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [title]: !prev[title]
+    }));
+  };
 
   return (
     <div className="relative h-[100vh] lg:hidden">
@@ -806,21 +817,49 @@ export const MobileHero = () => {
                       ]},
                     ].map((section) => (
                       <div key={section.title} className="space-y-1.5">
-                        <h3 className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-                          {section.title}
-                        </h3>
-                        <div className="space-y-1.5">
-                          {section.items.map((item) => (
-                            <Link
-                              key={item.href}
-                              href={item.href}
-                              className="flex items-center justify-between py-0.5 text-xs text-neutral-600 hover:text-[#9e896c] transition-all duration-200"
+                        <button 
+                          onClick={() => toggleSection(section.title as keyof typeof expandedSections)}
+                          className="w-full flex items-center justify-between text-[11px] font-medium uppercase tracking-wider text-neutral-400 hover:text-neutral-500 transition-colors"
+                        >
+                          <span>{section.title}</span>
+                          <svg
+                            className={`w-4 h-4 transform transition-transform ${expandedSections[section.title as keyof typeof expandedSections] ? 'rotate-180' : ''}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </button>
+                        <AnimatePresence>
+                          {expandedSections[section.title as keyof typeof expandedSections] && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
                             >
-                              <span className="font-medium">{item.label}</span>
-                              <ArrowRight className="h-3.5 w-3.5 opacity-50" />
-                            </Link>
-                          ))}
-                        </div>
+                              <div className="space-y-1.5 pt-1">
+                                {section.items.map((item) => (
+                                  <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className="flex items-center justify-between py-0.5 text-xs text-neutral-600 hover:text-[#9e896c] transition-all duration-200"
+                                  >
+                                    <span className="font-medium">{item.label}</span>
+                                    <ArrowRight className="h-3.5 w-3.5 opacity-50" />
+                                  </Link>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     ))}
                   </div>
