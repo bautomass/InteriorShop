@@ -657,26 +657,27 @@ export const MobileHero = () => {
 
               {/* Collections Grid */}
               <div className="flex-1 overflow-y-auto">
-                {loading ? (
-                  <LoadingChair />
-                ) : (
-                  <div className="grid grid-cols-2 gap-3 p-4">
-{collections.map((collection) => (
-                      <Link
-                        key={collection.handle}
-                        href={`/collections/${collection.handle}`}
-                        onClick={() => setIsNavOpen(false)}
-                        className="group relative block overflow-hidden rounded-[12px] border border-neutral-100 bg-white/80 p-2.5 transition-all duration-300 hover:border-neutral-200 hover:bg-white hover:shadow-md"
-                      >
-                        <div className="relative z-10">
-                          <h3 className="text-sm font-medium text-neutral-800 transition-colors group-hover:text-[#9e896c]">
-                            {collection.title}
-                          </h3>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
+              {loading ? (
+              <LoadingChair />
+            ) : (
+              <div className="grid grid-cols-2 gap-2 p-3">
+                {collections.map((collection) => (
+                  <Link
+                    key={collection.handle}
+                    href={`/collections/${collection.handle}`}
+                    onClick={() => setIsNavOpen(false)}
+                    className="group relative block py-3 px-2.5 transition-all duration-300 border-b border-neutral-100/50"
+                  >
+                    <div className="relative z-10">
+                      <h3 className="text-[13px] font-medium text-neutral-600 transition-colors duration-300
+                                    group-hover:text-[#9e896c] group-hover:translate-x-1">
+                        {collection.title}
+                      </h3>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
               </div>
 
               {/* Footer Navigation */}
@@ -718,27 +719,25 @@ export const MobileHero = () => {
               </div>
 
               {/* Bottom Info Section */}
-              <div className="w-[calc(100%-3px)] px-4 py-4 mb-[15px] bg-gradient-to-b from-neutral-50/80 to-white/80 border-t border-neutral-100 rounded-br-[21px]">
-                <div className="flex items-center justify-between max-w-md mx-auto">
+              <div className="w-[calc(100%-3px)] px-3 py-3 mb-[15px] bg-gradient-to-b from-neutral-50/80 
+                              to-white/80 border-t border-neutral-100 rounded-br-[21px]">
+                <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
                   {/* Working Hours */}
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-full bg-[#9e896c]/10">
-                      <Clock className="h-3.5 w-3.5 text-[#9e896c]" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="p-1 rounded-full bg-[#9e896c]/10 flex-shrink-0">
+                      <Clock className="h-3 w-3 text-[#9e896c]" />
                     </div>
-                    <span className="text-sm text-neutral-600">{workingHours}</span>
+                    <span className="text-[11px] text-neutral-600 truncate">{workingHours}</span>
                   </div>
 
-                  {/* Divider */}
-                  <div className="h-4 w-px bg-neutral-200" />
-
                   {/* Email */}
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-full bg-[#9e896c]/10">
-                      <Mail className="h-3.5 w-3.5 text-[#9e896c]" />
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <div className="p-1 rounded-full bg-[#9e896c]/10 flex-shrink-0">
+                      <Mail className="h-3 w-3 text-[#9e896c]" />
                     </div>
                     <a 
                       href={`mailto:${email}`} 
-                      className="text-sm text-neutral-600 hover:text-[#9e896c] transition-colors"
+                      className="text-[11px] text-neutral-600 hover:text-[#9e896c] transition-colors truncate"
                     >
                       {email}
                     </a>
