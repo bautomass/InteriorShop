@@ -13,7 +13,7 @@ import MobileHero from './MobileMenuHeader';
 const CONSTANTS = {
   ANIMATION: {
     DURATION: 400,
-    CAROUSEL_INTERVAL: 7000,
+    CAROUSEL_INTERVAL: 5000,
     DEBOUNCE_DELAY: 300,
   }
 } as const;
@@ -22,7 +22,6 @@ const CONSTANTS = {
 interface SlideContent {
   id: string;
   image: string;
-  mobileImage: string;
   alt: string;
   title: string;
   subtitle?: string;
@@ -46,8 +45,7 @@ interface HeroProps {}
 const heroSlides: SlideContent[] = [
   {
     id: 'slide-1',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/main-hero-slide1.jpg',
-    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile_banner_simple_interior_ideas_ec3c6bf6-8b9a-47e4-be91-214ef01ede8f.jpg',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/og-hero.jpg?v=1736700243',
     alt: 'Simple Interior Ideas',
     title: 'Modern Living',
     subtitle: 'Discover our collection',
@@ -66,8 +64,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-3',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/wall-room.jpg',
-    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/arche.jpg',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-soft-chair.jpg?v=1736700243',
     alt: 'Architectural Beauty',
     title: 'Architectural Beauty',
     subtitle: 'Where form meets function',
@@ -84,8 +81,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-4',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/table-sets.jpg',
-    mobileImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/stool.png',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2-chairs-hero.jpg?v=1736700243',
     alt: 'Minimalist Living',
     title: 'Minimalist Living',
     subtitle: 'Less is more',
@@ -99,14 +95,46 @@ const heroSlides: SlideContent[] = [
       style: 'minimal',
       alignment: 'middle'
     }
+  },
+  {
+    id: 'slide-5',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-white-sofa.jpg?v=1736700243',
+    alt: 'Contemporary Dining',
+    title: 'Contemporary Dining',
+    subtitle: 'Elevate your dining experience',
+    menu: {
+      items: [
+        { label: 'Dining Tables', link: '/collections/dining-tables', description: 'Gather in style' },
+        { label: 'Dining Chairs', link: '/collections/dining-chairs', description: 'Comfort meets design' },
+        { label: 'Table Decor', link: '/collections/table-decor', description: 'Perfect finishing touches' }
+      ],
+      position: 'left',
+      style: 'modern',
+      alignment: 'middle'
+    }
+  },
+  {
+    id: 'slide-6',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/heor-table-chairs.jpg?v=1736700243',
+    alt: 'Serene Bedroom',
+    title: 'Serene Bedroom',
+    subtitle: 'Create your sanctuary',
+    menu: {
+      items: [
+        { label: 'Bedding Collection', link: '/collections/bedding', description: 'Luxurious comfort' },
+        { label: 'Bedroom Furniture', link: '/collections/bedroom', description: 'Timeless pieces' },
+        { label: 'Night Lighting', link: '/collections/bedroom-lighting', description: 'Ambient glow' }
+      ],
+      position: 'right',
+      style: 'classic',
+      alignment: 'top'
+    }
   }
 ];
 
 // Helper functions
-const getLoopedIndex = (index: number) => {
-  if (index < 0) return heroSlides.length - 1;
-  if (index >= heroSlides.length) return 0;
-  return index;
+const getLoopedIndex = (index: number, length: number) => {
+  return ((index % length) + length) % length;
 };
 
 const getMenuPosition = (menu: { position?: string; alignment?: string }, slideId: string) => {
@@ -130,15 +158,25 @@ const getMenuPosition = (menu: { position?: string; alignment?: string }, slideI
 const useSlideNavigation = (totalSlides: number) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [lastTransition, setLastTransition] = useState<'forward' | 'backward'>('forward');
 
-  const goToSlide = useCallback((index: number) => {
+  const goToSlide = useCallback((index: number, direction: 'forward' | 'backward' = 'forward') => {
     if (isAnimating) return;
     setIsAnimating(true);
+    setLastTransition(direction);
     
-    const nextIndex = ((index % totalSlides) + totalSlides) % totalSlides;
+    let nextIndex;
+    if (direction === 'forward') {
+      // Always move forward, wrap around to beginning if needed
+      nextIndex = index >= totalSlides ? 0 : index;
+    } else {
+      // For backward navigation, wrap to the end
+      nextIndex = index < 0 ? totalSlides - 1 : index;
+    }
+    
     const nextSlide = heroSlides[nextIndex];
     if (nextSlide) {
-      const imagesToPreload = [nextSlide.image, nextSlide.mobileImage].filter(Boolean);
+      const imagesToPreload = [nextSlide.image].filter(Boolean);
       imagesToPreload.forEach(src => {
         const img = new window.Image();
         img.src = src;
@@ -149,7 +187,7 @@ const useSlideNavigation = (totalSlides: number) => {
     setTimeout(() => setIsAnimating(false), CONSTANTS.ANIMATION.DURATION);
   }, [isAnimating, totalSlides]);
 
-  return { currentSlide, isAnimating, goToSlide };
+  return { currentSlide, isAnimating, goToSlide, lastTransition };
 };
 
 const useImagePreloader = (images: string[]) => {
@@ -160,7 +198,6 @@ const useImagePreloader = (images: string[]) => {
         img.src = src;
       });
     };
-
     preloadImages();
   }, [images]);
 };
@@ -168,10 +205,10 @@ const useImagePreloader = (images: string[]) => {
 // Main Hero Component
 const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   // Preload all hero images
-  useImagePreloader(heroSlides.map(slide => [slide.image, slide.mobileImage]).flat());
+  useImagePreloader(heroSlides.map(slide => slide.image));
 
   // State and hooks
-  const { currentSlide, isAnimating, goToSlide } = useSlideNavigation(heroSlides.length);
+  const { currentSlide, isAnimating, goToSlide, lastTransition } = useSlideNavigation(heroSlides.length);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const controls = useAnimation();
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -181,6 +218,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   const [isMenuHovered, setIsMenuHovered] = useState(false);
   const [progressKey, setProgressKey] = useState(0);
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const autoplayTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Effects
   useEffect(() => {
@@ -201,11 +239,8 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     const diff = touchStart - currentTouch;
     
     if (Math.abs(diff) > 50) {
-      if (diff > 0 && currentSlide < heroSlides.length - 1) {
-        goToSlide(currentSlide + 1);
-      } else if (diff < 0 && currentSlide > 0) {
-        goToSlide(currentSlide - 1);
-      }
+      goToSlide(currentSlide + 1, 'forward');
+      setProgressKey(prev => prev + 1);
       setTouchStart(null);
     }
   };
@@ -219,7 +254,8 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
   const handleScroll = useCallback((e: WheelEvent) => {
     if (Math.abs(e.deltaY) > 30) {
-      goToSlide(currentSlide + (e.deltaY > 0 ? 1 : -1));
+      goToSlide(currentSlide + 1, 'forward');
+      setProgressKey(prev => prev + 1);
     }
   }, [currentSlide, goToSlide]);
 
@@ -231,14 +267,37 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     }
   }, [currentSlide, handleScroll]);
 
+  const handlePrevious = () => {
+    goToSlide(currentSlide - 1, 'forward');
+    setProgressKey(prev => prev + 1);
+  };
+
+  const handleNext = () => {
+    goToSlide(currentSlide + 1, 'forward');
+    setProgressKey(prev => prev + 1);
+  };
+
+  // Update the autoplay effect
   useEffect(() => {
     if (isMenuHovered) return;
     
-    const timer = setInterval(() => {
-      goToSlide(currentSlide + 1);
-    }, CONSTANTS.ANIMATION.CAROUSEL_INTERVAL);
+    const startTimer = () => {
+      if (autoplayTimeoutRef.current) {
+        clearTimeout(autoplayTimeoutRef.current);
+      }
+
+      autoplayTimeoutRef.current = setTimeout(() => {
+        goToSlide(currentSlide + 1, 'forward');
+      }, CONSTANTS.ANIMATION.CAROUSEL_INTERVAL);
+    };
+
+    startTimer();
     
-    return () => clearInterval(timer);
+    return () => {
+      if (autoplayTimeoutRef.current) {
+        clearTimeout(autoplayTimeoutRef.current);
+      }
+    };
   }, [currentSlide, isMenuHovered, goToSlide]);
 
   useEffect(() => {
@@ -309,16 +368,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       fill
                       priority={index === 0}
                       quality={100}
-                      className="hidden md:block object-cover w-full h-full"
-                      sizes="100vw"
-                    />
-                    <Image
-                      src={slide.mobileImage}
-                      alt={slide.alt}
-                      fill
-                      priority={index === 0}
-                      quality={100}
-                      className="block md:hidden object-cover w-full h-full"
+                      className="object-cover w-full h-full"
                       sizes="100vw"
                     />
 
@@ -498,7 +548,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
               <div className="absolute bottom-2 right-8 z-20 flex items-center gap-6 perspective-[1200px] transform-gpu scale-90">
                 {/* Previous Button */}
                 <motion.button
-                  onClick={() => goToSlide(currentSlide - 1)}
+                  onClick={handlePrevious}
                   disabled={isAnimating}
                   className="relative group"
                   whileHover={{ scale: 1.05 }}
@@ -520,10 +570,11 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                 {/* Thumbnails */}
                 <div className="flex items-center gap-1.5 relative">
                   {[...Array(3)].map((_, i) => {
-                    const slideIndex = getLoopedIndex(currentSlide - 1 + i);
+                    const slideIndex = getLoopedIndex(currentSlide - 1 + i, heroSlides.length);
                     const slide = heroSlides[slideIndex];
                     if (!slide) return null;
                     const isActive = i === 1;
+                    const actualSlideNumber = slideIndex + 1;
                     
                     return (
                       <motion.div
@@ -541,19 +592,25 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           y: isActive ? -8 : -4,
                           transition: { duration: 0.2 }
                         }}
-                        className={`relative overflow-hidden cursor-pointer
+                        className={`relative overflow-hidden cursor-pointer rounded-lg
                                    transition-shadow duration-300
                                    ${isActive ? 
                                      'w-44 h-24 shadow-lg hover:shadow-xl z-10' : 
                                      'w-36 h-20 shadow-md hover:shadow-lg z-0'}`}
                       >
+                        {/* Slide number indicator */}
+                        <div className="absolute top-2 right-2 z-20 bg-black/50 rounded-full w-6 h-6 
+                                       flex items-center justify-center text-white text-xs font-medium">
+                          {actualSlideNumber}
+                        </div>
+                        
                         <div className="absolute inset-0 w-full h-full">
                           <Image
                             src={slide.image}
                             alt={slide.alt}
                             fill
                             priority={isActive}
-                            className="object-cover transition-all duration-500 ease-out"
+                            className="object-cover transition-all duration-500 ease-out rounded-lg"
                             sizes="(min-width: 768px) 176px, 144px"
                             quality={90}
                           />
@@ -613,7 +670,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                                        origin-left shadow-[0_0_8px_rgba(255,255,255,0.5)]"
                               onAnimationComplete={() => {
                                 if (!isMenuHovered) {
-                                  goToSlide(currentSlide + 1);
+                                  goToSlide(currentSlide + 1, 'forward');
                                 }
                               }}
                             />
@@ -626,7 +683,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
                 {/* Next Button */}
                 <motion.button
-                  onClick={() => goToSlide(currentSlide + 1)}
+                  onClick={handleNext}
                   disabled={isAnimating}
                   className="relative group"
                   whileHover={{ scale: 1.05 }}
