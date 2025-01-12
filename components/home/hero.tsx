@@ -12,8 +12,8 @@ import MobileHero from './MobileMenuHeader';
 // Constants
 const CONSTANTS = {
   ANIMATION: {
-    DURATION: 400,
-    CAROUSEL_INTERVAL: 5000,
+    DURATION: 500,
+    CAROUSEL_INTERVAL: 7000,
     DEBOUNCE_DELAY: 300,
   }
 } as const;
