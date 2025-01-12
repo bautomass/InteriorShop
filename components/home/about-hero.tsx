@@ -638,7 +638,7 @@ const AboutHero = memo(function AboutHero() {
               {/* Quote section */}
               <blockquote className="relative pl-6">
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#B5A48B] to-transparent" />
-                <p className="italic text-[#8C7E6A] text-lg">
+                <p className="italic text-[#8C7E6A] text-base sm:text-lg">
                   "Simplicity is the ultimate sophistication"
                 </p>
                 <cite className="block mt-2 text-[#6B5E4C] not-italic">— Leonardo da Vinci</cite>
@@ -651,7 +651,7 @@ const AboutHero = memo(function AboutHero() {
                     ${sectionInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
                     motion-safe:transition-all motion-safe:duration-700 motion-safe:delay-300`}>
                     <span className="relative px-4 py-2">
-                      <span className="relative bg-gradient-to-r from-[#4A3F33] to-[#8B7355] bg-clip-text text-transparent
+                      <span className="relative bg-gradient-to-r from-[#4A3F33] to-[#8B7355] bg-clip-text text-transparent text-xl lg:text-2xl
                         before:content-[''] before:absolute before:-top-1 before:left-0 
                         before:w-full before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-[#B5A48B]/40 before:to-[#B5A48B]/40
                         after:content-[''] after:absolute after:-bottom-1 after:left-0 
