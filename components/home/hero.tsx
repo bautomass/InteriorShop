@@ -1514,7 +1514,7 @@ description?: string;
 )}
 
 {/* Navigation Buttons - Added opposite to carousel thumbnails */}
-<div className="absolute bottom-20 left-8 z-20 hidden lg:flex items-center gap-4">
+<div className="absolute bottom-32 left-8 z-20 hidden lg:flex items-center gap-4">
   <motion.div 
     className="flex items-center gap-4 perspective-[1200px] transform-gpu"
     initial={{ opacity: 0, y: 20 }}

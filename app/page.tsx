@@ -11,8 +11,8 @@ import { Footer } from '@/components/layout/site-footer';
 import Hero from 'components/home/hero';
 import LampsCollection from 'components/home/LampsCollection';
 import WishboneChairSection from 'components/home/WishboneChairSection';
-import { TopHeader } from 'components/layout/navbar/top-header';
-
+// import { TopHeader } from 'components/layout/navbar/top-header';
+import  LargeScreenNavBar  from 'components/layout/navbar/LargeScreenNavBar';
 import InteriorTipsSection from '@/components/home/InteriorTipsSection';
 import type { Metadata } from 'next';
 
@@ -39,7 +39,8 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
-      <TopHeader />
+      {/* <TopHeader /> */}
+      <LargeScreenNavBar />
       <Hero />
       <AboutHero />
       <div className="space-y-8 md:space-y-16">
