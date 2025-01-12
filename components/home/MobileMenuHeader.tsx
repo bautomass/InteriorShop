@@ -296,8 +296,28 @@ export const MobileHero = () => {
 
   return (
     <div className="relative h-[100vh] lg:hidden">
+      {/* Hero Buttons */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 flex">
+        <Link
+          href="/story"
+          className="flex-1 py-4 bg-white/90 backdrop-blur-sm text-[#9e896c] 
+                     text-sm font-medium hover:bg-[#9e896c] hover:text-white 
+                     transition-all duration-300 text-center"
+        >
+          Our Story
+        </Link>
+        <Link
+          href="/collections/all-products"
+          className="flex-1 py-4 bg-[#9e896c]/90 backdrop-blur-sm text-white 
+                     text-sm font-medium hover:bg-[#9e896c] 
+                     transition-all duration-300 text-center"
+        >
+          All Products
+        </Link>
+      </div>
+
       <Image
-        src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-banner.png?v=1736585444"
+        src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.jpg?v=1736678417"
         alt="Mobile Hero"
         fill={true}
         priority
@@ -842,3 +862,4 @@ export const MobileHero = () => {
 };
 
 export default MobileHero;
+
