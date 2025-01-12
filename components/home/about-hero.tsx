@@ -609,7 +609,7 @@ const AboutHero = memo(function AboutHero() {
                     {/* Main content container - always centered */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-[#6B5E4C] group-hover:text-white 
-                        transition-colors duration-300 text-sm font-bold tracking-wide">
+                        transition-colors duration-300 text-[12px] font-bold tracking-wide">
                         {feature.title}
                       </span>
                     </div>
