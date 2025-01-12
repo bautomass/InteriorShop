@@ -158,21 +158,12 @@ const getMenuPosition = (menu: { position?: string; alignment?: string }, slideI
 const useSlideNavigation = (totalSlides: number) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [lastTransition, setLastTransition] = useState<'forward' | 'backward'>('forward');
 
-  const goToSlide = useCallback((index: number, direction: 'forward' | 'backward' = 'forward') => {
+  const goToSlide = useCallback((index: number) => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setLastTransition(direction);
     
-    let nextIndex;
-    if (direction === 'forward') {
-      // Always move forward, wrap around to beginning if needed
-      nextIndex = index >= totalSlides ? 0 : index;
-    } else {
-      // For backward navigation, wrap to the end
-      nextIndex = index < 0 ? totalSlides - 1 : index;
-    }
+    const nextIndex = getLoopedIndex(index, totalSlides);
     
     const nextSlide = heroSlides[nextIndex];
     if (nextSlide) {
@@ -187,7 +178,7 @@ const useSlideNavigation = (totalSlides: number) => {
     setTimeout(() => setIsAnimating(false), CONSTANTS.ANIMATION.DURATION);
   }, [isAnimating, totalSlides]);
 
-  return { currentSlide, isAnimating, goToSlide, lastTransition };
+  return { currentSlide, isAnimating, goToSlide };
 };
 
 const useImagePreloader = (images: string[]) => {
@@ -208,7 +199,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   useImagePreloader(heroSlides.map(slide => slide.image));
 
   // State and hooks
-  const { currentSlide, isAnimating, goToSlide, lastTransition } = useSlideNavigation(heroSlides.length);
+  const { currentSlide, isAnimating, goToSlide } = useSlideNavigation(heroSlides.length);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const controls = useAnimation();
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -218,7 +209,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   const [isMenuHovered, setIsMenuHovered] = useState(false);
   const [progressKey, setProgressKey] = useState(0);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const autoplayTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Effects
   useEffect(() => {
@@ -239,8 +229,11 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     const diff = touchStart - currentTouch;
     
     if (Math.abs(diff) > 50) {
-      goToSlide(currentSlide + 1, 'forward');
-      setProgressKey(prev => prev + 1);
+      if (diff > 0 && currentSlide < heroSlides.length - 1) {
+        goToSlide(currentSlide + 1);
+      } else if (diff < 0 && currentSlide > 0) {
+        goToSlide(currentSlide - 1);
+      }
       setTouchStart(null);
     }
   };
@@ -254,8 +247,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
   const handleScroll = useCallback((e: WheelEvent) => {
     if (Math.abs(e.deltaY) > 30) {
-      goToSlide(currentSlide + 1, 'forward');
-      setProgressKey(prev => prev + 1);
+      goToSlide(currentSlide + (e.deltaY > 0 ? 1 : -1));
     }
   }, [currentSlide, goToSlide]);
 
@@ -267,37 +259,19 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     }
   }, [currentSlide, handleScroll]);
 
-  const handlePrevious = () => {
-    goToSlide(currentSlide - 1, 'forward');
-    setProgressKey(prev => prev + 1);
-  };
-
-  const handleNext = () => {
-    goToSlide(currentSlide + 1, 'forward');
-    setProgressKey(prev => prev + 1);
-  };
-
-  // Update the autoplay effect
   useEffect(() => {
     if (isMenuHovered) return;
     
+    let timer: NodeJS.Timeout;
     const startTimer = () => {
-      if (autoplayTimeoutRef.current) {
-        clearTimeout(autoplayTimeoutRef.current);
-      }
-
-      autoplayTimeoutRef.current = setTimeout(() => {
-        goToSlide(currentSlide + 1, 'forward');
+      timer = setTimeout(() => {
+        goToSlide(currentSlide + 1);
       }, CONSTANTS.ANIMATION.CAROUSEL_INTERVAL);
     };
 
     startTimer();
     
-    return () => {
-      if (autoplayTimeoutRef.current) {
-        clearTimeout(autoplayTimeoutRef.current);
-      }
-    };
+    return () => clearTimeout(timer);
   }, [currentSlide, isMenuHovered, goToSlide]);
 
   useEffect(() => {
@@ -332,7 +306,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
       <div className="hidden lg:block">
         <div className="relative">
           <section 
-            className="relative h-[90vh] w-full overflow-hidden"
+            className="relative h-[100vh] w-full overflow-hidden"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
           >
@@ -340,7 +314,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
             <div className="absolute inset-0 bg-black/10" />
 
             {/* Updated Hero Content */}
-            <div className="relative h-[90vh] w-full overflow-hidden">
+            <div className="relative h-[100vh] w-full overflow-hidden">
               <div className="flex h-full">
                 {heroSlides.map((slide, index) => (
                   <motion.div
@@ -548,7 +522,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
               <div className="absolute bottom-2 right-8 z-20 flex items-center gap-6 perspective-[1200px] transform-gpu scale-90">
                 {/* Previous Button */}
                 <motion.button
-                  onClick={handlePrevious}
+                  onClick={() => goToSlide(currentSlide - 1)}
                   disabled={isAnimating}
                   className="relative group"
                   whileHover={{ scale: 1.05 }}
@@ -670,7 +644,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                                        origin-left shadow-[0_0_8px_rgba(255,255,255,0.5)]"
                               onAnimationComplete={() => {
                                 if (!isMenuHovered) {
-                                  goToSlide(currentSlide + 1, 'forward');
+                                  goToSlide(currentSlide + 1);
                                 }
                               }}
                             />
@@ -683,7 +657,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
                 {/* Next Button */}
                 <motion.button
-                  onClick={handleNext}
+                  onClick={() => goToSlide(currentSlide + 1)}
                   disabled={isAnimating}
                   className="relative group"
                   whileHover={{ scale: 1.05 }}
@@ -708,7 +682,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
       </div>
 
       {/* Navigation Buttons - Added opposite to carousel thumbnails */}
-      <div className="absolute bottom-32 left-8 z-20 hidden lg:flex items-center gap-4">
+      <div className="absolute bottom-8 left-8 z-20 hidden lg:flex items-center gap-4">
         <motion.div 
           className="flex items-center gap-4 perspective-[1200px] transform-gpu"
           initial={{ opacity: 0, y: 20 }}
