@@ -6,7 +6,6 @@ import { Collection } from '@/lib/shopify/types';
 import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
 import { debounce } from 'lodash';
-// import { ArrowRight, Clock, DollarSign, Mail, ShoppingCart, Sparkles, Truck } from 'lucide-react';
 import {
   Armchair,
   ArrowRight,
@@ -153,36 +152,6 @@ const LoadingChair = () => (
   </motion.div>
 );
 
-// Add this new component near the top with other components
-const ScrollIndicator = () => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    className="absolute left-1/2 bottom-4 -translate-x-1/2 pointer-events-none"
-  >
-    <motion.div
-      animate={{ y: [0, 5, 0] }}
-      transition={{
-        duration: 2,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }}
-      className="w-6 h-6 text-[#9e896c]/70"
-    >
-      <svg 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="2"
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      >
-        <path d="M6 9l6 6 6-6"/>
-      </svg>
-    </motion.div>
-  </motion.div>
-);
-
 export const MobileHero = () => {
   const { cart } = useCart();
   const { updateState } = useHeaderState();
@@ -201,8 +170,6 @@ export const MobileHero = () => {
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
-  const collectionsRef = useRef<HTMLDivElement>(null);
 
   // Constants
   const email = 'info@simpleinteriorideas.com';
@@ -327,24 +294,6 @@ export const MobileHero = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Add this new effect to handle scroll visibility
-  useEffect(() => {
-    if (!collectionsRef.current || !isNavOpen) return;
-
-    const handleScroll = (e: Event) => {
-      const element = e.target as HTMLDivElement;
-      const isAtTop = element.scrollTop < 50;
-      setShowScrollIndicator(isAtTop);
-    };
-
-    const collectionsElement = collectionsRef.current;
-    collectionsElement.addEventListener('scroll', handleScroll);
-
-    return () => {
-      collectionsElement?.removeEventListener('scroll', handleScroll);
-    };
-  }, [isNavOpen]);
-
   return (
     <div className="relative h-[100vh] lg:hidden">
       <Image
@@ -375,14 +324,19 @@ export const MobileHero = () => {
         >
           {/* Header Section */}
           <div className="flex items-center justify-between p-4">
-            <button
+          <button
               onClick={() => setIsNavOpen(!isNavOpen)}
               className="flex items-center gap-2.5"
               aria-label="Toggle menu"
             >
               <BurgerIcon isOpen={isNavOpen} />
-              <span className={`text-sm font-medium transition-colors duration-300 
-                ${isNavOpen ? 'text-[#9e896c]' : 'text-neutral-700'}`}>
+              <span 
+                className="text-sm font-medium text-neutral-700"
+                style={{
+                  transition: 'color 0.3s',
+                  color: isNavOpen ? '#9e896c' : ''
+                }}
+              >
                 {isNavOpen ? 'Close' : 'Menu'}
               </span>
             </button>
@@ -738,87 +692,81 @@ export const MobileHero = () => {
               </div>
 
               {/* Collections Grid */}
-              <div 
-                ref={collectionsRef} 
-                className="flex-1 overflow-y-auto relative"
-              >
-                {loading ? (
-                  <LoadingChair />
-                ) : (
-                  <>
-                    <div className="grid grid-cols-2 gap-2 p-3">
-                      {collections.map((collection) => {
-                        // Icon mapping function
-                        const getIcon = (handle: string) => {
-                          switch (handle.toLowerCase()) {
-                            case 'collections':
-                              return <Grid className="h-4 w-4" />;
-                            case 'accessories':
-                              return <Heart className="h-4 w-4" />;
-                            case 'baskets-rattan':
-                              return <ShoppingBasket className="h-4 w-4" />;
-                            case 'best-sellers':
-                              return <Star className="h-4 w-4" />;
-                            case 'candles-candle-holders':
-                              return <Flame className="h-4 w-4" />;
-                            case 'canvas':
-                              return <ImageIcon className="h-4 w-4" />;
-                            case 'carpet-collection':
-                              return <Square className="h-4 w-4" />;
-                            case 'blinds-shades-collection':
-                              return <PanelRightClose className="h-4 w-4" />;
-                            case 'dried-flowers':
-                              return <Flower2 className="h-4 w-4" />;
-                            case 'kitchen-accessories':
-                              return <UtensilsCrossed className="h-4 w-4" />;
-                            case 'organic-decoration':
-                              return <Armchair className="h-4 w-4" />;
-                            case 'gift-boxes-1':
-                              return <Gift className="h-4 w-4" />;
-                            case 'gifts':
-                              return <Package className="h-4 w-4" />;
-                            case 'lamps':
-                              return <Lamp className="h-4 w-4" />;
-                            case 'decorative-lantern-collection':
-                              return <Flame className="h-4 w-4" />;
-                            case 'sale':
-                              return <Tag className="h-4 w-4" />;
-                            case 'textiles-collection':
-                              return <Shirt className="h-4 w-4" />;
-                            case 'ceramic-vases':
-                              return <Wine className="h-4 w-4" />;
-                            case 'wall-decor-collection':
-                              return <Frame className="h-4 w-4" />;
-                            case 'anturam-eco-wooden-stools':
-                              return <ArrowUpSquare className="h-4 w-4" />;
-                            default:
-                              return <CircleDot className="h-4 w-4" />;
-                          }
-                        };
+              <div className="flex-1 overflow-y-auto">
+              {loading ? (
+                <LoadingChair />
+              ) : (
+                <div className="grid grid-cols-2 gap-2 p-3">
+                  {collections.map((collection) => {
+                    // Icon mapping function
+                    const getIcon = (handle: string) => {
+                      switch (handle.toLowerCase()) {
+                        case 'collections':
+                          return <Grid className="h-4 w-4" />;
+                        case 'accessories':
+                          return <Heart className="h-4 w-4" />;
+                        case 'baskets-rattan':
+                          return <ShoppingBasket className="h-4 w-4" />;
+                        case 'best-sellers':
+                          return <Star className="h-4 w-4" />;
+                        case 'candles-candle-holders':
+                          return <Flame className="h-4 w-4" />;
+                        case 'canvas':
+                          return <ImageIcon className="h-4 w-4" />;
+                        case 'carpet-collection':
+                          return <Square className="h-4 w-4" />;
+                        case 'blinds-shades-collection':
+                          return <PanelRightClose className="h-4 w-4" />;
+                        case 'dried-flowers':
+                          return <Flower2 className="h-4 w-4" />;
+                        case 'kitchen-accessories':
+                          return <UtensilsCrossed className="h-4 w-4" />;
+                        case 'organic-decoration':
+                          return <Armchair className="h-4 w-4" />;
+                        case 'gift-boxes-1':
+                          return <Gift className="h-4 w-4" />;
+                        case 'gifts':
+                          return <Package className="h-4 w-4" />;
+                        case 'lamps':
+                          return <Lamp className="h-4 w-4" />;
+                        case 'decorative-lantern-collection':
+                          return <Flame className="h-4 w-4" />;
+                        case 'sale':
+                          return <Tag className="h-4 w-4" />;
+                        case 'textiles-collection':
+                          return <Shirt className="h-4 w-4" />;
+                        case 'ceramic-vases':
+                          return <Wine className="h-4 w-4" />;
+                        case 'wall-decor-collection':
+                          return <Frame className="h-4 w-4" />;
+                        case 'anturam-eco-wooden-stools':
+                          return <ArrowUpSquare className="h-4 w-4" />;
+                        default:
+                          return <CircleDot className="h-4 w-4" />;
+                      }
+                    };
 
-                        return (
-                          <Link
-                            key={collection.handle}
-                            href={`/collections/${collection.handle}`}
-                            onClick={() => setIsNavOpen(false)}
-                            className="group relative block py-3 px-2.5 transition-all duration-300 border-b border-neutral-100/50"
-                          >
-                            <div className="relative z-10 flex items-center gap-2">
-                              <span className="text-neutral-400 group-hover:text-[#9e896c] transition-colors duration-300">
-                                {getIcon(collection.handle)}
-                              </span>
-                              <h3 className="text-[13px] font-medium text-neutral-600 transition-colors duration-300
-                                            group-hover:text-[#9e896c] group-hover:translate-x-0.5">
-                                {collection.title}
-                              </h3>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                    {showScrollIndicator && isNavOpen && <ScrollIndicator />}
-                  </>
-                )}
+                    return (
+                      <Link
+                        key={collection.handle}
+                        href={`/collections/${collection.handle}`}
+                        onClick={() => setIsNavOpen(false)}
+                        className="group relative block py-3 px-2.5 transition-all duration-300 border-b border-neutral-100/50"
+                      >
+                        <div className="relative z-10 flex items-center gap-2">
+                          <span className="text-neutral-400 group-hover:text-[#9e896c] transition-colors duration-300">
+                            {getIcon(collection.handle)}
+                          </span>
+                          <h3 className="text-[13px] font-medium text-neutral-600 transition-colors duration-300
+                                        group-hover:text-[#9e896c] group-hover:translate-x-0.5">
+                            {collection.title}
+                          </h3>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
               </div>
 
               {/* Footer Navigation */}
