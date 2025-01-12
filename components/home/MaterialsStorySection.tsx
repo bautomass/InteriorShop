@@ -1,0 +1,263 @@
+'use client';
+
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { CircleOff, Leaf, ShieldCheck, Sprout } from 'lucide-react';
+import Image from 'next/image';
+import { useState } from 'react';
+import { useInView } from 'react-intersection-observer';
+
+interface Material {
+  name: string;
+  description: string;
+  color: string;
+  specs: {
+    origin: string;
+    sustainability: string;
+    properties: string[];
+  };
+}
+
+const materials: Material[] = [
+    {
+        name: 'Raw Cotton',
+        description: 'GOTS certified organic cotton, naturally soft and pure',
+        color: '#E5E0DB',
+        specs: {
+            origin: 'Organic farms',
+            sustainability: 'Water-conscious cultivation',
+            properties: ['Hypoallergenic', 'Breathable', 'Biodegradable']
+          }
+      },
+  {
+    name: 'Organic Clay',
+    description: 'Pure earthen clay, shaped and finished by artisan hands',
+    color: '#BEB5A7',
+    specs: {
+      origin: 'Local quarries',
+      sustainability: 'Natural material, zero waste processing',
+      properties: ['Temperature regulating', 'Moisture balancing', 'Non-toxic']
+    }
+  },
+    {
+      name: 'Natural Wood',
+      description: 'Sustainably sourced raw timber, celebrating natural grain patterns',
+      color: '#D4C4B5',
+      specs: {
+        origin: 'FSC-certified forests',
+        sustainability: 'Renewable resource with minimal processing',
+        properties: ['Durable', 'Breathable', 'Natural grain variety']
+      }
+    },
+];
+
+const wellnessFeatures = [
+  {
+    icon: Leaf,
+    title: 'Natural Harmony',
+    description: 'Materials that bring nature\'s calming presence into your space'
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Health Conscious',
+    description: 'Non-toxic materials promoting better indoor air quality'
+  },
+  {
+    icon: Sprout,
+    title: 'Sustainable Living',
+    description: 'Eco-friendly choices for a better tomorrow'
+  },
+  {
+    icon: CircleOff,
+    title: 'Zero Toxins',
+    description: 'Free from harmful chemicals and synthetic treatments'
+  }
+];
+
+export default function MaterialsSection() {
+  const [selectedMaterial, setSelectedMaterial] = useState(2);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const { ref, inView } = useInView({
+    threshold: 0.2,
+    triggerOnce: true
+  });
+
+  return (
+    <section
+      ref={ref}
+      className="relative w-full overflow-hidden bg-[#F9F7F4] py-24"
+      aria-label="Natural Materials Story"
+    >
+      {/* Background Gradient Effects */}
+      <div className="absolute inset-0">
+        <div className="absolute left-0 top-0 h-[80%] w-[60%] bg-[#E5DFD8] opacity-30 blur-[150px]" />
+        <div className="absolute right-0 top-[20%] h-[60%] w-[40%] bg-[#D4C4B5] opacity-20 blur-[100px]" />
+      </div>
+
+      <div className="container relative mx-auto px-4">
+        <div className="grid gap-16 lg:grid-cols-2">
+          {/* Left Column - Image and Materials */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="relative"
+          >
+            <div className="relative aspect-square overflow-hidden rounded-lg bg-white/80 shadow-xl">
+              <div className={cn(
+                "transition-opacity duration-500",
+                isImageLoaded ? "opacity-100" : "opacity-0"
+              )}>
+                <Image
+                  src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Material-Story-Image.jpg?v=1736707104"
+                  alt="Natural material samples showing wood grain, clay textures, and organic textiles"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                  onLoad={() => setIsImageLoaded(true)}
+                />
+              </div>
+
+              {/* Material Indicators */}
+              <div className="absolute inset-0">
+                {materials.map((material, index) => {
+                  const positions = [
+                    'left-[28%] top-[26.5%]',
+                    'right-[37%] top-[45%]',
+                    'left-[30%] bottom-[25%]'
+                  ];
+
+                  return (
+                    <div
+                      key={material.name}
+                      className={cn(
+                        'absolute inline-flex group',
+                        positions[index]
+                      )}
+                    >
+                      <motion.button
+                        initial={false}
+                        animate={selectedMaterial === index ? {
+                          scale: [1, 1.2, 1],
+                          transition: { duration: 0.5, repeat: Infinity, repeatDelay: 3 }
+                        } : {}}
+                        onClick={() => setSelectedMaterial(index)}
+                        className="relative z-10"
+                        aria-label={`View ${material.name} details`}
+                      >
+                        {/* Animated rings */}
+                        <div className={cn(
+                          "absolute -inset-1 rounded-full",
+                          selectedMaterial === index ? "animate-ping bg-[#dcd5ca]/60" : ""
+                        )} />
+                        
+                        {/* Main dot */}
+                        <div className={cn(
+                          "h-4 w-4 rounded-full border-2 transition-all duration-300",
+                          selectedMaterial === index
+                            ? "border-[#9c826b] bg-[#ebe7e0] scale-125"
+                            : "border-[#9c826b] bg-white/80"
+                        )} />
+                      </motion.button>
+
+                      {/* Info popup */}
+                      <div className={cn(
+                        "absolute left-full top-1/2 ml-2 min-w-[200px] -translate-y-1/2 rounded-lg border border-[#b39e86] bg-white/95 p-4 shadow-xl backdrop-blur-sm transition-all duration-300",
+                        selectedMaterial === index
+                          ? "translate-x-0 opacity-100"
+                          : "-translate-x-4 opacity-0 pointer-events-none"
+                      )}>
+                        <h4 className="text-lg font-medium text-[#9c826b]">
+                          {material.name}
+                        </h4>
+                        <p className="mt-1 text-sm text-[#9c826b]/80">
+                          {material.description}
+                        </p>
+                        <div className="mt-3 space-y-2 text-xs">
+                          <p><span className="font-medium">Origin:</span> {material.specs.origin}</p>
+                          <p><span className="font-medium">Sustainability:</span> {material.specs.sustainability}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {material.specs.properties.map(prop => (
+                              <span
+                                key={prop}
+                                className="rounded-full bg-[#9c826b]/10 px-2 py-0.5 text-[10px] font-medium text-[#9c826b]"
+                              >
+                                {prop}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Right Column - Content */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="flex flex-col justify-center lg:pl-8"
+          >
+            <h2 className="text-3xl font-light text-[#6B5E4C] sm:text-4xl md:text-5xl">
+              Natural Materials,
+              <br />
+              <span className="font-medium">Enhanced Wellbeing</span>
+            </h2>
+
+            <p className="mt-6 text-lg leading-relaxed text-[#8C7E6A]">
+              Every material in our collection is thoughtfully chosen to create harmony 
+              between your space and nature, promoting both environmental and personal wellness.
+            </p>
+
+            {/* Features Grid */}
+            <div className="mt-12 grid gap-6 sm:grid-cols-2">
+              {wellnessFeatures.map((feature, index) => (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="group relative overflow-hidden rounded-lg bg-white/50 p-6 backdrop-blur-sm"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="relative z-10">
+                    <feature.icon className="h-8 w-8 text-[#6B5E4C]" />
+                    <h3 className="mt-4 text-lg font-medium text-[#6B5E4C]">
+                      {feature.title}
+                    </h3>
+                    <p className="mt-2 text-sm text-[#8C7E6A]">
+                      {feature.description}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Material Selection Pills - Mobile Only */}
+            <div className="mt-8 flex gap-3 lg:hidden">
+              {materials.map((material, index) => (
+                <button
+                  key={material.name}
+                  onClick={() => setSelectedMaterial(index)}
+                  className={cn(
+                    "rounded-full px-4 py-2 text-sm font-medium transition-all duration-300",
+                    selectedMaterial === index
+                      ? "bg-[#6B5E4C] text-white"
+                      : "bg-white/50 text-[#6B5E4C]"
+                  )}
+                >
+                  {material.name}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
