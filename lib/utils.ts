@@ -46,10 +46,54 @@ export const validateEnvironmentVariables = () => {
 };
 
 // Add the shopifyFetch function
+// export async function shopifyFetch<T>({
+//   query,
+//   variables,
+//   cache = 'force-cache'
+// }: {
+//   query: string;
+//   variables?: any;
+//   cache?: RequestCache;
+// }): Promise<{ status: number; body: T } | never> {
+//   try {
+//     const endpoint = `https://${domain}/api/${apiVersion}/graphql.json`;
+//     const key = accessToken;
+
+//     const response = await fetch(endpoint, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'X-Shopify-Storefront-Access-Token': key
+//       },
+//       body: JSON.stringify({
+//         query,
+//         variables
+//       }),
+//       cache
+//     });
+
+//     const body = await response.json();
+
+//     if (body.errors) {
+//       throw new Error(body.errors[0].message);
+//     }
+
+//     return {
+//       status: response.status,
+//       body
+//     };
+//   } catch (e) {
+//     if (e instanceof Error) {
+//       throw new Error(e.message);
+//     }
+//     throw e;
+//   }
+// }
+
 export async function shopifyFetch<T>({
   query,
   variables,
-  cache = 'force-cache'
+  cache = 'force-cache'  // keeping this parameter to maintain existing interface
 }: {
   query: string;
   variables?: any;
@@ -69,7 +113,7 @@ export async function shopifyFetch<T>({
         query,
         variables
       }),
-      cache
+      next: { revalidate: 60 }
     });
 
     const body = await response.json();
