@@ -97,12 +97,14 @@ export async function shopifyFetch<T>({
   headers,
   query,
   tags,
-  variables
+  variables,
+  next
 }: {
   headers?: HeadersInit;
   query: string;
   tags?: string[];
   variables?: ExtractVariables<T>;
+  next?: { revalidate?: number };
 }): Promise<{ status: number; body: T } | never> {
   try {
     const result = await fetch(endpoint, {
@@ -116,7 +118,7 @@ export async function shopifyFetch<T>({
         ...(query && { query }),
         ...(variables && { variables })
       }),
-      next: tags ? { tags, revalidate: 60 } : undefined
+      next: next || (tags ? { tags, revalidate: 60 } : undefined)
     });
 
     const body = await result.json();
