@@ -574,15 +574,15 @@ const AboutHero = memo(function AboutHero() {
           transition-opacity duration-200`}
         aria-label="About our store"
       >
-        {/* Reduced size and opacity of gradient overlay */}
+        {/* Gradient overlay */}
         <div className="absolute top-0 left-0 w-[50%] h-[50%] bg-white opacity-50 blur-[100px] pointer-events-none" />
         
-        {/* Added z-index to keep content on top */}
         <div className="relative z-10 max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-            {/* Left Column - with reduced spacing */}
-            <div className="lg:col-span-5 space-y-6">
-              <div className="space-y-6">
+            {/* Left column */}
+            <div className="lg:col-span-5 flex flex-col space-y-6">
+              {/* Main content area - always at the top */}
+              <div className="space-y-6 order-1">
                 <h1 className="text-[#6B5E4C] text-4xl font-light leading-tight">
                   Beauty in Simplicity
                   <span className="block mt-1.5 text-2xl text-[#8C7E6A]">
@@ -600,61 +600,123 @@ const AboutHero = memo(function AboutHero() {
                 </div>
               </div>
 
-              {/* Features section */}
-              <div className="flex gap-3">
-                {features.map((feature) => (
-                  <div
-                    key={feature.id}
-                    className="group relative flex-1 overflow-hidden bg-white/80 backdrop-blur rounded-xl
-                      transition-all duration-300 hover:bg-[#B5A48B]"
-                    style={{ height: '60px' }}
-                  >
-                    {/* Main content container - always centered */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-[#6B5E4C] group-hover:text-white 
-                        transition-colors duration-300 text-[12px] font-bold tracking-wide">
-                        {feature.title}
-                      </span>
-                    </div>
-
-                    {/* Hover content - slides up from bottom */}
-                    <div className="absolute inset-0 flex items-center justify-center
-                      bg-[#B5A48B] transform translate-y-full group-hover:translate-y-0 
-                      transition-transform duration-300 ease-out">
-                      <div className="text-center px-4">
-                        <span className="block text-white text-sm font-bold tracking-wide mb-1">
-                          {feature.title}
-                        </span>
-                        <span className="block text-white/90 text-xs font-medium">
-                          {feature.description}
-                        </span>
+              {/* Mobile/Tablet Image Gallery */}
+              <div className="block lg:hidden order-2">
+                <div 
+                  className="relative h-[300px] sm:h-[400px] rounded-3xl overflow-hidden group"
+                  onMouseEnter={() => setIsHovering(true)}
+                  onMouseLeave={() => setIsHovering(false)}
+                >
+                  {images.map((image, index) => (
+                    <div
+                      key={image.url}
+                      className={`absolute inset-0 transition-opacity duration-700 ease-in-out
+                        ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                      <Image
+                        src={image.url}
+                        alt={image.alt}
+                        fill
+                        priority={index === 0}
+                        loading={index === 0 ? 'eager' : 'lazy'}
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        quality={90}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#6B5E4C]/95 via-[#6B5E4C]/20 to-transparent 
+                        opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out" />
+                      
+                      <div className="absolute inset-x-0 bottom-0 p-6 sm:p-12 transform translate-y-full 
+                        group-hover:translate-y-0 transition-all duration-700 ease-out">
+                        <div className="overflow-hidden">
+                          <p className="text-white text-xl sm:text-2xl font-light leading-relaxed transform 
+                            translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 
+                            transition-all duration-700 delay-100 ease-out">
+                            {image.text}
+                          </p>
+                          <p className="text-white/80 mt-2 transform translate-y-full opacity-0 
+                            group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 delay-200">
+                            {image.caption}
+                          </p>
+                        </div>
+                        
+                        <div className="w-0 group-hover:w-24 h-[1px] bg-white/60 mt-6 
+                          transition-all duration-700 delay-200 ease-out" />
                       </div>
                     </div>
-
-                    {/* Background hover effect */}
-                    <div className="absolute inset-0 bg-[#B5A48B]/10 transform -skew-x-12 
-                      translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
+                  ))}
+                  
+                  {/* Navigation dots */}
+                  <div 
+                    className="absolute bottom-6 right-6 flex items-center gap-2 z-10"
+                    role="tablist"
+                    aria-label="Image gallery controls"
+                  >
+                    {images.map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        role="tab"
+                        aria-selected={index === currentImageIndex}
+                        aria-label={`Show image ${index + 1}: ${image.alt}`}
+                        className={`w-2 h-2 rounded-full transition-all duration-300
+                          ${index === currentImageIndex 
+                            ? 'bg-white w-6' 
+                            : 'bg-white/40 hover:bg-white/60'}`}
+                      />
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
 
-              {/* Quote section */}
-              <blockquote className="relative pl-6">
-                <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#B5A48B] to-transparent" />
-                <p className="italic text-[#8C7E6A] text-base sm:text-lg">
-                  "Simplicity is the ultimate sophistication"
-                </p>
-                <cite className="block mt-2 text-[#6B5E4C] not-italic">— Leonardo da Vinci</cite>
-              </blockquote>
+              {/* Features section */}
+              <div className="order-3">
+                <div className="flex gap-3">
+                  {features.map((feature) => (
+                    <div
+                      key={feature.id}
+                      className="group relative flex-1 overflow-hidden bg-white/80 backdrop-blur rounded-xl
+                        transition-all duration-300 hover:bg-[#B5A48B]"
+                      style={{ height: '60px' }}
+                    >
+                      {/* Main content container - always centered */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-[#6B5E4C] group-hover:text-white 
+                          transition-colors duration-300 text-[12px] font-bold tracking-wide">
+                          {feature.title}
+                        </span>
+                      </div>
+
+                      {/* Hover content - slides up from bottom */}
+                      <div className="absolute inset-0 flex items-center justify-center
+                        bg-[#B5A48B] transform translate-y-full group-hover:translate-y-0 
+                        transition-transform duration-300 ease-out">
+                        <div className="text-center px-4">
+                          <span className="block text-white text-sm font-bold tracking-wide mb-1">
+                            {feature.title}
+                          </span>
+                          <span className="block text-white/90 text-xs font-medium">
+                            {feature.description}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Background hover effect */}
+                      <div className="absolute inset-0 bg-[#B5A48B]/10 transform -skew-x-12 
+                        translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               {/* Collections section */}
-              <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center order-4 lg:order-5">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 items-center w-full sm:w-auto">
                   <h2 className={`relative text-[#6B5E4C] text-3xl sm:text-2xl font-medium sm:font-light transform text-center sm:text-left
                     ${sectionInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
                     motion-safe:transition-all motion-safe:duration-700 motion-safe:delay-300`}>
                     <span className="relative px-4 py-2">
-                      <span className="relative bg-gradient-to-r from-[#4A3F33] to-[#8B7355] bg-clip-text text-transparent text-xl lg:text-2xl
+                      <span className="relative bg-gradient-to-r from-[#4A3F33] to-[#8B7355] bg-clip-text text-transparent text-2xl sm:text-3xl lg:text-2xl
                         before:content-[''] before:absolute before:-top-1 before:left-0 
                         before:w-full before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-[#B5A48B]/40 before:to-[#B5A48B]/40
                         after:content-[''] after:absolute after:-bottom-1 after:left-0 
@@ -688,12 +750,21 @@ const AboutHero = memo(function AboutHero() {
                   </Link>
                 </div>
               </div>
+
+              {/* Quote section */}
+              <blockquote className="relative pl-6 order-5 lg:order-4">
+                <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#B5A48B] to-transparent" />
+                <p className="italic text-[#8C7E6A] text-base sm:text-lg">
+                  "Simplicity is the ultimate sophistication"
+                </p>
+                <cite className="block mt-2 text-[#6B5E4C] not-italic">— Leonardo da Vinci</cite>
+              </blockquote>
             </div>
 
-            {/* Right Column - Enhanced Image Gallery */}
-            <div className="lg:col-span-7">
+            {/* Desktop Image Gallery - Right Column */}
+            <div className="hidden lg:block lg:col-span-7">
               <div 
-                className="relative h-[400px] sm:h-[450px] lg:h-[500px] rounded-3xl overflow-hidden group"
+                className="relative h-[500px] rounded-3xl overflow-hidden group"
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
               >
