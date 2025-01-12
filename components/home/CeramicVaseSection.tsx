@@ -498,8 +498,8 @@ const FeaturedProduct = () => {
                   className="overflow-hidden"
                 >
                   <ProductReviews 
-                    isExpanded={isReviewsExpanded}
-                    onToggle={() => setIsReviewsExpanded(!isReviewsExpanded)}
+                    productId={product.id} 
+                    onToggle={() => setIsReviewsExpanded(!isReviewsExpanded)} 
                   />
                 </motion.div>
               )}
