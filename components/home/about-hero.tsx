@@ -164,20 +164,21 @@ const CollectionCard = memo(function CollectionCard({
   inView,
   index
 }: CollectionCardProps) {
-  const { ref, inView: cardInView } = useInView(CONSTANTS.INTERSECTION);
+  const { ref, inView: cardInView } = useInView({
+    threshold: 0.1,
+    triggerOnce: true,
+    rootMargin: '50px 0px'  // Preload slightly before viewport entry
+  });
 
   return (
     <Link
       ref={ref}
       href={`/collections/${collection.handle}`}
       className={`group relative flex h-16 min-w-[240px] overflow-hidden rounded-xl 
-        bg-[#6B5E4C] backdrop-blur-sm transition-all duration-500 
+        bg-[#6B5E4C] backdrop-blur-sm transition-opacity duration-200
         hover:shadow-lg hover:-translate-y-1
-        ${cardInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
-        motion-safe:transform motion-safe:transition-all motion-safe:duration-700`}
-      style={{
-        transitionDelay: `${index * 100}ms`
-      }}
+        ${cardInView ? 'opacity-100' : 'opacity-0'}`}
+      aria-label={`View ${collection.displayTitle} collection`}
     >
       <div className="relative w-16 overflow-hidden">
         {collection.image ? (
@@ -441,7 +442,8 @@ const AboutHero = memo(function AboutHero() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { ref: sectionRef, inView: sectionInView } = useInView({
     threshold: 0.1,
-    triggerOnce: true
+    triggerOnce: true,
+    rootMargin: '50px 0px'
   });
 
   // Performance: Use custom hooks
@@ -567,9 +569,10 @@ const AboutHero = memo(function AboutHero() {
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <section 
         ref={sectionRef}
-        className={`bg-[#eaeadf] relative overflow-hidden transform 
-          ${sectionInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}
-          motion-safe:transition-all motion-safe:duration-1000`}
+        className={`bg-[#eaeadf] relative overflow-hidden
+          ${sectionInView ? 'opacity-100' : 'opacity-0'}
+          transition-opacity duration-200`}
+        aria-label="About our store"
       >
         {/* Reduced size and opacity of gradient overlay */}
         <div className="absolute top-0 left-0 w-[50%] h-[50%] bg-white opacity-50 blur-[100px] pointer-events-none" />
@@ -705,6 +708,7 @@ const AboutHero = memo(function AboutHero() {
                       alt={image.alt}
                       fill
                       priority={index === 0}
+                      loading={index === 0 ? 'eager' : 'lazy'}
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       quality={90}
