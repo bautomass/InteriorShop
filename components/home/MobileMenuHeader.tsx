@@ -1,23 +1,26 @@
+// File 1: MobileHero.tsx
+'use client';
+
 import { useHeaderState } from '@/hooks/useHeaderState';
 import { Collection } from '@/lib/shopify/types';
 import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
-import debounce from 'lodash/debounce';
+import { debounce } from 'lodash';
 import { ArrowRight, Clock, DollarSign, Mail, ShoppingCart, Sparkles, Truck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Constants
-const EXCLUDED_HANDLES = [
+const EXCLUDED_HANDLES: readonly string[] = [
   'all',
   'new-arrivals',
   'top-products',
   'freshfreshfresh',
   'home-collection'
-] as string[];
+] as const;
 
-const PROMO_INTERVAL = 5000; // 5 seconds between promo changes
+const PROMO_INTERVAL = 5000;
 
 // Types
 interface PromoItem {
@@ -26,12 +29,6 @@ interface PromoItem {
   icon?: React.ReactNode;
 }
 
-interface Cart {
-  items: any[];
-  // Add other cart properties as needed
-}
-
-// Promos data
 const promos: PromoItem[] = [
   {
     id: 1,
@@ -50,7 +47,7 @@ const promos: PromoItem[] = [
   }
 ];
 
-// Burger Icon Component
+// BurgerIcon Component
 const BurgerIcon = ({ isOpen }: { isOpen: boolean }) => (
   <div className="relative w-6 h-6 flex items-center justify-center">
     <div className="flex flex-col justify-between w-5 h-4 transform transition-all duration-300">
@@ -70,7 +67,63 @@ const BurgerIcon = ({ isOpen }: { isOpen: boolean }) => (
   </div>
 );
 
-export const MobileMenuHeader = () => {
+// LoadingChair Component
+const LoadingChair = () => (
+  <motion.div 
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="flex flex-col items-center justify-center py-12"
+  >
+    <motion.svg
+      width="120"
+      height="120"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-[#9e896c]"
+      animate={{
+        rotateY: [0, 360],
+        scale: [1, 1.1, 1],
+      }}
+      transition={{
+        duration: 3,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+    >
+      <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16M3 21h18M7 10h10M7 14h10" />
+      <path d="M5 21V8a2 2 0 012-2h10a2 2 0 012 2v13" />
+    </motion.svg>
+    <motion.p
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
+      className="mt-4 text-sm text-[#9e896c] font-medium"
+    >
+      Loading Collections...
+    </motion.p>
+    <motion.div
+      className="mt-3 h-0.5 w-16 bg-[#9e896c]/20 rounded-full overflow-hidden"
+    >
+      <motion.div
+        className="h-full w-full bg-[#9e896c]"
+        animate={{
+          x: ["-100%", "100%"],
+        }}
+        transition={{
+          repeat: Infinity,
+          duration: 1.5,
+          ease: "easeInOut",
+        }}
+      />
+    </motion.div>
+  </motion.div>
+);
+
+export const MobileHero = () => {
   const { cart } = useCart();
   const { updateState } = useHeaderState();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -86,8 +139,14 @@ export const MobileMenuHeader = () => {
   const [isSearching, setIsSearching] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch collections when menu opens
+  // Constants
+  const email = 'info@simpleinteriorideas.com';
+  const workingHours = 'Mon-Fri: 9-18';
+
+  // Effects
   useEffect(() => {
     if (isNavOpen) {
       fetch('/api/collections')
@@ -102,7 +161,22 @@ export const MobileMenuHeader = () => {
     }
   }, [isNavOpen]);
 
-  // Add this effect for promo rotation
+  useEffect(() => {
+    fetch('/api/collections')
+      .then(res => res.json())
+      .then(data => {
+        const filteredCollections = data.collections.filter(
+          (collection: Collection) => !EXCLUDED_HANDLES.includes(collection.handle.toLowerCase())
+        );
+        setCollections(filteredCollections);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error prefetching collections:', error);
+        setLoading(false);
+      });
+  }, []);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentPromoIndex((prev) => (prev + 1) % promos.length);
@@ -111,7 +185,6 @@ export const MobileMenuHeader = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Add this useEffect for scroll control
   useEffect(() => {
     if (isNavOpen) {
       document.body.style.overflow = 'hidden';
@@ -145,14 +218,12 @@ export const MobileMenuHeader = () => {
     []
   );
 
-  // Handle search input changes
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     debouncedSearch(query);
   };
 
-  // Add this useEffect to prevent body scrolling when search is open
   useEffect(() => {
     if (isSearchOpen && searchQuery) {
       document.body.style.overflow = 'hidden';
@@ -165,15 +236,12 @@ export const MobileMenuHeader = () => {
     };
   }, [isSearchOpen, searchQuery]);
 
-  // Add this function to handle panel switching
   const handlePanelChange = (panel: 'search' | 'account' | 'cart') => {
-    // Close all panels first
     setIsSearchOpen(false);
     setIsAccountOpen(false);
     setIsCartOpen(false);
     setSearchQuery('');
 
-    // Open the selected panel
     switch (panel) {
       case 'search':
         setIsSearchOpen(true);
@@ -187,157 +255,502 @@ export const MobileMenuHeader = () => {
     }
   };
 
-  // Constants
-  const email = 'info@simpleinteriorideas.com';
-  const workingHours = 'Mon-Fri: 9-18';
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 100);
+    };
 
-  // Update the container class to include account and cart states
-  const containerExpandedClass = (isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) ? 'h-screen' : 'h-auto';
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-[9999]">
-      <div className={`bg-white w-full transition-all duration-300 ${containerExpandedClass}`}>
-        {/* Promo Banner */}
-        <div className="bg-neutral-100 py-2 px-4">
-          <div className="flex items-center justify-center space-x-2">
-            {promos[currentPromoIndex]?.icon}
-            <p className="text-sm text-neutral-700">{promos[currentPromoIndex]?.text}</p>
-          </div>
-        </div>
+    <div className="relative h-[80vh] lg:hidden">
+      <Image
+        src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-banner.png?v=1736585444"
+        alt="Mobile Hero"
+        fill
+        priority
+        className="object-cover"
+        sizes="100vw"
+      />
 
-        {/* Header */}
-        <div className="border-b border-neutral-200">
-          <div className="flex items-center justify-between px-4 py-4">
-            {/* Menu Button */}
+      {/* Mobile Navigation Container */}
+      <div className={`${isScrolled ? 'fixed bottom-0' : 'absolute top-0'} left-0 right-0 z-[9999] transition-[top,bottom] duration-300`}>
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`w-full backdrop-blur-sm shadow-lg 
+                     relative border-r-[3px] border-white
+                     before:absolute before:inset-0 before:-z-10 
+                     before:bg-[#eaeadf]
+                     before:border-r-[3px] 
+                     before:border-black/10
+                     transition-[background,shadow,transform] duration-500
+                     ${isScrolled ? 'border-t-[3px] border-l-[3px] rounded-tl-[24px] rounded-tr-[24px] before:border-t-[3px] before:border-l-[3px] before:rounded-tl-[24px] before:rounded-tr-[24px]' : 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]'}
+                     ${(isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) ? 'h-screen' : 'h-auto'}`}
+        >
+          {/* Header Section */}
+          <div className="flex items-center justify-between p-4">
             <button
               onClick={() => setIsNavOpen(!isNavOpen)}
-              className="focus:outline-none"
+              className="flex items-center gap-2.5"
               aria-label="Toggle menu"
             >
               <BurgerIcon isOpen={isNavOpen} />
+              <span className={`text-sm font-medium transition-colors duration-300 
+                ${isNavOpen ? 'text-[#9e896c]' : 'text-neutral-700'}`}>
+                {isNavOpen ? 'Close' : 'Menu'}
+              </span>
             </button>
 
-            {/* Logo */}
-            <Link href="/" className="transform -translate-x-3">
-              <Image
-                src="/logo.svg"
-                alt="Simple Interior Ideas"
-                width={140}
-                height={24}
-                className="h-6 w-auto"
-              />
-            </Link>
+            {/* Icons Section */}
+            <div className="flex items-center gap-4">
+              {/* Search Icon/Input */}
+              <AnimatePresence mode="wait">
+                {!isSearchOpen ? (
+                  <motion.button 
+                    key="search-icon"
+                    onClick={() => handlePanelChange('search')}
+                    className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                  >
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" />
+                    </svg>
+                  </motion.button>
+                ) : (
+                  <motion.div
+                    key="search-input"
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    className="flex-1 min-w-[160px]"
+                  >
+                    <div className="relative">
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        value={searchQuery}
+                        onChange={handleSearchInput}
+                        placeholder="Search..."
+                        className="w-full px-4 py-2 rounded-lg bg-neutral-100/80 
+                                 placeholder-neutral-500 focus:outline-none focus:ring-2 
+                                 focus:ring-[#9e896c] text-neutral-900"
+                      />
+                      <button
+                        onClick={() => {
+                          setIsSearchOpen(false);
+                          setSearchQuery('');
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 
+                                 rounded-full hover:bg-neutral-200/80 transition-colors"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-            {/* Cart Icon */}
-            <button
-              onClick={() => handlePanelChange('cart')}
-              className="relative focus:outline-none"
-              aria-label="Cart"
-            >
-              <ShoppingCart className="h-6 w-6 text-neutral-700" />
-              {(cart?.lines?.length ?? 0) > 0 && (
-                <span className="absolute -top-1 -right-1 bg-neutral-700 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                  {cart?.lines?.length ?? 0}
-                </span>
-              )}
-            </button>
+              {/* Account Icon */}
+              <button 
+                onClick={() => handlePanelChange('account')}
+                className="p-2 rounded-full hover:bg-black/5 transition-colors"
+              >
+<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" />
+                </svg>
+              </button>
+
+              {/* Cart Icon */}
+              <button 
+                onClick={() => handlePanelChange('cart')}
+                className="p-2 rounded-full hover:bg-black/5 transition-colors relative"
+              >
+                <ShoppingCart className="w-6 h-6" />
+                {(cart?.totalQuantity ?? 0) > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#9e896c] rounded-full flex items-center justify-center text-white text-xs">
+                    {cart?.totalQuantity ?? 0}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Navigation Panel */}
-        <AnimatePresence>
-          {isNavOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="absolute top-full left-0 right-0 bg-white border-t border-neutral-200"
-            >
-              <div className="px-6 py-6">
-                <nav className="space-y-6">
-                  {/* Collections */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-neutral-400">Collections</h3>
-                    <div className="space-y-3">
-                      {collections.map((collection) => (
-                        <Link
-                          key={collection.handle}
-                          href={`/collections/${collection.handle}`}
-                          className="block text-neutral-700 hover:text-neutral-900"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span>{collection.title}</span>
-                            <ArrowRight className="h-4 w-4" />
+          {/* Search Results Section */}
+          <AnimatePresence>
+            {isSearchOpen && searchQuery && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="border-t border-neutral-200 flex-1 overflow-hidden"
+              >
+                <div className="h-[calc(100vh-80px)] overflow-y-auto overscroll-contain pb-safe-area-inset-bottom">
+                  <div className="p-4 space-y-6">
+                    {/* Loading State */}
+                    {isSearching && (
+                      <div className="flex justify-center py-4">
+                        <div className="w-6 h-6 border-2 border-[#9e896c] border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
+
+                    {/* Results */}
+                    {!isSearching && (searchResults.collections.length > 0 || searchResults.products.length > 0) ? (
+                      <div className="space-y-8">
+                        {/* Collections Section */}
+                        {searchResults.collections.length > 0 && (
+                          <div>
+                            <h3 className="text-sm font-medium text-neutral-500 mb-3">Collections</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                              {searchResults.collections.map((collection) => (
+                                <Link
+                                  key={collection.handle}
+                                  href={`/collections/${collection.handle}`}
+                                  onClick={() => {
+                                    setIsSearchOpen(false);
+                                    setSearchQuery('');
+                                  }}
+                                  className="group relative block overflow-hidden rounded-lg border border-neutral-200 bg-white p-3 hover:border-neutral-300 transition-all"
+                                >
+                                  <h4 className="text-sm font-medium text-neutral-900 group-hover:text-[#9e896c]">
+                                    {collection.title}
+                                  </h4>
+                                  {collection.description && (
+                                    <p className="text-xs text-neutral-500 mt-1 line-clamp-1">
+                                      {collection.description}
+                                    </p>
+                                  )}
+                                </Link>
+                              ))}
+                            </div>
                           </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
+                        )}
 
-                  {/* Contact Information */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-neutral-400">Contact</h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2 text-neutral-700">
-                        <Mail className="h-4 w-4" />
-                        <a href={`mailto:${email}`}>{email}</a>
+                        {/* Products Section */}
+                        {searchResults.products.length > 0 && (
+                          <div>
+                            <h3 className="text-sm font-medium text-neutral-500 mb-3">Products</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                              {searchResults.products.map((product) => (
+                                <Link
+                                  key={product.handle}
+                                  href={`/product/${product.handle}`}
+                                  onClick={() => {
+                                    setIsSearchOpen(false);
+                                    setSearchQuery('');
+                                  }}
+                                  className="group relative block overflow-hidden rounded-lg border border-neutral-200 bg-white hover:border-neutral-300 transition-all"
+                                >
+                                  {product.featuredImage && (
+                                    <div className="relative aspect-square bg-neutral-100">
+                                      <Image
+                                        src={product.featuredImage.url}
+                                        alt={product.featuredImage.altText || product.title}
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 640px) 50vw, 33vw"
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="p-3">
+                                    <h4 className="text-sm font-medium text-neutral-900 group-hover:text-[#9e896c] line-clamp-1">
+                                      {product.title}
+                                    </h4>
+                                    <p className="text-sm text-neutral-500 mt-1">
+                                      ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                                    </p>
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center space-x-2 text-neutral-700">
-                        <Clock className="h-4 w-4" />
-                        <span>{workingHours}</span>
+                    ) : !isSearching && searchQuery ? (
+                      <div className="text-center py-8">
+                        <p className="text-neutral-600">No results found</p>
+                        <p className="text-sm text-neutral-400 mt-1">Try adjusting your search</p>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Account Panel */}
+          <AnimatePresence>
+            {isAccountOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <div className="flex justify-between items-center border-b border-neutral-200 pb-3 px-4 pt-2">
+                  <h2 className="text-lg font-medium text-neutral-800">Account</h2>
+                  <button
+                    onClick={() => setIsAccountOpen(false)}
+                    className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                  >
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="h-[calc(100vh-80px)] overflow-y-auto overscroll-contain pb-safe-area-inset-bottom">
+                  <div className="p-4 space-y-6">
+                    <div className="text-center space-y-4">
+                      <h2 className="text-xl font-medium text-neutral-800">Account</h2>
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => {
+                            // Add login logic here
+                            setIsAccountOpen(false);
+                          }}
+                          className="w-full py-2.5 px-4 rounded-lg bg-[#9e896c] text-white hover:bg-[#8a775d] transition-colors"
+                        >
+                          Log In
+                        </button>
+                        <button
+                          onClick={() => {
+                            // Add signup logic here
+                            setIsAccountOpen(false);
+                          }}
+                          className="w-full py-2.5 px-4 rounded-lg border border-[#9e896c] text-[#9e896c] hover:bg-[#9e896c]/5 transition-colors"
+                        >
+                          Create Account
+                        </button>
                       </div>
                     </div>
                   </div>
-                </nav>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Cart Panel */}
+          <AnimatePresence>
+            {isCartOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <div className="flex justify-between items-center border-b border-neutral-200 pb-3 px-4 pt-2">
+                  <h2 className="text-lg font-medium text-neutral-800">Shopping Cart</h2>
+                  <button
+                    onClick={() => setIsCartOpen(false)}
+                    className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                  >
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="h-[calc(100vh-80px)] overflow-y-auto overscroll-contain pb-safe-area-inset-bottom">
+                  <div className="p-4 space-y-6">
+                    {cart?.lines && (cart.lines as any[]).length > 0 ? (
+                      <div className="space-y-4">
+                        {(cart.lines as any[]).map((item: any) => (
+                          <div key={item.id} className="flex gap-4 p-3 bg-white rounded-lg border border-neutral-200">
+                            {item.merchandise.product.featuredImage && (
+                              <div className="relative w-20 h-20 bg-neutral-100 rounded-md overflow-hidden">
+                                <Image
+                                  src={item.merchandise.product.featuredImage.url}
+                                  alt={item.merchandise.product.title}
+                                  fill
+                                  className="object-cover"
+                                  sizes="80px"
+                                />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <h3 className="text-sm font-medium text-neutral-800">
+                                {item.merchandise.product.title}
+                              </h3>
+                              <p className="text-sm text-neutral-500 mt-1">
+                                {item.merchandise.title}
+                              </p>
+                              <div className="flex justify-between items-center mt-2">
+                                <span className="text-sm font-medium text-neutral-800">
+                                  Qty: {item.quantity}
+                                </span>
+                                <span className="text-sm font-medium text-neutral-800">
+                                  ${parseFloat(item.cost.totalAmount.amount).toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+
+                        {/* Cart Footer */}
+                        <div className="space-y-3 pt-4 border-t border-neutral-200">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-neutral-600">Subtotal</span>
+                            <span className="text-base font-medium text-neutral-800">
+                              ${parseFloat(cart.cost.totalAmount.amount).toFixed(2)}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (cart?.checkoutUrl) {
+                                window.location.href = cart.checkoutUrl;
+                              }
+                            }}
+                            disabled={!cart?.checkoutUrl}
+                            className="w-full py-3 px-4 rounded-lg bg-[#9e896c] text-white hover:bg-[#8a775d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Proceed to Checkout
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-neutral-600">Your cart is empty</p>
+                        <p className="text-sm text-neutral-400 mt-1">Add some items to get started</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Content that only shows when menu is open */}
+          {isNavOpen && (
+            <div className="flex flex-col h-[calc(100vh-4rem)]">
+              {/* Promos Section */}
+              <div className="w-[calc(100%-3px)] relative h-12 overflow-hidden bg-gradient-to-r from-neutral-50/50 to-white/50 border-b border-neutral-100">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentPromoIndex}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="absolute inset-0 flex items-center justify-center px-4"
+                  >
+                    <div className="flex items-center gap-2 text-sm text-neutral-700">
+                      {(() => {
+                        const currentPromo = promos[currentPromoIndex % promos.length];
+                        return (
+                          <>
+                            {currentPromo?.icon}
+                            <span className="font-medium">{currentPromo?.text}</span>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+                <motion.div
+                  key={`progress-${currentPromoIndex}`}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: PROMO_INTERVAL / 1000, ease: "linear" }}
+                  className="absolute bottom-0 left-0 h-0.5 w-full bg-[#9e896c]/20 origin-left"
+                />
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
-        {/* Search Panel */}
-        <AnimatePresence>
-          {isSearchOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="absolute top-full left-0 right-0 bg-white border-t border-neutral-200"
-            >
-              {/* Search input and results implementation */}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              {/* Collections Grid */}
+              <div className="flex-1 overflow-y-auto">
+                {loading ? (
+                  <LoadingChair />
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 p-4">
+{collections.map((collection) => (
+                      <Link
+                        key={collection.handle}
+                        href={`/collections/${collection.handle}`}
+                        onClick={() => setIsNavOpen(false)}
+                        className="group relative block overflow-hidden rounded-[12px] border border-neutral-100 bg-white/80 p-2.5 transition-all duration-300 hover:border-neutral-200 hover:bg-white hover:shadow-md"
+                      >
+                        <div className="relative z-10">
+                          <h3 className="text-sm font-medium text-neutral-800 transition-colors group-hover:text-[#9e896c]">
+                            {collection.title}
+                          </h3>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-        {/* Account Panel */}
-        <AnimatePresence>
-          {isAccountOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="absolute top-full left-0 right-0 bg-white border-t border-neutral-200"
-            >
-              {/* Account panel implementation */}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              {/* Footer Navigation */}
+              <div className="w-[calc(100%-3px)] border-t border-neutral-100 bg-neutral-50/50">
+                <div className="px-4 py-4">
+                  <div className="space-y-3">
+                    {[
+                      { title: 'Help & Information', items: [
+                        { label: 'FAQs', href: '/faqs' },
+                        { label: 'Shipping Info', href: '/shipping' },
+                        { label: 'Returns & Exchanges', href: '/returns' },
+                      ]},
+                      { title: 'Legal', items: [
+                        { label: 'Privacy Policy', href: '/privacy' },
+                        { label: 'Terms & Conditions', href: '/terms' },
+                        { label: 'Cookie Policy', href: '/cookies' },
+                      ]},
+                    ].map((section) => (
+                      <div key={section.title} className="space-y-1.5">
+                        <h3 className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
+                          {section.title}
+                        </h3>
+                        <div className="space-y-1.5">
+                          {section.items.map((item) => (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className="flex items-center justify-between py-0.5 text-xs text-neutral-600 hover:text-[#9e896c] transition-all duration-200"
+                            >
+                              <span className="font-medium">{item.label}</span>
+                              <ArrowRight className="h-3.5 w-3.5 opacity-50" />
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-        {/* Cart Panel */}
-        <AnimatePresence>
-          {isCartOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="absolute top-full left-0 right-0 bg-white border-t border-neutral-200"
-            >
-              {/* Cart panel implementation */}
-            </motion.div>
+              {/* Bottom Info Section */}
+              <div className="w-[calc(100%-3px)] px-4 py-4 mb-[15px] bg-gradient-to-b from-neutral-50/80 to-white/80 border-t border-neutral-100 rounded-br-[21px]">
+                <div className="flex items-center justify-between max-w-md mx-auto">
+                  {/* Working Hours */}
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-full bg-[#9e896c]/10">
+                      <Clock className="h-3.5 w-3.5 text-[#9e896c]" />
+                    </div>
+                    <span className="text-sm text-neutral-600">{workingHours}</span>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-4 w-px bg-neutral-200" />
+
+                  {/* Email */}
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-full bg-[#9e896c]/10">
+                      <Mail className="h-3.5 w-3.5 text-[#9e896c]" />
+                    </div>
+                    <a 
+                      href={`mailto:${email}`} 
+                      className="text-sm text-neutral-600 hover:text-[#9e896c] transition-colors"
+                    >
+                      {email}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
-        </AnimatePresence>
+        </motion.div>
       </div>
     </div>
   );
 };
 
-export default MobileMenuHeader; 
+export default MobileHero;
