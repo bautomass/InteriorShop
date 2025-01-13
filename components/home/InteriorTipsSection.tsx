@@ -60,6 +60,10 @@ interface InteriorTipsData {
   [CategoryId.Furniture]: Tip[];
   [CategoryId.Accessories]: Tip[];
   [CategoryId.Organization]: Tip[];
+  [CategoryId.Photography]: Tip[];
+  [CategoryId.Styling]: Tip[];
+  [CategoryId.Balance]: Tip[];
+  [CategoryId.Atmosphere]: Tip[];
 }
 
 interface Category {
@@ -340,7 +344,11 @@ const interiorTips: InteriorTipsData = {
         difficulty: "Medium",
         impact: "High"
       }
-    ]
+    ],
+    photography: [],
+    styling: [],
+    balance: [],
+    atmosphere: []
   };
 
   const categories: Category[] = [
