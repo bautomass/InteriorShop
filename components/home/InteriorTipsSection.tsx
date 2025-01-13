@@ -1,7 +1,24 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Bookmark, BookmarkPlus, Box, ChevronLeft, ChevronRight, Flower, Lightbulb, Maximize, Palette, Search, Share2, Sofa } from 'lucide-react';
-import Image from 'next/image';
+import {
+  Bookmark,
+  BookmarkPlus,
+  Camera,
+  ChevronLeft, ChevronRight,
+  Clock,
+  Compass,
+  Feather,
+  Heart,
+  Home,
+  Lightbulb,
+  Maximize,
+  Palette,
+  Search,
+  Share2,
+  Sofa,
+  Sun,
+  Target
+} from 'lucide-react';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 
 enum CategoryId {
@@ -10,7 +27,11 @@ enum CategoryId {
   Space = 'space',
   Furniture = 'furniture',
   Accessories = 'accessories',
-  Organization = 'organization'
+  Organization = 'organization',
+  Photography = 'photography',
+  Styling = 'styling',
+  Balance = 'balance',
+  Atmosphere = 'atmosphere'
 }
 
 interface Tip {
@@ -23,6 +44,13 @@ interface Tip {
   authorTip: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   impact: 'High' | 'Medium' | 'Low';
+  tags?: string[];
+  seasons?: string[];
+  roomTypes?: string[];
+  beforeAfter?: {
+    before: string;
+    after: string;
+  };
 }
 
 interface InteriorTipsData {
@@ -316,12 +344,14 @@ const interiorTips: InteriorTipsData = {
   };
 
   const categories: Category[] = [
-    { id: CategoryId.Lighting, name: 'Lighting', icon: Lightbulb },
-    { id: CategoryId.Color, name: 'Color & Paint', icon: Palette },
+    { id: CategoryId.Lighting, name: 'Lighting Design', icon: Sun },
+    { id: CategoryId.Color, name: 'Color Theory', icon: Palette },
     { id: CategoryId.Space, name: 'Space Planning', icon: Maximize },
-    { id: CategoryId.Furniture, name: 'Furniture', icon: Sofa },
-    { id: CategoryId.Accessories, name: 'Accessories', icon: Flower },
-    { id: CategoryId.Organization, name: 'Organization', icon: Box }
+    { id: CategoryId.Furniture, name: 'Furniture Layout', icon: Sofa },
+    { id: CategoryId.Styling, name: 'Styling Secrets', icon: Heart },
+    { id: CategoryId.Balance, name: 'Visual Balance', icon: Compass },
+    { id: CategoryId.Photography, name: 'Room Photography', icon: Camera },
+    { id: CategoryId.Atmosphere, name: 'Atmosphere', icon: Feather },
   ];
 
 const TipCard = memo(function TipCard({ tip, onSave, isSaved, onShare }: TipCardProps) {
@@ -329,53 +359,67 @@ const TipCard = memo(function TipCard({ tip, onSave, isSaved, onShare }: TipCard
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-stone-800 rounded-xl shadow-lg overflow-hidden"
+      className="bg-stone-50 dark:bg-stone-900 rounded-lg shadow-xl overflow-hidden
+                 border border-stone-200/50 dark:border-stone-700/50
+                 hover:shadow-2xl transition-all duration-500
+                 group"
     >
-      <div className="relative h-48">
-        <Image
-          src={tip.image}
-          alt={tip.title}
-          fill
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-        <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-          <h3 className="text-white text-xl font-medium">{tip.title}</h3>
+      <div className="p-6">
+        {/* Header with actions */}
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="text-xl font-medium text-stone-900 dark:text-stone-100">{tip.title}</h3>
           <div className="flex gap-2">
             <button
               onClick={() => onShare(tip)}
-              className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
+              className="p-2 rounded-full bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
             >
-              <Share2 className="w-4 h-4 text-white" />
+              <Share2 className="w-4 h-4 text-stone-600 dark:text-stone-300" />
             </button>
             <button
               onClick={() => onSave(tip.id)}
-              className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
+              className="p-2 rounded-full bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
             >
               {isSaved ? (
                 <BookmarkPlus className="w-4 h-4 text-blue-400" />
               ) : (
-                <Bookmark className="w-4 h-4 text-white" />
+                <Bookmark className="w-4 h-4 text-stone-600 dark:text-stone-300" />
               )}
             </button>
           </div>
         </div>
-      </div>
-      <div className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="px-3 py-1 rounded-full bg-stone-100 dark:bg-stone-700 text-sm text-stone-600 dark:text-stone-300">
-            {tip.category}
-          </span>
-          <span className="text-sm text-stone-500 dark:text-stone-400">
+
+        {/* Enhanced Tags with Icons */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full 
+                         bg-stone-100 dark:bg-stone-800 
+                         text-sm text-stone-600 dark:text-stone-300">
+            <Clock className="w-3.5 h-3.5" />
             {tip.readTime}
           </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full 
+                         bg-stone-100 dark:bg-stone-800 
+                         text-sm text-stone-600 dark:text-stone-300">
+            <Target className="w-3.5 h-3.5" />
+            {tip.difficulty}
+          </span>
+          {tip.tags?.map(tag => (
+            <span key={tag} className="px-3 py-1 rounded-full 
+                                    bg-stone-100 dark:bg-stone-800 
+                                    text-sm text-stone-600 dark:text-stone-300">
+              #{tag}
+            </span>
+          ))}
         </div>
+
+        {/* Description */}
         <p className="text-stone-600 dark:text-stone-300 mb-4">
           {tip.description}
         </p>
+
+        {/* Pro Tip Box */}
         <div className="bg-stone-50 dark:bg-stone-700/50 p-4 rounded-lg">
           <div className="flex items-start gap-2">
-            <Lightbulb className="w-5 h-5 text-amber-500 mt-1" />
+            <Lightbulb className="w-5 h-5 text-amber-500 mt-1 flex-shrink-0" />
             <div>
               <p className="font-medium text-stone-900 dark:text-stone-100 mb-1">Pro Tip</p>
               <p className="text-sm text-stone-600 dark:text-stone-300">
@@ -384,18 +428,30 @@ const TipCard = memo(function TipCard({ tip, onSave, isSaved, onShare }: TipCard
             </div>
           </div>
         </div>
-        <div className="mt-4 flex justify-between items-center text-sm">
-          <div className="flex items-center gap-4">
-            <div>
-              <span className="text-stone-500 dark:text-stone-400">Difficulty: </span>
-              <span className="text-stone-700 dark:text-stone-200">{tip.difficulty}</span>
-            </div>
-            <div>
-              <span className="text-stone-500 dark:text-stone-400">Impact: </span>
-              <span className="text-stone-700 dark:text-stone-200">{tip.impact}</span>
+
+        {/* Seasons and Room Types */}
+        {(tip.seasons || tip.roomTypes) && (
+          <div className="mt-4 pt-4 border-t border-stone-200 dark:border-stone-700/50">
+            <div className="flex flex-wrap gap-4">
+              {tip.seasons && (
+                <div className="flex items-center gap-2">
+                  <Sun className="w-4 h-4 text-stone-400" />
+                  <span className="text-sm text-stone-500 dark:text-stone-400">
+                    {tip.seasons.join(", ")}
+                  </span>
+                </div>
+              )}
+              {tip.roomTypes && (
+                <div className="flex items-center gap-2">
+                  <Home className="w-4 h-4 text-stone-400" />
+                  <span className="text-sm text-stone-500 dark:text-stone-400">
+                    {tip.roomTypes.join(", ")}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
       </div>
     </motion.div>
   );
@@ -466,16 +522,24 @@ const InteriorTipsSection = () => {
   };
 
   return (
-    <section className="py-16 bg-stone-50 dark:bg-stone-900 min-h-screen">
+    <section className="py-16 bg-gradient-to-b from-stone-50 to-stone-100 
+                      dark:from-stone-900 dark:to-stone-950 min-h-screen">
       <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto text-center mb-12">
-          <h2 className="text-4xl font-serif text-stone-800 dark:text-stone-100 mb-4">
-            Interior Design Tips & Tricks
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-2xl mx-auto text-center mb-16"
+        >
+          <h2 className="text-4xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4
+                       bg-clip-text text-transparent bg-gradient-to-r 
+                       from-stone-900 to-stone-700
+                       dark:from-stone-50 dark:to-stone-300">
+            Interior Design Inspiration
           </h2>
           <p className="text-stone-600 dark:text-stone-300">
             Discover expert tips and creative ideas to transform your space
           </p>
-        </div>
+        </motion.div>
 
         {/* Search and Filter */}
         <div className="max-w-xl mx-auto mb-12">
@@ -491,8 +555,23 @@ const InteriorTipsSection = () => {
           </div>
         </div>
 
-        {/* Updated Categories Section */}
-        <div className="relative max-w-4xl mx-auto mb-12">
+        {/* Mobile-optimized Categories */}
+        <div className="md:hidden mb-6">
+          <select
+            value={selectedCategory}
+            onChange={(e) => handleCategoryChange(e.target.value as CategoryId)}
+            className="w-full px-4 py-3 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Desktop Categories - hide on mobile */}
+        <div className="hidden md:block relative max-w-4xl mx-auto mb-12">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10">
             <button
               onClick={() => scroll('left')}
@@ -537,8 +616,8 @@ const InteriorTipsSection = () => {
           </div>
         </div>
 
-        {/* Tips Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        {/* Tips Grid - adjusted for better mobile view */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 max-w-7xl mx-auto">
           {filteredTips.map((tip) => (
             <TipCard
               key={tip.id}

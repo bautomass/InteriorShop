@@ -1,6 +1,7 @@
 //page/cart.tsx
 'use client';
 import InvoiceSection from '@/components/invoice/InvoiceSection';
+import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { useActionState } from '@/hooks/useActionState';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import type { Cart, Product } from '@/lib/shopify/types';
@@ -146,6 +147,8 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#F8F6F3]">
+      <LargeScreenNavBar />
+      
       <motion.div 
         initial="hidden"
         animate="visible"

@@ -1,7 +1,8 @@
 // /app/collections/[handle]/page.tsx
 import PaginatedProductGrid from '@/components/collections/PaginatedProductGrid';
 import { SortOptions } from '@/components/collections/sort-options';
-import { NavigationHeader } from '@/components/layout/navigation-header';
+// import { NavigationHeader } from '@/components/layout/navigation-header';
+import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { Footer } from '@/components/layout/site-footer';
 import { defaultSort, sorting } from 'lib/constants';
 import { getCollectionProductsQuery, getCollectionQuery } from 'lib/shopify/queries/collection';
@@ -161,7 +162,7 @@ export default async function CollectionPage({ params, searchParams }: Collectio
 
     return (
       <>
-        <NavigationHeader />
+        <LargeScreenNavBar />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

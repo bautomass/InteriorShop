@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { Facebook, Instagram, Mail, MapPin } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useInView } from 'react-intersection-observer';
 
@@ -60,13 +59,9 @@ export function Footer() {
             className="lg:col-span-2"
           >
             <Link href="/" className="block mb-6">
-              <Image
-                src="/logo.png"
-                alt="Company Logo"
-                width={120}
-                height={40}
-                className="h-10 w-auto"
-              />
+              <span className="text-[#6B5E4C] text-xl font-medium">
+                Simple Interior Ideas
+              </span>
             </Link>
             <p className="text-[#8C7E6A] text-sm mb-6 max-w-md">
               Crafting sustainable and beautiful pieces for your home. Every product tells a story of artisanal craftsmanship and environmental consciousness.

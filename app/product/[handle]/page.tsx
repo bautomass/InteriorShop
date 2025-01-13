@@ -3,7 +3,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
-import { NavigationHeader } from '@/components/layout/navigation-header';
+// import { NavigationHeader } from '@/components/layout/navigation-header';
+import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { Footer } from '@/components/layout/site-footer';
 import { ProductDetails } from '@/components/product/product-details';
 import { ProductGallery } from '@/components/product/product-gallery';
@@ -99,7 +100,7 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
 
   return (
     <ProductProvider variants={product.variants}>
-      <NavigationHeader />
+      <LargeScreenNavBar />
       <RecentlyViewedTracker product={product} />
       <script
         type="application/ld+json"

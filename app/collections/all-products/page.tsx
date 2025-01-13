@@ -1,5 +1,6 @@
 import { ProductsGrid } from '@/components/collections/ProductsGrid';
-import { NavigationHeader } from '@/components/layout/navigation-header';
+// import { NavigationHeader } from '@/components/layout/navigation-header';
+import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { Footer } from '@/components/layout/site-footer';
 import { defaultSort, sorting } from '@/lib/constants';
 import { getProducts } from '@/lib/shopify';
@@ -101,7 +102,7 @@ export default async function AllProductsPage({ searchParams = {} }: PageProps) 
 
   return (
     <>
-      <NavigationHeader />
+      <LargeScreenNavBar />
       
       <main className="bg-primary-50 pb-20 dark:bg-primary-900">
         <div className="mx-auto max-w-[90rem] px-4 sm:px-6 lg:px-8">

@@ -914,7 +914,7 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
             
             <div className={cn(
               "flex gap-2 mt-3",
-              cardsToShow >= 5 ? "flex-col" : "flex-row"
+              "flex-col sm:flex-row"
             )}>
               <motion.button
                 onClick={handleAddToCart}
@@ -928,7 +928,7 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
                   "flex items-center justify-center gap-1.5",
                   "overflow-hidden shadow-sm hover:shadow-md",
                   "group",
-                  cardsToShow >= 5 ? "w-full" : "flex-1"
+                  "w-full sm:flex-1"
                 )}
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100
@@ -980,7 +980,7 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
                   "flex items-center justify-center",
                   "overflow-hidden shadow-sm hover:shadow-md",
                   "group",
-                  cardsToShow >= 5 ? "w-full" : "w-[100px]",
+                  "w-full sm:w-[100px]",
                   "text-xs font-medium"
                 )}
               >
