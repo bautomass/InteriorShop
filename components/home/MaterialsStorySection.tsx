@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, CircleOff, Leaf, ShieldCheck, Sprout } from 'lucide-react';
+import { ChevronDown, CircleOff, Leaf, LucideIcon, ShieldCheck, Sprout } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -114,7 +114,24 @@ const wellnessFeatures = [
   }
 ];
 
-const FeatureCard = ({ feature, index, isExpanded, onClick }) => {
+interface FeatureCardProps {
+  feature: {
+    icon: LucideIcon;
+    title: string;
+    description: string;
+    expandedContent: {
+      title: string;
+      highlights: string[];
+      keyBenefit: string;
+      citation: string;
+    };
+  };
+  index: number;
+  isExpanded: boolean;
+  onClick: () => void;
+}
+
+const FeatureCard = ({ feature, index, isExpanded, onClick }: FeatureCardProps) => {
   return (
     <motion.div
       layout
@@ -193,7 +210,7 @@ const FeatureCard = ({ feature, index, isExpanded, onClick }) => {
 export default function MaterialsSection() {
   const [selectedMaterial, setSelectedMaterial] = useState(2);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
-  const [expandedCard, setExpandedCard] = useState(null);
+  const [expandedCard, setExpandedCard] = useState<number | null>(null);
   const { ref, inView } = useInView({
     threshold: 0.2,
     triggerOnce: true
@@ -240,9 +257,9 @@ export default function MaterialsSection() {
               <div className="absolute inset-0">
                 {materials.map((material, index) => {
                   const positions = [
-                    'left-[28%] top-[26.5%]',
-                    'right-[37%] top-[45%]',
-                    'left-[30%] bottom-[25%]'
+                    'left-[30%] top-[32.5%]',
+                    'right-[45%] top-[45%]',
+                    'left-[30%] bottom-[35%]'
                   ];
 
                   return (

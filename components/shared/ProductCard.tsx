@@ -287,7 +287,8 @@ export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardPr
             
             <div className={cn(
               "flex gap-2 mt-3",
-              cardsToShow >= 5 ? "flex-col" : "flex-row"
+              cardsToShow >= 5 ? "flex-col" : "flex-row",
+              "@media (max-width: 500px) { flex-col }"
             )}>
               <motion.button
                 onClick={handleAddToCart}
@@ -301,7 +302,8 @@ export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardPr
                   "flex items-center justify-center gap-1.5",
                   "overflow-hidden shadow-sm hover:shadow-md",
                   "group",
-                  cardsToShow >= 5 ? "w-full" : "flex-1"
+                  cardsToShow >= 5 ? "w-full" : "flex-1",
+                  "@media (max-width: 500px) { w-full }"
                 )}
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100
@@ -354,6 +356,7 @@ export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardPr
                   "overflow-hidden shadow-sm hover:shadow-md",
                   "group",
                   cardsToShow >= 5 ? "w-full" : "w-[100px]",
+                  "@media (max-width: 500px) { w-full }",
                   "text-xs font-medium"
                 )}
               >

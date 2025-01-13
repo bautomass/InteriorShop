@@ -9,6 +9,7 @@ import type { Product } from '@/lib/shopify/types';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, LayoutGrid, LayoutList, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -251,6 +252,9 @@ export default function AnturamStoolsCollection() {
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
   const [isGridView, setIsGridView] = useState(false)
+  const [activeThumbIndex, setActiveThumbIndex] = useState(0);
+  const [thumbSwiper, setThumbSwiper] = useState<SwiperType | null>(null);
+  const [mainSwiper, setMainSwiper] = useState<SwiperType | null>(null);
 
   const handlePriceSort = useCallback((direction: 'asc' | 'desc') => {
     sortProducts(direction);
@@ -544,8 +548,8 @@ export default function AnturamStoolsCollection() {
           </div>
 
           {/* Products Section */}
-          <div className="relative w-screen left-1/2 right-1/2 -mx-[50vw] px-10">
-            <div className="relative max-w-[1700px] px-10 mx-auto">
+          <div className="relative w-screen left-1/2 right-1/2 -mx-[50vw] px-10 [@media(max-width:700px)]:px-4">
+            <div className="relative max-w-[1700px] px-10 mx-auto [@media(max-width:700px)]:px-2">
               {/* View Controls - Desktop only */}
               <div className="hidden lg:block relative h-12">
                 <div className="flex items-center justify-between">
@@ -561,6 +565,82 @@ export default function AnturamStoolsCollection() {
                     isGridView={isGridView}
                     onViewChange={setIsGridView}
                   />
+                </div>
+              </div>
+
+              {/* Mobile Sort Controls and Pagination */}
+              <div className="mb-4 flex items-center justify-between lg:hidden">
+                {/* Sort Controls */}
+                <div className="inline-flex items-center rounded-lg border border-primary-200 bg-white shadow-sm" role="group">
+                  <span className="border-r border-primary-200 px-2 text-xs font-medium text-primary-600">
+                    Price
+                  </span>
+                  <button
+                    onClick={() => handlePriceSort('asc')}
+                    className="flex items-center gap-0.5 border-r border-primary-200 px-2 py-1.5 text-xs font-medium text-primary-700 transition-colors hover:bg-primary-50 active:bg-primary-100"
+                    aria-label="Sort price low to high"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" className="fill-current">
+                      <path d="M12 5l0 14M5 12l7-7 7 7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handlePriceSort('desc')}
+                    className="flex items-center gap-0.5 px-2 py-1.5 text-xs font-medium text-primary-700 transition-colors hover:bg-primary-50 active:bg-primary-100"
+                    aria-label="Sort price high to low"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" className="fill-current">
+                      <path d="M12 19l0-14M5 12l7 7 7-7" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Pagination Dots */}
+                <div className="flex items-center">
+                  <button
+                    onClick={() => swiper?.slidePrev()}
+                    className="mr-2 flex h-6 w-6 items-center justify-center rounded-full text-primary-600 transition-colors hover:bg-primary-50"
+                    disabled={isBeginning}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+
+                  <div className="relative flex items-center">
+                    <div className="absolute left-0 z-10 h-full w-4 bg-gradient-to-r from-primary-50 to-transparent" />
+                    <div className="flex items-center gap-1.5 overflow-hidden px-1">
+                      {products.map((_, idx) => {
+                        const startIdx = Math.max(0, Math.min(activeThumbIndex - 3, products.length - 7));
+                        const endIdx = Math.min(startIdx + 7, products.length);
+                        if (idx < startIdx || idx >= endIdx) return null;
+
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              swiper?.slideTo(idx);
+                              setActiveThumbIndex(idx);
+                            }}
+                            className={cn(
+                              'h-1.5 rounded-full transition-all duration-200',
+                              activeThumbIndex === idx
+                                ? 'w-4 bg-primary-600'
+                                : 'w-1.5 bg-primary-300 hover:bg-primary-400',
+                            )}
+                            aria-label={`Go to slide ${idx + 1}`}
+                          />
+                        );
+                      })}
+                    </div>
+                    <div className="absolute right-0 z-10 h-full w-4 bg-gradient-to-l from-primary-50 to-transparent" />
+                  </div>
+
+                  <button
+                    onClick={() => swiper?.slideNext()}
+                    className="ml-2 flex h-6 w-6 items-center justify-center rounded-full text-primary-600 transition-colors hover:bg-primary-50"
+                    disabled={isEnd}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
 
@@ -603,28 +683,35 @@ export default function AnturamStoolsCollection() {
                       enabled: true,
                     }}
                     breakpoints={{
-                      0: { 
-                        slidesPerView: 1,
-                        spaceBetween: 16 
+                      0: {
+                        slidesPerView: 1.2,
+                        spaceBetween: 16
                       },
-                      480: { 
+                      480: {
                         slidesPerView: 2,
                         spaceBetween: 16
                       },
-                      768: { 
+                      768: {
                         slidesPerView: 3,
                         spaceBetween: 16
                       },
-                      1024: { 
+                      1024: {
                         slidesPerView: cardsToShow,
                         spaceBetween: 16
                       }
                     }}
                     className="px-0"
-                    onSwiper={handleSwiperInit}
+                    onSwiper={(swiper) => {
+                      setMainSwiper(swiper);
+                      handleSwiperInit(swiper);
+                    }}
                     onSlideChange={(swiper) => {
-                      setIsBeginning(swiper.isBeginning)
-                      setIsEnd(swiper.isEnd)
+                      setIsBeginning(swiper.isBeginning);
+                      setIsEnd(swiper.isEnd);
+                      setActiveThumbIndex(swiper.activeIndex);
+                      if (thumbSwiper && thumbSwiper.activeIndex !== swiper.activeIndex) {
+                        thumbSwiper.slideTo(swiper.activeIndex);
+                      }
                     }}
                   >
                     {products.map((product) => (
@@ -643,17 +730,7 @@ export default function AnturamStoolsCollection() {
                   
                   {/* Navigation Buttons */}
                   <button 
-                    className="custom-swiper-button-prev absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full z-20
-                              w-10 h-14 bg-primary-800/95 dark:bg-primary-100/95 backdrop-blur-sm
-                              flex items-center justify-center overflow-hidden isolate
-                              rounded-l-md
-                              transition-all duration-300 ease-out
-                              group hover:w-12 
-                              disabled:opacity-50
-                              shadow-[0_0_10px_rgba(83,66,56,0.3)]
-                              hover:shadow-[0_0_20px_rgba(83,66,56,0.5)]
-                              active:scale-95 active:shadow-inner
-                              cursor-pointer disabled:cursor-default"
+                    className="custom-swiper-button-prev group absolute left-0 top-1/2 isolate z-20 hidden [@media(min-width:700px)]:flex h-14 w-10 -translate-x-full -translate-y-1/2 cursor-pointer items-center justify-center overflow-hidden rounded-l-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50"
                     aria-label="Previous slide"
                     disabled={isBeginning}
                   >
@@ -687,17 +764,7 @@ export default function AnturamStoolsCollection() {
                   </button>
 
                   <button 
-                    className="custom-swiper-button-next absolute right-0 top-1/2 -translate-y-1/2 translate-x-full z-20
-                              w-10 h-14 bg-primary-800/95 dark:bg-primary-100/95 backdrop-blur-sm
-                              flex items-center justify-center overflow-hidden isolate
-                              rounded-r-md
-                              transition-all duration-300 ease-out
-                              group hover:w-12
-                              disabled:opacity-50
-                              shadow-[0_0_10px_rgba(83,66,56,0.3)]
-                              hover:shadow-[0_0_20px_rgba(83,66,56,0.5)]
-                              active:scale-95 active:shadow-inner
-                              cursor-pointer disabled:cursor-default"
+                    className="custom-swiper-button-next group absolute right-0 top-1/2 isolate z-20 hidden [@media(min-width:700px)]:flex h-14 w-10 -translate-y-1/2 translate-x-full cursor-pointer items-center justify-center overflow-hidden rounded-r-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50"
                     aria-label="Next slide"
                     disabled={isEnd}
                   >
@@ -731,6 +798,78 @@ export default function AnturamStoolsCollection() {
                   </button>
                 </div>
               )}
+
+              {/* Thumbnail Navigation - Only visible below 500px */}
+              <div className="mt-4 hidden [@media(max-width:500px)]:block">
+                <div className="relative">
+                  <Swiper
+                    modules={[Navigation]}
+                    spaceBetween={8}
+                    slidesPerView={5.5}
+                    className="thumbnail-swiper"
+                    navigation={{
+                      prevEl: '.thumb-prev',
+                      nextEl: '.thumb-next'
+                    }}
+                    breakpoints={{
+                      0: { slidesPerView: 4.5 },
+                      400: { slidesPerView: 5.5 }
+                    }}
+                    centeredSlides={true}
+                    slideToClickedSlide={true}
+                    onSwiper={setThumbSwiper}
+                    onSlideChange={(swiper) => {
+                      setActiveThumbIndex(swiper.activeIndex);
+                      if (swiper && swiper.activeIndex !== activeThumbIndex) {
+                        mainSwiper?.slideTo(swiper.activeIndex);
+                      }
+                    }}
+                  >
+                    {products.map((product, index) => (
+                      <SwiperSlide key={`thumb-${product.id}`}>
+                        <button
+                          onClick={() => {
+                            swiper?.slideTo(index);
+                            setActiveThumbIndex(index);
+                          }}
+                          className={cn(
+                            'relative aspect-square w-full overflow-hidden rounded-sm',
+                            'border transition-all duration-300',
+                            activeThumbIndex === index
+                              ? 'border-primary-600 opacity-100 ring-1 ring-primary-500/50'
+                              : 'border-transparent opacity-70 hover:opacity-100'
+                          )}
+                        >
+                          <Image
+                            src={product.featuredImage?.url || ''}
+                            alt={`${product.title} thumbnail`}
+                            fill
+                            sizes="(max-width: 500px) 20vw, 0vw"
+                            className="object-cover"
+                          />
+                        </button>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+
+                  <button
+                    className="thumb-prev absolute left-0 top-0 z-10 flex h-full w-10 items-center justify-center bg-gradient-to-r from-primary-900/40 via-primary-900/20 to-transparent transition-all duration-300 hover:from-primary-900/60"
+                    aria-label="Previous thumbnails"
+                  >
+                    <div className="flex h-full items-center justify-center">
+                      <ChevronLeft className="h-5 w-5 text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.3)]" />
+                    </div>
+                  </button>
+                  <button
+                    className="thumb-next absolute right-0 top-0 z-10 flex h-full w-10 items-center justify-center bg-gradient-to-l from-primary-900/40 via-primary-900/20 to-transparent transition-all duration-300 hover:from-primary-900/60"
+                    aria-label="Next thumbnails"
+                  >
+                    <div className="flex h-full items-center justify-center">
+                      <ChevronRight className="h-5 w-5 text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.3)]" />
+                    </div>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
