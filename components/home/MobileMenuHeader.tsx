@@ -36,7 +36,7 @@ import {
   Wine
 } from 'lucide-react';
 
-import Image from 'next/image';
+import Image, { ImageProps } from 'next/image';
 import Link from 'next/link';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
@@ -155,8 +155,173 @@ const LoadingChair = memo(() => (
 
 LoadingChair.displayName = 'LoadingChair';
 
+// 1. Memoized Icon Components
+const IconComponents = {
+  Grid: memo(() => <Grid className="h-4 w-4" />),
+  Heart: memo(() => <Heart className="h-4 w-4" />),
+  ShoppingBasket: memo(() => <ShoppingBasket className="h-4 w-4" />),
+  Star: memo(() => <Star className="h-4 w-4" />),
+  // ... add other icons as needed
+} as const;
+
+// 2. Static Footer Content
+const FooterSections = memo(({ expandedSections, toggleSection }: {
+  expandedSections: { [key: string]: boolean };
+  toggleSection: (title: 'Help & Information' | 'Legal') => void;
+}) => (
+  <div className="space-y-3 m-2 bg-neutral-50/80 p-4 border border-neutral-100">
+    {[
+      {
+        title: 'Help & Information',
+        items: [
+          { label: 'FAQs', href: '/faq' },
+          { label: 'Shipping Info', href: '/shipping' },
+          { label: 'Returns & Exchanges', href: '/returns' }
+        ]
+      },
+      {
+        title: 'Legal',
+        items: [
+          { label: 'Privacy Policy', href: '/privacy' },
+          { label: 'Terms & Conditions', href: '/terms' },
+          { label: 'Cookie Policy', href: '/cookies' }
+        ]
+      }
+    ].map((section) => (
+      <div key={section.title} className="space-y-1.5">
+        <button 
+          onClick={() => toggleSection(section.title as 'Help & Information' | 'Legal')}
+          className="w-full flex items-center justify-between text-[11px] font-medium uppercase tracking-wider text-neutral-400 hover:text-neutral-500 transition-colors"
+        >
+          <span>{section.title}</span>
+          <svg
+            className={`w-4 h-4 transform transition-transform ${expandedSections[section.title as keyof typeof expandedSections] ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+        <AnimatePresence>
+          {expandedSections[section.title as keyof typeof expandedSections] && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="space-y-0.5">
+                {section.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="flex items-center justify-between py-2 px-3 text-xs text-neutral-600 
+                             hover:text-[#9e896c] transition-all duration-200"
+                  >
+                    <span className="font-medium">{item.label}</span>
+                    <ArrowRight className="h-3.5 w-3.5 opacity-50" />
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    ))}
+  </div>
+));
+
+FooterSections.displayName = 'FooterSections';
+
+// 3. Performance Constants
+const SCROLL_THROTTLE_MS = 16;
+const INTERSECTION_THRESHOLD = 0.1;
+const CACHE_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
+// 4. Optimized Image Component
+const OptimizedImage = memo(({ src, alt, ...props }: ImageProps) => {
+  const [isIntersecting, setIsIntersecting] = useState(false);
+  const imageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsIntersecting(entry?.isIntersecting ?? false),
+      { threshold: INTERSECTION_THRESHOLD }
+    );
+
+    if (imageRef.current) {
+      observer.observe(imageRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={imageRef}>
+      {(isIntersecting || props.priority) && (
+        <Image
+          src={src}
+          alt={alt}
+          {...props}
+          loading={props.priority ? 'eager' : 'lazy'}
+        />
+      )}
+    </div>
+  );
+});
+
+OptimizedImage.displayName = 'OptimizedImage';
+
+// 5. Collections Cache Hook
+const useCachedCollections = () => {
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const cacheKey = 'mobile-hero-collections';
+
+  useEffect(() => {
+    const fetchAndCacheCollections = async () => {
+      try {
+        // Check cache first
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < CACHE_TIMEOUT) {
+            setCollections(data);
+            return;
+          }
+        }
+
+        // Fetch fresh data
+        const res = await fetch('/api/collections');
+        const data = await res.json();
+        const filtered = data.collections.filter(
+          (collection: Collection) => !EXCLUDED_HANDLES.includes(collection.handle.toLowerCase())
+        );
+        
+        setCollections(filtered);
+        localStorage.setItem(
+          cacheKey,
+          JSON.stringify({ data: filtered, timestamp: Date.now() })
+        );
+      } catch (error) {
+        console.error('Error fetching collections:', error);
+      }
+    };
+
+    fetchAndCacheCollections();
+  }, []);
+
+  return collections;
+};
+
 // Main component
-export const MobileHero = () => {
+export const MobileHero = memo(() => {
   const { cart } = useCart();
   const { updateState } = useHeaderState();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -186,27 +351,17 @@ export const MobileHero = () => {
   const email = 'info@simpleinteriorideas.com';
   const workingHours = 'Mon-Fri: 9-18';
 
-  // Optimized scroll handler
-  const handleScroll = useCallback(() => {
-    requestAnimationFrame(() => {
-      const currentScrollY = window.scrollY;
-      
-      if (currentScrollY < lastScrollY.current || currentScrollY < 100) {
-        if (!isVisible.current) {
-          isVisible.current = true;
-          setHeaderVisible(true);
-        }
-      } else if (currentScrollY > 100 && currentScrollY > lastScrollY.current) {
-        if (isVisible.current) {
-          isVisible.current = false;
-          setHeaderVisible(false);
-        }
-      }
-
-      setIsScrolled(currentScrollY > 100);
-      lastScrollY.current = currentScrollY;
-    });
-  }, []);
+  // Throttle scroll handling
+  const handleScroll = useCallback(
+    debounce(() => {
+      requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+        setHeaderVisible(currentScrollY < lastScrollY.current || currentScrollY < 100);
+        lastScrollY.current = currentScrollY;
+      });
+    }, SCROLL_THROTTLE_MS),
+    []
+  );
 
   // Optimized collections fetch
   useEffect(() => {
@@ -806,70 +961,10 @@ export const MobileHero = () => {
               </div>
 
               {/* Footer Navigation */}
-              <div className="w-[calc(100%-3px)] border-t border-neutral-100 bg-neutral-50/50">
-                <div className="px-4 py-4">
-                  <div className="space-y-3">
-                    {[
-                      { title: 'Help & Information', items: [
-                        { label: 'FAQs', href: '/faq' },
-                        { label: 'Shipping Info', href: '/shipping' },
-                        { label: 'Returns & Exchanges', href: '/returns' },
-                      ]},
-                      { title: 'Legal', items: [
-                        { label: 'Privacy Policy', href: '/privacy' },
-                        { label: 'Terms & Conditions', href: '/terms' },
-                        { label: 'Cookie Policy', href: '/cookies' },
-                      ]},
-                    ].map((section) => (
-                      <div key={section.title} className="space-y-1.5">
-                        <button 
-                          onClick={() => toggleSection(section.title as keyof typeof expandedSections)}
-                          className="w-full flex items-center justify-between text-[11px] font-medium uppercase tracking-wider text-neutral-400 hover:text-neutral-500 transition-colors"
-                        >
-                          <span>{section.title}</span>
-                          <svg
-                            className={`w-4 h-4 transform transition-transform ${expandedSections[section.title as keyof typeof expandedSections] ? 'rotate-180' : ''}`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 9l-7 7-7-7"
-                            />
-                          </svg>
-                        </button>
-                        <AnimatePresence>
-                          {expandedSections[section.title as keyof typeof expandedSections] && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.2 }}
-                              className="overflow-hidden"
-                            >
-                              <div className="space-y-1.5 pt-1">
-                                {section.items.map((item) => (
-                                  <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className="flex items-center justify-between py-0.5 text-xs text-neutral-600 hover:text-[#9e896c] transition-all duration-200"
-                                  >
-                                    <span className="font-medium">{item.label}</span>
-                                    <ArrowRight className="h-3.5 w-3.5 opacity-50" />
-                                  </Link>
-                                ))}
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <FooterSections 
+                expandedSections={expandedSections} 
+                toggleSection={toggleSection} 
+              />
 
               {/* Bottom Info Section */}
               <div className="w-[calc(100%-3px)] px-3.5 py-4 mb-[15px] bg-gradient-to-b from-neutral-50/80 
@@ -922,7 +1017,7 @@ export const MobileHero = () => {
         </Link>
       </div>
 
-      <Image
+      <OptimizedImage
         src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
         alt="Mobile Hero"
         fill={true}
@@ -930,11 +1025,12 @@ export const MobileHero = () => {
         className="object-cover"
         sizes="100vw"
         quality={90}
-        loading="eager"
       />
     </div>
   );
-};
+});
 
-export default memo(MobileHero);
+MobileHero.displayName = 'MobileHero';
+
+export default MobileHero;
 
