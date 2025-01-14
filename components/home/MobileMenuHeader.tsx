@@ -38,7 +38,7 @@ import {
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
 // Constants
 const EXCLUDED_HANDLES: readonly string[] = [
@@ -76,8 +76,8 @@ const promos: PromoItem[] = [
   }
 ];
 
-// BurgerIcon Component
-const BurgerIcon = ({ isOpen }: { isOpen: boolean }) => (
+// Memoize static components
+const BurgerIcon = memo(({ isOpen }: { isOpen: boolean }) => (
   <div className="relative w-6 h-6 flex items-center justify-center">
     <div className="flex flex-col justify-between w-5 h-4 transform transition-all duration-300">
       <span
@@ -94,10 +94,11 @@ const BurgerIcon = ({ isOpen }: { isOpen: boolean }) => (
       />
     </div>
   </div>
-);
+));
 
-// LoadingChair Component
-const LoadingChair = () => (
+BurgerIcon.displayName = 'BurgerIcon';
+
+const LoadingChair = memo(() => (
   <motion.div 
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -150,8 +151,11 @@ const LoadingChair = () => (
       />
     </motion.div>
   </motion.div>
-);
+));
 
+LoadingChair.displayName = 'LoadingChair';
+
+// Main component
 export const MobileHero = () => {
   const { cart } = useCart();
   const { updateState } = useHeaderState();
@@ -174,25 +178,52 @@ export const MobileHero = () => {
     'Help & Information': true,
     'Legal': false
   });
-  const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
+  const isVisible = useRef(true);
+  const [headerVisible, setHeaderVisible] = useState(true);
 
   // Constants
   const email = 'info@simpleinteriorideas.com';
   const workingHours = 'Mon-Fri: 9-18';
 
-  // Effects
+  // Optimized scroll handler
+  const handleScroll = useCallback(() => {
+    requestAnimationFrame(() => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY < lastScrollY.current || currentScrollY < 100) {
+        if (!isVisible.current) {
+          isVisible.current = true;
+          setHeaderVisible(true);
+        }
+      } else if (currentScrollY > 100 && currentScrollY > lastScrollY.current) {
+        if (isVisible.current) {
+          isVisible.current = false;
+          setHeaderVisible(false);
+        }
+      }
+
+      setIsScrolled(currentScrollY > 100);
+      lastScrollY.current = currentScrollY;
+    });
+  }, []);
+
+  // Optimized collections fetch
   useEffect(() => {
     if (isNavOpen) {
-      fetch('/api/collections')
-        .then(res => res.json())
-        .then(data => {
+      const fetchCollections = async () => {
+        try {
+          const res = await fetch('/api/collections');
+          const data = await res.json();
           const filteredCollections = data.collections.filter(
             (collection: Collection) => !EXCLUDED_HANDLES.includes(collection.handle.toLowerCase())
           );
           setCollections(filteredCollections);
-        })
-        .catch(error => console.error('Error fetching collections:', error));
+        } catch (error) {
+          console.error('Error fetching collections:', error);
+        }
+      };
+      fetchCollections();
     }
   }, [isNavOpen]);
 
@@ -292,22 +323,6 @@ export const MobileHero = () => {
 
   // Update scroll effect
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      // Show header if scrolling up or at top
-      if (currentScrollY < lastScrollY.current || currentScrollY < 100) {
-        setIsVisible(true);
-      } 
-      // Hide header if scrolling down and not at top
-      else if (currentScrollY > 100 && currentScrollY > lastScrollY.current) {
-        setIsVisible(false);
-      }
-
-      setIsScrolled(currentScrollY > 100);
-      lastScrollY.current = currentScrollY;
-    };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -322,8 +337,10 @@ export const MobileHero = () => {
   return (
     <div className="relative h-[100vh] lg:hidden">
       {/* Update the header container */}
-      <div className={`fixed top-0 left-0 right-0 z-[9999] transform transition-transform duration-300
-        ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+      <div 
+        className={`fixed top-0 left-0 right-0 z-[9999] transform transition-transform duration-300
+          ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}
+      >
         <div 
           className={`w-full backdrop-blur-sm shadow-lg 
             relative border-r-[3px] border-white
@@ -911,15 +928,13 @@ export const MobileHero = () => {
         fill={true}
         priority
         className="object-cover"
-        sizes="(max-width: 768px) 100vw, 768px"
-        quality={100}
+        sizes="100vw"
+        quality={90}
         loading="eager"
-        placeholder="blur"
-        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx0fHRsdHSIeHx8dISkgJSUlICQpKjIuMCYxKicqKi4/NDQ1Nyc5OTkyPj85MUU1Nkf/2wBDAR"
       />
     </div>
   );
 };
 
-export default MobileHero;
+export default memo(MobileHero);
 
