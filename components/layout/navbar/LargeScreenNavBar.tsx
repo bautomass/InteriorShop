@@ -7,32 +7,32 @@ import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
 import { debounce } from 'lodash';
 import {
-    Armchair,
-    ArrowUpSquare,
-    Check,
-    ChevronDown,
-    CircleDot,
-    DollarSign,
-    Flame,
-    Flower2,
-    Frame,
-    Gift,
-    Grid,
-    Heart,
-    Image as ImageIcon,
-    Lamp,
-    Package,
-    PanelRightClose,
-    Shirt,
-    ShoppingBasket,
-    ShoppingCart,
-    Sparkles,
-    Square,
-    Star,
-    Tag,
-    Truck,
-    UtensilsCrossed,
-    Wine
+  Armchair,
+  ArrowUpSquare,
+  Check,
+  ChevronDown,
+  CircleDot,
+  DollarSign,
+  Flame,
+  Flower2,
+  Frame,
+  Gift,
+  Grid,
+  Heart,
+  Image as ImageIcon,
+  Lamp,
+  Package,
+  PanelRightClose,
+  Shirt,
+  ShoppingBasket,
+  ShoppingCart,
+  Sparkles,
+  Square,
+  Star,
+  Tag,
+  Truck,
+  UtensilsCrossed,
+  Wine
 } from 'lucide-react';
 
 import Image from 'next/image';
@@ -188,6 +188,8 @@ export const DesktopHeader = () => {
   const [isCartHovered, setIsCartHovered] = useState(false);
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(() => currencies[0]!);
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
   // Constants
   const email = 'info@simpleinteriorideas.com';
@@ -267,8 +269,19 @@ export const DesktopHeader = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setIsScrolled(scrollPosition > 100);
+      const currentScrollY = window.scrollY;
+      
+      // Show header if scrolling up or at top
+      if (currentScrollY < lastScrollY.current || currentScrollY < 100) {
+        setIsVisible(true);
+      } 
+      // Hide header if scrolling down and not at top
+      else if (currentScrollY > 100 && currentScrollY > lastScrollY.current) {
+        setIsVisible(false);
+      }
+
+      setIsScrolled(currentScrollY > 100);
+      lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -318,9 +331,8 @@ export const DesktopHeader = () => {
       }`}
     >
       <div 
-        className={`${
-          isScrolled ? 'fixed bottom-0' : 'absolute top-0'
-        } left-0 right-0 z-[9999] transition-[top,bottom] duration-300`}
+        className={`fixed top-0 left-0 right-0 z-[9999] transform transition-transform duration-300
+          ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
       >
         <div 
           className={`w-full backdrop-blur-sm shadow-lg 
@@ -330,15 +342,13 @@ export const DesktopHeader = () => {
             before:border-r-[3px] 
             before:border-black/10
             transition-[background,shadow,transform] duration-500
-            ${
-              isScrolled 
-                ? 'border-t-[3px] border-l-[3px] rounded-tl-[24px] rounded-tr-[24px] before:border-t-[3px] before:border-l-[3px] before:rounded-tl-[24px] before:rounded-tr-[24px]' 
-                : 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]'
+            ${isScrolled 
+              ? 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]' 
+              : 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]'
             }
-            ${
-              (isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) 
-                ? 'h-screen' 
-                : 'h-auto'
+            ${(isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) 
+              ? 'h-screen' 
+              : 'h-auto'
             }`}
         >
           <div className="flex flex-col h-full">
