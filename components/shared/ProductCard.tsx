@@ -281,7 +281,8 @@ export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardPr
             
             <p className="text-sm leading-relaxed mt-2
                           text-primary-600/90 dark:text-primary-300/90 
-                          line-clamp-2 min-h-[2.5rem]">
+                          line-clamp-2 min-h-[2.5rem]
+                          [@media(max-width:500px)]:hidden">
               {product.description}
             </p>
             

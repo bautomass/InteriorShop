@@ -174,6 +174,8 @@ export const MobileHero = () => {
     'Help & Information': true,
     'Legal': false
   });
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
   // Constants
   const email = 'info@simpleinteriorideas.com';
@@ -288,10 +290,22 @@ export const MobileHero = () => {
     }
   };
 
+  // Update scroll effect
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setIsScrolled(scrollPosition > 100);
+      const currentScrollY = window.scrollY;
+      
+      // Show header if scrolling up or at top
+      if (currentScrollY < lastScrollY.current || currentScrollY < 100) {
+        setIsVisible(true);
+      } 
+      // Hide header if scrolling down and not at top
+      else if (currentScrollY > 100 && currentScrollY > lastScrollY.current) {
+        setIsVisible(false);
+      }
+
+      setIsScrolled(currentScrollY > 100);
+      lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -307,51 +321,25 @@ export const MobileHero = () => {
 
   return (
     <div className="relative h-[100vh] lg:hidden">
-      {/* Hero Buttons */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 flex">
-        <Link
-          href="/story"
-          className="flex-1 py-4 bg-white/90 backdrop-blur-sm text-[#9e896c] 
-                     text-sm font-medium hover:bg-[#9e896c] hover:text-white 
-                     transition-all duration-300 text-center"
-        >
-          Our Story
-        </Link>
-        <Link
-          href="/collections/all-products"
-          className="flex-1 py-4 bg-[#9e896c]/90 backdrop-blur-sm text-white 
-                     text-sm font-medium hover:bg-[#9e896c] 
-                     transition-all duration-300 text-center"
-        >
-          All Products
-        </Link>
-      </div>
-
-      <Image
-        src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
-        alt="Mobile Hero"
-        fill={true}
-        priority
-        className="object-cover"
-        sizes="(max-width: 768px) 100vw, 768px"
-        quality={100}
-        loading="eager"
-        placeholder="blur"
-        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx0fHRsdHSIeHx8dISkgJSUlICQpKjIuMCYxKicqKi4/NDQ1Nyc5OTkyPj85MUU1Nkf/2wBDAR"
-      />
-
-      {/* Mobile Navigation Container */}
-      <div className={`${isScrolled ? 'fixed bottom-0' : 'absolute top-0'} left-0 right-0 z-[9999] transition-[top,bottom] duration-300`}>
+      {/* Update the header container */}
+      <div className={`fixed top-0 left-0 right-0 z-[9999] transform transition-transform duration-300
+        ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div 
           className={`w-full backdrop-blur-sm shadow-lg 
-                      relative border-r-[3px] border-white
-                      before:absolute before:inset-0 before:-z-10 
-                      before:bg-[#eaeadf]
-                      before:border-r-[3px] 
-                      before:border-black/10
-                      transition-[background,shadow,transform] duration-500
-                      ${isScrolled ? 'border-t-[3px] border-l-[3px] rounded-tl-[24px] rounded-tr-[24px] before:border-t-[3px] before:border-l-[3px] before:rounded-tl-[24px] before:rounded-tr-[24px]' : 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]'}
-                      ${(isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) ? 'h-screen' : 'h-auto'}`}
+            relative border-r-[3px] border-white
+            before:absolute before:inset-0 before:-z-10 
+            before:bg-[#eaeadf]
+            before:border-r-[3px] 
+            before:border-black/10
+            transition-[background,shadow,transform] duration-500
+            ${isScrolled 
+              ? 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]' 
+              : 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]'
+            }
+            ${(isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) 
+              ? 'h-screen' 
+              : 'h-auto'
+            }`}
         >
           {/* Header Section */}
           <div className="flex items-center justify-between p-4">
@@ -896,6 +884,39 @@ export const MobileHero = () => {
           )}
         </div>
       </div>
+
+      {/* Hero Buttons */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 flex">
+        <Link
+          href="/story"
+          className="flex-1 py-4 bg-white/90 backdrop-blur-sm text-[#9e896c] 
+                     text-sm font-medium hover:bg-[#9e896c] hover:text-white 
+                     transition-all duration-300 text-center"
+        >
+          Our Story
+        </Link>
+        <Link
+          href="/collections/all-products"
+          className="flex-1 py-4 bg-[#9e896c]/90 backdrop-blur-sm text-white 
+                     text-sm font-medium hover:bg-[#9e896c] 
+                     transition-all duration-300 text-center"
+        >
+          All Products
+        </Link>
+      </div>
+
+      <Image
+        src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
+        alt="Mobile Hero"
+        fill={true}
+        priority
+        className="object-cover"
+        sizes="(max-width: 768px) 100vw, 768px"
+        quality={100}
+        loading="eager"
+        placeholder="blur"
+        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx0fHRsdHSIeHx8dISkgJSUlICQpKjIuMCYxKicqKi4/NDQ1Nyc5OTkyPj85MUU1Nkf/2wBDAR"
+      />
     </div>
   );
 };

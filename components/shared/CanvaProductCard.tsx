@@ -828,29 +828,48 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
             <div className="inline-flex px-2 py-1 rounded-full 
                           text-xs font-medium tracking-wide
                           bg-primary-100/80 dark:bg-primary-700/80
-                          text-primary-800 dark:text-primary-100">
+                          text-primary-800 dark:text-primary-100
+                          [@media(max-width:500px)]:hidden">
               {category}
             </div>
 
-            <Link
-              href={`/product/${product.handle}`}
-              className="hover:text-primary-700 dark:hover:text-primary-300 transition-colors group/title relative isolate"
-            >
-              <h3 className="font-semibold text-base tracking-tight mt-2 
-                         text-primary-900 dark:text-primary-100 
-                         line-clamp-1 cursor-pointer
-                         transition-all duration-300
-                         group-hover/title:text-accent-500
-                         group-hover/title:translate-x-1">
-                {product.title}
-              </h3>
-              
-              <div className="absolute -bottom-0.5 left-0 right-0 h-px
-                              bg-gradient-to-r from-accent-500/0 via-accent-500/70 to-accent-500/0
-                              origin-center transition-all duration-300
-                              opacity-0 scale-x-0
-                              group-hover/title:opacity-100 group-hover/title:scale-x-100" />
-            </Link>
+            <div className="flex flex-col">
+              <Link
+                href={`/product/${product.handle}`}
+                className="hover:text-primary-700 dark:hover:text-primary-300 transition-colors group/title relative isolate"
+              >
+                <h3 className="font-semibold text-base tracking-tight mt-2 
+                               text-primary-900 dark:text-primary-100 
+                               line-clamp-1 cursor-pointer
+                               transition-all duration-300
+                               group-hover/title:text-accent-500
+                               group-hover/title:translate-x-1">
+                  {product.title}
+                </h3>
+                
+                <div className="absolute -bottom-0.5 left-0 right-0 h-px
+                                bg-gradient-to-r from-accent-500/0 via-accent-500/70 to-accent-500/0
+                                origin-center transition-all duration-300
+                                opacity-0 scale-x-0
+                                group-hover/title:opacity-100 group-hover/title:scale-x-100" />
+              </Link>
+
+              {/* Move ratings here for mobile */}
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowReviews(true);
+                }}
+                className="flex items-center gap-1 hover:opacity-80 transition-opacity
+                           [@media(min-width:501px)]:hidden mt-1"
+              >
+                <StarRating rating={reviewData.rating} />
+                <span className="text-sm text-primary-600 dark:text-primary-400">
+                  ({reviewData.reviewCount})
+                </span>
+              </button>
+            </div>
             
             <div className="flex items-center justify-between mt-1">
               <div className="flex items-center gap-2">
@@ -891,13 +910,15 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
                 )}
               </div>
 
+              {/* Hide ratings here for mobile */}
               <button 
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   setShowReviews(true);
                 }}
-                className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-1 hover:opacity-80 transition-opacity
+                           [@media(max-width:500px)]:hidden"
               >
                 <StarRating rating={reviewData.rating} />
                 <span className="text-sm text-primary-600 dark:text-primary-400">
@@ -908,7 +929,8 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
             
             <p className="text-sm leading-relaxed mt-2
                         text-primary-600/90 dark:text-primary-300/90 
-                        line-clamp-2 min-h-[2.5rem]">
+                        line-clamp-2 min-h-[2.5rem]
+                        [@media(max-width:500px)]:hidden">
               {product.description}
             </p>
             
