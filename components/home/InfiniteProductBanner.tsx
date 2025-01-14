@@ -197,6 +197,7 @@ const InfiniteProductBanner = ({ className = '' }: InfiniteProductBannerProps) =
 
   return (
     <div className={`relative w-full overflow-hidden py-4 sm:py-8 ${className}
+      hidden min-[700px]:block
       bg-gradient-to-r from-[#E8E2D9] via-[#F0EDE9] to-[#E8E2D9]
       before:absolute before:inset-0 
       before:bg-[radial-gradient(circle_at_50%_50%,rgba(107,94,76,0.08),transparent_45%)]
