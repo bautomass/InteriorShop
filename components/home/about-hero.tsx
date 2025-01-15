@@ -753,7 +753,7 @@ const AboutHero = memo(function AboutHero() {
               </div>
 
               {/* Quote section */}
-              <blockquote className="relative pl-6 order-5 lg:order-4">
+              <blockquote className="relative pl-6 order-5 lg:order-4 hidden lg:block">
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#B5A48B] to-transparent" />
                 <p className="italic text-[#8C7E6A] text-base sm:text-lg">
                   "Simplicity is the ultimate sophistication"

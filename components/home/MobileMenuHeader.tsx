@@ -161,22 +161,7 @@ const IconComponents = {
   Heart: memo(() => <Heart className="h-4 w-4" />),
   ShoppingBasket: memo(() => <ShoppingBasket className="h-4 w-4" />),
   Star: memo(() => <Star className="h-4 w-4" />),
-  Flame: memo(() => <Flame className="h-4 w-4" />),
-  ImageIcon: memo(() => <ImageIcon className="h-4 w-4" />),
-  Square: memo(() => <Square className="h-4 w-4" />),
-  PanelRightClose: memo(() => <PanelRightClose className="h-4 w-4" />),
-  Flower2: memo(() => <Flower2 className="h-4 w-4" />),
-  UtensilsCrossed: memo(() => <UtensilsCrossed className="h-4 w-4" />),
-  Armchair: memo(() => <Armchair className="h-4 w-4" />),
-  Gift: memo(() => <Gift className="h-4 w-4" />),
-  Package: memo(() => <Package className="h-4 w-4" />),
-  Lamp: memo(() => <Lamp className="h-4 w-4" />),
-  Tag: memo(() => <Tag className="h-4 w-4" />),
-  Shirt: memo(() => <Shirt className="h-4 w-4" />),
-  Wine: memo(() => <Wine className="h-4 w-4" />),
-  Frame: memo(() => <Frame className="h-4 w-4" />),
-  ArrowUpSquare: memo(() => <ArrowUpSquare className="h-4 w-4" />),
-  CircleDot: memo(() => <CircleDot className="h-4 w-4" />)
+  // ... add other icons as needed
 } as const;
 
 // 2. Static Footer Content
@@ -337,8 +322,6 @@ const useCachedCollections = () => {
 
 // Main component
 export const MobileHero = memo(() => {
-  // Add preloader hook at the top with other hooks
-
   const { cart } = useCart();
   const { updateState: updateHeaderState } = useHeaderState();
   const [state, setState] = useState({
@@ -552,42 +535,11 @@ export const MobileHero = memo(() => {
     }
   }, []);
 
-  // Add image preloading effect
-  useEffect(() => {
-    const preloadImage = () => {
-      const img = new window.Image();
-      img.src = "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557";
-    };
-    preloadImage();
-  }, []);
-
   return (
     <div className="relative h-[100vh] lg:hidden">
-      {/* Hero Image Section - Simplified and Fixed */}
-      <div className="absolute inset-0 w-full h-full">
-        {/* Background color while image loads */}
-        <div className="absolute inset-0 bg-neutral-100" />
-        
-        {/* Hero Image Container */}
-        <div className="relative w-full h-full">
-          <Image
-            src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
-            alt="Mobile Hero"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-            quality={90}
-          />
-        </div>
-
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/10" />
-      </div>
-
-      {/* Header - Updated z-index */}
+      {/* Update the header container */}
       <div 
-        className={`fixed top-0 left-0 right-0 z-30 transform transition-transform duration-300
+        className={`fixed top-0 left-0 right-0 z-[9999] transform transition-transform duration-300
           ${state.headerVisible ? 'translate-y-0' : '-translate-y-full'}`}
       >
         <div 
@@ -1095,23 +1047,48 @@ export const MobileHero = memo(() => {
         </div>
       </div>
 
-      {/* Hero Buttons - Updated z-index and positioning */}
-      <div className="absolute inset-x-0 bottom-0 z-20 grid grid-cols-2">
-        <Link
-          href="/story"
-          className="py-4 bg-white text-[#9e896c] text-sm font-medium text-center
-                   hover:bg-[#9e896c] hover:text-white transition-colors"
-        >
-          Our Story
-        </Link>
-        <Link
-          href="/collections/all-products"
-          prefetch={false}
-          className="py-4 bg-[#9e896c] text-white text-sm font-medium text-center
-                   hover:bg-opacity-90 transition-colors"
-        >
-          All Products
-        </Link>
+      {/* Hero Buttons */}
+      {HeroButtons}
+
+      {/* Hero Image */}
+      <div className="relative h-full w-full">
+        <Image
+          src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
+          alt="Mobile Hero"
+          fill
+          priority
+          fetchPriority="high"
+          className="object-cover translate-y-[-50px]"
+          sizes="100vw"
+          quality={100}
+          loading="eager"
+        />
+        
+        {/* Quote Overlay */}
+        <div className="absolute top-36 right-4 max-w-[240px] z-10">
+          <div className="backdrop-blur-sm rounded-2xl p-6 
+     bg-[#6b5e4c]/90
+     before:absolute before:inset-0 before:-z-10
+     before:rounded-2xl before:p-[1px]
+     before:bg-gradient-to-br before:from-white/20 before:to-transparent
+     after:absolute after:w-16 after:h-16
+     after:top-0 after:right-0
+     after:bg-white/5
+     after:rounded-full after:blur-2xl
+     after:transform after:-translate-x-1/2 after:-translate-y-1/2">
+            <blockquote className="relative">
+              <div className="absolute -top-4 -left-2 text-white/20 font-serif text-5xl">"</div>
+              <p className="text-white text-sm font-medium leading-relaxed tracking-wide">
+                Simplicity is the ultimate sophistication
+              </p>
+              <footer className="mt-3">
+                <cite className="block text-right text-white/60 text-[11px] font-medium tracking-widest uppercase not-italic">
+                  — Leonardo da Vinci
+                </cite>
+              </footer>
+            </blockquote>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1120,4 +1097,5 @@ export const MobileHero = memo(() => {
 MobileHero.displayName = 'MobileHero';
 
 export default MobileHero;
+
 
