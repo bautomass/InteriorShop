@@ -320,8 +320,19 @@ const useCachedCollections = () => {
   return collections;
 };
 
+// Add Image Preloader Hook
+const useImagePreload = () => {
+  useEffect(() => {
+    const img = new window.Image();
+    img.src = "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557";
+  }, []);
+};
+
 // Main component
 export const MobileHero = memo(() => {
+  // Add preloader hook at the top with other hooks
+  useImagePreload();
+
   const { cart } = useCart();
   const { updateState: updateHeaderState } = useHeaderState();
   const [state, setState] = useState({
@@ -1051,34 +1062,47 @@ export const MobileHero = memo(() => {
       {HeroButtons}
 
       {/* Hero Image */}
-      <div className="absolute inset-0 bg-neutral-100">
-        <img
-          src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
-          alt="Mobile Hero"
-          className="w-full h-full object-cover"
-          fetchPriority="high"
-          decoding="async"
-          style={{ minHeight: '100vh' }}
-        />
-      </div>
-
-      {/* Hero Buttons with proper z-index */}
-      <div className="relative z-10">
-        <div className="absolute bottom-0 left-0 right-0 grid grid-cols-2">
+      <>
+        {/* Background color while image loads */}
+        <div className="absolute inset-0 bg-neutral-100" />
+        
+        {/* Subtle overlay */}
+        <div className="absolute inset-0 bg-black/10 z-[1]" />
+        
+        {/* Hero Image */}
+        <div className="relative h-full w-full">
+          <Image
+            src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
+            alt="Mobile Hero"
+            fill
+            priority
+            fetchPriority="high"
+            loading="eager"
+            className="object-cover"
+            sizes="100vw"
+            quality={100}
+          />
+        </div>
+        
+        {/* Hero Buttons with proper z-index */}
+        <div className="absolute bottom-0 left-0 right-0 z-[2] grid grid-cols-2">
           <Link
             href="/story"
-            className="py-4 bg-white text-[#9e896c] text-sm font-medium text-center"
+            className="py-4 bg-white text-[#9e896c] text-sm font-medium text-center
+                     hover:bg-[#9e896c] hover:text-white transition-colors"
           >
             Our Story
           </Link>
           <Link
             href="/collections/all-products"
-            className="py-4 bg-[#9e896c] text-white text-sm font-medium text-center"
+            prefetch={false}
+            className="py-4 bg-[#9e896c] text-white text-sm font-medium text-center
+                     hover:bg-opacity-90 transition-colors"
           >
             All Products
           </Link>
         </div>
-      </div>
+      </>
     </div>
   );
 });
