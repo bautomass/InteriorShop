@@ -47,7 +47,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           as="image"
           href="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
           type="image/webp"
-          fetchPriority="high"
           media="(max-width: 1024px)"
         />
         
