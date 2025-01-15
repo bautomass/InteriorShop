@@ -335,18 +335,9 @@ const useCachedCollections = () => {
   return collections;
 };
 
-// Add Image Preloader Hook
-// const useImagePreload = () => {
-//   useEffect(() => {
-//     const img = new window.Image();
-//     img.src = "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557";
-//   }, []);
-// };
-
 // Main component
 export const MobileHero = memo(() => {
   // Add preloader hook at the top with other hooks
-  // useImagePreload();
 
   const { cart } = useCart();
   const { updateState: updateHeaderState } = useHeaderState();
@@ -561,37 +552,37 @@ export const MobileHero = memo(() => {
     }
   }, []);
 
-  // Add preloader hook
+  // Add image preloading effect
   useEffect(() => {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'image';
-    link.href = 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557';
-    document.head.appendChild(link);
-
-    return () => {
-      document.head.removeChild(link);
+    const preloadImage = () => {
+      const img = new window.Image();
+      img.src = "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557";
     };
+    preloadImage();
   }, []);
 
   return (
     <div className="relative h-[100vh] lg:hidden">
-      {/* Hero Image Section - Moved to top of DOM */}
-      <div className="absolute inset-0">
+      {/* Hero Image Section - Simplified and Fixed */}
+      <div className="absolute inset-0 w-full h-full">
         {/* Background color while image loads */}
-        <div className="absolute inset-0 bg-neutral-100 z-0" />
+        <div className="absolute inset-0 bg-neutral-100" />
         
-        {/* Hero Image */}
-        <img
-          src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
-          alt="Mobile Hero"
-          className="w-full h-full object-cover z-1"
-          fetchPriority="high"
-          loading="eager"
-        />
-        
+        {/* Hero Image Container */}
+        <div className="relative w-full h-full">
+          <Image
+            src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
+            alt="Mobile Hero"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+            quality={90}
+          />
+        </div>
+
         {/* Overlay */}
-        <div className="absolute inset-0 bg-black/10 z-10" />
+        <div className="absolute inset-0 bg-black/10" />
       </div>
 
       {/* Header - Updated z-index */}
