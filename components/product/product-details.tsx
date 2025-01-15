@@ -5,7 +5,6 @@ import { useActionState } from '@/hooks/useActionState';
 import type { Product } from '@/lib/shopify/types';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { addItem } from 'components/cart/actions';
-import { AddToCart } from 'components/cart/add-to-cart';
 import { useCart } from 'components/cart/cart-context';
 import { useProduct } from 'components/product/product-context';
 import { motion } from 'framer-motion';
@@ -434,30 +433,32 @@ export function ProductDetails({ product }: { product: Product }) {
 
   return (
     <>
-      <div ref={ref} className="flex flex-col space-y-6 sm:space-y-8">
-        <div className="space-y-4">
+      <div ref={ref} className="flex flex-col space-y-4 sm:space-y-6 md:space-y-8">
+        <div className="space-y-3 sm:space-y-4">
+          {/* Stock Status - Mobile Optimized */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
             transition={{ delay: 0.2 }}
-            className="flex items-center gap-2"
+            className="flex flex-wrap items-center gap-2"
           >
             {product.availableForSale ? (
-              <span className="rounded-full bg-green-500/10 px-3 py-1 text-xs font-medium text-green-600">
+              <span className="rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-600">
                 In Stock
               </span>
             ) : (
-              <span className="rounded-full bg-red-500/10 px-3 py-1 text-xs font-medium text-red-600">
+              <span className="rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-600">
                 Out of Stock
               </span>
             )}
           </motion.div>
 
+          {/* Product Title - Mobile Optimized */}
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
             animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-xl font-light text-[#6B5E4C] sm:text-2xl md:text-3xl"
+            className="text-lg font-light text-[#6B5E4C] sm:text-xl md:text-2xl lg:text-3xl"
           >
             {product.title}
           </motion.h1>
@@ -545,8 +546,50 @@ export function ProductDetails({ product }: { product: Product }) {
           </motion.div>
 
           {/* Add to Cart Button */}
-          <div className="flex items-center gap-4">
-            <AddToCart product={product} />
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex h-10 w-full sm:w-auto items-center rounded-md border border-[#6B5E4C]/20">
+              <button
+                onClick={decrementQuantity}
+                className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+                aria-label="Decrease quantity"
+              >
+                <Minus className="h-3 w-3" />
+              </button>
+              <div className="w-12 text-center text-sm font-medium text-[#6B5E4C]">
+                {quantity}
+              </div>
+              <button
+                onClick={incrementQuantity}
+                className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+                aria-label="Increase quantity"
+              >
+                <Plus className="h-3 w-3" />
+              </button>
+            </div>
+
+            <motion.button
+              onClick={handleAddToCart}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={!selectedVariant || !product.availableForSale || isPending}
+              className={`group relative flex w-full sm:w-auto items-center justify-center gap-2 overflow-hidden rounded-md px-6 py-2.5 text-sm font-medium text-white shadow-md transition-all duration-300 hover:shadow-lg ${
+                !selectedVariant || !product.availableForSale || isPending
+                  ? 'cursor-not-allowed bg-gray-400'
+                  : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
+              }`}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              <span className="relative z-10">
+                {isPending
+                  ? 'Adding...'
+                  : !selectedVariant
+                    ? 'Select options'
+                    : !product.availableForSale
+                      ? 'Out of Stock'
+                      : 'Add to Cart'}
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            </motion.button>
           </div>
 
           {/* Shipping and guarantees info */}
@@ -689,34 +732,18 @@ export function ProductDetails({ product }: { product: Product }) {
                 </button>
               ))}
             </div>
-
-            <TagProductsModal
-              isOpen={!!selectedTag}
-              onClose={() => {
-                setSelectedTag(null);
-                setTagProducts([]);
-              }}
-              tag={selectedTag || ''}
-              products={tagProducts}
-              isLoading={isLoadingTagProducts}
-            />
           </motion.div>
         </div>
       </div>
 
-      {/* Sticky Add to Cart Bar */}
+      {/* Sticky Add to Cart Bar - Mobile Optimized */}
       <motion.div
         initial={{ y: 100 }}
         animate={{ y: showStickyBar ? 0 : 100 }}
-        transition={{
-          type: 'spring',
-          damping: 25,
-          stiffness: 200,
-          duration: 0.2
-        }}
-        className="fixed bottom-0 left-0 right-0 z-50 transform border-t border-[#B5A48B]/20 bg-white bg-white/80 shadow-lg backdrop-blur-lg transition-transform duration-200"
+        transition={{ type: 'spring', damping: 25, stiffness: 200, duration: 0.2 }}
+        className="fixed bottom-0 left-0 right-0 z-50 transform border-t border-[#B5A48B]/20 bg-white/80 backdrop-blur-lg"
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 p-3 sm:p-4">
           {/* Product Info with Close Button */}
           <div className="flex items-center gap-4">
             <button
@@ -799,23 +826,25 @@ export function ProductDetails({ product }: { product: Product }) {
             </div>
           </div>
 
-          {/* Quantity and Add to Cart */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 items-center rounded-md border border-[#6B5E4C]/20">
+          {/* Quantity and Add to Cart - Mobile Optimized */}
+          <div className="flex w-full sm:w-auto items-center gap-2 sm:gap-3">
+            <div className="flex h-8 sm:h-10 items-center rounded-md border border-[#6B5E4C]/20">
               <button
                 onClick={decrementQuantity}
-                className="flex h-full items-center justify-center px-2 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+                className="flex h-full items-center justify-center px-1.5 sm:px-2 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
                 aria-label="Decrease quantity"
               >
-                <Minus className="h-3 w-3" />
+                <Minus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </button>
-              <div className="w-8 text-center font-medium text-[#6B5E4C]">{quantity}</div>
+              <div className="w-6 sm:w-8 text-center text-xs sm:text-sm font-medium text-[#6B5E4C]">
+                {quantity}
+              </div>
               <button
                 onClick={incrementQuantity}
-                className="flex h-full items-center justify-center px-2 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+                className="flex h-full items-center justify-center px-1.5 sm:px-2 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
                 aria-label="Increase quantity"
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </button>
             </div>
 
@@ -824,13 +853,13 @@ export function ProductDetails({ product }: { product: Product }) {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               disabled={!selectedVariant || !product.availableForSale || isPending}
-              className={`group relative flex items-center gap-2 overflow-hidden rounded-md px-6 py-2.5 text-sm font-medium text-white shadow-md transition-all duration-300 hover:shadow-lg ${
+              className={`group relative flex items-center justify-center gap-1.5 sm:gap-2 overflow-hidden rounded-md px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white shadow-md transition-all duration-300 hover:shadow-lg ${
                 !selectedVariant || !product.availableForSale || isPending
                   ? 'cursor-not-allowed bg-gray-400'
                   : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
               }`}
             >
-              <ShoppingCart className="h-4 w-4" />
+              <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="relative z-10">
                 {isPending
                   ? 'Adding...'
@@ -848,6 +877,18 @@ export function ProductDetails({ product }: { product: Product }) {
         {/* Safe Area for iOS */}
         <div className="h-[env(safe-area-inset-bottom)]" />
       </motion.div>
+
+      {/* Tag Products Modal */}
+      <TagProductsModal
+        isOpen={!!selectedTag}
+        onClose={() => {
+          setSelectedTag(null);
+          setTagProducts([]);
+        }}
+        tag={selectedTag || ''}
+        products={tagProducts}
+        isLoading={isLoadingTagProducts}
+      />
     </>
   );
 }

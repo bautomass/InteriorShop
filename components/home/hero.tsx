@@ -207,7 +207,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   const [isPaused, setIsPaused] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isMenuHovered, setIsMenuHovered] = useState(false);
-  const [progressKey, setProgressKey] = useState(0);
   const [isNavOpen, setIsNavOpen] = useState(false);
 
   // Effects
@@ -240,9 +239,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
   const handleMenuHover = (isHovering: boolean) => {
     setIsMenuHovered(isHovering);
-    if (isHovering) {
-      setProgressKey(prev => prev + 1);
-    }
   };
 
   const handleScroll = useCallback((e: WheelEvent) => {
@@ -260,18 +256,20 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   }, [currentSlide, handleScroll]);
 
   useEffect(() => {
-    if (isMenuHovered) return;
-    
-    let timer: NodeJS.Timeout;
-    const startTimer = () => {
-      timer = setTimeout(() => {
-        goToSlide(currentSlide + 1);
-      }, CONSTANTS.ANIMATION.CAROUSEL_INTERVAL);
-    };
+    if (isMenuHovered) {
+      return;
+    }
 
-    startTimer();
+    // When user moves mouse away from menu, add 4 second grace period
+    const delayTime = CONSTANTS.ANIMATION.CAROUSEL_INTERVAL + 4000;
     
-    return () => clearTimeout(timer);
+    const timer = setTimeout(() => {
+      goToSlide(currentSlide + 1);
+    }, delayTime);
+    
+    return () => {
+      clearTimeout(timer);
+    };
   }, [currentSlide, isMenuHovered, goToSlide]);
 
   useEffect(() => {
@@ -317,36 +315,31 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
             <div className="relative h-[100vh] w-full overflow-hidden">
               <div className="flex h-full">
                 {heroSlides.map((slide, index) => (
-                  <motion.div
+                  <div
                     key={slide.id}
                     ref={el => slideRefs.current[index] = el}
                     style={{
                       width: '100%',
                       height: '100%',
                       position: 'absolute',
-                      left: `${index * 100}%`
-                    }}
-                    animate={{
-                      x: `${-currentSlide * 100}%`
-                    }}
-                    transition={{
-                      duration: 0.5,
-                      ease: "easeInOut"
+                      left: `${index * 100}%`,
+                      transform: `translateX(${-currentSlide * 100}%)`,
+                      transition: 'transform 0.5s ease-in-out'
                     }}
                     className="flex-shrink-0"
                   >
-                    {/* Background Images */}
+                    {/* Background Image */}
                     <Image
                       src={slide.image}
                       alt={slide.alt}
                       fill
                       priority={index === 0}
                       quality={100}
-                      className="object-cover w-full h-full"
-                      sizes="100vw"
+                      className="object-contain w-full h-full"
+                      sizes="100%"
                     />
 
-                    {/* Lamp Image (only for first slide) */}
+                    {/* Lamp Image - Keep animation for visual interest */}
                     {index === 0 && slide.lampImage && (
                       <motion.div 
                         initial={{ opacity: 0, y: -50 }}
@@ -376,60 +369,35 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             className="h-auto w-full"
                           />
                           
-                          {/* Interactive Product Dot */}
+                          {/* Keep the interactive product dot */}
                           <div className="group absolute bottom-[20%] left-[65%] -translate-x-1/2 translate-y-1/2">
-                            {/* Pulsating Dot */}
                             <div className="relative inline-flex">
                               {/* Pulse rings */}
-                              <div className="absolute -inset-1.5
-                                            w-7 h-7 rounded-full bg-[#dcd5ca]/60
+                              <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#dcd5ca]/60
                                             animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
-                              <div className="absolute -inset-1.5
-                                            w-7 h-7 rounded-full bg-[#ebe7e0]/50
+                              <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#ebe7e0]/50
                                             animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
                               
                               {/* Main dot */}
-                              <div className="relative w-4 h-4 rounded-full 
-                                            bg-[#ebe7e0] border-2 border-[#9c826b]
+                              <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] border-2 border-[#9c826b]
                                             shadow-[0_0_10px_rgba(199,186,168,0.8)]
                                             transition-all duration-500 ease-in-out
                                             group-hover:scale-125" />
 
-                              {/* Hover Button */}
-                              <div className="absolute left-6 top-2">
-                                <motion.div
-                                  initial={{ opacity: 0, x: -20, scale: 0.95 }}
-                                  whileHover={{ scale: 1.05 }}
-                                  animate={{ opacity: 0, x: -20 }}
-                                  className="group-hover:animate-slideIn"
+                              {/* Simplified hover button */}
+                              <div className="absolute left-6 top-2 opacity-0 group-hover:opacity-100 
+                                            transition-opacity duration-300">
+                                <Link 
+                                  href={slide.productLink || '#'}
+                                  className="flex items-center gap-2 bg-[#ebe7e0]/95 backdrop-blur-sm 
+                                           shadow-lg rounded-lg p-2 border border-[#b39e86] 
+                                           hover:bg-[#dcd5ca]/95"
                                 >
-                                  <Link 
-                                    href="/product/sleek-curve-japandi-glow-minimalist-pendant-light"
-                                    className="invisible relative flex items-center gap-2 
-                                             bg-[#ebe7e0]/95 backdrop-blur-sm shadow-lg rounded-lg p-2
-                                             border border-[#b39e86] 
-                                             transition-all duration-500 ease-out
-                                             group-hover:visible hover:bg-[#dcd5ca]/95"
-                                  >
-                                    <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
-                                      View Product
-                                    </span>
-                                    <svg 
-                                      className="w-4 h-4 text-[#9c826b] transition-all duration-300
-                                              group-hover:translate-x-1" 
-                                      fill="none" 
-                                      viewBox="0 0 24 24" 
-                                      stroke="currentColor"
-                                    >
-                                      <path 
-                                        strokeLinecap="round" 
-                                        strokeLinejoin="round" 
-                                        strokeWidth={2} 
-                                        d="M13 7l5 5m0 0l-5 5m5-5H6" 
-                                      />
-                                    </svg>
-                                  </Link>
-                                </motion.div>
+                                  <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
+                                    View Product
+                                  </span>
+                                  <ChevronRight className="w-4 h-4 text-[#9c826b]" />
+                                </Link>
                               </div>
                             </div>
                           </div>
@@ -437,26 +405,18 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       </motion.div>
                     )}
 
-                    {/* Slide Menu with Title */}
-                    <motion.div
+                    {/* Simplified Menu */}
+                    <div
                       onMouseEnter={() => handleMenuHover(true)}
                       onMouseLeave={() => handleMenuHover(false)}
-                      initial={{ opacity: 0, x: slide.menu.position === 'left' ? -50 : 50 }}
-                      animate={{
-                        opacity: currentSlide === index ? 1 : 0,
-                        x: currentSlide === index ? 0 : (slide.menu.position === 'left' ? -50 : 50)
-                      }}
-                      transition={{ duration: 0.7, delay: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                      className={`absolute ${getMenuPosition(slide.menu, slide.id)} z-20 max-w-[460px] p-7 rounded-xl 
-                                 bg-black/10 backdrop-blur-[2px] shadow-2xl shadow-black/5 border border-white/5`}
+                      className={`absolute ${getMenuPosition(slide.menu, slide.id)} z-20 max-w-[460px] p-7 
+                                 rounded-xl bg-black/10 backdrop-blur-[2px] shadow-2xl 
+                                 shadow-black/5 border border-white/5 
+                                 transition-opacity duration-500
+                                 ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}
                     >
-                      {/* Title Group with refined typography */}
-                      <motion.div
-                        className={`mb-7 ${slide.menu.position === 'right' ? 'text-right' : 'text-left'}`}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                      >
+                      {/* Title Group */}
+                      <div className={`mb-7 ${slide.menu.position === 'right' ? 'text-right' : 'text-left'}`}>
                         <h2 className="text-[2.5rem] leading-[1.1] tracking-normal text-white font-light 
                                        [text-shadow:_0_1px_2px_rgba(0,0,0,0.1)]">
                           {slide.title}
@@ -466,55 +426,39 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             {slide.subtitle}
                           </p>
                         )}
-                      </motion.div>
+                      </div>
 
-                      {/* Menu Items with adjusted spacing */}
+                      {/* Menu Items */}
                       <div className="space-y-3">
-                        {slide.menu.items.map((item, idx) => (
-                          <motion.div
+                        {slide.menu.items.map((item) => (
+                          <div
                             key={item.label}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.6 + (idx * 0.1) }}
                             className={`group cursor-pointer ${
                               slide.menu.position === 'right' ? 'text-right' : 'text-left'
                             }`}
                           >
                             <Link 
                               href={item.link}
-                              className={`relative block transition-all duration-500 py-3 px-7 rounded-lg 
+                              className={`relative block transition-all duration-300 py-3 px-7 rounded-lg 
                                        ${slide.menu.position === 'right' ? 'hover:pr-14' : 'hover:pl-14'} 
                                        hover:bg-white/5`}
                             >
                               <span className="block text-[1.85rem] font-light tracking-wide text-white/90 
-                                             group-hover:text-white transition-colors duration-500 capitalize">
-                                {item.label.toLowerCase()}
+                                             group-hover:text-white transition-colors duration-300">
+                                {item.label}
                               </span>
                               {item.description && (
                                 <span className="block mt-1 text-sm text-white/60 group-hover:text-white/80 
-                                               transition-colors duration-500 font-light tracking-wide capitalize">
-                                  {item.description.toLowerCase()}
+                                               transition-colors duration-300 font-light tracking-wide">
+                                  {item.description}
                                 </span>
                               )}
-                              <motion.div
-                                className={`absolute ${slide.menu.position === 'right' ? '-right-8' : '-left-8'} 
-                                         top-1/2 -translate-y-1/2 w-6 h-[1px] bg-white/40 
-                                         origin-${slide.menu.position === 'right' ? 'right' : 'left'} scale-x-0 
-                                         group-hover:scale-x-100 group-hover:bg-white transition-all duration-500`}
-                                layoutId={`menu-line-${index}-${idx}`}
-                              />
-                              <motion.div 
-                                className={`absolute ${slide.menu.position === 'right' ? 'right-4' : 'left-4'} 
-                                         top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-white/0 
-                                         group-hover:bg-white scale-0 group-hover:scale-100 
-                                         transition-all duration-500 delay-100`}
-                              />
                             </Link>
-                          </motion.div>
+                          </div>
                         ))}
                       </div>
-                    </motion.div>
-                  </motion.div>
+                    </div>
+                  </div>
                 ))}
               </div>
 
@@ -624,31 +568,11 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                         
                         {/* Active Indicator with Enhanced Animation */}
                         {isActive && (
-                          <>
-                            <motion.div
-                              layoutId="activeThumb"
-                              className="absolute inset-0 border-2 border-white"
-                              transition={{ duration: 0.3 }}
-                            />
-
-                            {/* Progress Line */}
-                            <motion.div
-                              key={`progress-${progressKey}-${currentSlide}`}
-                              initial={{ scaleX: 0 }}
-                              animate={{ scaleX: isMenuHovered ? 0 : 1 }}
-                              transition={{ 
-                                duration: isMenuHovered ? 0.3 : 5,
-                                ease: "linear"
-                              }}
-                              className="absolute bottom-0 left-0 w-full h-0.5 bg-white/80
-                                       origin-left shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                              onAnimationComplete={() => {
-                                if (!isMenuHovered) {
-                                  goToSlide(currentSlide + 1);
-                                }
-                              }}
-                            />
-                          </>
+                          <motion.div
+                            layoutId="activeThumb"
+                            className="absolute inset-0 border-2 border-white"
+                            transition={{ duration: 0.3 }}
+                          />
                         )}
                       </motion.div>
                     );
