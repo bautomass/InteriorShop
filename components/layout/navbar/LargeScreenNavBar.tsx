@@ -358,7 +358,8 @@ export const DesktopHeader = () => {
                 <button
                   onClick={() => setIsNavOpen(!isNavOpen)}
                   className="flex items-center gap-2.5"
-                  aria-label="Toggle menu"
+                  aria-label={isNavOpen ? "Close menu" : "Open menu"}
+                  aria-expanded={isNavOpen}
                 >
                   <BurgerIcon isOpen={isNavOpen} />
                   <span 
@@ -405,7 +406,8 @@ export const DesktopHeader = () => {
                       key="search-icon"
                       onClick={() => handlePanelChange('search')}
                       className="p-2 rounded-full hover:bg-black/5 transition-colors"
-                      aria-label="Search"
+                      aria-label="Open search"
+                      aria-expanded={isSearchOpen}
                     >
                       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" />
@@ -479,6 +481,8 @@ export const DesktopHeader = () => {
                             className="flex w-full items-center justify-between px-4 py-2 
                                      text-left text-sm text-gray-900 transition-colors 
                                      hover:bg-gray-100"
+                            aria-label={`Select ${currency.code} as currency`}
+                            aria-selected={selectedCurrency.code === currency.code}
                           >
                             <span>{currency.code}</span>
                             {selectedCurrency.code === currency.code && (
@@ -502,7 +506,8 @@ export const DesktopHeader = () => {
                 <button
                   onClick={() => handlePanelChange('account')}
                   className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
-                  aria-label="Account"
+                  aria-label="Open account menu"
+                  aria-expanded={isAccountOpen}
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" />
@@ -593,6 +598,7 @@ export const DesktopHeader = () => {
                                 onClick={() => setIsCartOpen(true)}
                                 className="w-full py-2 bg-white border border-[#9e896c] text-[#9e896c] 
                                          rounded-lg hover:bg-[#9e896c]/5 transition-colors text-sm font-medium"
+                                aria-label="View cart details"
                               >
                                 View Cart
                               </button>
@@ -606,6 +612,7 @@ export const DesktopHeader = () => {
                                 className="w-full py-2 bg-[#9e896c] text-white rounded-lg 
                                          hover:bg-[#8a775d] transition-colors text-sm font-medium
                                          disabled:opacity-50 disabled:cursor-not-allowed"
+                                aria-label="Proceed to checkout"
                               >
                                 Checkout
                               </button>

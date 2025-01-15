@@ -800,24 +800,28 @@ const FeaturedProduct = () => {
                     <button
                       onClick={() => handleShare('facebook')}
                       className="p-1.5 sm:p-2 rounded-full hover:bg-[#6B5E4C]/5 transition-colors duration-200"
+                      aria-label="Share on Facebook"
                     >
                       <Facebook className="w-5 h-5 text-[#6B5E4C]" />
                     </button>
                     <button
                       onClick={() => handleShare('twitter')}
                       className="p-1.5 sm:p-2 rounded-full hover:bg-[#6B5E4C]/5 transition-colors duration-200"
+                      aria-label="Share on Twitter"
                     >
                       <X className="w-5 h-5 text-[#6B5E4C]" />
                     </button>
                     <button
                       onClick={() => handleShare('pinterest')}
                       className="p-1.5 sm:p-2 rounded-full hover:bg-[#6B5E4C]/5 transition-colors duration-200"
+                      aria-label="Share on Pinterest"
                     >
                       <Pinterest className="w-5 h-5 text-[#6B5E4C]" />
                     </button>
                     <button
                       onClick={() => handleShare('email')}
                       className="p-1.5 sm:p-2 rounded-full hover:bg-[#6B5E4C]/5 transition-colors duration-200"
+                      aria-label="Share via Email"
                     >
                       <Mail className="w-5 h-5 text-[#6B5E4C]" />
                     </button>
@@ -825,6 +829,7 @@ const FeaturedProduct = () => {
                     <button
                       onClick={() => handleShare('copy')}
                       className="p-1.5 sm:p-2 rounded-full hover:bg-[#6B5E4C]/5 transition-colors duration-200"
+                      aria-label="Copy link to clipboard"
                     >
                       <LinkIcon className="w-5 h-5 text-[#6B5E4C]" />
                     </button>

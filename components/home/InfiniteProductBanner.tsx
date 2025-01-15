@@ -121,7 +121,7 @@ const ProductCard = memo(function ProductCard({ product, snippet }: ProductCardP
             className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/95 rounded-lg hover:bg-white 
                     text-[#6B5E4C] transition-all duration-300 flex items-center gap-1.5
                     hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5"
-            aria-label={`View ${product.title}`}
+            aria-label={`View details for ${product.title}`}
           >
             <span className="text-xs sm:text-sm font-medium">View</span>
             <svg 
@@ -129,6 +129,7 @@ const ProductCard = memo(function ProductCard({ product, snippet }: ProductCardP
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path 
                 strokeLinecap="round" 

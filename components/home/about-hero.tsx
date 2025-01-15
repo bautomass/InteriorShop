@@ -408,6 +408,7 @@ function ErrorFallback({ error }: { error: Error }) {
       </p>
       <button
         onClick={() => window.location.reload()}
+        aria-label="Retry loading collections"
         className="px-4 py-2 bg-[#6B5E4C] text-white rounded-lg
           hover:bg-[#8C7E6A] transition-colors duration-300"
       >
@@ -658,7 +659,7 @@ const AboutHero = memo(function AboutHero() {
                         onClick={() => setCurrentImageIndex(index)}
                         role="tab"
                         aria-selected={index === currentImageIndex}
-                        aria-label={`Show image ${index + 1}: ${image.alt}`}
+                        aria-label={`View image ${index + 1}: ${image.alt}`}
                         className={`w-2 h-2 rounded-full transition-all duration-300
                           ${index === currentImageIndex 
                             ? 'bg-white w-6' 
@@ -819,7 +820,7 @@ const AboutHero = memo(function AboutHero() {
                       onClick={() => setCurrentImageIndex(index)}
                       role="tab"
                       aria-selected={index === currentImageIndex}
-                      aria-label={`Show image ${index + 1}: ${image.alt}`}
+                      aria-label={`View image ${index + 1}: ${image.alt}`}
                       className={`w-2 h-2 rounded-full transition-all duration-300
                         ${index === currentImageIndex 
                           ? 'bg-white w-6' 

@@ -105,13 +105,10 @@ const ImageGallery = memo(({ product }: { product: Product }) => {
         }`}
       >
         {images.slice(0, 11).map((_, idx) => (
-          <motion.div
+          <motion.button
             key={idx}
-            initial={false}
-            animate={{
-              scale: activeImage === idx ? 1.2 : 1,
-              backgroundColor: activeImage === idx ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.7)'
-            }}
+            aria-label={`View image ${idx + 1} of ${images.length}`}
+            aria-current={activeImage === idx}
             className="h-2 w-2 rounded-full"
             style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
           />
@@ -292,8 +289,9 @@ const ProductVariantModal = ({ isOpen, onClose, product, onAddToCart }: ProductV
               <button
                 onClick={onClose}
                 className="rounded-full p-2 hover:bg-gray-100"
+                aria-label="Close product options"
               >
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
 
@@ -341,15 +339,17 @@ const ProductVariantModal = ({ isOpen, onClose, product, onAddToCart }: ProductV
                     <button
                       onClick={() => handleQuantityChange(-1)}
                       className="rounded-md border bg-white p-2 hover:bg-gray-50"
+                      aria-label="Decrease quantity"
                     >
-                      <Minus className="h-4 w-4" />
+                      <Minus className="h-4 w-4" aria-hidden="true" />
                     </button>
                     <span className="w-12 text-center text-lg font-medium">{quantity}</span>
                     <button
                       onClick={() => handleQuantityChange(1)}
                       className="rounded-md border bg-white p-2 hover:bg-gray-50"
+                      aria-label="Increase quantity"
                     >
-                      <Plus className="h-4 w-4" />
+                      <Plus className="h-4 w-4" aria-hidden="true" />
                     </button>
                   </div>
                 </div>
@@ -1139,9 +1139,10 @@ export default function LampsCollection() {
                   <button
                     onClick={() => mainSwiper?.slidePrev()}
                     className="mr-2 flex h-6 w-6 items-center justify-center rounded-full text-primary-600 transition-colors hover:bg-primary-50"
+                    aria-label="Previous products"
                     disabled={isBeginning}
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="h-4 w-4" aria-hidden="true" />
                   </button>
 
                   <div className="relative flex items-center">
@@ -1182,9 +1183,10 @@ export default function LampsCollection() {
                   <button
                     onClick={() => mainSwiper?.slideNext()}
                     className="ml-2 flex h-6 w-6 items-center justify-center rounded-full text-primary-600 transition-colors hover:bg-primary-50"
+                    aria-label="Next products"
                     disabled={isEnd}
                   >
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
               </div>
