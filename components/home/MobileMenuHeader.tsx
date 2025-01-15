@@ -1051,17 +1051,22 @@ export const MobileHero = memo(() => {
       {HeroButtons}
 
       {/* Hero Image */}
-      <div className="relative h-full w-full">
+      <div className="relative h-full w-full bg-neutral-100">
         <Image
           src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
           alt="Mobile Hero"
           fill
           priority
           fetchPriority="high"
-          className="object-cover translate-y-[-50px]"
+          className="object-cover opacity-0 transition-opacity duration-500 ease-in-out"
           sizes="100vw"
-          quality={100}
-          loading="eager"
+          quality={85}
+          onLoad={(e) => {
+            e.currentTarget.classList.add('opacity-100');
+          }}
+          style={{
+            transform: 'translateY(-50px)'
+          }}
         />
         
         {/* Quote Overlay */}

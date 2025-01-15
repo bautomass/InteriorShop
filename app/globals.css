@@ -112,3 +112,12 @@ button {
     display: none;  /* Chrome, Safari and Opera */
   }
 }
+
+img {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+img.opacity-100 {
+  opacity: 1;
+}
