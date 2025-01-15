@@ -323,29 +323,31 @@ const useCachedCollections = () => {
 // Main component
 export const MobileHero = memo(() => {
   const { cart } = useCart();
-  const { updateState } = useHeaderState();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isNavOpen, setIsNavOpen] = useState(false);
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
-  const [searchResults, setSearchResults] = useState<{
-    products: any[];
-    collections: any[];
-  }>({ products: [], collections: [] });
-  const [isSearching, setIsSearching] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [expandedSections, setExpandedSections] = useState({
-    'Help & Information': true,
-    'Legal': false
+  const { updateState: updateHeaderState } = useHeaderState();
+  const [state, setState] = useState({
+    isSearchOpen: false,
+    isCartOpen: false,
+    isNavOpen: false,
+    isAccountOpen: false,
+    searchQuery: '',
+    collections: [] as Collection[],
+    currentPromoIndex: 0,
+    loading: true,
+    headerVisible: true,
+    lastScrollY: 0,
+    isScrolled: false,
+    isSearching: false,
+    searchResults: {
+      collections: [] as Collection[],
+      products: [] as any[]
+    },
+    expandedSections: {
+      'Help & Information': true,
+      'Legal': false
+    }
   });
-  const lastScrollY = useRef(0);
-  const isVisible = useRef(true);
-  const [headerVisible, setHeaderVisible] = useState(true);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Constants
   const email = 'info@simpleinteriorideas.com';
@@ -356,58 +358,62 @@ export const MobileHero = memo(() => {
     debounce(() => {
       requestAnimationFrame(() => {
         const currentScrollY = window.scrollY;
-        setHeaderVisible(currentScrollY < lastScrollY.current || currentScrollY < 100);
-        lastScrollY.current = currentScrollY;
+        setState(prev => ({ 
+          ...prev, 
+          headerVisible: currentScrollY < prev.lastScrollY || currentScrollY < 100,
+          lastScrollY: currentScrollY,
+          isScrolled: currentScrollY > 0
+        }));
       });
     }, SCROLL_THROTTLE_MS),
     []
   );
 
-  // Optimized collections fetch
-  useEffect(() => {
-    if (isNavOpen) {
-      const fetchCollections = async () => {
-        try {
-          const res = await fetch('/api/collections');
-          const data = await res.json();
-          const filteredCollections = data.collections.filter(
-            (collection: Collection) => !EXCLUDED_HANDLES.includes(collection.handle.toLowerCase())
-          );
-          setCollections(filteredCollections);
-        } catch (error) {
-          console.error('Error fetching collections:', error);
-        }
-      };
-      fetchCollections();
+  // 2. Collections Fetch Optimization
+  const fetchCollections = useCallback(async () => {
+    // Try to get from cache first
+    const cached = sessionStorage.getItem('collections-cache');
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < 5 * 60 * 1000) { // 5 minutes cache
+        setState(prev => ({ ...prev, collections: data, loading: false }));
+        return;
+      }
     }
-  }, [isNavOpen]);
-
-  useEffect(() => {
-    fetch('/api/collections')
-      .then(res => res.json())
-      .then(data => {
-        const filteredCollections = data.collections.filter(
-          (collection: Collection) => !EXCLUDED_HANDLES.includes(collection.handle.toLowerCase())
-        );
-        setCollections(filteredCollections);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error prefetching collections:', error);
-        setLoading(false);
-      });
+    
+    try {
+      const res = await fetch('/api/collections');
+      const data = await res.json();
+      const filtered = data.collections.filter(
+        (collection: Collection) => !EXCLUDED_HANDLES.includes(collection.handle.toLowerCase())
+      );
+      setState(prev => ({ ...prev, collections: filtered, loading: false }));
+      sessionStorage.setItem('collections-cache', JSON.stringify({
+        data: filtered,
+        timestamp: Date.now()
+      }));
+    } catch (error) {
+      console.error('Error fetching collections:', error);
+      setState(prev => ({ ...prev, loading: false }));
+    }
   }, []);
 
   useEffect(() => {
+    if (state.isNavOpen) {
+      fetchCollections();
+    }
+  }, [state.isNavOpen, fetchCollections]);
+
+  useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentPromoIndex((prev) => (prev + 1) % promos.length);
+      setState(prev => ({ ...prev, currentPromoIndex: (prev.currentPromoIndex + 1) % promos.length }));
     }, PROMO_INTERVAL);
 
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
-    if (isNavOpen) {
+    if (state.isNavOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -415,25 +421,25 @@ export const MobileHero = memo(() => {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isNavOpen]);
+  }, [state.isNavOpen]);
 
   // Add debounced search handler
   const debouncedSearch = useCallback(
     debounce(async (query: string) => {
       if (!query.trim()) {
-        setSearchResults({ products: [], collections: [] });
+        setState(prev => ({ ...prev, searchResults: { products: [], collections: [] } }));
         return;
       }
 
-      setIsSearching(true);
+      setState(prev => ({ ...prev, isSearching: true }));
       try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         const data = await response.json();
-        setSearchResults(data);
+        setState(prev => ({ ...prev, searchResults: data }));
       } catch (error) {
         console.error('Search error:', error);
       } finally {
-        setIsSearching(false);
+        setState(prev => ({ ...prev, isSearching: false }));
       }
     }, 300),
     []
@@ -441,12 +447,12 @@ export const MobileHero = memo(() => {
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
-    setSearchQuery(query);
+    setState(prev => ({ ...prev, searchQuery: query }));
     debouncedSearch(query);
   };
 
   useEffect(() => {
-    if (isSearchOpen && searchQuery) {
+    if (state.isSearchOpen && state.searchQuery) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -455,23 +461,27 @@ export const MobileHero = memo(() => {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isSearchOpen, searchQuery]);
+  }, [state.isSearchOpen, state.searchQuery]);
 
   const handlePanelChange = (panel: 'search' | 'account' | 'cart') => {
-    setIsSearchOpen(false);
-    setIsAccountOpen(false);
-    setIsCartOpen(false);
-    setSearchQuery('');
+    setState(prev => ({
+      ...prev,
+      isSearchOpen: false,
+      isAccountOpen: false,
+      isCartOpen: false,
+      searchQuery: '',
+      isNavOpen: false
+    }));
 
     switch (panel) {
       case 'search':
-        setIsSearchOpen(true);
+        setState(prev => ({ ...prev, isSearchOpen: true }));
         break;
       case 'account':
-        setIsAccountOpen(true);
+        setState(prev => ({ ...prev, isAccountOpen: true }));
         break;
       case 'cart':
-        setIsCartOpen(true);
+        setState(prev => ({ ...prev, isCartOpen: true }));
         break;
     }
   };
@@ -482,19 +492,55 @@ export const MobileHero = memo(() => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleSection = (title: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({
+  const toggleSection = (title: keyof typeof state.expandedSections) => {
+    setState(prev => ({
       ...prev,
-      [title]: !prev[title]
+      expandedSections: {
+        ...prev.expandedSections,
+        [title]: !prev.expandedSections[title]
+      }
     }));
   };
+
+  // 3. Hero Buttons Optimization
+  const HeroButtons = (
+    <div className="absolute bottom-0 left-0 right-0 z-10 grid grid-cols-2">
+      <Link
+        href="/story"
+        className="py-4 bg-white text-[#9e896c] text-sm font-medium text-center
+                   hover:bg-[#9e896c] hover:text-white transition-colors"
+      >
+        Our Story
+      </Link>
+      <Link
+        href="/collections/all-products"
+        prefetch={false}
+        className="py-4 bg-[#9e896c] text-white text-sm font-medium text-center
+                   hover:bg-opacity-90 transition-colors"
+      >
+        All Products
+      </Link>
+    </div>
+  );
+
+  // 4. Performance Monitoring
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      new PerformanceObserver((entryList) => {
+        const lcpEntry = entryList.getEntries().at(-1);
+        if (lcpEntry) {
+          console.log('LCP:', lcpEntry.startTime);
+        }
+      }).observe({ entryTypes: ['largest-contentful-paint'] });
+    }
+  }, []);
 
   return (
     <div className="relative h-[100vh] lg:hidden">
       {/* Update the header container */}
       <div 
         className={`fixed top-0 left-0 right-0 z-[9999] transform transition-transform duration-300
-          ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}
+          ${state.headerVisible ? 'translate-y-0' : '-translate-y-full'}`}
       >
         <div 
           className={`w-full backdrop-blur-sm shadow-lg 
@@ -504,11 +550,11 @@ export const MobileHero = memo(() => {
             before:border-r-[3px] 
             before:border-black/10
             transition-[background,shadow,transform] duration-500
-            ${isScrolled 
+            ${state.isScrolled 
               ? 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]' 
               : 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]'
             }
-            ${(isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) 
+            ${(state.isNavOpen || (state.isSearchOpen && state.searchQuery) || state.isAccountOpen || state.isCartOpen) 
               ? 'h-screen' 
               : 'h-auto'
             }`}
@@ -516,20 +562,20 @@ export const MobileHero = memo(() => {
           {/* Header Section */}
           <div className="flex items-center justify-between p-4">
             <button
-              onClick={() => setIsNavOpen(!isNavOpen)}
+              onClick={() => setState(prev => ({ ...prev, isNavOpen: !prev.isNavOpen }))}
               className="flex items-center gap-2.5"
-              aria-label={isNavOpen ? "Close menu" : "Open menu"}
-              aria-expanded={isNavOpen}
+              aria-label={state.isNavOpen ? "Close menu" : "Open menu"}
+              aria-expanded={state.isNavOpen}
             >
-              <BurgerIcon isOpen={isNavOpen} />
+              <BurgerIcon isOpen={state.isNavOpen} />
               <span 
                 className="text-sm font-medium text-neutral-700"
                 style={{
                   transition: 'color 0.3s',
-                  color: isNavOpen ? '#9e896c' : ''
+                  color: state.isNavOpen ? '#9e896c' : ''
                 }}
               >
-                {isNavOpen ? 'Close' : 'Menu'}
+                {state.isNavOpen ? 'Close' : 'Menu'}
               </span>
             </button>
 
@@ -537,7 +583,7 @@ export const MobileHero = memo(() => {
             <div className="flex items-center gap-4">
               {/* Search Icon/Input */}
               <AnimatePresence mode="wait">
-                {!isSearchOpen ? (
+                {!state.isSearchOpen ? (
                   <motion.button 
                     key="search-icon"
                     onClick={() => handlePanelChange('search')}
@@ -560,7 +606,7 @@ export const MobileHero = memo(() => {
                       <input
                         ref={searchInputRef}
                         type="text"
-                        value={searchQuery}
+                        value={state.searchQuery}
                         onChange={handleSearchInput}
                         placeholder="Search..."
                         className="w-full px-4 py-2 rounded-lg bg-neutral-100/80 
@@ -569,8 +615,7 @@ export const MobileHero = memo(() => {
                       />
                       <button
                         onClick={() => {
-                          setIsSearchOpen(false);
-                          setSearchQuery('');
+                          setState(prev => ({ ...prev, isSearchOpen: false, searchQuery: '' }));
                         }}
                         className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 
                                  rounded-full hover:bg-neutral-200/80 transition-colors"
@@ -614,7 +659,7 @@ export const MobileHero = memo(() => {
 
           {/* Search Results Section */}
           <AnimatePresence>
-            {isSearchOpen && searchQuery && (
+            {state.isSearchOpen && state.searchQuery && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -624,27 +669,26 @@ export const MobileHero = memo(() => {
                 <div className="h-[calc(100vh-80px)] overflow-y-auto overscroll-contain pb-safe-area-inset-bottom">
                   <div className="p-4 space-y-6">
                     {/* Loading State */}
-                    {isSearching && (
+                    {state.isSearching && (
                       <div className="flex justify-center py-4">
                         <div className="w-6 h-6 border-2 border-[#9e896c] border-t-transparent rounded-full animate-spin" />
                       </div>
                     )}
 
                     {/* Results */}
-                    {!isSearching && (searchResults.collections.length > 0 || searchResults.products.length > 0) ? (
+                    {!state.isSearching && (state.searchResults.collections.length > 0 || state.searchResults.products.length > 0) ? (
                       <div className="space-y-8">
                         {/* Collections Section */}
-                        {searchResults.collections.length > 0 && (
+                        {state.searchResults.collections.length > 0 && (
                           <div>
                             <h3 className="text-sm font-medium text-neutral-500 mb-3">Collections</h3>
                             <div className="grid grid-cols-2 gap-3">
-                              {searchResults.collections.map((collection) => (
+                              {state.searchResults.collections.map((collection) => (
                                 <Link
                                   key={collection.handle}
                                   href={`/collections/${collection.handle}`}
                                   onClick={() => {
-                                    setIsSearchOpen(false);
-                                    setSearchQuery('');
+                                    setState(prev => ({ ...prev, isSearchOpen: false, searchQuery: '' }));
                                   }}
                                   className="group relative block overflow-hidden rounded-lg border border-neutral-200 bg-white p-3 hover:border-neutral-300 transition-all"
                                 >
@@ -663,17 +707,16 @@ export const MobileHero = memo(() => {
                         )}
 
                         {/* Products Section */}
-                        {searchResults.products.length > 0 && (
+                        {state.searchResults.products.length > 0 && (
                           <div>
                             <h3 className="text-sm font-medium text-neutral-500 mb-3">Products</h3>
                             <div className="grid grid-cols-2 gap-3">
-                              {searchResults.products.map((product) => (
+                              {state.searchResults.products.map((product) => (
                                 <Link
                                   key={product.handle}
                                   href={`/product/${product.handle}`}
                                   onClick={() => {
-                                    setIsSearchOpen(false);
-                                    setSearchQuery('');
+                                    setState(prev => ({ ...prev, isSearchOpen: false, searchQuery: '' }));
                                   }}
                                   className="group relative block overflow-hidden rounded-lg border border-neutral-200 bg-white hover:border-neutral-300 transition-all"
                                 >
@@ -702,7 +745,7 @@ export const MobileHero = memo(() => {
                           </div>
                         )}
                       </div>
-                    ) : !isSearching && searchQuery ? (
+                    ) : !state.isSearching && state.searchQuery ? (
                       <div className="text-center py-8">
                         <p className="text-neutral-600">No results found</p>
                         <p className="text-sm text-neutral-400 mt-1">Try adjusting your search</p>
@@ -716,7 +759,7 @@ export const MobileHero = memo(() => {
 
           {/* Account Panel */}
           <AnimatePresence>
-            {isAccountOpen && (
+            {state.isAccountOpen && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -725,7 +768,7 @@ export const MobileHero = memo(() => {
                 <div className="flex justify-between items-center border-b border-neutral-200 pb-3 px-4 pt-2">
                   <h2 className="text-lg font-medium text-neutral-800">Account</h2>
                   <button
-                    onClick={() => setIsAccountOpen(false)}
+                    onClick={() => setState(prev => ({ ...prev, isAccountOpen: false }))}
                     className="p-2 rounded-full hover:bg-black/5 transition-colors"
                     aria-label="Close account panel"
                   >
@@ -742,7 +785,7 @@ export const MobileHero = memo(() => {
                         <button
                           onClick={() => {
                             // Add login logic here
-                            setIsAccountOpen(false);
+                            setState(prev => ({ ...prev, isAccountOpen: false }));
                           }}
                           className="w-full py-2.5 px-4 rounded-lg bg-[#9e896c] text-white hover:bg-[#8a775d] transition-colors"
                         >
@@ -751,7 +794,7 @@ export const MobileHero = memo(() => {
                         <button
                           onClick={() => {
                             // Add signup logic here
-                            setIsAccountOpen(false);
+                            setState(prev => ({ ...prev, isAccountOpen: false }));
                           }}
                           className="w-full py-2.5 px-4 rounded-lg border border-[#9e896c] text-[#9e896c] hover:bg-[#9e896c]/5 transition-colors"
                         >
@@ -767,7 +810,7 @@ export const MobileHero = memo(() => {
 
           {/* Cart Panel */}
           <AnimatePresence>
-            {isCartOpen && (
+            {state.isCartOpen && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -776,7 +819,7 @@ export const MobileHero = memo(() => {
                 <div className="flex justify-between items-center border-b border-neutral-200 pb-3 px-4 pt-2">
                   <h2 className="text-lg font-medium text-neutral-800">Shopping Cart</h2>
                   <button
-                    onClick={() => setIsCartOpen(false)}
+                    onClick={() => setState(prev => ({ ...prev, isCartOpen: false }))}
                     className="p-2 rounded-full hover:bg-black/5 transition-colors"
                     aria-label="Close cart panel"
                   >
@@ -855,13 +898,13 @@ export const MobileHero = memo(() => {
           </AnimatePresence>
 
           {/* Content that only shows when menu is open */}
-          {isNavOpen && (
+          {state.isNavOpen && (
             <div className="flex flex-col h-[calc(100vh-4rem)]">
               {/* Promos Section */}
               <div className="w-[calc(100%-3px)] relative h-12 overflow-hidden bg-gradient-to-r from-neutral-50/50 to-white/50 border-b border-neutral-100">
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={currentPromoIndex}
+                    key={state.currentPromoIndex}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
@@ -869,7 +912,7 @@ export const MobileHero = memo(() => {
                   >
                     <div className="flex items-center gap-2 text-sm text-neutral-700">
                       {(() => {
-                        const currentPromo = promos[currentPromoIndex % promos.length];
+                        const currentPromo = promos[state.currentPromoIndex % promos.length];
                         return (
                           <>
                             {currentPromo?.icon}
@@ -881,7 +924,7 @@ export const MobileHero = memo(() => {
                   </motion.div>
                 </AnimatePresence>
                 <motion.div
-                  key={`progress-${currentPromoIndex}`}
+                  key={`progress-${state.currentPromoIndex}`}
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: PROMO_INTERVAL / 1000, ease: "linear" }}
@@ -891,11 +934,11 @@ export const MobileHero = memo(() => {
 
               {/* Collections Grid */}
               <div className="flex-1 overflow-y-auto">
-              {loading ? (
+              {state.loading ? (
                 <LoadingChair />
               ) : (
                 <div className="grid grid-cols-2 gap-2 p-3">
-                  {collections.map((collection) => {
+                  {state.collections.map((collection) => {
                     // Icon mapping function
                     const getIcon = (handle: string) => {
                       switch (handle.toLowerCase()) {
@@ -948,7 +991,7 @@ export const MobileHero = memo(() => {
                       <Link
                         key={collection.handle}
                         href={`/collections/${collection.handle}`}
-                        onClick={() => setIsNavOpen(false)}
+                        onClick={() => setState(prev => ({ ...prev, isNavOpen: false }))}
                         className="group relative block py-3 px-2.5 transition-all duration-300 border-b border-neutral-100/50"
                       >
                         <div className="relative z-10 flex items-center gap-2">
@@ -969,7 +1012,7 @@ export const MobileHero = memo(() => {
 
               {/* Footer Navigation */}
               <FooterSections 
-                expandedSections={expandedSections} 
+                expandedSections={state.expandedSections} 
                 toggleSection={toggleSection} 
               />
 
@@ -1005,33 +1048,19 @@ export const MobileHero = memo(() => {
       </div>
 
       {/* Hero Buttons */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 flex">
-        <Link
-          href="/story"
-          className="flex-1 py-4 bg-white/90 backdrop-blur-sm text-[#9e896c] 
-                     text-sm font-medium hover:bg-[#9e896c] hover:text-white 
-                     transition-all duration-300 text-center"
-        >
-          Our Story
-        </Link>
-        <Link
-          href="/collections/all-products"
-          className="flex-1 py-4 bg-[#9e896c]/90 backdrop-blur-sm text-white 
-                     text-sm font-medium hover:bg-[#9e896c] 
-                     transition-all duration-300 text-center"
-        >
-          All Products
-        </Link>
-      </div>
+      {HeroButtons}
 
-      <OptimizedImage
+      {/* Hero Image */}
+      <Image
         src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
         alt="Mobile Hero"
-        fill={true}
+        fill
         priority
+        fetchPriority="high"
         className="object-cover"
         sizes="100vw"
-        quality={90}
+        quality={85}
+        loading="eager"
       />
     </div>
   );
