@@ -1065,19 +1065,18 @@ export const MobileHero = memo(() => {
         />
         
         {/* Quote Overlay */}
-        <div className="absolute top-36 right-4 max-w-[240px] z-10">
+        <div className="absolute top-36 right-4 max-w-[220px] z-10">
           <div className="backdrop-blur-sm rounded-2xl p-6 
-     bg-[#6b5e4c]/90
-     before:absolute before:inset-0 before:-z-10
-     before:rounded-2xl before:p-[1px]
-     before:bg-gradient-to-br before:from-white/20 before:to-transparent
-     after:absolute after:w-16 after:h-16
-     after:top-0 after:right-0
-     after:bg-white/5
-     after:rounded-full after:blur-2xl
-     after:transform after:-translate-x-1/2 after:-translate-y-1/2">
+            bg-[#6b5e4c]/90
+            before:absolute before:inset-0 before:-z-10
+            before:rounded-2xl before:p-[1px]
+            before:bg-gradient-to-br before:from-white/20 before:to-transparent
+            after:absolute after:w-16 after:h-16
+            after:top-0 after:right-0
+            after:bg-white/5
+            after:rounded-full after:blur-2xl
+            after:transform after:-translate-x-1/2 after:-translate-y-1/2">
             <blockquote className="relative">
-              <div className="absolute -top-4 -left-2 text-white/20 font-serif text-5xl">"</div>
               <p className="text-white text-sm font-medium leading-relaxed tracking-wide">
                 Simplicity is the ultimate sophistication
               </p>
