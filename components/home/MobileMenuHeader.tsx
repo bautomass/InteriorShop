@@ -503,25 +503,25 @@ export const MobileHero = memo(() => {
   };
 
   // 3. Hero Buttons Optimization
-  // const HeroButtons = (
-  //   <div className="absolute bottom-0 left-0 right-0 z-10 grid grid-cols-2">
-  //     <Link
-  //       href="/story"
-  //       className="py-4 bg-white text-[#9e896c] text-sm font-medium text-center
-  //                  hover:bg-[#9e896c] hover:text-white transition-colors"
-  //     >
-  //       Our Story
-  //     </Link>
-  //     <Link
-  //       href="/collections/all-products"
-  //       prefetch={false}
-  //       className="py-4 bg-[#9e896c] text-white text-sm font-medium text-center
-  //                  hover:bg-opacity-90 transition-colors"
-  //     >
-  //       All Products
-  //     </Link>
-  //   </div>
-  // );
+  const HeroButtons = (
+    <div className="absolute bottom-0 left-0 right-0 z-10 grid grid-cols-2">
+      <Link
+        href="/story"
+        className="py-4 bg-white text-[#9e896c] text-sm font-medium text-center
+                   hover:bg-[#9e896c] hover:text-white transition-colors"
+      >
+        Our Story
+      </Link>
+      <Link
+        href="/collections/all-products"
+        prefetch={false}
+        className="py-4 bg-[#9e896c] text-white text-sm font-medium text-center
+                   hover:bg-opacity-90 transition-colors"
+      >
+        All Products
+      </Link>
+    </div>
+  );
 
   // 4. Performance Monitoring
   useEffect(() => {
@@ -1048,20 +1048,37 @@ export const MobileHero = memo(() => {
       </div>
 
       {/* Hero Buttons */}
-      {/* {HeroButtons} */}
+      {HeroButtons}
 
       {/* Hero Image */}
-      <Image
-        src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
-        alt="Mobile Hero"
-        fill
-        priority
-        fetchPriority="high"
-        className="object-cover"
-        sizes="100vw"
-        quality={85}
-        loading="eager"
-      />
+      <div className="absolute inset-0 bg-neutral-100">
+        <img
+          src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
+          alt="Mobile Hero"
+          className="w-full h-full object-cover"
+          fetchPriority="high"
+          decoding="async"
+          style={{ minHeight: '100vh' }}
+        />
+      </div>
+
+      {/* Hero Buttons with proper z-index */}
+      <div className="relative z-10">
+        <div className="absolute bottom-0 left-0 right-0 grid grid-cols-2">
+          <Link
+            href="/story"
+            className="py-4 bg-white text-[#9e896c] text-sm font-medium text-center"
+          >
+            Our Story
+          </Link>
+          <Link
+            href="/collections/all-products"
+            className="py-4 bg-[#9e896c] text-white text-sm font-medium text-center"
+          >
+            All Products
+          </Link>
+        </div>
+      </div>
     </div>
   );
 });
