@@ -320,28 +320,6 @@ const useCachedCollections = () => {
   return collections;
 };
 
-// Add image preloader hook
-const useImagePreloader = (images: string[]) => {
-  useEffect(() => {
-    const preloadImages = () => {
-      images.forEach(src => {
-        const img = new window.Image();
-        img.src = src;
-      });
-    };
-    preloadImages();
-  }, [images]);
-};
-
-// Add runtime config
-export const config = {
-  unstable_runtimeJS: false,
-  unstable_JsPreload: false
-};
-
-// Constants section
-const HERO_IMAGE = "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557";
-
 // Main component
 export const MobileHero = memo(() => {
   const { cart } = useCart();
@@ -557,50 +535,13 @@ export const MobileHero = memo(() => {
     }
   }, []);
 
-  // Add image preloader
-  useImagePreloader([HERO_IMAGE]);
-
   return (
     <div className="relative h-[100vh] lg:hidden">
-      {/* Hero Image Section - Moved to top */}
-      <div className="relative h-[100vh] w-full overflow-hidden">
-        {/* Background Image */}
-        <Image
-          src={HERO_IMAGE}
-          alt="Mobile Hero"
-          fill
-          priority
-          quality={100}
-          className="object-cover w-full h-full"
-          sizes="100vw"
-        />
-
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/10" />
-
-        {/* Quote */}
-        <div className="absolute top-36 right-4 max-w-[220px] z-10">
-          <div className="backdrop-blur-sm rounded-2xl p-6 bg-[#6b5e4c]/90
-               before:absolute before:inset-0 before:-z-10
-               before:rounded-2xl before:p-[1px]
-               before:bg-gradient-to-br before:from-white/20 before:to-transparent">
-            <blockquote className="relative">
-              <p className="text-white text-sm font-medium leading-relaxed tracking-wide">
-                Simplicity is the ultimate sophistication
-              </p>
-              <footer className="mt-3">
-                <cite className="block text-right text-white/60 text-[11px] font-medium tracking-widest uppercase not-italic">
-                  — Leonardo da Vinci
-                </cite>
-              </footer>
-            </blockquote>
-          </div>
-        </div>
-      </div>
-
-      {/* Header Section */}
-      <div className="fixed top-0 left-0 right-0 z-[9999] transform transition-transform duration-300
-        ${state.headerVisible ? 'translate-y-0' : '-translate-y-full'}">
+      {/* Update the header container */}
+      <div 
+        className={`fixed top-0 left-0 right-0 z-[9999] transform transition-transform duration-300
+          ${state.headerVisible ? 'translate-y-0' : '-translate-y-full'}`}
+      >
         <div 
           className={`w-full backdrop-blur-sm shadow-lg 
             relative border-r-[3px] border-white
@@ -1108,6 +1049,46 @@ export const MobileHero = memo(() => {
 
       {/* Hero Buttons */}
       {HeroButtons}
+
+      {/* Hero Image */}
+      <div className="relative h-full w-full">
+        <Image
+          src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
+          alt="Mobile Hero"
+          fill
+          priority
+          fetchPriority="high"
+          className="object-cover translate-y-[-50px]"
+          sizes="100vw"
+          quality={100}
+          loading="eager"
+        />
+        
+        {/* Quote Overlay */}
+        <div className="absolute top-36 right-4 max-w-[220px] z-10">
+          <div className="backdrop-blur-sm rounded-2xl p-6 
+            bg-[#6b5e4c]/90
+            before:absolute before:inset-0 before:-z-10
+            before:rounded-2xl before:p-[1px]
+            before:bg-gradient-to-br before:from-white/20 before:to-transparent
+            after:absolute after:w-16 after:h-16
+            after:top-0 after:right-0
+            after:bg-white/5
+            after:rounded-full after:blur-2xl
+            after:transform after:-translate-x-1/2 after:-translate-y-1/2">
+            <blockquote className="relative">
+              <p className="text-white text-sm font-medium leading-relaxed tracking-wide">
+                Simplicity is the ultimate sophistication
+              </p>
+              <footer className="mt-3">
+                <cite className="block text-right text-white/60 text-[11px] font-medium tracking-widest uppercase not-italic">
+                  — Leonardo da Vinci
+                </cite>
+              </footer>
+            </blockquote>
+          </div>
+        </div>
+      </div>
     </div>
   );
 });
