@@ -503,25 +503,25 @@ export const MobileHero = memo(() => {
   };
 
   // 3. Hero Buttons Optimization
-  const HeroButtons = (
-    <div className="absolute bottom-0 left-0 right-0 z-10 grid grid-cols-2">
-      <Link
-        href="/story"
-        className="py-4 bg-white text-[#9e896c] text-sm font-medium text-center
-                   hover:bg-[#9e896c] hover:text-white transition-colors"
-      >
-        Our Story
-      </Link>
-      <Link
-        href="/collections/all-products"
-        prefetch={false}
-        className="py-4 bg-[#9e896c] text-white text-sm font-medium text-center
-                   hover:bg-opacity-90 transition-colors"
-      >
-        All Products
-      </Link>
-    </div>
-  );
+  // const HeroButtons = (
+  //   <div className="absolute bottom-0 left-0 right-0 z-10 grid grid-cols-2">
+  //     <Link
+  //       href="/story"
+  //       className="py-4 bg-white text-[#9e896c] text-sm font-medium text-center
+  //                  hover:bg-[#9e896c] hover:text-white transition-colors"
+  //     >
+  //       Our Story
+  //     </Link>
+  //     <Link
+  //       href="/collections/all-products"
+  //       prefetch={false}
+  //       className="py-4 bg-[#9e896c] text-white text-sm font-medium text-center
+  //                  hover:bg-opacity-90 transition-colors"
+  //     >
+  //       All Products
+  //     </Link>
+  //   </div>
+  // );
 
   // 4. Performance Monitoring
   useEffect(() => {
@@ -1048,7 +1048,7 @@ export const MobileHero = memo(() => {
       </div>
 
       {/* Hero Buttons */}
-      {HeroButtons}
+      {/* {HeroButtons} */}
 
       {/* Hero Image */}
       <Image
