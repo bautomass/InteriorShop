@@ -346,7 +346,7 @@ const useCachedCollections = () => {
 // Main component
 export const MobileHero = memo(() => {
   // Add preloader hook at the top with other hooks
-  useImagePreload();
+  // useImagePreload();
 
   const { cart } = useCart();
   const { updateState: updateHeaderState } = useHeaderState();
