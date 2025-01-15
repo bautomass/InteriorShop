@@ -518,7 +518,8 @@ export const MobileHero = memo(() => {
             <button
               onClick={() => setIsNavOpen(!isNavOpen)}
               className="flex items-center gap-2.5"
-              aria-label="Toggle menu"
+              aria-label={isNavOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isNavOpen}
             >
               <BurgerIcon isOpen={isNavOpen} />
               <span 
@@ -541,6 +542,7 @@ export const MobileHero = memo(() => {
                     key="search-icon"
                     onClick={() => handlePanelChange('search')}
                     className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                    aria-label="Search"
                   >
                     <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" />
@@ -572,6 +574,7 @@ export const MobileHero = memo(() => {
                         }}
                         className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 
                                  rounded-full hover:bg-neutral-200/80 transition-colors"
+                        aria-label="Close search"
                       >
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -586,8 +589,9 @@ export const MobileHero = memo(() => {
               <button 
                 onClick={() => handlePanelChange('account')}
                 className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                aria-label="Account"
               >
-<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" />
                 </svg>
               </button>
@@ -596,6 +600,7 @@ export const MobileHero = memo(() => {
               <button 
                 onClick={() => handlePanelChange('cart')}
                 className="p-2 rounded-full hover:bg-black/5 transition-colors relative"
+                aria-label={`Cart ${cart?.totalQuantity ? `(${cart.totalQuantity} items)` : '(empty)'}`}
               >
                 <ShoppingCart className="w-6 h-6" />
                 {(cart?.totalQuantity ?? 0) > 0 && (
@@ -722,6 +727,7 @@ export const MobileHero = memo(() => {
                   <button
                     onClick={() => setIsAccountOpen(false)}
                     className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                    aria-label="Close account panel"
                   >
                     <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -772,6 +778,7 @@ export const MobileHero = memo(() => {
                   <button
                     onClick={() => setIsCartOpen(false)}
                     className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                    aria-label="Close cart panel"
                   >
                     <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

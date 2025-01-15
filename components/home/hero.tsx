@@ -471,6 +471,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                   className="relative group"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  aria-label="Previous slide"
                 >
                   <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
                                   group-hover:bg-black/60 transition-all duration-300 -z-10" />
@@ -586,6 +587,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                   className="relative group"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  aria-label="Next slide"
                 >
                   <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
                                  group-hover:bg-black/60 transition-all duration-300 -z-10" />
