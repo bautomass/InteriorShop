@@ -511,19 +511,13 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           y: isActive ? -8 : -4,
                           transition: { duration: 0.2 }
                         }}
-                        className={`relative overflow-hidden cursor-pointer rounded-lg
-                                   transition-shadow duration-300
-                                   ${isActive ? 
-                                     'w-44 h-24 shadow-lg hover:shadow-xl z-10' : 
-                                     'w-36 h-20 shadow-md hover:shadow-lg z-0'}`}
+                        className={`relative cursor-pointer rounded-lg
+                                    transition-shadow duration-300
+                                    ${isActive ? 
+                                      'w-44 h-24 shadow-lg hover:shadow-xl z-10' : 
+                                      'w-36 h-20 shadow-md hover:shadow-lg z-0'}`}
                       >
-                        {/* Slide number indicator */}
-                        <div className="absolute top-2 right-2 z-20 bg-black/50 rounded-full w-6 h-6 
-                                       flex items-center justify-center text-white text-xs font-medium">
-                          {actualSlideNumber}
-                        </div>
-                        
-                        <div className="absolute inset-0 w-full h-full">
+                        <div className="absolute inset-0 w-full h-full overflow-hidden rounded-lg">
                           <Image
                             src={slide.image}
                             alt={slide.alt}
@@ -575,6 +569,14 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             transition={{ duration: 0.3 }}
                           />
                         )}
+
+                        {/* Slide number indicator - moved outside image container */}
+                        <div className="absolute -top-2 -right-2 z-[100] bg-black/50 backdrop-blur-sm 
+                                rounded-full w-7 h-7 border border-white/10
+                                flex items-center justify-center text-white/90 
+                                text-xs font-medium shadow-lg">
+                          {actualSlideNumber}
+                        </div>
                       </motion.div>
                     );
                   })}
@@ -664,3 +666,4 @@ const Hero = memo(HeroComponent);
 Hero.displayName = 'Hero';
 
 export default Hero;
+
