@@ -10,6 +10,7 @@ import MaterialsStorySection from '@/components/home/MaterialsStorySection';
 import NewArrivalsCollection from '@/components/home/NewArrivalsCollection';
 import PendantLightSection from '@/components/home/PendantLightSection';
 import { Footer } from '@/components/layout/site-footer';
+import BackToTop from 'components/home/BackToTop';
 import Hero from 'components/home/hero';
 import LampsCollection from 'components/home/LampsCollection';
 import WishboneChairSection from 'components/home/WishboneChairSection';
@@ -55,6 +56,7 @@ export default function HomePage() {
         <WishboneChairSection/>
         <InteriorTipsSection/>
         <Footer/>
+        <BackToTop />
       </div>
     </>
   );

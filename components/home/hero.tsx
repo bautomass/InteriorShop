@@ -115,7 +115,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-6',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/heor-table-chairs.jpg?v=1736948720',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/heor-table-chairs.jpg?v=1736700243',
     alt: 'Serene Bedroom',
     title: 'Serene Bedroom',
     subtitle: 'Create your sanctuary',
@@ -297,362 +297,364 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
   return (
     <>
-      <div className="lg:hidden min-h-screen">
-        <MobileHero />
-      </div>
-      <div className="hidden lg:block relative">
-        <section 
-          className="relative h-[100vh] w-full overflow-hidden"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-        >
-          {/* Add subtle overlay */}
-          <div className="absolute inset-0 bg-black/10" />
+      {/* Mobile Hero */}
+      <MobileHero />
 
-          {/* Updated Hero Content */}
-          <div className="relative h-[100vh] w-full overflow-hidden">
-            <div className="flex h-full">
-              {heroSlides.map((slide, index) => (
-                <div
-                  key={slide.id}
-                  ref={el => slideRefs.current[index] = el}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    position: 'absolute',
-                    left: `${index * 100}%`,
-                    transform: `translateX(${-currentSlide * 100}%)`,
-                    transition: 'transform 0.5s ease-in-out'
-                  }}
-                  className="flex-shrink-0"
-                >
-                  {/* Background Image */}
-                  <Image
-                    src={slide.image}
-                    alt={slide.alt}
-                    fill
-                    priority={index === 0}
-                    quality={100}
-                    className="object-contain w-full h-full"
-                    sizes="100%"
-                  />
+      {/* Desktop Hero - hide on mobile */}
+      <div className="hidden lg:block">
+        <div className="relative">
+          <section 
+            className="relative h-[100vh] w-full overflow-hidden"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+          >
+            {/* Add subtle overlay */}
+            <div className="absolute inset-0 bg-black/10" />
 
-                  {/* Lamp Image - Keep animation for visual interest */}
-                  {index === 0 && slide.lampImage && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -50 }}
-                      animate={{ 
-                        opacity: currentSlide === index ? 1 : 0,
-                        y: currentSlide === index ? 0 : -50,
-                        rotate: [0, 2, -2, 2, 0],
-                      }}
-                      transition={{
-                        opacity: { duration: 0.5 },
-                        y: { duration: 0.5 },
-                        rotate: {
-                          duration: 6,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }
-                      }}
-                      className="absolute left-[15%] top-[0%] z-10 w-[120px] origin-top md:w-[180px]"
-                    >
-                      <div className="relative">
-                        <Image
-                          src={slide.lampImage}
-                          alt=""
-                          width={180}
-                          height={180}
-                          priority
-                          className="h-auto w-full"
-                        />
-                        
-                        {/* Keep the interactive product dot */}
-                        <div className="group absolute bottom-[20%] left-[65%] -translate-x-1/2 translate-y-1/2">
-                          <div className="relative inline-flex">
-                            {/* Pulse rings */}
-                            <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#dcd5ca]/60
-                                          animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
-                            <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#ebe7e0]/50
-                                          animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
-                            
-                            {/* Main dot */}
-                            <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] border-2 border-[#9c826b]
-                                          shadow-[0_0_10px_rgba(199,186,168,0.8)]
-                                          transition-all duration-500 ease-in-out
-                                          group-hover:scale-125" />
+            {/* Updated Hero Content */}
+            <div className="relative h-[100vh] w-full overflow-hidden">
+              <div className="flex h-full">
+                {heroSlides.map((slide, index) => (
+                  <div
+                    key={slide.id}
+                    ref={el => slideRefs.current[index] = el}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      left: `${index * 100}%`,
+                      transform: `translateX(${-currentSlide * 100}%)`,
+                      transition: 'transform 0.5s ease-in-out'
+                    }}
+                    className="flex-shrink-0"
+                  >
+                    {/* Background Image */}
+                    <Image
+                      src={slide.image}
+                      alt={slide.alt}
+                      fill
+                      priority={index === 0}
+                      quality={100}
+                      className="object-contain w-full h-full"
+                      sizes="100%"
+                    />
 
-                            {/* Simplified hover button */}
-                            <div className="absolute left-6 top-2 opacity-0 group-hover:opacity-100 
-                                          transition-opacity duration-300">
-                              <Link 
-                                href={slide.productLink || '#'}
-                                className="flex items-center gap-2 bg-[#ebe7e0]/95 backdrop-blur-sm 
-                                         shadow-lg rounded-lg p-2 border border-[#b39e86] 
-                                         hover:bg-[#dcd5ca]/95"
-                              >
-                                <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
-                                  View Product
-                                </span>
-                                <ChevronRight className="w-4 h-4 text-[#9c826b]" />
-                              </Link>
+                    {/* Lamp Image - Keep animation for visual interest */}
+                    {index === 0 && slide.lampImage && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -50 }}
+                        animate={{ 
+                          opacity: currentSlide === index ? 1 : 0,
+                          y: currentSlide === index ? 0 : -50,
+                          rotate: [0, 2, -2, 2, 0],
+                        }}
+                        transition={{
+                          opacity: { duration: 0.5 },
+                          y: { duration: 0.5 },
+                          rotate: {
+                            duration: 6,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }
+                        }}
+                        className="absolute left-[15%] top-[0%] z-10 w-[120px] origin-top md:w-[180px]"
+                      >
+                        <div className="relative">
+                          <Image
+                            src={slide.lampImage}
+                            alt=""
+                            width={180}
+                            height={180}
+                            priority
+                            className="h-auto w-full"
+                          />
+                          
+                          {/* Keep the interactive product dot */}
+                          <div className="group absolute bottom-[20%] left-[65%] -translate-x-1/2 translate-y-1/2">
+                            <div className="relative inline-flex">
+                              {/* Pulse rings */}
+                              <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#dcd5ca]/60
+                                            animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
+                              <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#ebe7e0]/50
+                                            animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
+                              
+                              {/* Main dot */}
+                              <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] border-2 border-[#9c826b]
+                                            shadow-[0_0_10px_rgba(199,186,168,0.8)]
+                                            transition-all duration-500 ease-in-out
+                                            group-hover:scale-125" />
+
+                              {/* Simplified hover button */}
+                              <div className="absolute left-6 top-2 opacity-0 group-hover:opacity-100 
+                                            transition-opacity duration-300">
+                                <Link 
+                                  href={slide.productLink || '#'}
+                                  className="flex items-center gap-2 bg-[#ebe7e0]/95 backdrop-blur-sm 
+                                           shadow-lg rounded-lg p-2 border border-[#b39e86] 
+                                           hover:bg-[#dcd5ca]/95"
+                                >
+                                  <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
+                                    View Product
+                                  </span>
+                                  <ChevronRight className="w-4 h-4 text-[#9c826b]" />
+                                </Link>
+                              </div>
                             </div>
                           </div>
                         </div>
+                      </motion.div>
+                    )}
+
+                    {/* Simplified Menu */}
+                    <div
+                      onMouseEnter={() => handleMenuHover(true)}
+                      onMouseLeave={() => handleMenuHover(false)}
+                      className={`absolute ${getMenuPosition(slide.menu, slide.id)} z-20 max-w-[460px] p-7 
+                                 rounded-xl bg-black/10 backdrop-blur-[2px] shadow-2xl 
+                                 shadow-black/5 border border-white/5 
+                                 transition-opacity duration-500
+                                 ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                      {/* Title Group */}
+                      <div className={`mb-7 ${slide.menu.position === 'right' ? 'text-right' : 'text-left'}`}>
+                        <h2 className="text-[2.5rem] leading-[1.1] tracking-normal text-white font-light 
+                                       [text-shadow:_0_1px_2px_rgba(0,0,0,0.1)]">
+                          {slide.title}
+                        </h2>
+                        {slide.subtitle && (
+                          <p className="mt-3 text-xl text-white/90 font-light tracking-wide">
+                            {slide.subtitle}
+                          </p>
+                        )}
                       </div>
-                    </motion.div>
-                  )}
 
-                  {/* Simplified Menu */}
-                  <div
-                    onMouseEnter={() => handleMenuHover(true)}
-                    onMouseLeave={() => handleMenuHover(false)}
-                    className={`absolute ${getMenuPosition(slide.menu, slide.id)} z-20 max-w-[460px] p-7 
-                               rounded-xl bg-black/10 backdrop-blur-[2px] shadow-2xl 
-                               shadow-black/5 border border-white/5 
-                               transition-opacity duration-500
-                               ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}
-                  >
-                    {/* Title Group */}
-                    <div className={`mb-7 ${slide.menu.position === 'right' ? 'text-right' : 'text-left'}`}>
-                      <h2 className="text-[2.5rem] leading-[1.1] tracking-normal text-white font-light 
-                                     [text-shadow:_0_1px_2px_rgba(0,0,0,0.1)]">
-                        {slide.title}
-                      </h2>
-                      {slide.subtitle && (
-                        <p className="mt-3 text-xl text-white/90 font-light tracking-wide">
-                          {slide.subtitle}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Menu Items */}
-                    <div className="space-y-3">
-                      {slide.menu.items.map((item) => (
-                        <div
-                          key={item.label}
-                          className={`group cursor-pointer ${
-                            slide.menu.position === 'right' ? 'text-right' : 'text-left'
-                          }`}
-                        >
-                          <Link 
-                            href={item.link}
-                            className={`relative block transition-all duration-300 py-3 px-7 rounded-lg 
-                                     ${slide.menu.position === 'right' ? 'hover:pr-14' : 'hover:pl-14'} 
-                                     hover:bg-white/5`}
+                      {/* Menu Items */}
+                      <div className="space-y-3">
+                        {slide.menu.items.map((item) => (
+                          <div
+                            key={item.label}
+                            className={`group cursor-pointer ${
+                              slide.menu.position === 'right' ? 'text-right' : 'text-left'
+                            }`}
                           >
-                            <span className="block text-[1.85rem] font-light tracking-wide text-white/90 
-                                           group-hover:text-white transition-colors duration-300">
-                              {item.label}
-                            </span>
-                            {item.description && (
-                              <span className="block mt-1 text-sm text-white/60 group-hover:text-white/80 
-                                             transition-colors duration-300 font-light tracking-wide">
-                                {item.description}
+                            <Link 
+                              href={item.link}
+                              className={`relative block transition-all duration-300 py-3 px-7 rounded-lg 
+                                       ${slide.menu.position === 'right' ? 'hover:pr-14' : 'hover:pl-14'} 
+                                       hover:bg-white/5`}
+                            >
+                              <span className="block text-[1.85rem] font-light tracking-wide text-white/90 
+                                             group-hover:text-white transition-colors duration-300">
+                                {item.label}
                               </span>
-                            )}
-                          </Link>
-                        </div>
-                      ))}
+                              {item.description && (
+                                <span className="block mt-1 text-sm text-white/60 group-hover:text-white/80 
+                                               transition-colors duration-300 font-light tracking-wide">
+                                  {item.description}
+                                </span>
+                              )}
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            {/* Enhanced Professional Pagination with Navigation */}
-            <div className="absolute bottom-2 right-8 z-20 flex items-center gap-6 perspective-[1200px] transform-gpu scale-90">
-              {/* Previous Button */}
-              <motion.button
-                onClick={() => goToSlide(currentSlide - 1)}
-                disabled={isAnimating}
-                className="relative group"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                aria-label="Previous slide"
-              >
-                <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
-                                group-hover:bg-black/60 transition-all duration-300 -z-10" />
-                <div className="p-3 text-white flex items-center overflow-hidden">
-                  <ChevronLeft className="h-5 w-5 transition-transform group-hover:-translate-x-0.5" />
-                  <div className="w-0 group-hover:w-20 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
-                    <span className="text-sm font-medium pl-2 opacity-0 group-hover:opacity-100 
-                                  transition-opacity duration-200 delay-100">
-                      Previous
-                    </span>
+              {/* Enhanced Professional Pagination with Navigation */}
+              <div className="absolute bottom-2 right-8 z-20 flex items-center gap-6 perspective-[1200px] transform-gpu scale-90">
+                {/* Previous Button */}
+                <motion.button
+                  onClick={() => goToSlide(currentSlide - 1)}
+                  disabled={isAnimating}
+                  className="relative group"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  aria-label="Previous slide"
+                >
+                  <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
+                                  group-hover:bg-black/60 transition-all duration-300 -z-10" />
+                  <div className="p-3 text-white flex items-center overflow-hidden">
+                    <ChevronLeft className="h-5 w-5 transition-transform group-hover:-translate-x-0.5" />
+                    <div className="w-0 group-hover:w-20 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
+                      <span className="text-sm font-medium pl-2 opacity-0 group-hover:opacity-100 
+                                    transition-opacity duration-200 delay-100">
+                        Previous
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </motion.button>
+                </motion.button>
 
-              {/* Thumbnails */}
-              <div className="flex items-center gap-1.5 relative">
-                {[...Array(3)].map((_, i) => {
-                  const slideIndex = getLoopedIndex(currentSlide - 1 + i, heroSlides.length);
-                  const slide = heroSlides[slideIndex];
-                  if (!slide) return null;
-                  const isActive = i === 1;
-                  const actualSlideNumber = slideIndex + 1;
-                  
-                  return (
-                    <motion.div
-                      key={`${slide.id}-${i}`}
-                      onClick={() => goToSlide(slideIndex)}
-                      initial={false}
-                      animate={{
-                        scale: isActive ? 1 : 0.9,
-                        rotateY: (i - 1) * 12,
-                        z: isActive ? 0 : -30,
-                        y: isActive ? -4 : 0
-                      }}
-                      whileHover={{ 
-                        scale: isActive ? 1.02 : 0.95,
-                        y: isActive ? -8 : -4,
-                        transition: { duration: 0.2 }
-                      }}
-                      className={`relative cursor-pointer rounded-lg
+                {/* Thumbnails */}
+                <div className="flex items-center gap-1.5 relative">
+                  {[...Array(3)].map((_, i) => {
+                    const slideIndex = getLoopedIndex(currentSlide - 1 + i, heroSlides.length);
+                    const slide = heroSlides[slideIndex];
+                    if (!slide) return null;
+                    const isActive = i === 1;
+                    const actualSlideNumber = slideIndex + 1;
+                    
+                    return (
+                      <motion.div
+                        key={`${slide.id}-${i}`}
+                        onClick={() => goToSlide(slideIndex)}
+                        initial={false}
+                        animate={{
+                          scale: isActive ? 1 : 0.9,
+                          rotateY: (i - 1) * 12,
+                          z: isActive ? 0 : -30,
+                          y: isActive ? -4 : 0
+                        }}
+                        whileHover={{ 
+                          scale: isActive ? 1.02 : 0.95,
+                          y: isActive ? -8 : -4,
+                          transition: { duration: 0.2 }
+                        }}
+                        className={`relative overflow-hidden cursor-pointer rounded-lg
                                    transition-shadow duration-300
                                    ${isActive ? 
                                      'w-44 h-24 shadow-lg hover:shadow-xl z-10' : 
                                      'w-36 h-20 shadow-md hover:shadow-lg z-0'}`}
-                    >
-                      <div className="absolute inset-0 w-full h-full overflow-hidden rounded-lg">
-                        <Image
-                          src={slide.image}
-                          alt={slide.alt}
-                          fill
-                          priority={isActive}
-                          className="object-cover transition-all duration-500 ease-out rounded-lg"
-                          sizes="(min-width: 768px) 176px, 144px"
-                          quality={90}
-                        />
-                        <div className={`absolute inset-0 transition-all duration-500
-                                      bg-gradient-to-t from-black/30 to-transparent
-                                      ${isActive ? 'opacity-0' : 'opacity-100 hover:opacity-50'}`}
-                        />
+                      >
+                        {/* Slide number indicator */}
+                        <div className="absolute top-2 right-2 z-20 bg-black/50 rounded-full w-6 h-6 
+                                       flex items-center justify-center text-white text-xs font-medium">
+                          {actualSlideNumber}
+                        </div>
                         
-                        {/* Active Highlight Effects */}
+                        <div className="absolute inset-0 w-full h-full">
+                          <Image
+                            src={slide.image}
+                            alt={slide.alt}
+                            fill
+                            priority={isActive}
+                            className="object-cover transition-all duration-500 ease-out rounded-lg"
+                            sizes="(min-width: 768px) 176px, 144px"
+                            quality={90}
+                          />
+                          <div className={`absolute inset-0 transition-all duration-500
+                                        bg-gradient-to-t from-black/30 to-transparent
+                                        ${isActive ? 'opacity-0' : 'opacity-100 hover:opacity-50'}`}
+                          />
+                          
+                          {/* Active Highlight Effects */}
+                          {isActive && (
+                            <>
+                              <motion.div
+                                initial={{ opacity: 0, scale: 1.2 }}
+                                animate={{ opacity: [0, 1, 0], scale: 1 }}
+                                transition={{ duration: 0.6, ease: "easeOut" }}
+                                className="absolute inset-0 bg-white/20 pointer-events-none"
+                              />
+                              {/* Shimmering effect */}
+                              <motion.div
+                                initial={{ x: '-100%', opacity: 0.5 }}
+                                animate={{ x: '100%', opacity: 0 }}
+                                transition={{
+                                  duration: 1.5,
+                                  repeat: Infinity,
+                                  repeatDelay: 3,
+                                  ease: "easeInOut"
+                                }}
+                                className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent 
+                                           transform rotate-15 pointer-events-none blur-sm"
+                                style={{
+                                  clipPath: 'polygon(5% 0, 95% 0, 85% 100%, 15% 100%)'
+                                }}
+                              />
+                            </>
+                          )}
+                        </div>
+                        
+                        {/* Active Indicator with Enhanced Animation */}
                         {isActive && (
-                          <>
-                            <motion.div
-                              initial={{ opacity: 0, scale: 1.2 }}
-                              animate={{ opacity: [0, 1, 0], scale: 1 }}
-                              transition={{ duration: 0.6, ease: "easeOut" }}
-                              className="absolute inset-0 bg-white/20 pointer-events-none"
-                            />
-                            {/* Shimmering effect */}
-                            <motion.div
-                              initial={{ x: '-100%', opacity: 0.5 }}
-                              animate={{ x: '100%', opacity: 0 }}
-                              transition={{
-                                duration: 1.5,
-                                repeat: Infinity,
-                                repeatDelay: 3,
-                                ease: "easeInOut"
-                              }}
-                              className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent 
-                                         transform rotate-15 pointer-events-none blur-sm"
-                              style={{
-                                clipPath: 'polygon(5% 0, 95% 0, 85% 100%, 15% 100%)'
-                              }}
-                            />
-                          </>
+                          <motion.div
+                            layoutId="activeThumb"
+                            className="absolute inset-0 border-2 border-white"
+                            transition={{ duration: 0.3 }}
+                          />
                         )}
-                      </div>
-                      
-                      {/* Active Indicator with Enhanced Animation */}
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeThumb"
-                          className="absolute inset-0 border-2 border-white"
-                          transition={{ duration: 0.3 }}
-                        />
-                      )}
-                      
-                      <div className="absolute -top-2 -right-2 z-20 bg-black/50 rounded-full w-7 h-7 
-                                      border border-white/20 backdrop-blur-[2px]
-                                      flex items-center justify-center text-white text-xs font-medium
-                                      shadow-lg shadow-black/10">
-                        {actualSlideNumber}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* Next Button */}
-              <motion.button
-                onClick={() => goToSlide(currentSlide + 1)}
-                disabled={isAnimating}
-                className="relative group"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                aria-label="Next slide"
-              >
-                <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
-                               group-hover:bg-black/60 transition-all duration-300 -z-10" />
-                <div className="p-3 text-white flex items-center overflow-hidden">
-                  <div className="w-0 group-hover:w-20 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
-                    <span className="text-sm font-medium pr-2 opacity-0 group-hover:opacity-100 
-                                  transition-opacity duration-200 delay-100">
-                      Next
-                    </span>
-                  </div>
-                  <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                      </motion.div>
+                    );
+                  })}
                 </div>
-              </motion.button>
+
+                {/* Next Button */}
+                <motion.button
+                  onClick={() => goToSlide(currentSlide + 1)}
+                  disabled={isAnimating}
+                  className="relative group"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  aria-label="Next slide"
+                >
+                  <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
+                                 group-hover:bg-black/60 transition-all duration-300 -z-10" />
+                  <div className="p-3 text-white flex items-center overflow-hidden">
+                    <div className="w-0 group-hover:w-20 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
+                      <span className="text-sm font-medium pr-2 opacity-0 group-hover:opacity-100 
+                                    transition-opacity duration-200 delay-100">
+                        Next
+                      </span>
+                    </div>
+                    <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                  </div>
+                </motion.button>
+              </div>
             </div>
-          </div>
-        </section>
-
-        {/* Navigation Buttons - Added opposite to carousel thumbnails */}
-        <div className="absolute bottom-8 left-8 z-20 flex items-center gap-4">
-          <motion.div 
-            className="flex items-center gap-4 perspective-[1200px] transform-gpu"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <Link
-              href="/story"
-              aria-label="Read our story"
-              className="relative group inline-flex items-center justify-center px-6 py-3 
-                        bg-white/90 backdrop-blur-sm text-[#9e896c]
-                        hover:bg-[#9e896c] hover:text-white
-                        transition-all duration-300 shadow-lg shadow-black/5
-                        focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2"
-            >
-              <span className="relative text-sm font-medium">
-                Our Story
-              </span>
-              <motion.div
-                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
-                initial={false}
-                animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
-                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              />
-            </Link>
-
-            <Link
-              href="/collections/all-products"
-              aria-label="Browse all products"
-              className="relative group inline-flex items-center justify-center px-6 py-3
-                        bg-[#9e896c]/90 backdrop-blur-sm text-white
-                        hover:bg-[#9e896c] 
-                        transition-all duration-300 shadow-lg shadow-black/5
-                        focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2"
-            >
-              <span className="relative text-sm font-medium">
-                All Products
-              </span>
-              <motion.div
-                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
-                initial={false}
-                animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
-                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              />
-            </Link>
-          </motion.div>
+          </section>
         </div>
+      </div>
+
+      {/* Navigation Buttons - Added opposite to carousel thumbnails */}
+      <div className="absolute bottom-8 left-8 z-20 hidden lg:flex items-center gap-4">
+        <motion.div 
+          className="flex items-center gap-4 perspective-[1200px] transform-gpu"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <Link
+            href="/story"
+            aria-label="Read our story"
+            className="relative group inline-flex items-center justify-center px-6 py-3 
+                      bg-white/90 backdrop-blur-sm text-[#9e896c]
+                      hover:bg-[#9e896c] hover:text-white
+                      transition-all duration-300 shadow-lg shadow-black/5
+                      focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2"
+          >
+            <span className="relative text-sm font-medium">
+              Our Story
+            </span>
+            <motion.div
+              className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
+              initial={false}
+              animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            />
+          </Link>
+
+          <Link
+            href="/collections/all-products"
+            aria-label="Browse all products"
+            className="relative group inline-flex items-center justify-center px-6 py-3
+                      bg-[#9e896c]/90 backdrop-blur-sm text-white
+                      hover:bg-[#9e896c] 
+                      transition-all duration-300 shadow-lg shadow-black/5
+                      focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2"
+          >
+            <span className="relative text-sm font-medium">
+              All Products
+            </span>
+            <motion.div
+              className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
+              initial={false}
+              animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            />
+          </Link>
+        </motion.div>
       </div>
     </>
   );

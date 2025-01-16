@@ -162,6 +162,51 @@ const BurgerIcon = ({ isOpen }: { isOpen: boolean }) => (
   </div>
 );
 
+// New Component Definitions
+const CollectionGridItem = ({ collection, onClose }: { collection: Collection; onClose: () => void }) => (
+  <Link
+    href={`/collections/${collection.handle}`}
+    onClick={onClose}
+    className="group relative block p-4 rounded-xl transition-all duration-300
+             hover:bg-neutral-50 border border-transparent hover:border-neutral-100
+             hover:shadow-sm hover:scale-[1.02]"
+  >
+    <div className="relative z-10 flex items-center gap-3">
+      <span className="text-neutral-400 group-hover:text-[#9e896c] transition-colors duration-300
+                    p-2 bg-white rounded-lg border border-neutral-100 group-hover:border-[#9e896c]/20">
+        {getIcon(collection.handle)}
+      </span>
+      <div className="flex flex-col">
+        <h3 className="text-sm font-medium text-neutral-700 transition-colors duration-300
+                    group-hover:text-[#9e896c]">
+          {collection.title}
+        </h3>
+        <span className="text-xs text-neutral-500 mt-0.5">View Collection</span>
+      </div>
+    </div>
+  </Link>
+);
+
+const SidebarLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+  <Link 
+    href={href} 
+    className="flex items-center gap-2 text-neutral-600 hover:text-[#9e896c] 
+             transition-colors text-sm py-2 px-3 rounded-lg hover:bg-neutral-50
+             group relative"
+  >
+    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 
+                   bg-[#9e896c] transition-all duration-300 opacity-0 
+                   group-hover:h-4 group-hover:opacity-100" />
+    {children}
+  </Link>
+);
+
+const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+  <h3 className="text-sm font-semibold text-neutral-400 mb-4 px-3">
+    {children}
+  </h3>
+);
+
 export const DesktopHeader = () => {
   // State
   const { cart } = useCart();
@@ -635,130 +680,91 @@ export const DesktopHeader = () => {
                   exit={{ opacity: 0, height: 0 }}
                   className="flex-1 overflow-hidden border-t border-neutral-200"
                 >
-                  <div className="container mx-auto p-4">
-                    <div className="flex gap-8">
+                  <div className="container mx-auto py-8 px-4">
+                    <div className="flex gap-12">
                       {/* Left side - Collections Grid */}
                       <div className="flex-1">
+                        <h2 className="text-lg font-medium text-neutral-900 mb-6">Our Collections</h2>
                         <div className="grid grid-cols-2 gap-4">
                           {collections.map((collection) => (
-                            <Link
+                            <CollectionGridItem 
                               key={collection.handle}
-                              href={`/collections/${collection.handle}`}
-                              onClick={() => setIsNavOpen(false)}
-                              className="group relative block py-3 px-4 rounded-lg transition-all duration-300
-                                       hover:bg-neutral-50 border border-transparent hover:border-neutral-100"
-                            >
-                              <div className="relative z-10 flex items-center gap-2">
-                                <span className="text-neutral-400 group-hover:text-[#9e896c] transition-colors duration-300">
-                                  {getIcon(collection.handle)}
-                                </span>
-                                <h3 className="text-sm font-medium text-neutral-600 transition-colors duration-300
-                                           group-hover:text-[#9e896c]">
-                                  {collection.title}
-                                </h3>
-                              </div>
-                            </Link>
+                              collection={collection}
+                              onClose={() => setIsNavOpen(false)}
+                            />
                           ))}
                         </div>
                       </div>
 
                       {/* Right Sidebar */}
-                      <div className="w-[320px] border-l border-neutral-100 pl-8">
-                        <div className="space-y-8">
+                      <div className="w-[360px] border-l border-neutral-100 pl-8">
+                        <div className="space-y-10">
                           {/* Shop Section */}
                           <div>
-                            <h3 className="text-sm font-semibold text-neutral-400 mb-3">Shop</h3>
-                            <ul className="space-y-2">
-                              <li>
-                                <Link href="/products" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  All Products
-                                </Link>
-                              </li>
-                              <li>
-                                <Link href="/collections/new-arrivals" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  New Arrivals
-                                </Link>
-                              </li>
-                              <li>
-                                <Link href="/collections/best-sellers" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  Best Sellers
-                                </Link>
-                              </li>
-                              <li>
-                                <Link href="/collections" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  Collections
-                                </Link>
-                              </li>
-                              <li>
-                                <Link href="/collections/sale" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  Sale Items
-                                </Link>
-                              </li>
-                            </ul>
+                            <SectionTitle>Shop</SectionTitle>
+                            <div className="space-y-1">
+                              <SidebarLink href="/products">All Products</SidebarLink>
+                              <SidebarLink href="/collections/new-arrivals">
+                                New Arrivals
+                                <span className="ml-2 text-xs py-0.5 px-2 bg-[#9e896c]/10 text-[#9e896c] rounded-full">
+                                  New
+                                </span>
+                              </SidebarLink>
+                              <SidebarLink href="/collections/best-sellers">Best Sellers</SidebarLink>
+                              <SidebarLink href="/collections">Collections</SidebarLink>
+                              <SidebarLink href="/collections/sale">
+                                Sale Items
+                                <span className="ml-2 text-xs py-0.5 px-2 bg-red-50 text-red-500 rounded-full">
+                                  Sale
+                                </span>
+                              </SidebarLink>
+                            </div>
                           </div>
 
                           {/* Support Section */}
                           <div>
-                            <h3 className="text-sm font-semibold text-neutral-400 mb-3">Support</h3>
-                            <ul className="space-y-2">
-                              <li>
-                                <Link href="/contact" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  Contact Us
-                                </Link>
-                              </li>
-                              <li>
-                                <Link href="/faqs" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  FAQs
-                                </Link>
-                              </li>
-                              <li>
-                                <Link href="/shipping" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  Shipping Info
-                                </Link>
-                              </li>
-                              <li>
-                                <Link href="/returns" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  Returns & Exchanges
-                                </Link>
-                              </li>
-                              <li>
-                                <Link href="/tracking" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  Track Order
-                                </Link>
-                              </li>
-                            </ul>
+                            <SectionTitle>Support</SectionTitle>
+                            <div className="space-y-1">
+                              <SidebarLink href="/contact">Contact Us</SidebarLink>
+                              <SidebarLink href="/faqs">FAQs</SidebarLink>
+                              <SidebarLink href="/shipping">Shipping Info</SidebarLink>
+                              <SidebarLink href="/returns">Returns & Exchanges</SidebarLink>
+                              <SidebarLink href="/tracking">Track Order</SidebarLink>
+                            </div>
                           </div>
 
                           {/* Company Section */}
                           <div>
-                            <h3 className="text-sm font-semibold text-neutral-400 mb-3">Company</h3>
-                            <ul className="space-y-2">
-                              <li>
-                                <Link href="/about" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  About Us
-                                </Link>
-                              </li>
-                              <li>
-                                <Link href="/our-story" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  Our Story
-                                </Link>
-                              </li>
-                              <li>
-                                <Link href="/sustainability" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  Sustainability
-                                </Link>
-                              </li>
-                              <li>
-                                <Link href="/careers" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  Careers
-                                </Link>
-                              </li>
-                              <li>
-                                <Link href="/terms" className="text-neutral-600 hover:text-[#9e896c] transition-colors text-sm">
-                                  Terms of Service
-                                </Link>
-                              </li>
-                            </ul>
+                            <SectionTitle>Company</SectionTitle>
+                            <div className="space-y-1">
+                              <SidebarLink href="/about">About Us</SidebarLink>
+                              <SidebarLink href="/our-story">Our Story</SidebarLink>
+                              <SidebarLink href="/sustainability">Sustainability</SidebarLink>
+                              <SidebarLink href="/careers">Careers</SidebarLink>
+                              <SidebarLink href="/terms">Terms of Service</SidebarLink>
+                            </div>
+                          </div>
+
+                          {/* Contact Information */}
+                          <div className="pt-6 mt-6 border-t border-neutral-100">
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-3 text-sm text-neutral-600">
+                                <span className="p-2 bg-neutral-50 rounded-lg">
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                  </svg>
+                                </span>
+                                <span>{email}</span>
+                              </div>
+                              <div className="flex items-center gap-3 text-sm text-neutral-600">
+                                <span className="p-2 bg-neutral-50 rounded-lg">
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </span>
+                                <span>{workingHours}</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
