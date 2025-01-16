@@ -167,22 +167,18 @@ const CollectionGridItem = ({ collection, onClose }: { collection: Collection; o
   <Link
     href={`/collections/${collection.handle}`}
     onClick={onClose}
-    className="group relative block p-4 rounded-xl transition-all duration-300
-             hover:bg-neutral-50 border border-transparent hover:border-neutral-100
-             hover:shadow-sm hover:scale-[1.02]"
+    className="group flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200
+               hover:bg-neutral-50"
   >
-    <div className="relative z-10 flex items-center gap-3">
-      <span className="text-neutral-400 group-hover:text-[#9e896c] transition-colors duration-300
-                    p-2 bg-white rounded-lg border border-neutral-100 group-hover:border-[#9e896c]/20">
-        {getIcon(collection.handle)}
-      </span>
-      <div className="flex flex-col">
-        <h3 className="text-sm font-medium text-neutral-700 transition-colors duration-300
-                    group-hover:text-[#9e896c]">
-          {collection.title}
-        </h3>
-        <span className="text-xs text-neutral-500 mt-0.5">View Collection</span>
-      </div>
+    <span className="flex-shrink-0 p-2 rounded-md bg-neutral-50 text-neutral-500
+                    group-hover:bg-white group-hover:text-[#9e896c] transition-colors duration-200">
+      {getIcon(collection.handle)}
+    </span>
+    <div>
+      <h3 className="text-sm font-medium text-neutral-700 group-hover:text-[#9e896c] 
+                     transition-colors duration-200">
+        {collection.title}
+      </h3>
     </div>
   </Link>
 );
@@ -191,18 +187,18 @@ const SidebarLink = ({ href, children }: { href: string; children: React.ReactNo
   <Link 
     href={href} 
     className="flex items-center gap-2 text-neutral-600 hover:text-[#9e896c] 
-             transition-colors text-sm py-2 px-3 rounded-lg hover:bg-neutral-50
+             transition-colors text-sm py-1 px-2 rounded-md hover:bg-neutral-50
              group relative"
   >
     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 
                    bg-[#9e896c] transition-all duration-300 opacity-0 
-                   group-hover:h-4 group-hover:opacity-100" />
+                   group-hover:h-3 group-hover:opacity-100" />
     {children}
   </Link>
 );
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <h3 className="text-sm font-semibold text-neutral-400 mb-4 px-3">
+  <h3 className="text-xs font-semibold text-neutral-400 mb-1 px-2">
     {children}
   </h3>
 );
@@ -314,6 +310,12 @@ export const DesktopHeader = () => {
 
   useEffect(() => {
     const handleScroll = () => {
+      // Don't hide header when menu is open
+      if (isNavOpen || isSearchOpen || isAccountOpen || isCartOpen) {
+        setIsVisible(true);
+        return;
+      }
+
       const currentScrollY = window.scrollY;
       
       // Show header if scrolling up or at top
@@ -331,7 +333,32 @@ export const DesktopHeader = () => {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isNavOpen, isSearchOpen, isAccountOpen, isCartOpen]);
+
+  useEffect(() => {
+    if (isNavOpen || isSearchOpen || isAccountOpen || isCartOpen) {
+      document.body.style.overflow = 'hidden';
+      // Store the current scroll position
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.top = `-${window.scrollY}px`;
+    } else {
+      // Restore the scroll position
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+    };
+  }, [isNavOpen, isSearchOpen, isAccountOpen, isCartOpen]);
 
   const handleCartHover = (isHovering: boolean) => {
     setIsCartHovered(isHovering);
@@ -354,18 +381,6 @@ export const DesktopHeader = () => {
     setSelectedCurrency(currency);
     setIsCurrencyOpen(false);
   }, []);
-
-  useEffect(() => {
-    if (isNavOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isNavOpen]);
 
   return (
     <div 
@@ -681,11 +696,11 @@ export const DesktopHeader = () => {
                   className="flex-1 overflow-hidden border-t border-neutral-200"
                 >
                   <div className="container mx-auto py-8 px-4">
-                    <div className="flex gap-12">
+                    <div className="flex">
                       {/* Left side - Collections Grid */}
-                      <div className="flex-1">
-                        <h2 className="text-lg font-medium text-neutral-900 mb-6">Our Collections</h2>
-                        <div className="grid grid-cols-2 gap-4">
+                      <div className="w-[400px]">
+                        <h2 className="text-base font-medium text-neutral-900 mb-4">Our Collections</h2>
+                        <div className="grid grid-cols-2 gap-x-8 gap-y-1">
                           {collections.map((collection) => (
                             <CollectionGridItem 
                               key={collection.handle}
@@ -696,17 +711,58 @@ export const DesktopHeader = () => {
                         </div>
                       </div>
 
+                      {/* Center - Special Products */}
+                      <div className="w-[500px] border-l border-r border-neutral-100 px-8 mx-8">
+                        <h2 className="text-base font-medium text-neutral-900 mb-4">Featured</h2>
+                        <div className="space-y-6">
+                          {/* New Arrivals Box */}
+                          <Link
+                            href="/collections/new-arrivals"
+                            onClick={() => setIsNavOpen(false)}
+                            className="block group relative overflow-hidden rounded-lg bg-neutral-50 aspect-[3/2]"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
+                            <div className="absolute inset-0 p-4 flex flex-col justify-end">
+                              <span className="px-2 py-1 bg-[#9e896c] text-white text-xs rounded-full w-fit mb-2">
+                                New In
+                              </span>
+                              <h3 className="text-base font-medium text-white">New Arrivals</h3>
+                              <p className="text-xs text-white/90 mt-1">Spring Collection 2024</p>
+                            </div>
+                          </Link>
+
+                          {/* Sale Box */}
+                          <Link
+                            href="/collections/sale"
+                            onClick={() => setIsNavOpen(false)}
+                            className="block group relative overflow-hidden rounded-lg bg-neutral-50 aspect-[3/2]"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
+                            <div className="absolute inset-0 p-4 flex flex-col justify-end">
+                              <span className="px-2 py-1 bg-red-500 text-white text-xs rounded-full w-fit mb-2">
+                                Sale
+                              </span>
+                              <h3 className="text-base font-medium text-white">Special Offers</h3>
+                              <p className="text-xs text-white/90 mt-1">Up to 50% off</p>
+                            </div>
+                          </Link>
+                        </div>
+                      </div>
+
+                      {/* Spacer to push sidebar to the right */}
+                      <div className="flex-1" />
+
                       {/* Right Sidebar */}
-                      <div className="w-[360px] border-l border-neutral-100 pl-8">
-                        <div className="space-y-10">
+                      <div className="w-[280px]">
+                        <div className="space-y-4">
                           {/* Shop Section */}
                           <div>
                             <SectionTitle>Shop</SectionTitle>
-                            <div className="space-y-1">
+                            <div className="space-y-0">
                               <SidebarLink href="/products">All Products</SidebarLink>
                               <SidebarLink href="/collections/new-arrivals">
                                 New Arrivals
-                                <span className="ml-2 text-xs py-0.5 px-2 bg-[#9e896c]/10 text-[#9e896c] rounded-full">
+                                <span className="ml-1 text-xs py-0.5 px-1.5 bg-[#9e896c]/10 text-[#9e896c] rounded-full">
                                   New
                                 </span>
                               </SidebarLink>
@@ -714,7 +770,7 @@ export const DesktopHeader = () => {
                               <SidebarLink href="/collections">Collections</SidebarLink>
                               <SidebarLink href="/collections/sale">
                                 Sale Items
-                                <span className="ml-2 text-xs py-0.5 px-2 bg-red-50 text-red-500 rounded-full">
+                                <span className="ml-1 text-xs py-0.5 px-1.5 bg-red-50 text-red-500 rounded-full">
                                   Sale
                                 </span>
                               </SidebarLink>
@@ -724,7 +780,7 @@ export const DesktopHeader = () => {
                           {/* Support Section */}
                           <div>
                             <SectionTitle>Support</SectionTitle>
-                            <div className="space-y-1">
+                            <div className="space-y-0">
                               <SidebarLink href="/contact">Contact Us</SidebarLink>
                               <SidebarLink href="/faqs">FAQs</SidebarLink>
                               <SidebarLink href="/shipping">Shipping Info</SidebarLink>
@@ -736,7 +792,7 @@ export const DesktopHeader = () => {
                           {/* Company Section */}
                           <div>
                             <SectionTitle>Company</SectionTitle>
-                            <div className="space-y-1">
+                            <div className="space-y-0">
                               <SidebarLink href="/about">About Us</SidebarLink>
                               <SidebarLink href="/our-story">Our Story</SidebarLink>
                               <SidebarLink href="/sustainability">Sustainability</SidebarLink>
@@ -746,23 +802,23 @@ export const DesktopHeader = () => {
                           </div>
 
                           {/* Contact Information */}
-                          <div className="pt-6 mt-6 border-t border-neutral-100">
-                            <div className="space-y-4">
-                              <div className="flex items-center gap-3 text-sm text-neutral-600">
-                                <span className="p-2 bg-neutral-50 rounded-lg">
+                          <div className="pt-3 mt-3 border-t border-neutral-100">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-sm text-neutral-600">
+                                <span className="p-1 bg-neutral-50 rounded-md">
                                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                   </svg>
                                 </span>
-                                <span>{email}</span>
+                                <span className="text-sm">{email}</span>
                               </div>
-                              <div className="flex items-center gap-3 text-sm text-neutral-600">
-                                <span className="p-2 bg-neutral-50 rounded-lg">
+                              <div className="flex items-center gap-2 text-sm text-neutral-600">
+                                <span className="p-1 bg-neutral-50 rounded-md">
                                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                   </svg>
                                 </span>
-                                <span>{workingHours}</span>
+                                <span className="text-sm">{workingHours}</span>
                               </div>
                             </div>
                           </div>
