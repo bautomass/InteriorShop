@@ -531,7 +531,7 @@ export default function AnturamStoolsCollection() {
                       className="object-cover"
                       sizes="(max-width: 768px) 65vw, 33vw"
                     />
-                    <div className="absolute inset-0 bg-black/10" />
+                    <div className="absolute inset-0" />
                     <div className="absolute inset-4 border border-white/20 rounded-sm" />
                   </motion.div>
 
@@ -551,7 +551,7 @@ export default function AnturamStoolsCollection() {
                       className="object-cover"
                       sizes="(max-width: 768px) 75vw, 33vw"
                     />
-                    <div className="absolute inset-0 bg-black/10" />
+                    <div className="absolute inset-0" />
                     <div className="absolute inset-4 border border-white/20 rounded-sm" />
                     
                     {/* Decorative element */}
