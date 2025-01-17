@@ -222,7 +222,7 @@ export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardPr
             )}
 
             <Link 
-              href={`/products/${product.handle}`}
+              href={`/product/${product.handle}`}
               className="block mt-2 group/title relative isolate"
             >
               <h3 className="font-semibold text-base tracking-tight 
