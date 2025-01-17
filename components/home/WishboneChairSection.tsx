@@ -347,8 +347,8 @@ const WishboneChairSection = memo(function WishboneChairSection() {
                 className="[@media(max-width:768px)]:w-[85%] [@media(max-width:768px)]:mr-auto"
               >
                 <ImageCard
-                  key={WISHBONE_DETAILS[0].src}
-                  image={WISHBONE_DETAILS[0]}
+                  key={WISHBONE_DETAILS[0]?.src}
+                  image={WISHBONE_DETAILS[0] ?? { src: '', alt: '', caption: '', description: '' }}
                   index={0}
                   onModalOpen={setSelectedModal}
                 />
@@ -362,8 +362,8 @@ const WishboneChairSection = memo(function WishboneChairSection() {
                 className="[@media(max-width:768px)]:-mt-[30%] [@media(max-width:768px)]:w-[65%] [@media(max-width:768px)]:ml-auto"
               >
                 <ImageCard
-                  key={WISHBONE_DETAILS[1].src}
-                  image={WISHBONE_DETAILS[1]}
+                  key={WISHBONE_DETAILS[1]?.src}
+                  image={WISHBONE_DETAILS[1] ?? { src: '', alt: '', caption: '', description: '' }}
                   index={1}
                   onModalOpen={setSelectedModal}
                 />
@@ -377,8 +377,8 @@ const WishboneChairSection = memo(function WishboneChairSection() {
                 className="[@media(max-width:768px)]:-mt-[15%] [@media(max-width:768px)]:w-[75%] [@media(max-width:768px)]:mx-auto"
               >
                 <ImageCard
-                  key={WISHBONE_DETAILS[2].src}
-                  image={WISHBONE_DETAILS[2]}
+                  key={WISHBONE_DETAILS[2]?.src}
+                  image={WISHBONE_DETAILS[2] ?? { src: '', alt: '', caption: '', description: '' }}
                   index={2}
                   onModalOpen={setSelectedModal}
                 />
