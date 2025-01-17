@@ -670,8 +670,6 @@ export const DesktopHeader = () => {
                             <Link
                               href="/cart"
                               onClick={() => {
-                                setIsCartOpen(true);
-                                setIsCartHovered(false);
                               }}
                               className="block w-full py-2 bg-white border border-[#9e896c] text-[#9e896c] 
                                       rounded-lg hover:bg-[#9e896c]/5 transition-colors text-sm font-medium text-center"

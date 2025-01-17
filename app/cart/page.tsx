@@ -148,7 +148,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#F8F6F3]">
       <LargeScreenNavBar />
-      
+      <div className="pt-20">
       <motion.div 
         initial="hidden"
         animate="visible"
@@ -408,6 +408,7 @@ export default function CartPage() {
           </div>
         </motion.div>
       </motion.div>
+      </div>
     </div>
   );
 } 
