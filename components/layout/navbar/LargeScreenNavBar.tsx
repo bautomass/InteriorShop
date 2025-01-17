@@ -270,22 +270,30 @@ export const DesktopHeader = () => {
       }
 
       setIsSearching(true);
+      
       try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         const data = await response.json();
         setSearchResults(data);
       } catch (error) {
         console.error('Search error:', error);
+        setSearchResults({ products: [], collections: [] });
       } finally {
         setIsSearching(false);
       }
-    }, 100),
+    }, 500),
     []
   );
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
+    
+    if (!query.trim()) {
+      setSearchResults({ products: [], collections: [] });
+      return;
+    }
+    
     debouncedSearch(query);
   };
 
