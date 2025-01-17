@@ -313,16 +313,77 @@ const WishboneChairSection = memo(function WishboneChairSection() {
             </motion.div>
           </div>
 
-          {/* Bottom Section with Three Images */}
+          {/* Key Elements Message - Enhanced version */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12 relative"
+          >
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-primary-100/50 dark:bg-primary-800/30 rounded-full blur-2xl" />
+            <motion.div 
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+              className="absolute top-1/2 left-0 h-px bg-gradient-to-r from-transparent via-primary-300 dark:via-primary-600 to-transparent"
+            />
+            <h3 className="text-xl md:text-2xl font-medium text-primary-800 dark:text-primary-200 relative">
+              <span className="bg-gradient-to-r from-primary-700 to-primary-900 dark:from-primary-200 dark:to-primary-100 bg-clip-text text-transparent">
+                Danish Design Perfected
+              </span>
+            </h3>
+            <p className="text-sm text-primary-600 dark:text-primary-400 mt-2 max-w-md mx-auto">
+              The perfect blend of form and function in every detail
+            </p>
+          </motion.div>
+
+          {/* Bottom Section with Three Images - Updated Mobile Layout */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 px-2 md:px-4">
-            {WISHBONE_DETAILS.map((image, index) => (
-              <ImageCard
-                key={image.src}
-                image={image}
-                index={index}
-                onModalOpen={setSelectedModal}
-              />
-            ))}
+            {/* Mobile: Custom flex layout */}
+            <div className="relative [@media(max-width:768px)]:flex [@media(max-width:768px)]:flex-col md:contents">
+              {/* First Image */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="[@media(max-width:768px)]:w-[85%] [@media(max-width:768px)]:mr-auto"
+              >
+                <ImageCard
+                  key={WISHBONE_DETAILS[0].src}
+                  image={WISHBONE_DETAILS[0]}
+                  index={0}
+                  onModalOpen={setSelectedModal}
+                />
+              </motion.div>
+
+              {/* Second Image */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="[@media(max-width:768px)]:-mt-[30%] [@media(max-width:768px)]:w-[65%] [@media(max-width:768px)]:ml-auto"
+              >
+                <ImageCard
+                  key={WISHBONE_DETAILS[1].src}
+                  image={WISHBONE_DETAILS[1]}
+                  index={1}
+                  onModalOpen={setSelectedModal}
+                />
+              </motion.div>
+
+              {/* Third Image */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="[@media(max-width:768px)]:-mt-[15%] [@media(max-width:768px)]:w-[75%] [@media(max-width:768px)]:mx-auto"
+              >
+                <ImageCard
+                  key={WISHBONE_DETAILS[2].src}
+                  image={WISHBONE_DETAILS[2]}
+                  index={2}
+                  onModalOpen={setSelectedModal}
+                />
+              </motion.div>
+            </div>
           </div>
 
           <InfoModal

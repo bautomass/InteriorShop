@@ -4,7 +4,8 @@ import {
   Bookmark,
   BookmarkPlus,
   Camera,
-  ChevronLeft, ChevronRight,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Compass,
   Feather,
@@ -19,7 +20,7 @@ import {
   Sun,
   Target
 } from 'lucide-react';
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 enum CategoryId {
   Lighting = 'lighting',
@@ -135,6 +136,50 @@ const interiorTips: InteriorTipsData = {
         authorTip: "Install LED strips behind mirrors or shelving for a floating effect",
         difficulty: "Medium",
         impact: "Medium"
+      },
+      {
+        id: "l6",
+        title: "Circadian Lighting Design",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/circadian-lighting.jpg",
+        description: "Design lighting that supports natural sleep-wake cycles by adjusting color temperature throughout the day. Implement warmer lights for evening and cooler lights for daytime.",
+        category: "Lighting",
+        readTime: "4 min",
+        authorTip: "Install tunable white LED systems to adjust from 2700K (warm) to 5000K (cool)",
+        difficulty: "Hard",
+        impact: "High"
+      },
+      {
+        id: "l7",
+        title: "Outdoor Lighting Integration",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/outdoor-lighting.jpg",
+        description: "Create seamless transitions between indoor and outdoor spaces with strategic lighting placement. Enhance security and ambiance simultaneously.",
+        category: "Lighting",
+        readTime: "3 min",
+        authorTip: "Use uplighting on trees to create depth and drama in outdoor views",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "l8",
+        title: "Energy-Efficient Lighting",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/efficient-lighting.jpg",
+        description: "Optimize your lighting setup for maximum energy efficiency without compromising on style or functionality. Incorporate LED technology and smart controls.",
+        category: "Lighting",
+        readTime: "4 min",
+        authorTip: "Replace halogen bulbs with LED alternatives to reduce energy consumption by up to 85%",
+        difficulty: "Easy",
+        impact: "High"
+      },
+      {
+        id: "l9",
+        title: "Architectural Lighting Features",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/architectural-lighting.jpg",
+        description: "Highlight architectural elements using sophisticated lighting techniques. Emphasize structural features and create visual interest through light and shadow.",
+        category: "Lighting",
+        readTime: "5 min",
+        authorTip: "Use cove lighting to highlight ceiling details and create indirect ambient light",
+        difficulty: "Hard",
+        impact: "High"
       }
     ],
     color: [
@@ -181,6 +226,61 @@ const interiorTips: InteriorTipsData = {
         authorTip: "Use eggshell finish for main living areas as it hides imperfections well",
         difficulty: "Easy",
         impact: "Medium"
+      },
+      {
+        id: "c5",
+        title: "Color Temperature Balance",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/color-temperature.jpg",
+        description: "Master the use of warm and cool colors to create balanced, harmonious spaces. Learn how to mix temperatures effectively.",
+        category: "Color",
+        readTime: "4 min",
+        authorTip: "Add warm accents to cool-toned rooms to prevent them from feeling sterile",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "c6",
+        title: "Color for Small Spaces",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/small-space-color.jpg",
+        description: "Use color strategically to make small spaces feel larger and more inviting. Learn techniques for color placement and proportion.",
+        category: "Color",
+        readTime: "3 min",
+        authorTip: "Paint the ceiling a lighter shade than walls to create the illusion of height",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "c7",
+        title: "Bold Color Integration",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/bold-color.jpg",
+        description: "Incorporate bold colors confidently into your design scheme. Learn how to use statement colors without overwhelming the space.",
+        category: "Color",
+        readTime: "4 min",
+        authorTip: "Use the boldest color on the wall furthest from the entrance to draw the eye through",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "c8",
+        title: "Historical Color Palettes",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/historical-color.jpg",
+        description: "Draw inspiration from historical color schemes to create timeless interiors. Adapt traditional palettes for modern spaces.",
+        category: "Color",
+        readTime: "5 min",
+        authorTip: "Reference architectural style when selecting historical color schemes",
+        difficulty: "Hard",
+        impact: "High"
+      },
+      {
+        id: "c9",
+        title: "Color for Multi-Functional Spaces",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/multifunctional-color.jpg",
+        description: "Design color schemes that support different activities and moods in multi-purpose rooms. Create visual zones through color.",
+        category: "Color",
+        readTime: "4 min",
+        authorTip: "Use color blocking to define different functional areas within the same space",
+        difficulty: "Medium",
+        impact: "High"
       }
     ],
     space: [
@@ -225,6 +325,61 @@ const interiorTips: InteriorTipsData = {
         category: "Space Planning",
         readTime: "3 min",
         authorTip: "Leave at least 36 inches for major walkways",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "c5",
+        title: "Color Temperature Balance",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/color-temperature.jpg",
+        description: "Master the use of warm and cool colors to create balanced, harmonious spaces. Learn how to mix temperatures effectively.",
+        category: "Color",
+        readTime: "4 min",
+        authorTip: "Add warm accents to cool-toned rooms to prevent them from feeling sterile",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "c6",
+        title: "Color for Small Spaces",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/small-space-color.jpg",
+        description: "Use color strategically to make small spaces feel larger and more inviting. Learn techniques for color placement and proportion.",
+        category: "Color",
+        readTime: "3 min",
+        authorTip: "Paint the ceiling a lighter shade than walls to create the illusion of height",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "c7",
+        title: "Bold Color Integration",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/bold-color.jpg",
+        description: "Incorporate bold colors confidently into your design scheme. Learn how to use statement colors without overwhelming the space.",
+        category: "Color",
+        readTime: "4 min",
+        authorTip: "Use the boldest color on the wall furthest from the entrance to draw the eye through",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "c8",
+        title: "Historical Color Palettes",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/historical-color.jpg",
+        description: "Draw inspiration from historical color schemes to create timeless interiors. Adapt traditional palettes for modern spaces.",
+        category: "Color",
+        readTime: "5 min",
+        authorTip: "Reference architectural style when selecting historical color schemes",
+        difficulty: "Hard",
+        impact: "High"
+      },
+      {
+        id: "c9",
+        title: "Color for Multi-Functional Spaces",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/multifunctional-color.jpg",
+        description: "Design color schemes that support different activities and moods in multi-purpose rooms. Create visual zones through color.",
+        category: "Color",
+        readTime: "4 min",
+        authorTip: "Use color blocking to define different functional areas within the same space",
         difficulty: "Medium",
         impact: "High"
       }
@@ -284,7 +439,51 @@ const interiorTips: InteriorTipsData = {
         authorTip: "Limit statement pieces to one per room to avoid visual competition",
         difficulty: "Easy",
         impact: "Medium"
-      }
+      },
+      {
+        id: "f6",
+        title: "Custom Furniture Planning",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/custom-furniture.jpg",
+        description: "Design and specify custom furniture pieces for challenging spaces. Maximize functionality with tailored solutions.",
+        category: "Furniture",
+        readTime: "5 min",
+        authorTip: "Always create detailed drawings with all dimensions before commissioning custom pieces",
+        difficulty: "Hard",
+        impact: "High"
+      },
+      {
+        id: "f7",
+        title: "Furniture Restoration",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/furniture-restoration.jpg",
+        description: "Learn techniques for restoring and updating existing furniture. Give old pieces new life through refinishing and reupholstery.",
+        category: "Furniture",
+        readTime: "6 min",
+        authorTip: "Test refinishing products on hidden areas first",
+        difficulty: "Hard",
+        impact: "Medium"
+      },
+      {
+        id: "f8",
+        title: "Sustainable Furniture",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/sustainable-furniture.jpg",
+        description: "Source and select eco-friendly furniture options. Consider environmental impact and longevity in furniture choices.",
+        category: "Furniture",
+        readTime: "4 min",
+        authorTip: "Look for FSC-certified wood and low-VOC finishes",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "f9",
+        title: "Furniture Mixing Styles",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mixed-styles.jpg",
+        description: "Successfully combine different furniture styles and periods. Create eclectic yet cohesive spaces.",
+        category: "Furniture",
+        readTime: "4 min",
+        authorTip: "Use consistent finish tones to unite different furniture styles",
+        difficulty: "Medium",
+        impact: "High"
+      }      
     ],
     accessories: [
       {
@@ -319,6 +518,72 @@ const interiorTips: InteriorTipsData = {
         authorTip: "Use the rule of three when mixing patterns: large, medium, and small scale",
         difficulty: "Easy",
         impact: "Medium"
+      },
+      {
+        id: "a4",
+        title: "Mirror Placement",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mirror-placement.jpg",
+        description: "Strategic mirror placement for both functionality and visual impact. Use mirrors to enhance light and create illusions of space.",
+        category: "Accessories",
+        readTime: "3 min",
+        authorTip: "Position mirrors to reflect pleasant views rather than clutter",
+        difficulty: "Easy",
+        impact: "High"
+      },
+      {
+        id: "a5",
+        title: "Sculptural Elements",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/sculptural-elements.jpg",
+        description: "Incorporate three-dimensional art and sculptural pieces. Create visual interest through form and texture.",
+        category: "Accessories",
+        readTime: "4 min",
+        authorTip: "Mix organic and geometric shapes for balanced compositions",
+        difficulty: "Medium",
+        impact: "Medium"
+      },
+      {
+        id: "a6",
+        title: "Seasonal Accessories",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/seasonal-decor.jpg",
+        description: "Rotate accessories seasonally to keep spaces fresh and relevant. Create versatile base designs that adapt to seasonal changes.",
+        category: "Accessories",
+        readTime: "3 min",
+        authorTip: "Store off-season accessories in labeled containers by season",
+        difficulty: "Easy",
+        impact: "Medium"
+      },
+      {
+        id: "a7",
+        title: "Statement Collections",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/collections.jpg",
+        description: "Display collections effectively without creating clutter. Create impactful arrangements of collected items.",
+        category: "Accessories",
+        readTime: "4 min",
+        authorTip: "Group similar items in odd numbers for visual interest",
+        difficulty: "Medium",
+        impact: "Medium"
+      },
+      {
+        id: "a8",
+        title: "Lighting Accessories",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/lighting-accessories.jpg",
+        description: "Select and place decorative lighting fixtures as accessories. Use table lamps, floor lamps, and sconces as decorative elements.",
+        category: "Accessories",
+        readTime: "3 min",
+        authorTip: "Vary light heights to create layered illumination",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "a9",
+        title: "Natural Elements",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/natural-accessories.jpg",
+        description: "Incorporate natural elements like branches, stones, and shells. Create organic displays that connect interior spaces with nature.",
+        category: "Accessories",
+        readTime: "3 min",
+        authorTip: "Rotate natural elements seasonally for freshness",
+        difficulty: "Easy",
+        impact: "Medium"
       }
     ],
     organization: [
@@ -343,12 +608,489 @@ const interiorTips: InteriorTipsData = {
         authorTip: "Use furniture with built-in storage capabilities",
         difficulty: "Medium",
         impact: "High"
+      },
+      {
+        id: "o3",
+        title: "Closet Systems",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/closet-systems.jpg",
+        description: "Design and implement effective closet organization systems. Maximize storage space with custom solutions.",
+        category: "Organization",
+        readTime: "5 min",
+        authorTip: "Install adjustable shelving for flexibility as needs change",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "o4",
+        title: "Kitchen Organization",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/kitchen-org.jpg",
+        description: "Create efficient kitchen storage and workflow systems. Optimize cabinet and pantry space for functionality.",
+        category: "Organization",
+        readTime: "4 min",
+        authorTip: "Use clear containers to easily identify pantry items",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "o5",
+        title: "Paper Management",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/paper-management.jpg",
+        description: "Develop systems for managing paperwork and documents. Create organized home office spaces.",
+        category: "Organization",
+        readTime: "3 min",
+        authorTip: "Implement a one-touch rule for incoming mail",
+        difficulty: "Easy",
+        impact: "High"
+      },
+      {
+        id: "o6",
+        title: "Seasonal Storage",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/seasonal-storage.jpg",
+        description: "Plan and execute seasonal storage rotations. Organize off-season items efficiently.",
+        category: "Organization",
+        readTime: "4 min",
+        authorTip: "Use vacuum storage bags for bulky winter items",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "o7",
+        title: "Small Space Solutions",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/small-space-org.jpg",
+        description: "Maximize organization in compact spaces. Learn creative storage solutions for small apartments and rooms.",
+        category: "Organization",
+        readTime: "4 min",
+        authorTip: "Use vertical space with wall-mounted organizers and over-door solutions",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "o8",
+        title: "Digital Organization",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/digital-org.jpg",
+        description: "Create organized systems for charging stations and electronic storage. Manage cord clutter and device storage.",
+        category: "Organization",
+        readTime: "3 min",
+        authorTip: "Label cords with washi tape for easy identification",
+        difficulty: "Easy",
+        impact: "Medium"
+      },
+      {
+        id: "o9",
+        title: "Maintenance Systems",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/maintenance-systems.jpg",
+        description: "Develop routines and systems for maintaining organization. Create sustainable organizational habits.",
+        category: "Organization",
+        readTime: "4 min",
+        authorTip: "Schedule 15-minute daily reset sessions to maintain organization",
+        difficulty: "Medium",
+        impact: "High"
       }
     ],
-    photography: [],
-    styling: [],
-    balance: [],
-    atmosphere: []
+    photography: [
+      {
+        id: "p1",
+        title: "Natural Light Photography",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room-photography.jpg",
+        description: "Master the art of capturing interiors using natural light. Learn the best times of day and camera settings for stunning room photography.",
+        category: "Photography",
+        readTime: "4 min",
+        authorTip: "Shoot during golden hour (1-2 hours before sunset) for warm, flattering light",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "p2",
+        title: "Composition Techniques",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room-composition.jpg",
+        description: "Learn essential composition techniques for interior photography, including the rule of thirds, leading lines, and framing through doorways.",
+        category: "Photography",
+        readTime: "5 min",
+        authorTip: "Use doorways and windows as natural frames to add depth to your shots",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "p3",
+        title: "Equipment Setup",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/photography-equipment.jpg",
+        description: "Essential equipment guide for interior photography, including tripod usage, lens selection, and proper camera settings for different scenarios.",
+        category: "Photography",
+        readTime: "4 min",
+        authorTip: "Use a wide-angle lens (16-35mm) for small spaces, but avoid fisheye distortion",
+        difficulty: "Hard",
+        impact: "High"
+      },
+      {
+        id: "p4",
+        title: "Advanced Camera Techniques",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/advanced-camera.jpg",
+        description: "Master advanced camera settings for interior photography. Learn about exposure, white balance, and HDR techniques.",
+        category: "Photography",
+        readTime: "5 min",
+        authorTip: "Use bracketing for challenging lighting situations",
+        difficulty: "Hard",
+        impact: "High"
+      },
+      {
+        id: "p5",
+        title: "Styling for Photography",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/photo-styling.jpg",
+        description: "Prepare spaces for professional-looking photography. Learn styling techniques specific to interior photography.",
+        category: "Photography",
+        readTime: "4 min",
+        authorTip: "Remove personal items and declutter surfaces before shooting",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "p6",
+        title: "Post-Processing",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/post-processing.jpg",
+        description: "Edit interior photos to enhance their impact. Learn essential post-processing techniques for interior photography.",
+        category: "Photography",
+        readTime: "5 min",
+        authorTip: "Use selective adjustments to balance mixed lighting sources",
+        difficulty: "Hard",
+        impact: "High"
+      },
+      {
+        id: "p7",
+        title: "Mobile Photography",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-photo.jpg",
+        description: "Take professional-quality interior photos with your smartphone. Master mobile photography techniques and apps.",
+        category: "Photography",
+        readTime: "3 min",
+        authorTip: "Use HDR mode for high-contrast scenes",
+        difficulty: "Easy",
+        impact: "Medium"
+      },
+      {
+        id: "p8",
+        title: "Detail Photography",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/detail-photo.jpg",
+        description: "Capture compelling detail shots of interior elements. Focus on textures, materials, and small vignettes.",
+        category: "Photography",
+        readTime: "4 min",
+        authorTip: "Use macro mode for texture and material close-ups",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "p9",
+        title: "Virtual Tour Photography",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/virtual-tour.jpg",
+        description: "Create comprehensive virtual tours of interior spaces. Learn 360-degree photography techniques.",
+        category: "Photography",
+        readTime: "6 min",
+        authorTip: "Use a tripod with panoramic head for consistent rotation",
+        difficulty: "Hard",
+        impact: "High"
+      }
+    ],
+    styling: [
+      {
+        id: "st1",
+        title: "Vignette Creation",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/vignette-styling.jpg",
+        description: "Master the art of creating beautiful vignettes - small, curated displays that tell a story and add personality to your space.",
+        category: "Styling",
+        readTime: "3 min",
+        authorTip: "Group objects in odd numbers and vary heights for visual interest",
+        difficulty: "Easy",
+        impact: "Medium"
+      },
+      {
+        id: "st2",
+        title: "Bookshelf Styling",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/bookshelf-styling.jpg",
+        description: "Transform bookshelves into designer displays by mixing books, objects, and artwork. Learn proper spacing and arrangement techniques.",
+        category: "Styling",
+        readTime: "4 min",
+        authorTip: "Alternate vertical and horizontal book stacking for visual rhythm",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "st3",
+        title: "Coffee Table Arrangements",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/coffee-table-styling.jpg",
+        description: "Create eye-catching coffee table displays using books, trays, and decorative objects while maintaining functionality.",
+        category: "Styling",
+        readTime: "3 min",
+        authorTip: "Start with a large tray to anchor your arrangement and create zones",
+        difficulty: "Easy",
+        impact: "Medium"
+      },
+      {
+        id: "st4",
+        title: "Seasonal Styling",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/seasonal-styling.jpg",
+        description: "Adapt your styling for different seasons. Create fresh looks throughout the year while maintaining core design elements.",
+        category: "Styling",
+        readTime: "4 min",
+        authorTip: "Keep 70% of styling consistent and change 30% seasonally",
+        difficulty: "Medium",
+        impact: "Medium"
+      },
+      {
+        id: "st5",
+        title: "Table Setting Design",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/table-setting.jpg",
+        description: "Create stunning table settings for different occasions. Master the art of tablescaping and place settings.",
+        category: "Styling",
+        readTime: "4 min",
+        authorTip: "Layer different textures and heights for visual interest",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "st6",
+        title: "Window Treatment Styling",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/window-styling.jpg",
+        description: "Style windows to enhance natural light and views. Learn proper curtain hanging and layering techniques.",
+        category: "Styling",
+        readTime: "3 min",
+        authorTip: "Hang curtains high and wide to make windows appear larger",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "st7",
+        title: "Minimalist Styling",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/minimalist-styling.jpg",
+        description: "Create impact with minimal elements. Master the art of purposeful styling with fewer items.",
+        category: "Styling",
+        readTime: "3 min",
+        authorTip: "Choose items with strong silhouettes for maximum impact",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "st8",
+        title: "Color Story Styling",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/color-styling.jpg",
+        description: "Develop cohesive color stories through styling. Create visual flow with coordinated accessories and decor.",
+        category: "Styling",
+        readTime: "4 min",
+        authorTip: "Use the 60-30-10 rule for color distribution in styling",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "st9",
+        title: "Styling for Photos",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/photo-ready-styling.jpg",
+        description: "Style spaces for maximum impact in photographs. Learn techniques for creating photo-ready vignettes.",
+        category: "Styling",
+        readTime: "4 min",
+        authorTip: "Style in triangle formations for balanced compositions",
+        difficulty: "Hard",
+        impact: "High"
+      }
+    ],
+    balance: [
+      {
+        id: "b1",
+        title: "Symmetrical Balance",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/symmetrical-balance.jpg",
+        description: "Create formal, harmonious spaces using symmetrical balance. Learn when and how to use mirror arrangements effectively.",
+        category: "Balance",
+        readTime: "3 min",
+        authorTip: "Use matching pairs of furniture or decor items on either side of a focal point",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "b2",
+        title: "Asymmetrical Harmony",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/asymmetrical-balance.jpg",
+        description: "Master the art of asymmetrical balance by understanding visual weight and creating interest without perfect symmetry.",
+        category: "Balance",
+        readTime: "4 min",
+        authorTip: "Balance a large piece on one side with several smaller pieces on the other",
+        difficulty: "Hard",
+        impact: "High"
+      },
+      {
+        id: "b3",
+        title: "Vertical Balance",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/vertical-balance.jpg",
+        description: "Learn to balance elements vertically in a room, from floor to ceiling, creating visual flow and preventing bottom-heavy spaces.",
+        category: "Balance",
+        readTime: "3 min",
+        authorTip: "Draw the eye upward with tall plants, artwork, or pendant lights",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "b4",
+        title: "Color Balance",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/color-balance.jpg",
+        description: "Create harmony through balanced color distribution. Learn to distribute colors effectively throughout a space.",
+        category: "Balance",
+        readTime: "4 min",
+        authorTip: "Repeat accent colors at least three times in a room",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "b5",
+        title: "Scale Balance",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/scale-balance.jpg",
+        description: "Balance different scales of furniture and decor. Create harmonious relationships between large and small elements.",
+        category: "Balance",
+        readTime: "3 min",
+        authorTip: "Mix large statement pieces with smaller supporting elements",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "b6",
+        title: "Texture Balance",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/texture-balance.jpg",
+        description: "Create interest through balanced texture combinations. Learn to mix different textures effectively.",
+        category: "Balance",
+        readTime: "3 min",
+        authorTip: "Include at least three different textures in each room",
+        difficulty: "Easy",
+        impact: "Medium"
+      },
+      {
+        id: "b7",
+        title: "Pattern Balance",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/pattern-balance.jpg",
+        description: "Mix patterns successfully while maintaining visual balance. Learn pattern scaling and distribution techniques.",
+        category: "Balance",
+        readTime: "4 min",
+        authorTip: "Use patterns in descending size order: large, medium, small",
+        difficulty: "Hard",
+        impact: "High"
+      },
+      {
+        id: "b8",
+        title: "Functional Balance",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/functional-balance.jpg",
+        description: "Balance aesthetic and functional elements in a space. Create rooms that are both beautiful and practical.",
+        category: "Balance",
+        readTime: "4 min",
+        authorTip: "Ensure every decorative item serves a purpose",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "b9",
+        title: "Light Balance",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/light-balance.jpg",
+        description: "Create balanced lighting schemes using natural and artificial light. Learn to distribute light sources effectively.",
+        category: "Balance",
+        readTime: "4 min",
+        authorTip: "Position light sources at different heights for balanced illumination",
+        difficulty: "Medium",
+        impact: "High"
+      }
+    ],
+    atmosphere: [
+      {
+        id: "at1",
+        title: "Sensory Design",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/sensory-design.jpg",
+        description: "Create multi-sensory experiences in your space using texture, scent, sound, and visual elements to enhance the overall atmosphere.",
+        category: "Atmosphere",
+        readTime: "4 min",
+        authorTip: "Layer different textures in throws and pillows for tactile interest",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "at2",
+        title: "Mood Enhancement",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mood-enhancement.jpg",
+        description: "Learn to create specific moods through the strategic use of color, lighting, and material choices.",
+        category: "Atmosphere",
+        readTime: "5 min",
+        authorTip: "Use warm metals and soft textures for a cozy, inviting atmosphere",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "at3",
+        title: "Natural Elements",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/natural-elements.jpg",
+        description: "Incorporate natural elements like wood, stone, and plants to create a calming, grounded atmosphere in any space.",
+        category: "Atmosphere",
+        readTime: "3 min",
+        authorTip: "Mix different wood tones to create a collected, organic feel",
+        difficulty: "Easy",
+        impact: "High"
+      },
+      {
+        id: "at4",
+        title: "Seasonal Atmosphere",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/seasonal-atmosphere.jpg",
+        description: "Adapt your space's atmosphere to different seasons using color, texture, and decorative elements while maintaining a cohesive style.",
+        category: "Atmosphere",
+        readTime: "4 min",
+        authorTip: "Use removable elements like throws and pillows for seasonal changes",
+        difficulty: "Easy",
+        impact: "Medium"
+      },
+      {
+        id: "at5",
+        title: "Sound Management",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/sound-management.jpg",
+        description: "Create appropriate acoustic environments. Learn to manage sound reflection and absorption.",
+        category: "Atmosphere",
+        readTime: "4 min",
+        authorTip: "Use soft furnishings and textiles to reduce echo in large spaces",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "at6",
+        title: "Aromatherapy Integration",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/aromatherapy.jpg",
+        description: "Incorporate appropriate scents into different spaces. Create signature home fragrances.",
+        category: "Atmosphere",
+        readTime: "3 min",
+        authorTip: "Layer scents using different delivery methods like diffusers and candles",
+        difficulty: "Easy",
+        impact: "Medium"
+      },
+      {
+        id: "at7",
+        title: "Temperature Control",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/temperature.jpg",
+        description: "Manage thermal comfort through design choices. Create comfortable spaces year-round.",
+        category: "Atmosphere",
+        readTime: "4 min",
+        authorTip: "Use thermal curtains and rugs to regulate room temperature",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "at8",
+        title: "Biophilic Design",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/biophilic.jpg",
+        description: "Connect interior spaces with nature. Incorporate natural elements and patterns.",
+        category: "Atmosphere",
+        readTime: "5 min",
+        authorTip: "Use natural materials and organic shapes to create a connection with nature",
+        difficulty: "Medium",
+        impact: "High"
+      },
+      {
+        id: "at9",
+        title: "Energy Flow",
+        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/energy-flow.jpg",
+        description: "Create spaces with positive energy flow. Apply principles of feng shui and energy management.",
+        category: "Atmosphere",
+        readTime: "4 min",
+        authorTip: "Keep pathways clear and arrange furniture to promote smooth movement",
+        difficulty: "Medium",
+        impact: "High"
+      }
+    ]
   };
 
   const categories: Category[] = [
@@ -367,30 +1109,30 @@ const TipCard = memo(function TipCard({ tip, onSave, isSaved, onShare }: TipCard
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-stone-50 dark:bg-stone-900 rounded-lg shadow-xl overflow-hidden
-                 border border-stone-200/50 dark:border-stone-700/50
-                 hover:shadow-2xl transition-all duration-500
+      className="bg-[#FAF7F2] rounded-lg overflow-hidden
+                 border border-[#B5A48B]/20
+                 hover:shadow-lg transition-all duration-500
                  group"
     >
       <div className="p-6">
         {/* Header with actions */}
         <div className="flex justify-between items-start mb-4">
-          <h3 className="text-xl font-medium text-stone-900 dark:text-stone-100">{tip.title}</h3>
+          <h3 className="text-xl font-serif text-[#6B5E4C]">{tip.title}</h3>
           <div className="flex gap-2">
             <button
               onClick={() => onShare(tip)}
-              className="p-2 rounded-full bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
+              className="p-2 rounded-full bg-white hover:bg-[#EBE7E0] transition-colors"
             >
-              <Share2 className="w-4 h-4 text-stone-600 dark:text-stone-300" />
+              <Share2 className="w-4 h-4 text-[#8C7E6A]" />
             </button>
             <button
               onClick={() => onSave(tip.id)}
-              className="p-2 rounded-full bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
+              className="p-2 rounded-full bg-white hover:bg-[#EBE7E0] transition-colors"
             >
               {isSaved ? (
-                <BookmarkPlus className="w-4 h-4 text-blue-400" />
+                <BookmarkPlus className="w-4 h-4 text-[#9C826B]" />
               ) : (
-                <Bookmark className="w-4 h-4 text-stone-600 dark:text-stone-300" />
+                <Bookmark className="w-4 h-4 text-[#8C7E6A]" />
               )}
             </button>
           </div>
@@ -399,60 +1141,51 @@ const TipCard = memo(function TipCard({ tip, onSave, isSaved, onShare }: TipCard
         {/* Enhanced Tags with Icons */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full 
-                         bg-stone-100 dark:bg-stone-800 
-                         text-sm text-stone-600 dark:text-stone-300">
+                         bg-white text-sm text-[#8C7E6A]">
             <Clock className="w-3.5 h-3.5" />
             {tip.readTime}
           </span>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full 
-                         bg-stone-100 dark:bg-stone-800 
-                         text-sm text-stone-600 dark:text-stone-300">
+                         bg-white text-sm text-[#8C7E6A]">
             <Target className="w-3.5 h-3.5" />
             {tip.difficulty}
           </span>
-          {tip.tags?.map(tag => (
-            <span key={tag} className="px-3 py-1 rounded-full 
-                                    bg-stone-100 dark:bg-stone-800 
-                                    text-sm text-stone-600 dark:text-stone-300">
-              #{tag}
-            </span>
-          ))}
         </div>
 
         {/* Description */}
-        <p className="text-stone-600 dark:text-stone-300 mb-4">
+        <p className="text-[#8C7E6A] mb-4">
           {tip.description}
         </p>
 
         {/* Pro Tip Box */}
-        <div className="bg-stone-50 dark:bg-stone-700/50 p-4 rounded-lg">
+        <div className="bg-white p-4 rounded-lg border border-[#B5A48B]/20">
           <div className="flex items-start gap-2">
-            <Lightbulb className="w-5 h-5 text-amber-500 mt-1 flex-shrink-0" />
+            <Lightbulb className="w-5 h-5 text-[#9C826B] mt-1 flex-shrink-0" />
             <div>
-              <p className="font-medium text-stone-900 dark:text-stone-100 mb-1">Pro Tip</p>
-              <p className="text-sm text-stone-600 dark:text-stone-300">
+              <p className="font-medium text-[#6B5E4C] mb-1">Pro Tip</p>
+              <p className="text-sm text-[#8C7E6A]">
                 {tip.authorTip}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Seasons and Room Types */}
+        {/* Metadata */}
         {(tip.seasons || tip.roomTypes) && (
-          <div className="mt-4 pt-4 border-t border-stone-200 dark:border-stone-700/50">
+          <div className="mt-4 pt-4 border-t border-[#B5A48B]/20">
             <div className="flex flex-wrap gap-4">
               {tip.seasons && (
                 <div className="flex items-center gap-2">
-                  <Sun className="w-4 h-4 text-stone-400" />
-                  <span className="text-sm text-stone-500 dark:text-stone-400">
+                  <Sun className="w-4 h-4 text-[#B5A48B]" />
+                  <span className="text-sm text-[#8C7E6A]">
                     {tip.seasons.join(", ")}
                   </span>
                 </div>
               )}
               {tip.roomTypes && (
                 <div className="flex items-center gap-2">
-                  <Home className="w-4 h-4 text-stone-400" />
-                  <span className="text-sm text-stone-500 dark:text-stone-400">
+                  <Home className="w-4 h-4 text-[#B5A48B]" />
+                  <span className="text-sm text-[#8C7E6A]">
                     {tip.roomTypes.join(", ")}
                   </span>
                 </div>
@@ -469,9 +1202,70 @@ const InteriorTipsSection = () => {
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>(CategoryId.Lighting);
   const [savedTips, setSavedTips] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [scrollPosition, setScrollPosition] = useState<number>(0);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
   
   const categoriesRef = useRef<HTMLDivElement>(null);
+  const scrollTimeout = useRef<NodeJS.Timeout>();
+
+  const updateScrollButtons = useCallback(() => {
+    const container = categoriesRef.current;
+    if (container) {
+      setCanScrollLeft(container.scrollLeft > 0);
+      setCanScrollRight(
+        Math.ceil(container.scrollLeft + container.clientWidth) < container.scrollWidth
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    updateScrollButtons();
+    
+    const handleResize = () => {
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+      scrollTimeout.current = setTimeout(updateScrollButtons, 100);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+    };
+  }, [updateScrollButtons]);
+
+  const handleScroll = useCallback(() => {
+    if (scrollTimeout.current) {
+      clearTimeout(scrollTimeout.current);
+    }
+    scrollTimeout.current = setTimeout(updateScrollButtons, 100);
+  }, [updateScrollButtons]);
+
+  useEffect(() => {
+    const container = categoriesRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
+
+  const scroll = useCallback((direction: 'left' | 'right') => {
+    const container = categoriesRef.current;
+    if (container) {
+      const scrollAmount = container.clientWidth * 0.8;
+      const newPosition = direction === 'left'
+        ? container.scrollLeft - scrollAmount
+        : container.scrollLeft + scrollAmount;
+      
+      container.scrollTo({
+        left: newPosition,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
 
   const handleShare = useCallback(async (tip: Tip): Promise<void> => {
     try {
@@ -513,43 +1307,24 @@ const InteriorTipsSection = () => {
     setSelectedCategory(categoryId);
   }, []);
 
-  const scroll = (direction: 'left' | 'right') => {
-    const container = categoriesRef.current;
-    if (container) {
-      const scrollAmount = 200; // Adjust this value as needed
-      const newPosition = direction === 'left' 
-        ? Math.max(0, scrollPosition - scrollAmount)
-        : Math.min(container.scrollWidth - container.clientWidth, scrollPosition + scrollAmount);
-      
-      container.scrollTo({
-        left: newPosition,
-        behavior: 'smooth'
-      });
-      setScrollPosition(newPosition);
-    }
-  };
-
   return (
-    <section className="py-16 bg-gradient-to-b from-stone-50 to-stone-100 
-                      dark:from-stone-900 dark:to-stone-950 min-h-screen">
+    <section className="py-16 bg-[#FAF7F2]">
       <div className="container mx-auto px-4">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-2xl mx-auto text-center mb-16"
         >
-          <h2 className="text-4xl font-serif font-bold text-stone-900 dark:text-stone-50 mb-4
-                       bg-clip-text text-transparent bg-gradient-to-r 
-                       from-stone-900 to-stone-700
-                       dark:from-stone-50 dark:to-stone-300">
+          <h2 className="text-4xl font-serif text-[#6B5E4C] mb-4">
             Interior Design Inspiration
           </h2>
-          <p className="text-stone-600 dark:text-stone-300">
+          <div className="h-0.5 w-24 mx-auto mb-6 bg-gradient-to-r from-[#B5A48B]/20 via-[#B5A48B]/40 to-[#B5A48B]/20" />
+          <p className="text-[#8C7E6A]">
             Discover expert tips and creative ideas to transform your space
           </p>
         </motion.div>
 
-        {/* Search and Filter */}
+        {/* Search Bar */}
         <div className="max-w-xl mx-auto mb-12">
           <div className="relative">
             <input
@@ -557,18 +1332,84 @@ const InteriorTipsSection = () => {
               placeholder="Search tips..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 pl-12 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 pl-12 rounded-lg bg-white border border-[#B5A48B]/20 
+                       focus:outline-none focus:border-[#9C826B] transition-colors"
             />
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-stone-400" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#B5A48B]" />
           </div>
         </div>
 
-        {/* Mobile-optimized Categories */}
-        <div className="md:hidden mb-6">
+        {/* Categories - Desktop */}
+        <div className="hidden md:block relative max-w-4xl mx-auto mb-12">
+          <div className="relative">
+            <div 
+              ref={categoriesRef}
+              className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth"
+            >
+              {categories.map((category) => {
+                const Icon = category.icon;
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryChange(category.id)}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-full whitespace-nowrap transition-colors ${
+                      selectedCategory === category.id
+                        ? 'bg-[#9C826B] text-white'
+                        : 'bg-white text-[#8C7E6A] hover:bg-[#EBE7E0]'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {category.name}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Navigation Buttons */}
+            {canScrollLeft && (
+              <button
+                onClick={() => scroll('left')}
+                className="group absolute left-0 top-1/2 z-20 hidden [@media(min-width:700px)]:flex h-10 w-10 -translate-x-full -translate-y-1/2 items-center justify-center rounded-full bg-[#FAF7F2] shadow-md transition-all duration-300 hover:bg-white"
+                aria-label="Scroll categories left"
+              >
+                <ChevronLeft className="h-5 w-5 text-[#8C7E6A] transition-transform group-hover:-translate-x-0.5" />
+              </button>
+            )}
+
+            {canScrollRight && (
+              <button
+                onClick={() => scroll('right')}
+                className="group absolute right-0 top-1/2 z-20 hidden [@media(min-width:700px)]:flex h-10 w-10 translate-x-full -translate-y-1/2 items-center justify-center rounded-full bg-[#FAF7F2] shadow-md transition-all duration-300 hover:bg-white"
+                aria-label="Scroll categories right"
+              >
+                <ChevronRight className="h-5 w-5 text-[#8C7E6A] transition-transform group-hover:translate-x-0.5" />
+              </button>
+            )}
+
+            {/* Gradient Fades */}
+            {canScrollLeft && (
+              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-20 bg-gradient-to-r from-[#FAF7F2] to-transparent" />
+            )}
+            {canScrollRight && (
+              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-20 bg-gradient-to-l from-[#FAF7F2] to-transparent" />
+            )}
+          </div>
+        </div>
+
+        {/* Categories - Mobile */}
+        <div className="md:hidden mb-8">
           <select
             value={selectedCategory}
             onChange={(e) => handleCategoryChange(e.target.value as CategoryId)}
-            className="w-full px-4 py-3 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 rounded-lg bg-white border border-[#B5A48B]/20 
+                     focus:outline-none focus:border-[#9C826B] transition-colors
+                     text-[#8C7E6A] appearance-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238C7E6A'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 1rem center',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
@@ -578,54 +1419,8 @@ const InteriorTipsSection = () => {
           </select>
         </div>
 
-        {/* Desktop Categories - hide on mobile */}
-        <div className="hidden md:block relative max-w-4xl mx-auto mb-12">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10">
-            <button
-              onClick={() => scroll('left')}
-              className="p-2 rounded-full bg-white dark:bg-stone-800 shadow-md hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
-              aria-label="Scroll left"
-            >
-              <ChevronLeft className="w-5 h-5 text-stone-600 dark:text-stone-300" />
-            </button>
-          </div>
-
-          <div 
-            ref={categoriesRef}
-            className="flex gap-4 overflow-x-hidden scroll-smooth px-10"
-          >
-            {categories.map((category) => {
-              const Icon = category.icon;
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategoryChange(category.id)}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-full whitespace-nowrap transition-colors ${
-                    selectedCategory === category.id
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  {category.name}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10">
-            <button
-              onClick={() => scroll('right')}
-              className="p-2 rounded-full bg-white dark:bg-stone-800 shadow-md hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
-              aria-label="Scroll right"
-            >
-              <ChevronRight className="w-5 h-5 text-stone-600 dark:text-stone-300" />
-            </button>
-          </div>
-        </div>
-
-        {/* Tips Grid - adjusted for better mobile view */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 max-w-7xl mx-auto">
+        {/* Tips Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {filteredTips.map((tip) => (
             <TipCard
               key={tip.id}
