@@ -72,7 +72,7 @@ const currencies: readonly Currency[] = [
 const promos: PromoItem[] = [
   {
     id: 1,
-    text: "Use Code: 'WINTER24' At Checkout For 15% off",
+    text: "Use Code: 'WINTER25' At Checkout For 10% off",
     icon: <DollarSign className="h-4 w-4" />
   },
   {
@@ -231,6 +231,11 @@ export const DesktopHeader = () => {
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(() => currencies[0]!);
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
+  const [filters, setFilters] = useState({
+    priceRange: [0, 1000],
+    sortBy: 'relevance',
+    collections: [] as string[]
+  });
 
   // Constants
   const email = 'info@simpleinteriorideas.com';
@@ -662,14 +667,18 @@ export const DesktopHeader = () => {
                             </div>
                             
                             <div className="space-y-2">
-                              <button
-                                onClick={() => setIsCartOpen(true)}
-                                className="w-full py-2 bg-white border border-[#9e896c] text-[#9e896c] 
-                                         rounded-lg hover:bg-[#9e896c]/5 transition-colors text-sm font-medium"
-                                aria-label="View cart details"
-                              >
-                                View Cart
-                              </button>
+                            <Link
+                              href="/cart"
+                              onClick={() => {
+                                setIsCartOpen(true);
+                                setIsCartHovered(false);
+                              }}
+                              className="block w-full py-2 bg-white border border-[#9e896c] text-[#9e896c] 
+                                      rounded-lg hover:bg-[#9e896c]/5 transition-colors text-sm font-medium text-center"
+                              aria-label="View cart details"
+                            >
+                              View Cart
+                            </Link>
                               <button
                                 onClick={() => {
                                   if (cart?.checkoutUrl) {
@@ -856,34 +865,81 @@ export const DesktopHeader = () => {
                         </div>
                       )}
 
-                      {/* Results */}
+                      {/* Results with Filters */}
                       {!isSearching && (searchResults.collections.length > 0 || searchResults.products.length > 0) ? (
                         <div className="space-y-8">
+                          {/* Search Filters */}
+                          <div className="flex items-center gap-6 p-5 bg-white border-2 border-[#9e896c]/20 rounded-lg shadow-md">
+                            {/* Price Range Filter */}
+                            <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-[#9e896c]">Price:</span>
+                              <select 
+                                value={`${filters.priceRange[0]}-${filters.priceRange[1]}`}
+                                onChange={(e) => {
+                                  const [min, max] = e.target.value.split('-').map(Number).filter((n): n is number => !isNaN(n));
+                                  setFilters(prev => ({ ...prev, priceRange: [min || 0, max || 1000] }));
+                                }}
+                                className="text-sm border-2 border-[#9e896c]/20 rounded-md px-3 py-1.5 bg-white hover:border-[#9e896c]/40 focus:border-[#9e896c] focus:outline-none transition-colors duration-200 cursor-pointer font-medium"
+                              >
+                                <option value="0-1000">All Prices</option>
+                                <option value="0-50">Under $50</option>
+                                <option value="50-100">$50 - $100</option>
+                                <option value="100-200">$100 - $200</option>
+                                <option value="200-1000">$200+</option>
+                              </select>
+                            </div>
+
+                            {/* Sort Filter */}
+                            <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-[#9e896c]">Sort by:</span>
+                              <select
+                                value={filters.sortBy}
+                                onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                                className="text-sm border-2 border-[#9e896c]/20 rounded-md px-3 py-1.5 bg-white hover:border-[#9e896c]/40 focus:border-[#9e896c] focus:outline-none transition-colors duration-200 cursor-pointer font-medium"
+                              >
+                                <option value="relevance">Relevance</option>
+                                <option value="price-low-high">Price: Low to High</option>
+                                <option value="price-high-low">Price: High to Low</option>
+                                <option value="newest">Newest</option>
+                              </select>
+                            </div>
+
+                            {/* Results Count */}
+                            <div className="ml-auto text-sm font-medium text-neutral-700 bg-[#9e896c]/10 px-4 py-1.5 rounded-md">
+                              {searchResults.products.length + searchResults.collections.length} results
+                            </div>
+                          </div>
+
                           {/* Collections Section */}
                           {searchResults.collections.length > 0 && (
                             <div>
                               <h3 className="text-sm font-medium text-neutral-500 mb-3">Collections</h3>
                               <div className="grid grid-cols-3 gap-4">
-                                {searchResults.collections.map((collection) => (
-                                  <Link
-                                    key={collection.handle}
-                                    href={`/collections/${collection.handle}`}
-                                    onClick={() => {
-                                      setIsSearchOpen(false);
-                                      setSearchQuery('');
-                                    }}
-                                    className="group block p-4 rounded-lg border border-neutral-200 hover:border-neutral-300 transition-all"
-                                  >
-                                    <h4 className="text-sm font-medium text-neutral-900 group-hover:text-[#9e896c]">
-                                      {collection.title}
-                                    </h4>
-                                    {collection.description && (
-                                      <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
-                                        {collection.description}
-                                      </p>
-                                    )}
-                                  </Link>
-                                ))}
+                                {searchResults.collections
+                                  .filter(collection => 
+                                    filters.collections.length === 0 || 
+                                    filters.collections.includes(collection.title)
+                                  )
+                                  .map((collection) => (
+                                    <Link
+                                      key={collection.handle}
+                                      href={`/collections/${collection.handle}`}
+                                      onClick={() => {
+                                        setIsSearchOpen(false);
+                                        setSearchQuery('');
+                                      }}
+                                      className="group block p-4 rounded-lg border border-neutral-200 hover:border-neutral-300 transition-all"
+                                    >
+                                      <h4 className="text-sm font-medium text-neutral-900 group-hover:text-[#9e896c]">
+                                        {collection.title}
+                                      </h4>
+                                      {collection.description && (
+                                        <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
+                                          {collection.description}
+                                        </p>
+                                      )}
+                                    </Link>
+                                  ))}
                               </div>
                             </div>
                           )}
@@ -893,37 +949,64 @@ export const DesktopHeader = () => {
                             <div>
                               <h3 className="text-sm font-medium text-neutral-500 mb-3">Products</h3>
                               <div className="grid grid-cols-4 gap-4">
-                                {searchResults.products.map((product) => (
-                                  <Link
-                                    key={product.handle}
-                                    href={`/product/${product.handle}`}
-                                    onClick={() => {
-                                      setIsSearchOpen(false);
-                                      setSearchQuery('');
-                                    }}
-                                    className="group block overflow-hidden rounded-lg border border-neutral-200 hover:border-neutral-300 transition-all"
-                                  >
-                                    {product.featuredImage && (
-                                      <div className="relative aspect-square bg-neutral-100">
-                                        <Image
-                                          src={product.featuredImage.url}
-                                          alt={product.featuredImage.altText || product.title}
-                                          fill={true}
-                                          className="object-cover"
-                                          sizes="(max-width: 1280px) 25vw, 20vw"
-                                        />
+                                {searchResults.products
+                                  .filter(product => {
+                                    const price = parseFloat(product?.priceRange?.minVariantPrice?.amount ?? '0');
+                                    return (
+                                      price >= (filters?.priceRange?.[0] ?? 0) &&
+                                      price <= (filters?.priceRange?.[1] ?? 1000) &&
+                                      (filters?.collections?.length === 0 ||
+                                        filters?.collections.some(c => 
+                                          product.collections?.some((pc: any) => pc.title === c)
+                                        ))
+                                    );
+                                  })
+                                  .sort((a, b) => {
+                                    const priceA = parseFloat(a.priceRange?.minVariantPrice?.amount ?? '0');
+                                    const priceB = parseFloat(b.priceRange?.minVariantPrice?.amount ?? '0');
+                                    
+                                    switch (filters.sortBy) {
+                                      case 'price-low-high':
+                                        return priceA - priceB;
+                                      case 'price-high-low':
+                                        return priceB - priceA;
+                                      case 'newest':
+                                        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                                      default:
+                                        return 0;
+                                    }
+                                  })
+                                  .map((product) => (
+                                    <Link
+                                      key={product.handle}
+                                      href={`/product/${product.handle}`}
+                                      onClick={() => {
+                                        setIsSearchOpen(false);
+                                        setSearchQuery('');
+                                      }}
+                                      className="group block overflow-hidden rounded-lg border border-neutral-200 hover:border-neutral-300 transition-all"
+                                    >
+                                      {product.featuredImage && (
+                                        <div className="relative aspect-square bg-neutral-100">
+                                          <Image
+                                            src={product.featuredImage.url}
+                                            alt={product.featuredImage.altText || product.title}
+                                            fill={true}
+                                            className="object-cover"
+                                            sizes="(max-width: 1280px) 25vw, 20vw"
+                                          />
+                                        </div>
+                                      )}
+                                      <div className="p-3">
+                                        <h4 className="text-sm font-medium text-neutral-900 group-hover:text-[#9e896c] line-clamp-1">
+                                          {product.title}
+                                        </h4>
+                                        <p className="text-sm text-neutral-500 mt-1">
+                                          ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                                        </p>
                                       </div>
-                                    )}
-                                    <div className="p-3">
-                                      <h4 className="text-sm font-medium text-neutral-900 group-hover:text-[#9e896c] line-clamp-1">
-                                        {product.title}
-                                      </h4>
-                                      <p className="text-sm text-neutral-500 mt-1">
-                                        ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
-                                      </p>
-                                    </div>
-                                  </Link>
-                                ))}
+                                    </Link>
+                                  ))}
                               </div>
                             </div>
                           )}
@@ -931,7 +1014,7 @@ export const DesktopHeader = () => {
                       ) : !isSearching && searchQuery ? (
                         <div className="text-center py-8">
                           <p className="text-neutral-600">No results found</p>
-                          <p className="text-sm text-neutral-400 mt-1">Try adjusting your search</p>
+                          <p className="text-sm text-neutral-400 mt-1">Try adjusting your search or filters</p>
                         </div>
                       ) : null}
                     </div>
