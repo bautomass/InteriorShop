@@ -38,7 +38,6 @@ enum CategoryId {
 interface Tip {
   id: string;
   title: string;
-  image: string;
   description: string;
   category: string;
   readTime: string;
@@ -48,10 +47,6 @@ interface Tip {
   tags?: string[];
   seasons?: string[];
   roomTypes?: string[];
-  beforeAfter?: {
-    before: string;
-    after: string;
-  };
 }
 
 interface InteriorTipsData {
@@ -85,7 +80,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "l1",
         title: "Natural Light Maximization",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/natural-light-interior.jpg",
         description: "Maximize natural light in your space by using sheer curtains or blinds that allow light to filter through. Large windows, skylights, and strategically placed mirrors can help enhance natural light.",
         category: "Lighting",
         readTime: "2 min",
@@ -96,7 +90,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "l2",
         title: "Layered Lighting Design",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/layered-lighting.jpg",
         description: "Create ambiance with multiple light sources at different heights. Combine overhead, task, and accent lighting to create depth and functionality.",
         category: "Lighting",
         readTime: "3 min",
@@ -107,7 +100,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "l3",
         title: "Smart Lighting Solutions",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/smart-lighting.jpg",
         description: "Integrate smart lighting systems to control ambiance, save energy, and enhance security. Program different lighting scenes for various times of day and activities.",
         category: "Lighting",
         readTime: "4 min",
@@ -118,7 +110,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "l4",
         title: "Task Lighting Placement",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/task-lighting.jpg",
         description: "Position task lighting to eliminate shadows in work areas. Consider under-cabinet lights for kitchens and adjustable desk lamps for home offices.",
         category: "Lighting",
         readTime: "3 min",
@@ -129,7 +120,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "l5",
         title: "Mood Lighting Techniques",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mood-lighting.jpg",
         description: "Create atmosphere with strategic accent lighting. Use wall sconces, picture lights, and LED strips to highlight architectural features and artwork.",
         category: "Lighting",
         readTime: "3 min",
@@ -140,7 +130,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "l6",
         title: "Circadian Lighting Design",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/circadian-lighting.jpg",
         description: "Design lighting that supports natural sleep-wake cycles by adjusting color temperature throughout the day. Implement warmer lights for evening and cooler lights for daytime.",
         category: "Lighting",
         readTime: "4 min",
@@ -151,7 +140,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "l7",
         title: "Outdoor Lighting Integration",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/outdoor-lighting.jpg",
         description: "Create seamless transitions between indoor and outdoor spaces with strategic lighting placement. Enhance security and ambiance simultaneously.",
         category: "Lighting",
         readTime: "3 min",
@@ -162,7 +150,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "l8",
         title: "Energy-Efficient Lighting",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/efficient-lighting.jpg",
         description: "Optimize your lighting setup for maximum energy efficiency without compromising on style or functionality. Incorporate LED technology and smart controls.",
         category: "Lighting",
         readTime: "4 min",
@@ -173,7 +160,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "l9",
         title: "Architectural Lighting Features",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/architectural-lighting.jpg",
         description: "Highlight architectural elements using sophisticated lighting techniques. Emphasize structural features and create visual interest through light and shadow.",
         category: "Lighting",
         readTime: "5 min",
@@ -186,7 +172,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c1",
         title: "Color Psychology",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/color-psychology.jpg",
         description: "Use colors strategically to influence mood and perception. Cool tones create calm, while warm colors energize spaces.",
         category: "Color",
         readTime: "4 min",
@@ -197,7 +182,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c2",
         title: "60-30-10 Color Rule",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/color-rule.jpg",
         description: "Apply the 60-30-10 rule: 60% dominant color, 30% secondary color, and 10% accent color for balanced room design.",
         category: "Color",
         readTime: "3 min",
@@ -208,7 +192,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c3",
         title: "Color Flow Between Rooms",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/color-flow.jpg",
         description: "Create cohesive color transitions between rooms using complementary or analogous color schemes.",
         category: "Color",
         readTime: "4 min",
@@ -219,7 +202,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c4",
         title: "Paint Finish Selection",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/paint-finish.jpg",
         description: "Choose appropriate paint finishes for different areas: matte for low-traffic areas, semi-gloss for high-traffic and moisture-prone spaces.",
         category: "Color",
         readTime: "3 min",
@@ -230,7 +212,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c5",
         title: "Color Temperature Balance",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/color-temperature.jpg",
         description: "Master the use of warm and cool colors to create balanced, harmonious spaces. Learn how to mix temperatures effectively.",
         category: "Color",
         readTime: "4 min",
@@ -241,7 +222,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c6",
         title: "Color for Small Spaces",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/small-space-color.jpg",
         description: "Use color strategically to make small spaces feel larger and more inviting. Learn techniques for color placement and proportion.",
         category: "Color",
         readTime: "3 min",
@@ -252,7 +232,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c7",
         title: "Bold Color Integration",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/bold-color.jpg",
         description: "Incorporate bold colors confidently into your design scheme. Learn how to use statement colors without overwhelming the space.",
         category: "Color",
         readTime: "4 min",
@@ -263,7 +242,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c8",
         title: "Historical Color Palettes",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/historical-color.jpg",
         description: "Draw inspiration from historical color schemes to create timeless interiors. Adapt traditional palettes for modern spaces.",
         category: "Color",
         readTime: "5 min",
@@ -274,7 +252,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c9",
         title: "Color for Multi-Functional Spaces",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/multifunctional-color.jpg",
         description: "Design color schemes that support different activities and moods in multi-purpose rooms. Create visual zones through color.",
         category: "Color",
         readTime: "4 min",
@@ -287,7 +264,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "s1",
         title: "Visual Space Expansion",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/visual-space.jpg",
         description: "Make rooms appear larger using visual tricks like vertical stripes, light colors, and strategic furniture placement.",
         category: "Space Planning",
         readTime: "3 min",
@@ -298,7 +274,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "s2",
         title: "Zoning Open Spaces",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/zoning.jpg",
         description: "Define different areas in open-plan spaces using rugs, lighting, and furniture arrangement to create distinct functional zones.",
         category: "Space Planning",
         readTime: "4 min",
@@ -309,7 +284,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "s3",
         title: "Vertical Storage Solutions",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/vertical-storage.jpg",
         description: "Maximize vertical space with wall-mounted storage, floating shelves, and floor-to-ceiling cabinets.",
         category: "Space Planning",
         readTime: "3 min",
@@ -320,7 +294,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "s4",
         title: "Traffic Flow Optimization",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/traffic-flow.jpg",
         description: "Plan furniture placement to create clear pathways and maintain good traffic flow throughout the space.",
         category: "Space Planning",
         readTime: "3 min",
@@ -331,7 +304,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c5",
         title: "Color Temperature Balance",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/color-temperature.jpg",
         description: "Master the use of warm and cool colors to create balanced, harmonious spaces. Learn how to mix temperatures effectively.",
         category: "Color",
         readTime: "4 min",
@@ -342,7 +314,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c6",
         title: "Color for Small Spaces",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/small-space-color.jpg",
         description: "Use color strategically to make small spaces feel larger and more inviting. Learn techniques for color placement and proportion.",
         category: "Color",
         readTime: "3 min",
@@ -353,7 +324,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c7",
         title: "Bold Color Integration",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/bold-color.jpg",
         description: "Incorporate bold colors confidently into your design scheme. Learn how to use statement colors without overwhelming the space.",
         category: "Color",
         readTime: "4 min",
@@ -364,7 +334,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c8",
         title: "Historical Color Palettes",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/historical-color.jpg",
         description: "Draw inspiration from historical color schemes to create timeless interiors. Adapt traditional palettes for modern spaces.",
         category: "Color",
         readTime: "5 min",
@@ -375,7 +344,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "c9",
         title: "Color for Multi-Functional Spaces",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/multifunctional-color.jpg",
         description: "Design color schemes that support different activities and moods in multi-purpose rooms. Create visual zones through color.",
         category: "Color",
         readTime: "4 min",
@@ -388,7 +356,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "f1",
         title: "Furniture Arrangement",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/furniture-arrangement.jpg",
         description: "Create conversation areas and maintain flow with proper furniture placement. Consider traffic patterns and focal points.",
         category: "Furniture",
         readTime: "5 min",
@@ -399,7 +366,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "f2",
         title: "Scale and Proportion",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/furniture-scale.jpg",
         description: "Choose furniture that fits the scale of your room. Avoid oversized pieces in small spaces and ensure proper proportions.",
         category: "Furniture",
         readTime: "4 min",
@@ -410,7 +376,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "f3",
         title: "Multi-functional Furniture",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/multifunctional-furniture.jpg",
         description: "Maximize space with dual-purpose furniture like ottoman storage, murphy beds, and expandable dining tables.",
         category: "Furniture",
         readTime: "3 min",
@@ -421,7 +386,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "f4",
         title: "Upholstery Selection",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/upholstery.jpg",
         description: "Choose appropriate fabrics based on usage, durability needs, and maintenance requirements.",
         category: "Furniture",
         readTime: "4 min",
@@ -432,7 +396,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "f5",
         title: "Statement Pieces",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/statement-furniture.jpg",
         description: "Incorporate eye-catching furniture pieces that serve as focal points and conversation starters.",
         category: "Furniture",
         readTime: "3 min",
@@ -443,7 +406,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "f6",
         title: "Custom Furniture Planning",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/custom-furniture.jpg",
         description: "Design and specify custom furniture pieces for challenging spaces. Maximize functionality with tailored solutions.",
         category: "Furniture",
         readTime: "5 min",
@@ -454,7 +416,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "f7",
         title: "Furniture Restoration",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/furniture-restoration.jpg",
         description: "Learn techniques for restoring and updating existing furniture. Give old pieces new life through refinishing and reupholstery.",
         category: "Furniture",
         readTime: "6 min",
@@ -465,7 +426,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "f8",
         title: "Sustainable Furniture",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/sustainable-furniture.jpg",
         description: "Source and select eco-friendly furniture options. Consider environmental impact and longevity in furniture choices.",
         category: "Furniture",
         readTime: "4 min",
@@ -476,7 +436,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "f9",
         title: "Furniture Mixing Styles",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mixed-styles.jpg",
         description: "Successfully combine different furniture styles and periods. Create eclectic yet cohesive spaces.",
         category: "Furniture",
         readTime: "4 min",
@@ -489,7 +448,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "a1",
         title: "Plant Styling",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/plant-styling.jpg",
         description: "Incorporate indoor plants to add life, color, and improve air quality. Mix different sizes and varieties for visual interest.",
         category: "Accessories",
         readTime: "3 min",
@@ -500,7 +458,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "a2",
         title: "Art Placement",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/art-placement.jpg",
         description: "Hang artwork at eye level and create gallery walls with proper spacing and arrangement.",
         category: "Accessories",
         readTime: "4 min",
@@ -511,7 +468,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "a3",
         title: "Textile Layering",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/textile-layering.jpg",
         description: "Add depth and comfort with layered textiles. Mix textures and patterns in throws, pillows, and rugs.",
         category: "Accessories",
         readTime: "3 min",
@@ -522,7 +478,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "a4",
         title: "Mirror Placement",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mirror-placement.jpg",
         description: "Strategic mirror placement for both functionality and visual impact. Use mirrors to enhance light and create illusions of space.",
         category: "Accessories",
         readTime: "3 min",
@@ -533,7 +488,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "a5",
         title: "Sculptural Elements",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/sculptural-elements.jpg",
         description: "Incorporate three-dimensional art and sculptural pieces. Create visual interest through form and texture.",
         category: "Accessories",
         readTime: "4 min",
@@ -544,7 +498,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "a6",
         title: "Seasonal Accessories",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/seasonal-decor.jpg",
         description: "Rotate accessories seasonally to keep spaces fresh and relevant. Create versatile base designs that adapt to seasonal changes.",
         category: "Accessories",
         readTime: "3 min",
@@ -555,7 +508,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "a7",
         title: "Statement Collections",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/collections.jpg",
         description: "Display collections effectively without creating clutter. Create impactful arrangements of collected items.",
         category: "Accessories",
         readTime: "4 min",
@@ -566,7 +518,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "a8",
         title: "Lighting Accessories",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/lighting-accessories.jpg",
         description: "Select and place decorative lighting fixtures as accessories. Use table lamps, floor lamps, and sconces as decorative elements.",
         category: "Accessories",
         readTime: "3 min",
@@ -577,7 +528,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "a9",
         title: "Natural Elements",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/natural-accessories.jpg",
         description: "Incorporate natural elements like branches, stones, and shells. Create organic displays that connect interior spaces with nature.",
         category: "Accessories",
         readTime: "3 min",
@@ -590,7 +540,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "o1",
         title: "Decluttering Strategies",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/decluttering.jpg",
         description: "Implement effective decluttering methods to maintain organized and peaceful spaces.",
         category: "Organization",
         readTime: "4 min",
@@ -601,7 +550,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "o2",
         title: "Hidden Storage",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hidden-storage.jpg",
         description: "Incorporate clever storage solutions that maintain clean aesthetics while maximizing space.",
         category: "Organization",
         readTime: "3 min",
@@ -612,7 +560,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "o3",
         title: "Closet Systems",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/closet-systems.jpg",
         description: "Design and implement effective closet organization systems. Maximize storage space with custom solutions.",
         category: "Organization",
         readTime: "5 min",
@@ -623,7 +570,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "o4",
         title: "Kitchen Organization",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/kitchen-org.jpg",
         description: "Create efficient kitchen storage and workflow systems. Optimize cabinet and pantry space for functionality.",
         category: "Organization",
         readTime: "4 min",
@@ -634,7 +580,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "o5",
         title: "Paper Management",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/paper-management.jpg",
         description: "Develop systems for managing paperwork and documents. Create organized home office spaces.",
         category: "Organization",
         readTime: "3 min",
@@ -645,7 +590,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "o6",
         title: "Seasonal Storage",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/seasonal-storage.jpg",
         description: "Plan and execute seasonal storage rotations. Organize off-season items efficiently.",
         category: "Organization",
         readTime: "4 min",
@@ -656,7 +600,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "o7",
         title: "Small Space Solutions",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/small-space-org.jpg",
         description: "Maximize organization in compact spaces. Learn creative storage solutions for small apartments and rooms.",
         category: "Organization",
         readTime: "4 min",
@@ -667,7 +610,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "o8",
         title: "Digital Organization",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/digital-org.jpg",
         description: "Create organized systems for charging stations and electronic storage. Manage cord clutter and device storage.",
         category: "Organization",
         readTime: "3 min",
@@ -678,7 +620,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "o9",
         title: "Maintenance Systems",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/maintenance-systems.jpg",
         description: "Develop routines and systems for maintaining organization. Create sustainable organizational habits.",
         category: "Organization",
         readTime: "4 min",
@@ -691,7 +632,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "p1",
         title: "Natural Light Photography",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room-photography.jpg",
         description: "Master the art of capturing interiors using natural light. Learn the best times of day and camera settings for stunning room photography.",
         category: "Photography",
         readTime: "4 min",
@@ -702,7 +642,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "p2",
         title: "Composition Techniques",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/room-composition.jpg",
         description: "Learn essential composition techniques for interior photography, including the rule of thirds, leading lines, and framing through doorways.",
         category: "Photography",
         readTime: "5 min",
@@ -713,7 +652,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "p3",
         title: "Equipment Setup",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/photography-equipment.jpg",
         description: "Essential equipment guide for interior photography, including tripod usage, lens selection, and proper camera settings for different scenarios.",
         category: "Photography",
         readTime: "4 min",
@@ -724,7 +662,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "p4",
         title: "Advanced Camera Techniques",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/advanced-camera.jpg",
         description: "Master advanced camera settings for interior photography. Learn about exposure, white balance, and HDR techniques.",
         category: "Photography",
         readTime: "5 min",
@@ -735,7 +672,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "p5",
         title: "Styling for Photography",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/photo-styling.jpg",
         description: "Prepare spaces for professional-looking photography. Learn styling techniques specific to interior photography.",
         category: "Photography",
         readTime: "4 min",
@@ -746,7 +682,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "p6",
         title: "Post-Processing",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/post-processing.jpg",
         description: "Edit interior photos to enhance their impact. Learn essential post-processing techniques for interior photography.",
         category: "Photography",
         readTime: "5 min",
@@ -757,7 +692,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "p7",
         title: "Mobile Photography",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-photo.jpg",
         description: "Take professional-quality interior photos with your smartphone. Master mobile photography techniques and apps.",
         category: "Photography",
         readTime: "3 min",
@@ -768,7 +702,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "p8",
         title: "Detail Photography",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/detail-photo.jpg",
         description: "Capture compelling detail shots of interior elements. Focus on textures, materials, and small vignettes.",
         category: "Photography",
         readTime: "4 min",
@@ -779,7 +712,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "p9",
         title: "Virtual Tour Photography",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/virtual-tour.jpg",
         description: "Create comprehensive virtual tours of interior spaces. Learn 360-degree photography techniques.",
         category: "Photography",
         readTime: "6 min",
@@ -792,7 +724,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "st1",
         title: "Vignette Creation",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/vignette-styling.jpg",
         description: "Master the art of creating beautiful vignettes - small, curated displays that tell a story and add personality to your space.",
         category: "Styling",
         readTime: "3 min",
@@ -803,7 +734,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "st2",
         title: "Bookshelf Styling",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/bookshelf-styling.jpg",
         description: "Transform bookshelves into designer displays by mixing books, objects, and artwork. Learn proper spacing and arrangement techniques.",
         category: "Styling",
         readTime: "4 min",
@@ -814,7 +744,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "st3",
         title: "Coffee Table Arrangements",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/coffee-table-styling.jpg",
         description: "Create eye-catching coffee table displays using books, trays, and decorative objects while maintaining functionality.",
         category: "Styling",
         readTime: "3 min",
@@ -825,7 +754,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "st4",
         title: "Seasonal Styling",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/seasonal-styling.jpg",
         description: "Adapt your styling for different seasons. Create fresh looks throughout the year while maintaining core design elements.",
         category: "Styling",
         readTime: "4 min",
@@ -836,7 +764,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "st5",
         title: "Table Setting Design",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/table-setting.jpg",
         description: "Create stunning table settings for different occasions. Master the art of tablescaping and place settings.",
         category: "Styling",
         readTime: "4 min",
@@ -847,7 +774,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "st6",
         title: "Window Treatment Styling",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/window-styling.jpg",
         description: "Style windows to enhance natural light and views. Learn proper curtain hanging and layering techniques.",
         category: "Styling",
         readTime: "3 min",
@@ -858,7 +784,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "st7",
         title: "Minimalist Styling",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/minimalist-styling.jpg",
         description: "Create impact with minimal elements. Master the art of purposeful styling with fewer items.",
         category: "Styling",
         readTime: "3 min",
@@ -869,7 +794,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "st8",
         title: "Color Story Styling",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/color-styling.jpg",
         description: "Develop cohesive color stories through styling. Create visual flow with coordinated accessories and decor.",
         category: "Styling",
         readTime: "4 min",
@@ -880,7 +804,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "st9",
         title: "Styling for Photos",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/photo-ready-styling.jpg",
         description: "Style spaces for maximum impact in photographs. Learn techniques for creating photo-ready vignettes.",
         category: "Styling",
         readTime: "4 min",
@@ -893,7 +816,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "b1",
         title: "Symmetrical Balance",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/symmetrical-balance.jpg",
         description: "Create formal, harmonious spaces using symmetrical balance. Learn when and how to use mirror arrangements effectively.",
         category: "Balance",
         readTime: "3 min",
@@ -904,7 +826,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "b2",
         title: "Asymmetrical Harmony",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/asymmetrical-balance.jpg",
         description: "Master the art of asymmetrical balance by understanding visual weight and creating interest without perfect symmetry.",
         category: "Balance",
         readTime: "4 min",
@@ -915,7 +836,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "b3",
         title: "Vertical Balance",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/vertical-balance.jpg",
         description: "Learn to balance elements vertically in a room, from floor to ceiling, creating visual flow and preventing bottom-heavy spaces.",
         category: "Balance",
         readTime: "3 min",
@@ -926,7 +846,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "b4",
         title: "Color Balance",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/color-balance.jpg",
         description: "Create harmony through balanced color distribution. Learn to distribute colors effectively throughout a space.",
         category: "Balance",
         readTime: "4 min",
@@ -937,7 +856,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "b5",
         title: "Scale Balance",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/scale-balance.jpg",
         description: "Balance different scales of furniture and decor. Create harmonious relationships between large and small elements.",
         category: "Balance",
         readTime: "3 min",
@@ -948,7 +866,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "b6",
         title: "Texture Balance",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/texture-balance.jpg",
         description: "Create interest through balanced texture combinations. Learn to mix different textures effectively.",
         category: "Balance",
         readTime: "3 min",
@@ -959,7 +876,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "b7",
         title: "Pattern Balance",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/pattern-balance.jpg",
         description: "Mix patterns successfully while maintaining visual balance. Learn pattern scaling and distribution techniques.",
         category: "Balance",
         readTime: "4 min",
@@ -970,7 +886,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "b8",
         title: "Functional Balance",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/functional-balance.jpg",
         description: "Balance aesthetic and functional elements in a space. Create rooms that are both beautiful and practical.",
         category: "Balance",
         readTime: "4 min",
@@ -981,7 +896,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "b9",
         title: "Light Balance",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/light-balance.jpg",
         description: "Create balanced lighting schemes using natural and artificial light. Learn to distribute light sources effectively.",
         category: "Balance",
         readTime: "4 min",
@@ -994,7 +908,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "at1",
         title: "Sensory Design",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/sensory-design.jpg",
         description: "Create multi-sensory experiences in your space using texture, scent, sound, and visual elements to enhance the overall atmosphere.",
         category: "Atmosphere",
         readTime: "4 min",
@@ -1005,7 +918,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "at2",
         title: "Mood Enhancement",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mood-enhancement.jpg",
         description: "Learn to create specific moods through the strategic use of color, lighting, and material choices.",
         category: "Atmosphere",
         readTime: "5 min",
@@ -1016,7 +928,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "at3",
         title: "Natural Elements",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/natural-elements.jpg",
         description: "Incorporate natural elements like wood, stone, and plants to create a calming, grounded atmosphere in any space.",
         category: "Atmosphere",
         readTime: "3 min",
@@ -1027,7 +938,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "at4",
         title: "Seasonal Atmosphere",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/seasonal-atmosphere.jpg",
         description: "Adapt your space's atmosphere to different seasons using color, texture, and decorative elements while maintaining a cohesive style.",
         category: "Atmosphere",
         readTime: "4 min",
@@ -1038,7 +948,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "at5",
         title: "Sound Management",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/sound-management.jpg",
         description: "Create appropriate acoustic environments. Learn to manage sound reflection and absorption.",
         category: "Atmosphere",
         readTime: "4 min",
@@ -1049,7 +958,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "at6",
         title: "Aromatherapy Integration",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/aromatherapy.jpg",
         description: "Incorporate appropriate scents into different spaces. Create signature home fragrances.",
         category: "Atmosphere",
         readTime: "3 min",
@@ -1060,7 +968,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "at7",
         title: "Temperature Control",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/temperature.jpg",
         description: "Manage thermal comfort through design choices. Create comfortable spaces year-round.",
         category: "Atmosphere",
         readTime: "4 min",
@@ -1071,7 +978,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "at8",
         title: "Biophilic Design",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/biophilic.jpg",
         description: "Connect interior spaces with nature. Incorporate natural elements and patterns.",
         category: "Atmosphere",
         readTime: "5 min",
@@ -1082,7 +988,6 @@ const interiorTips: InteriorTipsData = {
       {
         id: "at9",
         title: "Energy Flow",
-        image: "https://cdn.shopify.com/s/files/1/0640/6868/1913/files/energy-flow.jpg",
         description: "Create spaces with positive energy flow. Apply principles of feng shui and energy management.",
         category: "Atmosphere",
         readTime: "4 min",
@@ -1106,10 +1011,7 @@ const interiorTips: InteriorTipsData = {
 
 const TipCard = memo(function TipCard({ tip, onSave, isSaved, onShare }: TipCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-[#FAF7F2] rounded-lg overflow-hidden
+    <div className="bg-[#FAF7F2] rounded-lg overflow-hidden
                  border border-[#B5A48B]/20
                  hover:shadow-lg transition-all duration-500
                  group"
@@ -1194,7 +1096,7 @@ const TipCard = memo(function TipCard({ tip, onSave, isSaved, onShare }: TipCard
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 });
 
@@ -1202,8 +1104,11 @@ const InteriorTipsSection = () => {
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>(CategoryId.Lighting);
   const [savedTips, setSavedTips] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  
+  const TIPS_PER_PAGE = 3;
   
   const categoriesRef = useRef<HTMLDivElement>(null);
   const scrollTimeout = useRef<NodeJS.Timeout>();
@@ -1303,9 +1208,66 @@ const InteriorTipsSection = () => {
     );
   }, [selectedCategory, searchTerm]);
 
+  const totalPages = Math.ceil(filteredTips.length / TIPS_PER_PAGE);
+
+  const currentTips = useMemo(() => {
+    const startIndex = (currentPage - 1) * TIPS_PER_PAGE;
+    return filteredTips.slice(startIndex, startIndex + TIPS_PER_PAGE);
+  }, [filteredTips, currentPage]);
+
   const handleCategoryChange = useCallback((categoryId: CategoryId): void => {
     setSelectedCategory(categoryId);
+    setCurrentPage(1); // Reset to first page when changing category
   }, []);
+
+  // Add pagination controls component
+  const PaginationControls = () => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex justify-center items-center gap-2 mt-8">
+        <button
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className={`p-2 rounded-lg ${
+            currentPage === 1
+              ? 'text-[#B5A48B]/50 cursor-not-allowed'
+              : 'text-[#8C7E6A] hover:bg-[#EBE7E0]'
+          }`}
+          aria-label="Previous page"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+          <button
+            key={pageNum}
+            onClick={() => setCurrentPage(pageNum)}
+            className={`w-8 h-8 rounded-lg ${
+              currentPage === pageNum
+                ? 'bg-[#9C826B] text-white'
+                : 'text-[#8C7E6A] hover:bg-[#EBE7E0]'
+            }`}
+          >
+            {pageNum}
+          </button>
+        ))}
+        
+        <button
+          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className={`p-2 rounded-lg ${
+            currentPage === totalPages
+              ? 'text-[#B5A48B]/50 cursor-not-allowed'
+              : 'text-[#8C7E6A] hover:bg-[#EBE7E0]'
+          }`}
+          aria-label="Next page"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+    );
+  };
 
   return (
     <section className="py-16 bg-[#FAF7F2]">
@@ -1419,9 +1381,9 @@ const InteriorTipsSection = () => {
           </select>
         </div>
 
-        {/* Tips Grid */}
+        {/* Tips Grid - Updated to use currentTips */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {filteredTips.map((tip) => (
+          {currentTips.map((tip) => (
             <TipCard
               key={tip.id}
               tip={tip}
@@ -1431,6 +1393,9 @@ const InteriorTipsSection = () => {
             />
           ))}
         </div>
+
+        {/* Add Pagination Controls */}
+        <PaginationControls />
       </div>
     </section>
   );
