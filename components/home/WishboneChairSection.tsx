@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { LazyMotion, domAnimation, motion } from 'framer-motion';
-import { ChevronRight, Info, X } from 'lucide-react';
+import { ChevronRight, Info, Pause, Play, X } from 'lucide-react';
 import { ErrorBoundary } from 'next/dist/client/components/error-boundary';
 import Image from 'next/image';
 import { memo, useCallback, useState } from 'react';
@@ -152,6 +152,56 @@ const ImageCard = memo(function ImageCard({
 
 ImageCard.displayName = 'ImageCard';
 
+// Add new VideoPlayer component
+const VideoPlayer = memo(function VideoPlayer() {
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  const togglePlay = useCallback(() => {
+    const video = document.querySelector('#wishbone-video') as HTMLVideoElement;
+    if (video) {
+      if (video.paused) {
+        video.play();
+        setIsPlaying(true);
+      } else {
+        video.pause();
+        setIsPlaying(false);
+      }
+    }
+  }, []);
+
+  return (
+    <div className="relative h-full">
+      <video
+        id="wishbone-video"
+        className="w-full h-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+        aria-label="Wishbone chair crafting process video"
+      >
+        <source 
+          src="https://cdn.shopify.com/videos/c/o/v/35164e128ad44b0f8e4c42774bc8d1d8.mp4" 
+          type="video/mp4" 
+        />
+      </video>
+      <button
+        onClick={togglePlay}
+        className="absolute bottom-4 right-4 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors duration-200"
+        aria-label={isPlaying ? 'Pause video' : 'Play video'}
+      >
+        {isPlaying ? (
+          <Pause className="w-6 h-6 text-white" />
+        ) : (
+          <Play className="w-6 h-6 text-white" />
+        )}
+      </button>
+    </div>
+  );
+});
+
+VideoPlayer.displayName = 'VideoPlayer';
+
 const WishboneChairSection = memo(function WishboneChairSection() {
   const [selectedModal, setSelectedModal] = useState<number | null>(null);
 
@@ -186,21 +236,9 @@ const WishboneChairSection = memo(function WishboneChairSection() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="relative overflow-hidden lg:col-span-3 aspect-video bg-primary-200 dark:bg-primary-800 rounded-lg"
+              className="relative lg:col-span-3 aspect-[16/9] lg:aspect-auto lg:h-[500px] bg-primary-200 dark:bg-primary-800 rounded-lg overflow-hidden"
             >
-              <video
-                className="w-full h-full object-cover"
-                autoPlay
-                muted
-                loop
-                playsInline
-                aria-label="Wishbone chair crafting process video"
-              >
-                <source 
-                  src="https://cdn.shopify.com/videos/c/o/v/35164e128ad44b0f8e4c42774bc8d1d8.mp4" 
-                  type="video/mp4" 
-                />
-              </video>
+              <VideoPlayer />
             </motion.div>
 
             {/* Info Panel */}
@@ -208,11 +246,11 @@ const WishboneChairSection = memo(function WishboneChairSection() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="lg:col-span-2 self-start"
+              className="lg:col-span-2 h-full"
             >
               <div className="bg-white/70 dark:bg-primary-800/70 backdrop-blur-sm 
                             rounded-lg shadow-lg border border-primary-100/50 dark:border-primary-700/50
-                            p-4 md:p-6 space-y-3">
+                            p-4 md:p-6 space-y-3 h-full flex flex-col">
                 <div className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium
                              bg-primary-100 dark:bg-primary-700
                              text-primary-800 dark:text-primary-100">
@@ -248,6 +286,8 @@ const WishboneChairSection = memo(function WishboneChairSection() {
                     Ergonomic design for optimal comfort
                   </li>
                 </ul>
+
+                <div className="flex-1" />
 
                 <motion.a
                   href="/product/wishbone-chair"

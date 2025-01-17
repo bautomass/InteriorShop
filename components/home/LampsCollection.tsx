@@ -98,17 +98,20 @@ const ImageGallery = memo(({ product }: { product: Product }) => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Updated image indicators with max limit */}
+      {/* Updated image indicators with animation */}
       <div
         className={`absolute bottom-3 left-0 right-0 flex justify-center gap-2 transition-opacity duration-300 ${
           isHovered ? 'opacity-100' : 'opacity-0'
         }`}
       >
         {images.slice(0, 11).map((_, idx) => (
-          <motion.button
+          <motion.div
             key={idx}
-            aria-label={`View image ${idx + 1} of ${images.length}`}
-            aria-current={activeImage === idx}
+            initial={false}
+            animate={{
+              scale: activeImage === idx ? 1.2 : 1,
+              backgroundColor: activeImage === idx ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.7)'
+            }}
             className="h-2 w-2 rounded-full"
             style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
           />
@@ -122,7 +125,7 @@ const ImageGallery = memo(({ product }: { product: Product }) => {
         )}
       </div>
 
-      {/* Updated hover guides */}
+      {/* Hover guides */}
       {isHovered && images.length > 1 && (
         <div
           className="absolute inset-0 grid"
