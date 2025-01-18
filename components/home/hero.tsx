@@ -3,6 +3,7 @@
 'use client';
 
 import { motion, useAnimation } from 'framer-motion';
+import { debounce } from 'lodash';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,6 +18,11 @@ const CONSTANTS = {
     DEBOUNCE_DELAY: 300,
   }
 } as const;
+
+const imageSizes = {
+  hero: "(min-width: 1536px) 1536px, (min-width: 1280px) 1280px, (min-width: 1024px) 1024px, 100vw",
+  thumbnail: "(min-width: 768px) 160px, 128px"
+};
 
 // Types and Interfaces
 interface SlideContent {
@@ -224,12 +230,11 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     }
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const debouncedTouchMove = debounce((e: React.TouchEvent) => {
     if (touchStart === null || !e.touches[0]) return;
-    
     const currentTouch = e.touches[0].clientX;
     const diff = touchStart - currentTouch;
-    
+
     if (Math.abs(diff) > 50) {
       if (diff > 0 && currentSlide < heroSlides.length - 1) {
         goToSlide(currentSlide + 1);
@@ -238,6 +243,10 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
       }
       setTouchStart(null);
     }
+  }, 16); // Roughly matches 60fps
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    debouncedTouchMove(e);
   };
 
   const handleMenuHover = (isHovering: boolean) => {
