@@ -771,7 +771,6 @@ export default function LampsCollection() {
   const quickView = useQuickView();
   const [products, setProducts] = useState<Product[]>([]);
   const [sortedProducts, setSortedProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSlideHovered, setIsSlideHovered] = useState(false);
   const { ref, inView } = useInView({
@@ -804,7 +803,6 @@ export default function LampsCollection() {
   useEffect(() => {
     async function fetchLampProducts() {
       try {
-        setLoading(true);
         const response = await fetch('/api/lamps');
         if (!response.ok) throw new Error('Failed to fetch products');
         const data = await response.json();
@@ -812,8 +810,6 @@ export default function LampsCollection() {
       } catch (err) {
         console.error('Error fetching lamp products:', err);
         setError('Failed to load products. Please try again later.');
-      } finally {
-        setLoading(false);
       }
     }
 
@@ -856,40 +852,6 @@ export default function LampsCollection() {
 
   const memoizedProducts = useMemo(() => products, [products]);
 
-  const LoadingSkeleton = () => (
-    <div className="w-full bg-primary-50 py-12">
-      <div className="container mx-auto px-4">
-        <div className="animate-pulse space-y-12">
-          {/* Header Skeleton */}
-          <div className="flex items-center justify-center gap-3">
-            <div className="h-6 w-6 rounded bg-primary-200" />
-            <div className="h-8 w-64 rounded bg-primary-200" />
-          </div>
-
-          {/* Banner Images Skeleton */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-            {[1, 2, 3].map((index) => (
-              <div
-                key={index}
-                className="relative aspect-[16/9] rounded-lg bg-primary-200"
-              />
-            ))}
-          </div>
-
-          {/* Products Skeleton */}
-          <div className="grid grid-cols-3 gap-4">
-            {[...Array(3)].map((_, index) => (
-              <div
-                key={index}
-                className="aspect-[3/4] rounded-lg bg-primary-200"
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   const handleSwiperInit = useCallback((swiperInstance: SwiperType) => {
     setSwiper(swiperInstance);
     setIsBeginning(swiperInstance.isBeginning);
@@ -914,7 +876,6 @@ export default function LampsCollection() {
     setIsSlideHovered(isHovered);
   }, []);
 
-  if (loading) return <LoadingSkeleton />;
   if (error)
     return (
       <div className="w-full bg-primary-50 py-12">

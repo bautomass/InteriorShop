@@ -232,9 +232,6 @@ export default function MaterialsSection() {
         <div className="grid gap-16 lg:grid-cols-2">
           {/* Left Column - Image and Materials */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, ease: "easeOut" }}
             className="relative"
           >
             <div className="relative aspect-square overflow-hidden rounded-lg bg-white/80 shadow-xl">
@@ -350,9 +347,6 @@ export default function MaterialsSection() {
 
           {/* Right Column - Content */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, ease: "easeOut" }}
             className="flex flex-col justify-center lg:pl-8"
           >
             <h2 className="text-3xl font-light text-[#6B5E4C] sm:text-4xl md:text-5xl">

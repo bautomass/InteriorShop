@@ -452,22 +452,7 @@ const FeaturedProduct = () => {
   };
 
   if (loading || !product) {
-    return (
-      <div className="w-full py-16 bg-[#F9F7F4]">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
-            <div className="aspect-square bg-[#E5E1DB] rounded-2xl animate-pulse" />
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <div className="h-8 w-32 bg-[#E5E1DB] rounded animate-pulse" />
-                <div className="h-12 w-3/4 bg-[#E5E1DB] rounded animate-pulse" />
-                <div className="h-24 w-full bg-[#E5E1DB] rounded animate-pulse" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
