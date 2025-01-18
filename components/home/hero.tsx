@@ -51,7 +51,7 @@ interface HeroProps {}
 const heroSlides: SlideContent[] = [
   {
     id: 'slide-1',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile_image_banner.jpg?v=1713192308',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/banner-slide.webp?v=1737218019',
     alt: 'Simple Interior Ideas',
     title: 'Modern Living',
     subtitle: 'Discover our collection',
