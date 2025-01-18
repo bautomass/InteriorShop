@@ -345,11 +345,13 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       src={slide.image}
                       alt={slide.alt}
                       fill
-                      priority={index === 0 || index === 1} // Preload first two slides
+                      priority={index === 0 || index === 1}
                       quality={100}
-                      className="object-cover w-full h-full transition-opacity duration-500 ${
+                      fetchPriority={index === 0 ? "high" : "auto"}
+                      decoding="async"
+                      className={`object-cover w-full h-full transition-opacity duration-500 ${
                         loadedImages.has(slide.image) ? 'opacity-100' : 'opacity-0'
-                      }"
+                      }`}
                       sizes="(min-width: 1536px) 1536px, (min-width: 1280px) 1280px, (min-width: 1024px) 1024px, 100vw"
                       style={{
                         objectPosition: 'center'
