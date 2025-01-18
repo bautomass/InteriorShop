@@ -3,7 +3,7 @@
 'use client';
 
 import { motion, useAnimation } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
@@ -45,7 +45,7 @@ interface HeroProps {}
 const heroSlides: SlideContent[] = [
   {
     id: 'slide-1',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/og-hero.jpg?v=1736700243',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile_image_banner.jpg?v=1713192308',
     alt: 'Simple Interior Ideas',
     title: 'Modern Living',
     subtitle: 'Discover our collection',
@@ -64,7 +64,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-3',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-soft-chair.jpg?v=1736700243',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-soft-chair.jpg?v=1736700243&width=2048&height=1152&crop=center&quality=100',
     alt: 'Architectural Beauty',
     title: 'Architectural Beauty',
     subtitle: 'Where form meets function',
@@ -81,7 +81,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-4',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2-chairs-hero.jpg?v=1736700243',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2-chairs-hero.jpg?v=1736700243&width=2048&height=1152&crop=center&quality=100',
     alt: 'Minimalist Living',
     title: 'Minimalist Living',
     subtitle: 'Less is more',
@@ -98,7 +98,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-5',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-white-sofa.jpg?v=1736700243',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-white-sofa.jpg?v=1736700243&width=2048&height=1152&crop=center&quality=100',
     alt: 'Contemporary Dining',
     title: 'Contemporary Dining',
     subtitle: 'Elevate your dining experience',
@@ -115,7 +115,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-6',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-image-slide.jpg?v=1737195548',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-image-slide.jpg?v=1737195548&width=2048&height=1152&crop=center&quality=100',
     alt: 'Serene Bedroom',
     title: 'Serene Bedroom',
     subtitle: 'Create your sanctuary',
@@ -195,6 +195,9 @@ const useImagePreloader = (images: string[]) => {
 
 // Main Hero Component
 const HeroComponent = function Hero({}: HeroProps): JSX.Element {
+  // Add to the HeroComponent state
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+
   // Preload all hero images
   useImagePreloader(heroSlides.map(slide => slide.image));
 
@@ -242,9 +245,10 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   };
 
   const handleScroll = useCallback((e: WheelEvent) => {
-    if (Math.abs(e.deltaY) > 30) {
-      goToSlide(currentSlide + (e.deltaY > 0 ? 1 : -1));
-    }
+    // Commenting out the slide change logic on scroll
+    // if (Math.abs(e.deltaY) > 30) {
+    //   goToSlide(currentSlide + (e.deltaY > 0 ? 1 : -1));
+    // }
   }, [currentSlide, goToSlide]);
 
   useEffect(() => {
@@ -256,11 +260,10 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   }, [currentSlide, handleScroll]);
 
   useEffect(() => {
-    if (isMenuHovered) {
+    if (isPaused || isMenuHovered) {
       return;
     }
 
-    // When user moves mouse away from menu, add 4 second grace period
     const delayTime = CONSTANTS.ANIMATION.CAROUSEL_INTERVAL + 4000;
     
     const timer = setTimeout(() => {
@@ -270,7 +273,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     return () => {
       clearTimeout(timer);
     };
-  }, [currentSlide, isMenuHovered, goToSlide]);
+  }, [currentSlide, isMenuHovered, isPaused, goToSlide]);
 
   useEffect(() => {
     const shouldPreventScroll = isNavOpen;
@@ -294,6 +297,11 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
       document.body.style.height = '';
     };
   }, [isNavOpen]);
+
+  // Toggle pause handler
+  const togglePause = () => {
+    setIsPaused(prev => !prev);
+  };
 
   return (
     <>
@@ -325,15 +333,30 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                     }}
                     className="flex-shrink-0"
                   >
-                    {/* Background Image */}
+                    {/* Loading placeholder */}
+                    <div 
+                      className={`absolute inset-0 bg-gray-200 animate-pulse transition-opacity duration-500 ${
+                        loadedImages.has(slide.image) ? 'opacity-0' : 'opacity-100'
+                      }`} 
+                    />
+                    
+                    {/* Image component */}
                     <Image
                       src={slide.image}
                       alt={slide.alt}
                       fill
-                      priority={index === 0}
+                      priority={index === 0 || index === 1} // Preload first two slides
                       quality={100}
-                      className="object-contain w-full h-full"
-                      sizes="100%"
+                      className="object-cover w-full h-full transition-opacity duration-500 ${
+                        loadedImages.has(slide.image) ? 'opacity-100' : 'opacity-0'
+                      }"
+                      sizes="(min-width: 1536px) 1536px, (min-width: 1280px) 1280px, (min-width: 1024px) 1024px, 100vw"
+                      style={{
+                        objectPosition: 'center'
+                      }}
+                      onLoadingComplete={() => {
+                        setLoadedImages(prev => new Set(prev).add(slide.image));
+                      }}
                     />
 
                     {/* Lamp Image - Keep animation for visual interest */}
@@ -472,7 +495,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                 ))}
               </div>
 
-              {/* Enhanced Professional Pagination with Navigation */}
+              {/* Enhanced Professional Pagination with Navigation and Pause Button */}
               <div className="absolute bottom-2 right-8 z-20 flex items-center gap-6 perspective-[1200px] transform-gpu scale-90">
                 {/* Previous Button */}
                 <motion.button
@@ -529,7 +552,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       >
                         <div className="absolute inset-0 w-full h-full overflow-hidden rounded-lg">
                           <Image
-                            src={slide.image}
+                            src={`${slide.image}&width=400&height=240&crop=center&quality=90`}
                             alt={slide.alt}
                             fill
                             priority={isActive}
@@ -587,6 +610,23 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                                 text-xs font-medium shadow-lg">
                           {actualSlideNumber}
                         </div>
+
+                        {/* Pause/Play Button - Moved here */}
+                        {isActive && (
+                          <motion.button
+                            onClick={togglePause}
+                            className="absolute bottom-2 left-2 z-20 p-2 bg-black/60 rounded-full"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
+                          >
+                            {isPaused ? (
+                              <Play className="h-3 w-3 text-white" />
+                            ) : (
+                              <Pause className="h-3 w-3 text-white" />
+                            )}
+                          </motion.button>
+                        )}
                       </motion.div>
                     );
                   })}
