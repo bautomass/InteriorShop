@@ -361,7 +361,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
                     {/* Lamp Image - Keep animation for visual interest */}
                     {index === 0 && slide.lampImage && (
-                      <motion.div
+                      <motion.div m
                         initial={{ opacity: 0, y: -50 }}
                         animate={{ 
                           opacity: currentSlide === index ? 1 : 0,
