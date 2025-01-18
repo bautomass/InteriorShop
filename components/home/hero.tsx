@@ -115,7 +115,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-6',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/heor-table-chairs.jpg?v=1736700243',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-image-slide.jpg?v=1737195548',
     alt: 'Serene Bedroom',
     title: 'Serene Bedroom',
     subtitle: 'Create your sanctuary',

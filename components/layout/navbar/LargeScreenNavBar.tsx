@@ -867,44 +867,46 @@ export const DesktopHeader = () => {
                       {!isSearching && (searchResults.collections.length > 0 || searchResults.products.length > 0) ? (
                         <div className="space-y-8">
                           {/* Search Filters */}
-                          <div className="flex items-center gap-6 p-5 bg-white border-2 border-[#9e896c]/20 rounded-lg shadow-md">
-                            {/* Price Range Filter */}
-                            <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-[#9e896c]">Price:</span>
-                              <select 
-                                value={`${filters.priceRange[0]}-${filters.priceRange[1]}`}
-                                onChange={(e) => {
-                                  const [min, max] = e.target.value.split('-').map(Number).filter((n): n is number => !isNaN(n));
-                                  setFilters(prev => ({ ...prev, priceRange: [min || 0, max || 1000] }));
-                                }}
-                                className="text-sm border-2 border-[#9e896c]/20 rounded-md px-3 py-1.5 bg-white hover:border-[#9e896c]/40 focus:border-[#9e896c] focus:outline-none transition-colors duration-200 cursor-pointer font-medium"
-                              >
-                                <option value="0-1000">All Prices</option>
-                                <option value="0-50">Under $50</option>
-                                <option value="50-100">$50 - $100</option>
-                                <option value="100-200">$100 - $200</option>
-                                <option value="200-1000">$200+</option>
-                              </select>
-                            </div>
+                          <div className="sticky top-0 z-10 bg-white p-2 border border-[#9e896c]/20">
+                            <div className="flex items-center gap-6">
+                              {/* Price Range Filter */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-[#9e896c]">Price:</span>
+                                <select 
+                                  value={`${filters.priceRange[0]}-${filters.priceRange[1]}`}
+                                  onChange={(e) => {
+                                    const [min, max] = e.target.value.split('-').map(Number).filter((n): n is number => !isNaN(n));
+                                    setFilters(prev => ({ ...prev, priceRange: [min || 0, max || 1000] }));
+                                  }}
+                                  className="text-sm border-2 border-[#9e896c]/20 rounded-md px-2 py-1 bg-white hover:border-[#9e896c]/40 focus:border-[#9e896c] focus:outline-none transition-colors duration-200 cursor-pointer font-medium"
+                                >
+                                  <option value="0-1000">All Prices</option>
+                                  <option value="0-50">Under $50</option>
+                                  <option value="50-100">$50 - $100</option>
+                                  <option value="100-200">$100 - $200</option>
+                                  <option value="200-1000">$200+</option>
+                                </select>
+                              </div>
 
-                            {/* Sort Filter */}
-                            <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-[#9e896c]">Sort by:</span>
-                              <select
-                                value={filters.sortBy}
-                                onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                                className="text-sm border-2 border-[#9e896c]/20 rounded-md px-3 py-1.5 bg-white hover:border-[#9e896c]/40 focus:border-[#9e896c] focus:outline-none transition-colors duration-200 cursor-pointer font-medium"
-                              >
-                                <option value="relevance">Relevance</option>
-                                <option value="price-low-high">Price: Low to High</option>
-                                <option value="price-high-low">Price: High to Low</option>
-                                <option value="newest">Newest</option>
-                              </select>
-                            </div>
+                              {/* Sort Filter */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-[#9e896c]">Sort by:</span>
+                                <select
+                                  value={filters.sortBy}
+                                  onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                                  className="text-sm border-2 border-[#9e896c]/20 rounded-md px-2 py-1 bg-white hover:border-[#9e896c]/40 focus:border-[#9e896c] focus:outline-none transition-colors duration-200 cursor-pointer font-medium"
+                                >
+                                  <option value="relevance">Relevance</option>
+                                  <option value="price-low-high">Price: Low to High</option>
+                                  <option value="price-high-low">Price: High to Low</option>
+                                  <option value="newest">Newest</option>
+                                </select>
+                              </div>
 
-                            {/* Results Count */}
-                            <div className="ml-auto text-sm font-medium text-neutral-700 bg-[#9e896c]/10 px-4 py-1.5 rounded-md">
-                              {searchResults.products.length + searchResults.collections.length} results
+                              {/* Results Count */}
+                              <div className="ml-auto text-sm font-medium text-neutral-700 bg-[#9e896c]/10 px-2 py-1 rounded-md">
+                                {searchResults.products.length + searchResults.collections.length} results
+                              </div>
                             </div>
                           </div>
 

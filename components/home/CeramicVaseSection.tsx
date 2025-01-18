@@ -483,15 +483,10 @@ const FeaturedProduct = () => {
       
       <div className="container mx-auto px-2 sm:px-4 max-w-7xl relative">
         <motion.div 
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : { opacity: 0 }}
           className="flex flex-col lg:grid lg:grid-cols-2 min-w-0 gap-4 sm:gap-6 lg:gap-16"
         >
           {/* Left Side - Product Details */}
           <motion.div 
-            initial={{ x: -100, opacity: 0 }}
-            animate={inView ? { x: 0, opacity: 1 } : { x: -100, opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
             className="flex flex-col min-w-0 justify-center space-y-4 sm:space-y-6 lg:space-y-8 order-2 lg:order-1"
           >
             <div className="space-y-4">
@@ -676,9 +671,6 @@ const FeaturedProduct = () => {
 
           {/* Right Side - Image Gallery */}
           <motion.div 
-            initial={{ x: 100, opacity: 0 }}
-            animate={inView ? { x: 0, opacity: 1 } : { x: 100, opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
             className="flex flex-col min-w-0 gap-2 sm:gap-3 lg:gap-4 order-1 lg:order-2"
           >
             <div 
