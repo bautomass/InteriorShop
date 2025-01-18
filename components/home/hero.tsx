@@ -594,9 +594,9 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       hover:bg-[#dcd5ca] hover:text-[#9e896c] 
                       transition-all duration-300 shadow-lg shadow-black/5
                       focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
-                      transform transition-transform duration-300 scale-100 group-hover:scale-105"
+                      transform transition-transform duration-300 scale-100 group-hover:scale-110"
           >
-            <span className="relative text-sm font-medium text-black">
+            <span className="relative text-sm font-medium text-[#9e896c]">
               All Collections
             </span>
             <motion.div
