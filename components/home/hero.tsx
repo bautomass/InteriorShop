@@ -437,21 +437,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                         />
                       </div>
                     )}
-                    {index === 0 && (
-                      <>
-                       {/* Text on the left shelf */}
-                    <div className="absolute right-[12.5%] top-[37.5%] text-white text-3xl uppercase font-semibold">
-                      Collections
-                    </div>
-                    {/* Text on the right shelf */}
-                    <div className="absolute right-[14.1%] top-[57.3%] text-white text-3xl uppercase font-semibold">
-                      About Us
-                    </div>
-                    <div className="absolute right-[17%] top-[76%] text-white text-3xl uppercase font-semibold">
-                      Blog
-                    </div>
-                      </>
-                    )}
 
                     {/* Simplified Menu */}
                     {index === 0 ? null : (
