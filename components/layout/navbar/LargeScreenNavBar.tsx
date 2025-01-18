@@ -736,7 +736,12 @@ export const DesktopHeader = () => {
                             onClick={() => setIsNavOpen(false)}
                             className="block group relative overflow-hidden rounded-lg bg-neutral-50 aspect-[3/2]"
                           >
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
+                            <Image
+                              src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/menu-image_2.png?v=1737235633"
+                              alt="New Arrivals"
+                              fill
+                              className="object-cover"
+                            />
                             <div className="absolute inset-0 p-4 flex flex-col justify-end">
                               <span className="px-2 py-1 bg-[#9e896c] text-white text-xs rounded-full w-fit mb-2">
                                 New In
@@ -752,7 +757,12 @@ export const DesktopHeader = () => {
                             onClick={() => setIsNavOpen(false)}
                             className="block group relative overflow-hidden rounded-lg bg-neutral-50 aspect-[3/2]"
                           >
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
+                            <Image
+                              src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/menu-image_1.png?v=1737235633"
+                              alt="Special Offers"
+                              fill
+                              className="object-cover"
+                            />
                             <div className="absolute inset-0 p-4 flex flex-col justify-end">
                               <span className="px-2 py-1 bg-red-500 text-white text-xs rounded-full w-fit mb-2">
                                 Sale

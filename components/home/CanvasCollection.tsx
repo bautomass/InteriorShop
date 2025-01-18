@@ -196,7 +196,7 @@ export default function CanvasCollection() {
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
-  const [isGridView, setIsGridView] = useState(true)
+  const [isGridView, setIsGridView] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 // /app/blog/page.tsx
-import { NavigationHeader } from '@/components/layout/navigation-header';
+import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { Footer } from '@/components/layout/site-footer';
+import { Article } from '@/lib/shopify/types';
 import { getBlogQuery } from 'lib/shopify/queries/blog';
 import { shopifyFetch } from 'lib/utils';
 import { Metadata } from 'next';
@@ -9,7 +10,6 @@ import { Suspense } from 'react';
 import { BlogGrid } from '../../components/blog/blog-grid';
 import { BlogHero } from '../../components/blog/hero-section';
 import { SearchBar } from '../../components/blog/search-bar';
-import { Article } from '@/lib/shopify/types';
 
 // Add interfaces for Shopify response types
 interface ShopifyArticle {
@@ -122,7 +122,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
   return (
     <main className="relative min-h-screen bg-primary-50 pb-20 dark:bg-primary-900">
-      <NavigationHeader />
+      <LargeScreenNavBar />
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-gradient-to-b from-primary-100/50 to-transparent dark:from-primary-900/50"
@@ -133,6 +133,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
       <div className="relative mx-auto max-w-[90rem] px-4 pb-12 pt-24 sm:px-6 sm:pt-28 lg:px-8 lg:pt-32">
         <Suspense>
           <BlogHero />
+          <h2 className="mt-12">Stories & Insights</h2>
         </Suspense>
 
         <Suspense>

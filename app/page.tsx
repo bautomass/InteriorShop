@@ -16,7 +16,7 @@ import LampsCollection from 'components/home/LampsCollection';
 import WishboneChairSection from 'components/home/WishboneChairSection';
 import LargeScreenNavBar from 'components/layout/navbar/LargeScreenNavBar';
 import type { Metadata } from 'next';
-
+import BlogSection from '@/components/home/BlogSection';
 export const metadata: Metadata = {
   title: 'Modern Interior Design & Home Decor',
   description:
@@ -52,6 +52,7 @@ export default function HomePage() {
         <NewArrivalsCollection />
         <AnturamStoolsCollection />
         <CanvasCollection />
+        <BlogSection />
         <CeramicVaseSection />
         <WishboneChairSection/>
         <InteriorTipsSection/>

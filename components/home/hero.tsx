@@ -40,7 +40,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-3',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-soft-chair.jpg?v=1736700243&width=2048&height=1152&crop=center&quality=100',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-Banner-Slide_2.webp?v=1737230223',
     alt: 'Architectural Beauty',
   },
   {
@@ -50,7 +50,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-5',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-white-sofa.jpg?v=1736700243&width=2048&height=1152&crop=center&quality=100',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-Banner-Slide_3.webp?v=1737233857',
     alt: 'Contemporary Dining',
   },
   {
@@ -289,7 +289,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
                     {/* Lamp Image - Keep animation for visual interest */}
                     {index === 0 && slide.lampImage && (
-                      <motion.div m
+                      <motion.div
                         initial={{ opacity: 0, y: -50 }}
                         animate={{ 
                           opacity: currentSlide === index ? 1 : 0,
@@ -305,7 +305,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             ease: "easeInOut"
                           }
                         }}
-                        className="absolute left-[15%] top-[-7%] z-10 w-[120px] origin-top md:w-[180px]"
+                        className="absolute left-[15%] top-[-2%] z-10 w-[120px] origin-top md:w-[180px]"
                       >
                         <div className="relative">
                           <Image
