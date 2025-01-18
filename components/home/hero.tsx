@@ -551,7 +551,8 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       bg-white/90 backdrop-blur-sm text-[#9e896c]
                       hover:bg-[#9e896c] hover:text-white
                       transition-all duration-300 shadow-lg shadow-black/5
-                      focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2"
+                      focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
+                      transform transition-transform duration-300 scale-100 group-hover:scale-105"
           >
             <span className="relative text-sm font-medium">
               Our Story
@@ -569,12 +570,34 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
             aria-label="Browse all products"
             className="relative group inline-flex items-center justify-center px-6 py-3
                       bg-[#9e896c]/90 backdrop-blur-sm text-white
-                      hover:bg-[#9e896c] 
+                      hover:bg-[#dcd5ca] hover:text-[#9e896c] 
                       transition-all duration-300 shadow-lg shadow-black/5
-                      focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2"
+                      focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
+                      transform transition-transform duration-300 scale-100 group-hover:scale-105"
           >
             <span className="relative text-sm font-medium">
               All Products
+            </span>
+            <motion.div
+              className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
+              initial={false}
+              animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            />
+          </Link>
+
+          <Link
+            href="/collections"
+            aria-label="Browse all collections"
+            className="relative group inline-flex items-center justify-center px-6 py-3
+                      bg-[#eaeadf] backdrop-blur-sm text-white
+                      hover:bg-[#dcd5ca] hover:text-[#9e896c] 
+                      transition-all duration-300 shadow-lg shadow-black/5
+                      focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
+                      transform transition-transform duration-300 scale-100 group-hover:scale-105"
+          >
+            <span className="relative text-sm font-medium text-black">
+              All Collections
             </span>
             <motion.div
               className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
