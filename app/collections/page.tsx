@@ -42,6 +42,16 @@ interface CollectionQueryResponse {
   };
 }
 
+interface PageProps {
+  searchParams: {
+    q?: string;
+    sort?: string;
+    layout?: 'grid' | 'list' | 'table';
+  };
+}
+
+const EXCLUDED_COLLECTIONS = ['FreshFreshFresh', 'SALE', 'BEST SELLERS'];
+
 export const metadata: Metadata = {
   title: 'Collections | Modern Living',
   description: 'Explore our curated collections of contemporary furniture and home decor.',
@@ -49,14 +59,12 @@ export const metadata: Metadata = {
     title: 'Collections | Modern Living',
     description: 'Explore our curated collections of contemporary furniture and home decor.',
     type: 'website',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Modern Living Collections'
-      }
-    ]
+    images: [{
+      url: '/og-image.jpg',
+      width: 1200,
+      height: 630,
+      alt: 'Modern Living Collections'
+    }]
   },
   twitter: {
     card: 'summary_large_image',
@@ -65,13 +73,16 @@ export const metadata: Metadata = {
   }
 };
 
-interface PageProps {
-  searchParams: {
-    q?: string;
-    sort?: string;
-    layout?: 'grid' | 'list' | 'table';
-  };
-}
+const sortFunctions = {
+  'date-desc': (a: Collection, b: Collection) => 
+    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  'date-asc': (a: Collection, b: Collection) => 
+    new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
+  'title-asc': (a: Collection, b: Collection) => 
+    a.title.localeCompare(b.title),
+  'title-desc': (a: Collection, b: Collection) => 
+    b.title.localeCompare(a.title)
+};
 
 export default async function CollectionsPage({ searchParams }: PageProps) {
   let collections: Collection[] = [];
@@ -84,12 +95,13 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
     });
 
     if (response?.body?.data?.collections?.edges) {
-      collections = response.body.data.collections.edges.map(({ node }) => ({
-        ...node,
-        path: `/collections/${node.handle}` // Add path based on handle
-      }));
+      collections = response.body.data.collections.edges
+        .map(({ node }) => ({
+          ...node,
+          path: `/collections/${node.handle}`
+        }))
+        .filter(collection => !EXCLUDED_COLLECTIONS.includes(collection.title));
 
-      // Apply search filter
       if (searchParams.q) {
         const searchTerm = searchParams.q.toLowerCase();
         collections = collections.filter(
@@ -99,26 +111,8 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
         );
       }
 
-      // Apply sorting
-      if (searchParams.sort) {
-        switch (searchParams.sort) {
-          case 'date-desc':
-            collections.sort(
-              (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-            );
-            break;
-          case 'date-asc':
-            collections.sort(
-              (a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
-            );
-            break;
-          case 'title-asc':
-            collections.sort((a, b) => a.title.localeCompare(b.title));
-            break;
-          case 'title-desc':
-            collections.sort((a, b) => b.title.localeCompare(a.title));
-            break;
-        }
+      if (searchParams.sort && sortFunctions[searchParams.sort as keyof typeof sortFunctions]) {
+        collections.sort(sortFunctions[searchParams.sort as keyof typeof sortFunctions]);
       }
     }
   } catch (error) {
@@ -127,35 +121,22 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
   }
 
   return (
-    <main className="relative min-h-screen bg-primary-50 pb-20 dark:bg-primary-900">
-      {/* Gradient Background */}
-      <div className="absolute inset-0">
-        <div
-          className="absolute inset-0 bg-gradient-to-b from-primary-100/50 to-transparent dark:from-primary-900/50"
-          aria-hidden="true"
-        />
-      </div>
-
-      {/* Add NavBar here */}
+    <main className="min-h-screen bg-primary-50 pb-20 dark:bg-primary-900 pt-12">
       <LargeScreenNavBar />
 
-      <div className="relative mx-auto max-w-[90rem] px-4 py-12 sm:px-6 lg:px-8">
-        {/* Hero Section */}
+      <div className="mx-auto max-w-[90rem] px-4 py-12 sm:px-6 lg:px-8">
         <Suspense>
           <CollectionsHero />
         </Suspense>
 
-        {/* Recently Viewed */}
         <Suspense>
           <RecentlyViewed />
         </Suspense>
 
-        {/* Search Bar */}
         <Suspense>
           <SearchBar />
         </Suspense>
 
-        {/* Results Info */}
         <div className="mb-8">
           <p className="text-sm text-primary-600 dark:text-primary-300">
             Showing {collections.length} collection{collections.length !== 1 ? 's' : ''}
@@ -167,14 +148,12 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
           </p>
         </div>
 
-        {/* Collections Grid/List/Table */}
         <section aria-label="Collections">
           <CollectionGrid collections={collections} layout={layout as 'grid' | 'list' | 'table'} />
         </section>
 
-        {/* Empty State */}
         {collections.length === 0 && (
-          <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-dashed border-primary-300 bg-white/50 backdrop-blur-sm dark:border-primary-700 dark:bg-primary-800/50">
+          <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-dashed border-primary-300 bg-white/50 dark:border-primary-700 dark:bg-primary-800/50">
             <div className="text-center">
               <h2 className="mb-2 text-xl font-medium text-primary-900 dark:text-primary-50">
                 No Collections Found
