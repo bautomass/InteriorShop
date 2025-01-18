@@ -354,7 +354,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       style={{
                         objectPosition: 'center'
                       }}
-                      onLoadingComplete={() => {
+                      onLoad={() => {
                         setLoadedImages(prev => new Set(prev).add(slide.image));
                       }}
                     />
@@ -440,15 +440,15 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                     {index === 0 && (
                       <>
                        {/* Text on the left shelf */}
-                    <div className="absolute right-[13%] top-[38%] text-white text-2xl uppercase font-semibold">
-                      Top Shelf Text
+                    <div className="absolute right-[13%] top-[38%] text-white text-3xl uppercase font-semibold">
+                      Collections
                     </div>
                     {/* Text on the right shelf */}
-                    <div className="absolute right-[11.5%] top-[57.5%] text-white text-2xl uppercase font-semibold">
-                      Middle Shelf Text
+                    <div className="absolute right-[14%] top-[57.3%] text-white text-3xl uppercase font-semibold">
+                      About Us
                     </div>
-                    <div className="absolute right-[11%] top-[76%] text-white text-2xl uppercase font-semibold">
-                      Bottom Shelf Text
+                    <div className="absolute right-[17%] top-[75%] text-white text-3xl uppercase font-semibold">
+                      Blog
                     </div>
                       </>
                     )}
