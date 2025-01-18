@@ -23,20 +23,8 @@ interface SlideContent {
   id: string;
   image: string;
   alt: string;
-  title: string;
-  subtitle?: string;
   lampImage?: string;
   productLink?: string;
-  menu: {
-    items: Array<{
-      label: string;
-      link: string;
-      description?: string;
-    }>;
-    position?: 'left' | 'right';
-    style?: 'minimal' | 'elegant' | 'modern' | 'classic' | 'bold';
-    alignment?: 'top' | 'middle' | 'center';
-  };
 }
 
 interface HeroProps {}
@@ -47,88 +35,28 @@ const heroSlides: SlideContent[] = [
     id: 'slide-1',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/banner-slide.webp?v=1737218019',
     alt: 'Simple Interior Ideas',
-    title: 'Modern Living',
-    subtitle: 'Discover our collection',
     lampImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/lamp-el.svg',
     productLink: '/product/sleek-curve-japandi-glow-minimalist-pendant-light',
-    menu: {
-      items: [
-        { label: 'Modern Lighting', link: '/collections/lighting', description: 'Illuminate your space' },
-        { label: 'Living Room', link: '/collections/living-room', description: 'Create comfort' },
-        { label: 'New Arrivals', link: '/collections/new', description: 'Latest designs' }
-      ],
-      position: 'right',
-      style: 'elegant',
-      alignment: 'top'
-    }
   },
   {
     id: 'slide-3',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-soft-chair.jpg?v=1736700243&width=2048&height=1152&crop=center&quality=100',
     alt: 'Architectural Beauty',
-    title: 'Architectural Beauty',
-    subtitle: 'Where form meets function',
-    menu: {
-      items: [
-        { label: 'Wall Art', link: '/collections/wall-art', description: 'Statement pieces' },
-        { label: 'Sculptures', link: '/collections/sculptures', description: 'Artistic expression' },
-        { label: 'Designer Collection', link: '/collections/designer', description: 'Signature works' }
-      ],
-      position: 'right',
-      style: 'bold',
-      alignment: 'top'
-    }
   },
   {
     id: 'slide-4',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2-chairs-hero.jpg?v=1736700243&width=2048&height=1152&crop=center&quality=100',
     alt: 'Minimalist Living',
-    title: 'Minimalist Living',
-    subtitle: 'Less is more',
-    menu: {
-      items: [
-        { label: 'Minimalist Decor', link: '/collections/minimalist', description: 'Simple elegance' },
-        { label: 'Storage Solutions', link: '/collections/storage', description: 'Hidden beauty' },
-        { label: 'Accent Pieces', link: '/collections/accents', description: 'Perfect details' }
-      ],
-      position: 'right',
-      style: 'minimal',
-      alignment: 'middle'
-    }
   },
   {
     id: 'slide-5',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-white-sofa.jpg?v=1736700243&width=2048&height=1152&crop=center&quality=100',
     alt: 'Contemporary Dining',
-    title: 'Contemporary Dining',
-    subtitle: 'Elevate your dining experience',
-    menu: {
-      items: [
-        { label: 'Dining Tables', link: '/collections/dining-tables', description: 'Gather in style' },
-        { label: 'Dining Chairs', link: '/collections/dining-chairs', description: 'Comfort meets design' },
-        { label: 'Table Decor', link: '/collections/table-decor', description: 'Perfect finishing touches' }
-      ],
-      position: 'left',
-      style: 'modern',
-      alignment: 'middle'
-    }
   },
   {
     id: 'slide-6',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-image-slide.jpg?v=1737195548&width=2048&height=1152&crop=center&quality=100',
     alt: 'Serene Bedroom',
-    title: 'Serene Bedroom',
-    subtitle: 'Create your sanctuary',
-    menu: {
-      items: [
-        { label: 'Bedding Collection', link: '/collections/bedding', description: 'Luxurious comfort' },
-        { label: 'Bedroom Furniture', link: '/collections/bedroom', description: 'Timeless pieces' },
-        { label: 'Night Lighting', link: '/collections/bedroom-lighting', description: 'Ambient glow' }
-      ],
-      position: 'right',
-      style: 'classic',
-      alignment: 'top'
-    }
   }
 ];
 
@@ -438,58 +366,29 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       </div>
                     )}
 
-                    {/* Simplified Menu */}
-                    {index === 0 ? null : (
+                    {/* Removed Menu Container */}
+                    {index === 0 ? null : ( // Removed menu rendering
                       <div
                         onMouseEnter={() => handleMenuHover(true)}
                         onMouseLeave={() => handleMenuHover(false)}
-                        className={`absolute ${getMenuPosition(slide.menu, slide.id)} z-20 max-w-[460px] p-7 
+                        className={`absolute z-20 max-w-[460px] p-7 
                                    rounded-xl bg-black/10 backdrop-blur-[2px] shadow-2xl 
                                    shadow-black/5 border border-white/5 
-                                   transition-opacity duration-500
                                    ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}
                       >
-                        {/* Title Group */}
-                        <div className={`mb-7 ${slide.menu.position === 'right' ? 'text-right' : 'text-left'}`}>
+                        {/* Removed Title Group */}
+                        <div className={`mb-7 text-left`}>
                           <h2 className="text-[2.5rem] leading-[1.1] tracking-normal text-white font-light 
                                          [text-shadow:_0_1px_2px_rgba(0,0,0,0.1)]">
-                            {slide.title}
+                            {/* Removed title rendering */}
                           </h2>
-                          {slide.subtitle && (
-                            <p className="mt-3 text-xl text-white/90 font-light tracking-wide">
-                              {slide.subtitle}
-                            </p>
-                          )}
+                          {/** Removed subtitle rendering */}
                         </div>
 
-                        {/* Menu Items */}
+                        {/* Removed Menu Items */}
                         <div className="space-y-3">
-                          {slide.menu.items.map((item) => (
-                            <div
-                              key={item.label}
-                              className={`group cursor-pointer ${
-                                slide.menu.position === 'right' ? 'text-right' : 'text-left'
-                              }`}
-                            >
-                              <Link 
-                                href={item.link}
-                                className={`relative block transition-all duration-300 py-3 px-7 rounded-lg 
-                                         ${slide.menu.position === 'right' ? 'hover:pr-14' : 'hover:pl-14'} 
-                                         hover:bg-white/5`}
-                              >
-                                <span className="block text-[1.85rem] font-light tracking-wide text-white/90 
-                                                 group-hover:text-white transition-colors duration-300">
-                                  {item.label}
-                                </span>
-                                {item.description && (
-                                  <span className="block mt-1 text-sm text-white/60 group-hover:text-white/80 
-                                                 transition-colors duration-300 font-light tracking-wide">
-                                    {item.description}
-                                  </span>
-                                )}
-                              </Link>
-                            </div>
-                          ))}
+                          {/* Removed menu items mapping */}
+                          {/* No items to map over since menu is removed */}
                         </div>
                       </div>
                     )}

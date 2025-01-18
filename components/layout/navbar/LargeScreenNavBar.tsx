@@ -445,8 +445,17 @@ export const DesktopHeader = () => {
                     {isNavOpen ? 'Close' : 'Menu'}
                   </span>
                 </button>
-                <Link href="/" className="flex-shrink-0 ml-6">
+                {/* <Link href="/" className="flex-shrink-0 ml-6">
                   <span className="text-xl font-semibold text-neutral-900">Simple Interior Ideas</span>
+                </Link> */}
+                <Link href="/" className="flex-shrink-0 ml-4">
+                  <Image
+                    src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Simple_Interior_Ideas_1_157c17e3-9c9d-4485-bf2c-1fabdcb870c5.svg?v=1711363730"
+                    alt="Simple Interior Ideas"
+                    width={220}
+                    height={120}
+                    className="object-contain"
+                  />
                 </Link>
               </div>
 
