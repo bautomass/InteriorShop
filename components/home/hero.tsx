@@ -312,7 +312,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
       <div className="hidden lg:block">
         <div className="relative">
           <section 
-            className="relative h-[100vh] w-full overflow-hidden"
+            className="relative h-[100vh] w-full overflow-hidden pt-12"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
           >
@@ -361,7 +361,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
                     {/* Lamp Image - Keep animation for visual interest */}
                     {index === 0 && slide.lampImage && (
-                      <motion.div 
+                      <motion.div m
                         initial={{ opacity: 0, y: -50 }}
                         animate={{ 
                           opacity: currentSlide === index ? 1 : 0,
@@ -377,7 +377,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             ease: "easeInOut"
                           }
                         }}
-                        className="absolute left-[15%] top-[0%] z-10 w-[120px] origin-top md:w-[180px]"
+                        className="absolute left-[15%] top-[-7%] z-10 w-[120px] origin-top md:w-[180px]"
                       >
                         <div className="relative">
                           <Image
@@ -498,22 +498,22 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
               </div>
 
               {/* Enhanced Professional Pagination with Navigation and Pause Button */}
-              <div className="absolute bottom-2 right-8 z-20 flex items-center gap-6 perspective-[1200px] transform-gpu scale-90">
-                {/* Previous Button */}
+              <div className="absolute bottom-16 right-8 z-20 flex items-center gap-4 perspective-[1200px] transform-gpu scale-80">
+                {/* Previous Button - smaller size */}
                 <motion.button
                   onClick={() => goToSlide(currentSlide - 1)}
                   disabled={isAnimating}
-                  className="relative group"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  className="relative group scale-90"
+                  whileHover={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.85 }}
                   aria-label="Previous slide"
                 >
                   <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
                                   group-hover:bg-black/60 transition-all duration-300 -z-10" />
-                  <div className="p-3 text-white flex items-center overflow-hidden">
-                    <ChevronLeft className="h-5 w-5 transition-transform group-hover:-translate-x-0.5" />
-                    <div className="w-0 group-hover:w-20 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
-                      <span className="text-sm font-medium pl-2 opacity-0 group-hover:opacity-100 
+                  <div className="p-2.5 text-white flex items-center overflow-hidden">
+                    <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+                    <div className="w-0 group-hover:w-16 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
+                      <span className="text-xs font-medium pl-2 opacity-0 group-hover:opacity-100 
                                     transition-opacity duration-200 delay-100">
                         Previous
                       </span>
@@ -522,7 +522,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                 </motion.button>
 
                 {/* Thumbnails */}
-                <div className="flex items-center gap-1.5 relative">
+                <div className="flex items-center gap-1 relative">
                   {[...Array(3)].map((_, i) => {
                     const slideIndex = getLoopedIndex(currentSlide - 1 + i, heroSlides.length);
                     const slide = heroSlides[slideIndex];
@@ -549,8 +549,8 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                         className={`relative cursor-pointer rounded-lg
                                     transition-shadow duration-300
                                     ${isActive ? 
-                                      'w-44 h-24 shadow-lg hover:shadow-xl z-10' : 
-                                      'w-36 h-20 shadow-md hover:shadow-lg z-0'}`}
+                                      'w-40 h-20 shadow-lg hover:shadow-xl z-10' : 
+                                      'w-32 h-16 shadow-md hover:shadow-lg z-0'}`}
                       >
                         <div className="absolute inset-0 w-full h-full overflow-hidden rounded-lg">
                           <Image
@@ -559,7 +559,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             fill
                             priority={isActive}
                             className="object-cover transition-all duration-500 ease-out rounded-lg"
-                            sizes="(min-width: 768px) 176px, 144px"
+                            sizes="(min-width: 768px) 160px, 128px"
                             quality={90}
                           />
                           <div className={`absolute inset-0 transition-all duration-500
@@ -605,15 +605,15 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           />
                         )}
 
-                        {/* Slide number indicator - moved outside image container */}
+                        {/* Slide number indicator - slightly reduced size */}
                         <div className="absolute -top-2 -right-2 z-[100] bg-black/50 backdrop-blur-sm 
-                                rounded-full w-7 h-7 border border-white/10
+                                rounded-full w-6 h-6 border border-white/10
                                 flex items-center justify-center text-white/90 
                                 text-xs font-medium shadow-lg">
                           {actualSlideNumber}
                         </div>
 
-                        {/* Pause/Play Button - Moved here */}
+                        {/* Pause/Play Button - preserved */}
                         {isActive && (
                           <motion.button
                             onClick={togglePause}
@@ -634,25 +634,25 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                   })}
                 </div>
 
-                {/* Next Button */}
+                {/* Next Button - smaller size */}
                 <motion.button
                   onClick={() => goToSlide(currentSlide + 1)}
                   disabled={isAnimating}
-                  className="relative group"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  className="relative group scale-90"
+                  whileHover={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.85 }}
                   aria-label="Next slide"
                 >
                   <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
                                  group-hover:bg-black/60 transition-all duration-300 -z-10" />
-                  <div className="p-3 text-white flex items-center overflow-hidden">
-                    <div className="w-0 group-hover:w-20 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
-                      <span className="text-sm font-medium pr-2 opacity-0 group-hover:opacity-100 
+                  <div className="p-2.5 text-white flex items-center overflow-hidden">
+                    <div className="w-0 group-hover:w-16 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
+                      <span className="text-xs font-medium pr-2 opacity-0 group-hover:opacity-100 
                                     transition-opacity duration-200 delay-100">
                         Next
                       </span>
                     </div>
-                    <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </div>
                 </motion.button>
               </div>
@@ -662,7 +662,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
       </div>
 
       {/* Navigation Buttons - Added opposite to carousel thumbnails */}
-      <div className="absolute bottom-8 left-8 z-20 hidden lg:flex items-center gap-4">
+      <div className="absolute bottom-6 left-8 z-20 hidden lg:flex items-center gap-4">
         <motion.div 
           className="flex items-center gap-4 perspective-[1200px] transform-gpu"
           initial={{ opacity: 0, y: 20 }}
