@@ -53,9 +53,6 @@ export function Footer() {
         <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Company Info */}
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.5 }}
             className="lg:col-span-2"
           >
             <Link href="/" className="block mb-6">
@@ -80,9 +77,6 @@ export function Footer() {
 
           {/* Quick Links */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
           >
             <h3 className="text-[#6B5E4C] font-medium mb-4">Shop</h3>
             <ul className="space-y-2">
@@ -100,9 +94,6 @@ export function Footer() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
           >
             <h3 className="text-[#6B5E4C] font-medium mb-4">Support</h3>
             <ul className="space-y-2">
@@ -120,9 +111,6 @@ export function Footer() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
           >
             <h3 className="text-[#6B5E4C] font-medium mb-4">Company</h3>
             <ul className="space-y-2">
@@ -144,9 +132,6 @@ export function Footer() {
         <div className="py-8 border-t border-[#B5A48B]/20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
             >
               <h3 className="text-[#6B5E4C] font-medium mb-2">Stay Updated</h3>
               <p className="text-sm text-[#8C7E6A] mb-4">
@@ -171,9 +156,6 @@ export function Footer() {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
               className="flex justify-start md:justify-end items-center gap-4"
             >
               {socialLinks.map((social) => {

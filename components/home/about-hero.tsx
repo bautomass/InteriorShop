@@ -571,8 +571,8 @@ const AboutHero = memo(function AboutHero() {
       <section 
         ref={sectionRef}
         className={`bg-[#eaeadf] relative overflow-hidden
-          ${sectionInView ? 'opacity-100' : 'opacity-0'}
-          transition-opacity duration-200`}
+          opacity-100
+        `}
         aria-label="About our store"
       >
         {/* Gradient overlay */}
