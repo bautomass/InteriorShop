@@ -45,7 +45,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-4',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2-chairs-hero.jpg?v=1736700243&width=2048&height=1152&crop=center&quality=100',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-Banner-Slide_4.webp?v=1737238155',
     alt: 'Minimalist Living',
   },
   {
@@ -55,7 +55,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-6',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-image-slide.jpg?v=1737195548&width=2048&height=1152&crop=center&quality=100',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2-chairs-hero.jpg?v=1736700243&width=2048&height=1152&crop=center&quality=100',
     alt: 'Serene Bedroom',
   }
 ];
