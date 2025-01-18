@@ -617,16 +617,19 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                         {isActive && (
                           <motion.button
                             onClick={togglePause}
-                            className="absolute bottom-2 left-2 z-20 p-2 bg-black/60 rounded-full"
+                            className="absolute bottom-2 left-2 z-20 p-1 bg-black/60 rounded-full group"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
                           >
                             {isPaused ? (
-                              <Play className="h-3 w-3 text-white" />
+                              <Play className="h-2.5 w-2.5 text-white" />
                             ) : (
-                              <Pause className="h-3 w-3 text-white" />
+                              <Pause className="h-2.5 w-2.5 text-white" />
                             )}
+                            <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs text-white bg-black/70 rounded px-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              {isPaused ? "Play slideshow" : "Pause slideshow"}
+                            </span>
                           </motion.button>
                         )}
                       </motion.div>
