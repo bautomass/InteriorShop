@@ -33,7 +33,7 @@ interface HeroProps {}
 const heroSlides: SlideContent[] = [
   {
     id: 'slide-1',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/banner-slide.webp?v=1737218019',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-banner.webp?v=1737225966',
     alt: 'Simple Interior Ideas',
     lampImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/lamp-el.svg',
     productLink: '/product/sleek-curve-japandi-glow-minimalist-pendant-light',
@@ -363,33 +363,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           height={400}
                           className="object-contain"
                         />
-                      </div>
-                    )}
-
-                    {/* Removed Menu Container */}
-                    {index === 0 ? null : ( // Removed menu rendering
-                      <div
-                        onMouseEnter={() => handleMenuHover(true)}
-                        onMouseLeave={() => handleMenuHover(false)}
-                        className={`absolute z-20 max-w-[460px] p-7 
-                                   rounded-xl bg-black/10 backdrop-blur-[2px] shadow-2xl 
-                                   shadow-black/5 border border-white/5 
-                                   ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}
-                      >
-                        {/* Removed Title Group */}
-                        <div className={`mb-7 text-left`}>
-                          <h2 className="text-[2.5rem] leading-[1.1] tracking-normal text-white font-light 
-                                         [text-shadow:_0_1px_2px_rgba(0,0,0,0.1)]">
-                            {/* Removed title rendering */}
-                          </h2>
-                          {/** Removed subtitle rendering */}
-                        </div>
-
-                        {/* Removed Menu Items */}
-                        <div className="space-y-3">
-                          {/* Removed menu items mapping */}
-                          {/* No items to map over since menu is removed */}
-                        </div>
                       </div>
                     )}
                   </div>
