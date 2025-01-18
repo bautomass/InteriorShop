@@ -440,7 +440,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                     {index === 0 && (
                       <>
                        {/* Text on the left shelf */}
-                    <div className="absolute right-[13%] top-[37.5%] text-white text-3xl uppercase font-semibold">
+                    <div className="absolute right-[12.5%] top-[37.5%] text-white text-3xl uppercase font-semibold">
                       Collections
                     </div>
                     {/* Text on the right shelf */}
