@@ -437,60 +437,77 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                         />
                       </div>
                     )}
+                    {index === 0 && (
+                      <>
+                       {/* Text on the left shelf */}
+                    <div className="absolute right-[13%] top-[38%] text-white text-2xl uppercase font-semibold">
+                      Top Shelf Text
+                    </div>
+                    {/* Text on the right shelf */}
+                    <div className="absolute right-[11.5%] top-[57.5%] text-white text-2xl uppercase font-semibold">
+                      Middle Shelf Text
+                    </div>
+                    <div className="absolute right-[11%] top-[76%] text-white text-2xl uppercase font-semibold">
+                      Bottom Shelf Text
+                    </div>
+                      </>
+                    )}
 
                     {/* Simplified Menu */}
-                    <div
-                      onMouseEnter={() => handleMenuHover(true)}
-                      onMouseLeave={() => handleMenuHover(false)}
-                      className={`absolute ${getMenuPosition(slide.menu, slide.id)} z-20 max-w-[460px] p-7 
-                                 rounded-xl bg-black/10 backdrop-blur-[2px] shadow-2xl 
-                                 shadow-black/5 border border-white/5 
-                                 transition-opacity duration-500
-                                 ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}
-                    >
-                      {/* Title Group */}
-                      <div className={`mb-7 ${slide.menu.position === 'right' ? 'text-right' : 'text-left'}`}>
-                        <h2 className="text-[2.5rem] leading-[1.1] tracking-normal text-white font-light 
-                                       [text-shadow:_0_1px_2px_rgba(0,0,0,0.1)]">
-                          {slide.title}
-                        </h2>
-                        {slide.subtitle && (
-                          <p className="mt-3 text-xl text-white/90 font-light tracking-wide">
-                            {slide.subtitle}
-                          </p>
-                        )}
-                      </div>
+                    {index === 0 ? null : (
+                      <div
+                        onMouseEnter={() => handleMenuHover(true)}
+                        onMouseLeave={() => handleMenuHover(false)}
+                        className={`absolute ${getMenuPosition(slide.menu, slide.id)} z-20 max-w-[460px] p-7 
+                                   rounded-xl bg-black/10 backdrop-blur-[2px] shadow-2xl 
+                                   shadow-black/5 border border-white/5 
+                                   transition-opacity duration-500
+                                   ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}
+                      >
+                        {/* Title Group */}
+                        <div className={`mb-7 ${slide.menu.position === 'right' ? 'text-right' : 'text-left'}`}>
+                          <h2 className="text-[2.5rem] leading-[1.1] tracking-normal text-white font-light 
+                                         [text-shadow:_0_1px_2px_rgba(0,0,0,0.1)]">
+                            {slide.title}
+                          </h2>
+                          {slide.subtitle && (
+                            <p className="mt-3 text-xl text-white/90 font-light tracking-wide">
+                              {slide.subtitle}
+                            </p>
+                          )}
+                        </div>
 
-                      {/* Menu Items */}
-                      <div className="space-y-3">
-                        {slide.menu.items.map((item) => (
-                          <div
-                            key={item.label}
-                            className={`group cursor-pointer ${
-                              slide.menu.position === 'right' ? 'text-right' : 'text-left'
-                            }`}
-                          >
-                            <Link 
-                              href={item.link}
-                              className={`relative block transition-all duration-300 py-3 px-7 rounded-lg 
-                                       ${slide.menu.position === 'right' ? 'hover:pr-14' : 'hover:pl-14'} 
-                                       hover:bg-white/5`}
+                        {/* Menu Items */}
+                        <div className="space-y-3">
+                          {slide.menu.items.map((item) => (
+                            <div
+                              key={item.label}
+                              className={`group cursor-pointer ${
+                                slide.menu.position === 'right' ? 'text-right' : 'text-left'
+                              }`}
                             >
-                              <span className="block text-[1.85rem] font-light tracking-wide text-white/90 
-                                             group-hover:text-white transition-colors duration-300">
-                                {item.label}
-                              </span>
-                              {item.description && (
-                                <span className="block mt-1 text-sm text-white/60 group-hover:text-white/80 
-                                               transition-colors duration-300 font-light tracking-wide">
-                                  {item.description}
+                              <Link 
+                                href={item.link}
+                                className={`relative block transition-all duration-300 py-3 px-7 rounded-lg 
+                                         ${slide.menu.position === 'right' ? 'hover:pr-14' : 'hover:pl-14'} 
+                                         hover:bg-white/5`}
+                              >
+                                <span className="block text-[1.85rem] font-light tracking-wide text-white/90 
+                                                 group-hover:text-white transition-colors duration-300">
+                                  {item.label}
                                 </span>
-                              )}
-                            </Link>
-                          </div>
-                        ))}
+                                {item.description && (
+                                  <span className="block mt-1 text-sm text-white/60 group-hover:text-white/80 
+                                                 transition-colors duration-300 font-light tracking-wide">
+                                    {item.description}
+                                  </span>
+                                )}
+                              </Link>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
