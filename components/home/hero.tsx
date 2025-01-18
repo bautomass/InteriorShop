@@ -308,9 +308,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
           >
-            {/* Add subtle overlay */}
-            <div className="absolute inset-0 bg-black/10" />
-
             {/* Updated Hero Content */}
             <div className="relative h-[100vh] w-full overflow-hidden">
               <div className="flex h-full">
@@ -403,6 +400,19 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           </div>
                         </div>
                       </motion.div>
+                    )}
+
+                    {/* New Image for the first slide */}
+                    {index === 0 && (
+                      <div className="absolute left-1/3 top-[35%] transform -translate-x-1/3 z-20">
+                        <Image
+                          src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Simple_Interior_Ideas_1_157c17e3-9c9d-4485-bf2c-1fabdcb870c5.svg?v=1711363730"
+                          alt="Simple Interior Ideas"
+                          width={550}
+                          height={400}
+                          className="object-contain"
+                        />
+                      </div>
                     )}
 
                     {/* Simplified Menu */}
