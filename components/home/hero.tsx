@@ -365,6 +365,76 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                         />
                       </div>
                     )}
+
+                    {/* New Product Dot 1 - Render only on the first slide */}
+                    {currentSlide === 0 && (
+                      <div className="group absolute bottom-[30%] right-[38%] -translate-x-1/2 translate-y-1/2">
+                        <div className="relative inline-flex">
+                          {/* Pulse rings */}
+                          <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#dcd5ca]/60
+                                        animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
+                          <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#ebe7e0]/50
+                                        animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
+                          
+                          {/* Main dot */}
+                          <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] border-2 border-[#9c826b]
+                                        shadow-[0_0_10px_rgba(199,186,168,0.8)]
+                                        transition-all duration-500 ease-in-out
+                                        group-hover:scale-125" />
+
+                          {/* Hover button */}
+                          <div className="absolute left-6 top-2 opacity-0 group-hover:opacity-100 
+                                        transition-opacity duration-300">
+                            <Link 
+                              href="/product/product-1"
+                              className="flex items-center gap-2 bg-[#ebe7e0]/95 backdrop-blur-sm 
+                                       shadow-lg rounded-lg p-2 border border-[#b39e86] 
+                                       hover:bg-[#dcd5ca]/95"
+                            >
+                              <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
+                                View Product
+                              </span>
+                              <ChevronRight className="w-4 h-4 text-[#9c826b]" />
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* New Product Dot 2 - Render only on the first slide */}
+                    {currentSlide === 0 && (
+                      <div className="group absolute bottom-[32%] left-[36%] -translate-x-1/2 translate-y-1/2">
+                        <div className="relative inline-flex">
+                          {/* Pulse rings */}
+                          <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#dcd5ca]/60
+                                        animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
+                          <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#ebe7e0]/50
+                                        animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
+                          
+                          {/* Main dot */}
+                          <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] border-2 border-[#9c826b]
+                                        shadow-[0_0_10px_rgba(199,186,168,0.8)]
+                                        transition-all duration-500 ease-in-out
+                                        group-hover:scale-125" />
+
+                          {/* Hover button */}
+                          <div className="absolute left-6 top-2 opacity-0 group-hover:opacity-100 
+                                        transition-opacity duration-300">
+                            <Link 
+                              href="/product/product-2"
+                              className="flex items-center gap-2 bg-[#ebe7e0]/95 backdrop-blur-sm 
+                                       shadow-lg rounded-lg p-2 border border-[#b39e86] 
+                                       hover:bg-[#dcd5ca]/95"
+                            >
+                              <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
+                                View Product
+                              </span>
+                              <ChevronRight className="w-4 h-4 text-[#9c826b]" />
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
