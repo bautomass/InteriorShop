@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -157,6 +157,12 @@ const BlogSection = () => {
                         <Link href={`/blog/${article.handle}`}>
                           <div className="group relative aspect-[4/3] sm:aspect-square overflow-hidden rounded-xl md:rounded-2xl bg-gray-100 
                                       hover:shadow-xl transition-all duration-300">
+                            {/* Blog Indicator */}
+                            <div className="absolute top-4 right-4 z-10 bg-[#8B7355]/90 rounded-full p-2
+                                          backdrop-blur-sm transform transition-all duration-300
+                                          group-hover:scale-110 group-hover:bg-[#8B7355]">
+                              <BookOpen className="w-4 h-4 text-white/90 group-hover:text-white" />
+                            </div>
                             {article.image ? (
                               <>
                                 <Image
