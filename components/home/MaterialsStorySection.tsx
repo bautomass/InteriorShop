@@ -255,7 +255,7 @@ export default function MaterialsSection() {
                 {materials.map((material, index) => {
                   const positions = [
                     'left-[30%] top-[32.5%]',
-                    'right-[45%] top-[45%]',
+                    'right-[45%] top-[45%] lg:right-[30%] lg:top-[45%]',
                     'left-[30%] bottom-[35%]'
                   ];
 
