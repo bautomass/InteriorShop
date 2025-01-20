@@ -47,16 +47,6 @@ const heroSlides: SlideContent[] = [
     id: 'slide-4',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-Banner-Slide_4.webp?v=1737238155',
     alt: 'Minimalist Living',
-  },
-  {
-    id: 'slide-5',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-Banner-Slide_3.webp?v=1737233857',
-    alt: 'Contemporary Dining',
-  },
-  {
-    id: 'slide-6',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2-chairs-hero.jpg?v=1736700243&width=2048&height=1152&crop=center&quality=100',
-    alt: 'Serene Bedroom',
   }
 ];
 
@@ -333,7 +323,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                                             group-hover:scale-125" />
 
                               {/* Simplified hover button */}
-                              <div className="absolute left-6 top-2 opacity-0 group-hover:opacity-100 
+                              <div className="absolute left-6 opacity-0 group-hover:opacity-100 
                                             transition-opacity duration-300">
                                 <Link 
                                   href={slide.productLink || '#'}
@@ -383,7 +373,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                                         group-hover:scale-125" />
 
                           {/* Hover button */}
-                          <div className="absolute left-6 top-2 opacity-0 group-hover:opacity-100 
+                          <div className="absolute left-6 opacity-0 group-hover:opacity-100 
                                         transition-opacity duration-300">
                             <Link 
                               href="/product/product-1"
@@ -418,7 +408,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                                         group-hover:scale-125" />
 
                           {/* Hover button */}
-                          <div className="absolute left-6 top-2 opacity-0 group-hover:opacity-100 
+                          <div className="absolute left-6 opacity-0 group-hover:opacity-100 
                                         transition-opacity duration-300">
                             <Link 
                               href="/product/product-2"
