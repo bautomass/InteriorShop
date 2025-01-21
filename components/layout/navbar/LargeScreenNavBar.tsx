@@ -38,6 +38,7 @@ import {
 import type { CurrencyCode } from '@/lib/currency';
 import { CURRENCY_CONFIG } from '@/lib/currency';
 import { useCurrency } from '@/providers/CurrencyProvider';
+import { AccountModal } from '@/components/AccountModal';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -242,6 +243,7 @@ export const DesktopHeader = () => {
     sortBy: 'relevance',
     collections: [] as string[]
   });
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   // Constants
   const email = 'info@simpleinteriorideas.com';
@@ -615,10 +617,9 @@ export const DesktopHeader = () => {
 
                 {/* Account */}
                 <button
-                  onClick={() => handlePanelChange('account')}
+                  onClick={() => setIsAccountModalOpen(true)}
                   className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
                   aria-label="Open account menu"
-                  aria-expanded={isAccountOpen}
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" />
@@ -1096,6 +1097,11 @@ export const DesktopHeader = () => {
           </div>
         </div>
       </div>
+
+      <AccountModal 
+        isOpen={isAccountModalOpen}
+        onClose={() => setIsAccountModalOpen(false)}
+      />
     </div>
   );
 };

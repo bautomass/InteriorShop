@@ -1,3 +1,4 @@
+import { AuthProvider } from '@/providers/AuthProvider';
 import { CurrencyProvider } from '@/providers/CurrencyProvider';
 import { QueryProvider } from '@/providers/query-provider';
 import { CartProvider } from 'components/cart/cart-context';
@@ -9,7 +10,6 @@ import { cookies } from 'next/headers';
 import { ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import './globals.css';
-
 const { SITE_NAME } = process.env;
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
@@ -33,20 +33,22 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const menu = (await getMenu('next-js-frontend-header-menu')) as Menu[];
 
   return (
-    <html lang="en" className={GeistSans.variable}>
-      <body className="bg-primary-50 text-primary-900 selection:bg-accent-200">
-        <ThemeProvider>
-          <QueryProvider>
-            <CurrencyProvider>
-              <CartProvider cartPromise={cartPromise}>
-                <main>{children}</main>
-                <Toaster closeButton />
-              </CartProvider>
-            </CurrencyProvider>
-          </QueryProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <AuthProvider>
+      <html lang="en" className={GeistSans.variable}>
+        <body className="bg-primary-50 text-primary-900 selection:bg-accent-200">
+          <ThemeProvider>
+            <QueryProvider>
+              <CurrencyProvider>
+                <CartProvider cartPromise={cartPromise}>
+                  <main>{children}</main>
+                  <Toaster closeButton />
+                </CartProvider>
+              </CurrencyProvider>
+            </QueryProvider>
+          </ThemeProvider>
+        </body>
+      </html>
+    </AuthProvider>
   );
 }
 
