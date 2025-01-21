@@ -322,7 +322,9 @@ export const DesktopHeader = () => {
         setIsAccountOpen(true);
         break;
       case 'cart':
-        setIsCartOpen(true);
+        if ((cart?.lines as any[])?.length > 0) {
+          setIsCartOpen(true);
+        }
         break;
     }
   };
@@ -630,7 +632,11 @@ export const DesktopHeader = () => {
                   onMouseLeave={() => handleCartHover(false)}
                 >
                   <button
-                    onClick={() => handlePanelChange('cart')}
+                    onClick={() => {
+                      if ((cart?.lines as any[])?.length > 0) {
+                        handlePanelChange('cart');
+                      }
+                    }}
                     className="p-2 rounded-full hover:bg-neutral-100 transition-colors relative"
                     aria-label={`Cart ${cart?.totalQuantity ? `(${cart.totalQuantity} items)` : '(empty)'}`}
                   >
@@ -645,91 +651,110 @@ export const DesktopHeader = () => {
 
                   {/* Cart Preview Popup */}
                   <AnimatePresence>
-                    {isCartHovered && cart?.lines && (cart.lines as any[]).length > 0 && (
+                    {isCartHovered && (
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
                         className="absolute right-0 top-full mt-2 w-[400px] bg-white rounded-lg shadow-xl z-50"
                       >
-                        <div className="p-4">
-                          <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-medium text-neutral-900">Cart</h3>
-                            <span className="text-sm text-neutral-500">
-                              {cart.totalQuantity} {cart.totalQuantity === 1 ? 'item' : 'items'}
-                            </span>
-                          </div>
-
-                          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                            {(cart.lines as any[]).map((item: any) => (
-                              <div key={item.id} className="flex gap-4">
-                                {item.merchandise.product.featuredImage && (
-                                  <div className="relative w-20 h-20 bg-neutral-100 rounded-md overflow-hidden">
-                                    <Image
-                                      src={item.merchandise.product.featuredImage.url}
-                                      alt={item.merchandise.product.title}
-                                      fill
-                                      className="object-cover"
-                                      sizes="80px"
-                                    />
-                                  </div>
-                                )}
-                                <div className="flex-1">
-                                  <h4 className="text-sm font-medium text-neutral-900">
-                                    {item.merchandise.product.title}
-                                  </h4>
-                                  <p className="text-sm text-neutral-500 mt-1">
-                                    {item.merchandise.title}
-                                  </p>
-                                  <div className="flex justify-between items-center mt-2">
-                                    <span className="text-sm text-neutral-500">
-                                      Qty: {item.quantity}
-                                    </span>
-                                    <span className="text-sm font-medium text-neutral-900">
-                                      {formatPrice(parseFloat(item.cost.totalAmount.amount))}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="mt-4 pt-4 border-t border-neutral-200">
+                        {cart?.lines && (cart.lines as any[]).length > 0 ? (
+                          <div className="p-4">
                             <div className="flex justify-between items-center mb-4">
-                              <span className="text-sm font-medium text-neutral-600">Subtotal</span>
-                              <span className="text-base font-medium text-neutral-900">
-                                {formatPrice(parseFloat(cart.cost.totalAmount.amount))}
+                              <h3 className="text-lg font-medium text-neutral-900">Cart</h3>
+                              <span className="text-sm text-neutral-500">
+                                {cart.totalQuantity} {cart.totalQuantity === 1 ? 'item' : 'items'}
                               </span>
                             </div>
-                            
-                            <div className="space-y-2">
-                            <Link
-                              href="/cart"
-                              onClick={() => {
-                              }}
-                              className="block w-full py-2 bg-white border border-[#9e896c] text-[#9e896c] 
-                                      rounded-lg hover:bg-[#9e896c]/5 transition-colors text-sm font-medium text-center"
-                              aria-label="View cart details"
-                            >
-                              View Cart
-                            </Link>
-                              <button
-                                onClick={() => {
-                                  if (cart?.checkoutUrl) {
-                                    window.location.href = cart.checkoutUrl;
-                                  }
-                                }}
-                                disabled={!cart?.checkoutUrl}
-                                className="w-full py-2 bg-[#9e896c] text-white rounded-lg 
-                                         hover:bg-[#8a775d] transition-colors text-sm font-medium
-                                         disabled:opacity-50 disabled:cursor-not-allowed"
-                                aria-label="Proceed to checkout"
-                              >
-                                Checkout
-                              </button>
+
+                            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                              {(cart.lines as any[]).map((item: any) => (
+                                <div key={item.id} className="flex gap-4">
+                                  {item.merchandise.product.featuredImage && (
+                                    <div className="relative w-20 h-20 bg-neutral-100 rounded-md overflow-hidden">
+                                      <Image
+                                        src={item.merchandise.product.featuredImage.url}
+                                        alt={item.merchandise.product.title}
+                                        fill
+                                        className="object-cover"
+                                        sizes="80px"
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="flex-1">
+                                    <h4 className="text-sm font-medium text-neutral-900">
+                                      {item.merchandise.product.title}
+                                    </h4>
+                                    <p className="text-sm text-neutral-500 mt-1">
+                                      {item.merchandise.title}
+                                    </p>
+                                    <div className="flex justify-between items-center mt-2">
+                                      <span className="text-sm text-neutral-500">
+                                        Qty: {item.quantity}
+                                      </span>
+                                      <span className="text-sm font-medium text-neutral-900">
+                                        {formatPrice(parseFloat(item.cost.totalAmount.amount))}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="mt-4 pt-4 border-t border-neutral-200">
+                              <div className="flex justify-between items-center mb-4">
+                                <span className="text-sm font-medium text-neutral-600">Subtotal</span>
+                                <span className="text-base font-medium text-neutral-900">
+                                  {formatPrice(parseFloat(cart.cost.totalAmount.amount))}
+                                </span>
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Link
+                                  href="/cart"
+                                  className="block w-full py-2 bg-white border border-[#9e896c] text-[#9e896c] 
+                                          rounded-lg hover:bg-[#9e896c]/5 transition-colors text-sm font-medium text-center"
+                                  aria-label="View cart details"
+                                >
+                                  View Cart
+                                </Link>
+                                <button
+                                  onClick={() => {
+                                    if (cart?.checkoutUrl) {
+                                      window.location.href = cart.checkoutUrl;
+                                    }
+                                  }}
+                                  disabled={!cart?.checkoutUrl}
+                                  className="w-full py-2 bg-[#9e896c] text-white rounded-lg 
+                                           hover:bg-[#8a775d] transition-colors text-sm font-medium
+                                           disabled:opacity-50 disabled:cursor-not-allowed"
+                                  aria-label="Proceed to checkout"
+                                >
+                                  Checkout
+                                </button>
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        ) : (
+                          <div className="p-8 text-center">
+                            <div className="mb-4">
+                              <ShoppingCart className="w-12 h-12 mx-auto text-neutral-300" />
+                            </div>
+                            <h3 className="text-lg font-medium text-neutral-900 mb-2">
+                              Your Cart is Empty
+                            </h3>
+                            <p className="text-sm text-neutral-600 mb-6">
+                              Discover our beautiful collections, find something for your home
+                            </p>
+                            <Link
+                              href="/collections/all"
+                              className="inline-block px-6 py-2 bg-[#9e896c] text-white rounded-lg 
+                                       hover:bg-[#8a775d] transition-colors text-sm font-medium"
+                            >
+                              Start Shopping
+                            </Link>
+                          </div>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
