@@ -201,23 +201,23 @@ export function ProductDetails({ product }: { product: Product }) {
       </div>
     );
   };
-
+  
   const renderPrice = () => {
     const currentPrice = selectedVariant
-      ? parseFloat(selectedVariant.price.amount)
-      : parseFloat(product.priceRange.minVariantPrice.amount);
-
+      ? selectedVariant.price.amount
+      : product.priceRange.minVariantPrice.amount;
+  
     const compareAtPrice = selectedVariant?.compareAtPrice
-      ? parseFloat(selectedVariant.compareAtPrice.amount)
+      ? selectedVariant.compareAtPrice.amount
       : product.compareAtPriceRange?.minVariantPrice
-        ? parseFloat(product.compareAtPriceRange.minVariantPrice.amount)
+        ? product.compareAtPriceRange.minVariantPrice.amount
         : null;
-
+  
     const discountPercentage =
-      compareAtPrice && compareAtPrice > currentPrice
-        ? Math.round(((compareAtPrice - currentPrice) / compareAtPrice) * 100)
+      compareAtPrice && parseFloat(compareAtPrice) > parseFloat(currentPrice)
+        ? Math.round(((parseFloat(compareAtPrice) - parseFloat(currentPrice)) / parseFloat(compareAtPrice)) * 100)
         : null;
-
+  
     return (
       <motion.div
         initial={{ y: 20, opacity: 0 }}
@@ -250,12 +250,12 @@ export function ProductDetails({ product }: { product: Product }) {
               </motion.div>
             )}
             <span className="text-3xl font-medium text-[#6B5E4C]">
-              {formatPrice(currentPrice)}
+              {formatPrice(parseFloat(currentPrice))}
             </span>
           </div>
-          {compareAtPrice && compareAtPrice > currentPrice && (
+          {compareAtPrice && parseFloat(compareAtPrice) > parseFloat(currentPrice) && (
             <span className="text-xl text-[#8C7E6A] line-through decoration-[#FF6B6B]/40 decoration-2">
-              {formatPrice(compareAtPrice)}
+              {formatPrice(parseFloat(compareAtPrice))}
             </span>
           )}
         </div>

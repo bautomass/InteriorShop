@@ -12,7 +12,9 @@
     "postinstall": "next build",
     "prettier": "prettier --write --ignore-unknown .",
     "prettier:check": "prettier --check --ignore-unknown .",
-    "test": "pnpm prettier:check"
+    "test": "pnpm prettier:check",
+    "analyze": "ANALYZE=true next build",
+    "analyze:windows": "set ANALYZE=true && next build"
   },
   "dependencies": {
     "@headlessui/react": "^2.1.2",
@@ -57,6 +59,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.1.5",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/typography": "^0.5.15",

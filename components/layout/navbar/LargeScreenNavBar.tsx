@@ -534,10 +534,11 @@ export const DesktopHeader = () => {
                   <button
                     onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
                     disabled={isLoading}
-                    className="flex items-center gap-1 rounded-md p-1 text-sm hover:bg-white/10 
-                               transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium 
+                               hover:bg-black/5 transition-colors disabled:opacity-50
+                               text-neutral-700"
                   >
-                    <span className="w-4 h-4 flex items-center justify-center">
+                    <span className="w-4 h-4 flex items-center justify-center text-[#6B5E4C]">
                       {CURRENCY_CONFIG[currency].symbol}
                     </span>
                     <span>{currency}</span>
@@ -545,36 +546,59 @@ export const DesktopHeader = () => {
                       <div className="w-3 h-3 border-2 border-[#6B5E4C] border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <ChevronDown className={`h-3 w-3 transform transition-transform duration-200 
-                        ${isCurrencyOpen ? 'rotate-180' : ''}`} />
+                        ${isCurrencyOpen ? 'rotate-180' : ''} text-[#6B5E4C]`} />
                     )}
                   </button>
 
                   <AnimatePresence>
                     {isCurrencyOpen && (
                       <motion.div
-                        initial={{ opacity: 0, y: -10 }}
+                        initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="absolute right-0 top-full z-50 mt-2 w-24 rounded-md bg-white shadow-lg ring-1 ring-black/5"
+                        exit={{ opacity: 0, y: 5 }}
+                        className="absolute z-50 mt-1 w-36 right-[-20px]"
                       >
-                        {currencies.map((curr) => (
-                          <button
-                            key={curr.code}
-                            onClick={() => {
-                              setCurrency(curr.code);
-                              setIsCurrencyOpen(false);
-                            }}
-                            disabled={isLoading}
-                            className="flex w-full items-center justify-between px-4 py-2 text-left text-sm 
-                                     text-gray-900 transition-colors hover:bg-gray-100 disabled:opacity-50"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span>{CURRENCY_CONFIG[curr.code].symbol}</span>
-                              <span>{curr.code}</span>
-                            </div>
-                            {currency === curr.code && <Check className="h-4 w-4" />}
-                          </button>
-                        ))}
+                        {/* Triangle Arrow */}
+                        <div 
+                          className="absolute -top-2 left-1/2 -translate-x-1/2 
+                                     w-0 h-0 border-l-[8px] border-l-transparent 
+                                     border-r-[8px] border-r-transparent 
+                                     border-b-[8px] border-b-white"
+                        />
+                        
+                        {/* Dropdown Content */}
+                        <div className="relative bg-white rounded-lg shadow-lg ring-1 ring-black/5
+                                      backdrop-blur-sm overflow-hidden">
+                          <div className="p-1">
+                            {currencies.map((curr) => (
+                              <button
+                                key={curr.code}
+                                onClick={() => {
+                                  setCurrency(curr.code);
+                                  setIsCurrencyOpen(false);
+                                }}
+                                disabled={isLoading}
+                                className={`flex w-full items-center justify-between px-3 py-2 text-left 
+                                           text-sm transition-colors rounded-md
+                                           ${currency === curr.code 
+                                             ? 'bg-[#6B5E4C]/10 text-[#6B5E4C] font-medium' 
+                                             : 'text-neutral-700 hover:bg-neutral-50'
+                                           }
+                                           disabled:opacity-50`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className={currency === curr.code ? 'text-[#6B5E4C]' : 'text-neutral-500'}>
+                                    {CURRENCY_CONFIG[curr.code].symbol}
+                                  </span>
+                                  <span>{curr.code}</span>
+                                </div>
+                                {currency === curr.code && (
+                                  <Check className="h-4 w-4 text-[#6B5E4C]" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
