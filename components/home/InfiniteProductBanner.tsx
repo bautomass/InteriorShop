@@ -1,5 +1,6 @@
 'use client'
 import type { Product } from '@/lib/shopify/types';
+import { useCurrency } from '@/providers/CurrencyProvider';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -30,6 +31,8 @@ interface ProductCardProps {
 }
 
 const ProductCard = memo(function ProductCard({ product, snippet }: ProductCardProps) {
+  const { formatPrice } = useCurrency();
+
   const handleViewClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     window.location.href = `/product/${product.handle}`;
@@ -94,7 +97,7 @@ const ProductCard = memo(function ProductCard({ product, snippet }: ProductCardP
               <div className="flex items-center justify-end w-full gap-2">
                 <span className="text-[#D4C8B8] text-[10px] sm:text-xs mr-1">From</span>
                 <span className="text-white font-medium">
-                  ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                  {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
                 </span>
                 {product.compareAtPriceRange?.minVariantPrice && 
                  parseFloat(product.compareAtPriceRange.minVariantPrice.amount) > parseFloat(product.priceRange.minVariantPrice.amount) && (

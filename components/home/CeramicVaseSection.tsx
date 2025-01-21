@@ -6,6 +6,7 @@ import { ProductQuickView } from '@/components/quickview/ProductQuickView';
 import ProductReviews from '@/components/reviews/ProductReviews';
 import { useActionState } from '@/hooks/useActionState';
 import type { Product, ProductVariant } from '@/lib/shopify/types';
+import { useCurrency } from '@/providers/CurrencyProvider';
 import { addItem } from 'components/cart/actions';
 import { useCart } from 'components/cart/cart-context';
 import { motion } from 'framer-motion';
@@ -96,6 +97,7 @@ const FeaturedProduct = () => {
   const [isStyleGuideOpen, setIsStyleGuideOpen] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -280,10 +282,6 @@ const FeaturedProduct = () => {
     const compareAtPrice = selectedVariant?.compareAtPrice
       ? selectedVariant.compareAtPrice.amount
       : product?.compareAtPriceRange?.minVariantPrice?.amount;
-    
-    const currencyCode = selectedVariant 
-      ? selectedVariant.price.currencyCode
-      : product?.priceRange.minVariantPrice.currencyCode;
 
     const isOnSale = compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price || '0');
 
@@ -312,16 +310,13 @@ const FeaturedProduct = () => {
             </motion.div>
           )}
           <p className="text-2xl font-medium text-[#B5A48B]">
-            ${parseFloat(price || '0').toFixed(2)}
-            <span className="text-sm text-[#8C7E6A] ml-2">
-              {currencyCode}
-            </span>
+            {formatPrice(parseFloat(price || '0'))}
           </p>
         </div>
         {isOnSale && (
           <>
             <span className="text-sm text-[#8C7E6A] line-through decoration-[#FF6B6B]/40">
-              ${parseFloat(compareAtPrice).toFixed(2)} {currencyCode}
+              {formatPrice(parseFloat(compareAtPrice))}
             </span>
             <motion.span 
               initial={{ x: -5, opacity: 0 }}
@@ -907,7 +902,7 @@ const FeaturedProduct = () => {
                 <h3 className="text-lg font-medium text-[#6B5E4C]">Added to Cart!</h3>
                 <p className="text-sm text-[#8C7E6A]">{product.title}</p>
                 <p className="text-sm font-medium text-[#B5A48B]">
-                  ${parseFloat(selectedVariant?.price.amount || '0').toFixed(2)} × {quantity}
+                  {formatPrice(parseFloat(selectedVariant?.price.amount || '0'))} × {quantity}
                 </p>
               </div>
               <button

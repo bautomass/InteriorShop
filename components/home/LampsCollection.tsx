@@ -1,6 +1,7 @@
 // components/home/LampsCollection.tsx
 'use client';
 import { PriceSortFilter } from '@/components/filter/PriceSortFilter';
+import { useCurrency } from '@/providers/CurrencyProvider';
 
 import { ProductQuickView } from '@/components/quickview/ProductQuickView';
 import { useActionState } from '@/hooks/useActionState';
@@ -216,6 +217,7 @@ const ProductVariantModal = ({ isOpen, onClose, product, onAddToCart }: ProductV
   const [message, formAction] = useActionState(addItem, null);
   const { addCartItem } = useCart();
   const [showSuccess, setShowSuccess] = useState(false);
+  const { formatPrice } = useCurrency();
 
   // Add this memoized currentVariant
   const currentVariant = useMemo(() => 
@@ -274,7 +276,7 @@ const ProductVariantModal = ({ isOpen, onClose, product, onAddToCart }: ProductV
               <div>
                 <h3 className="text-lg font-medium text-gray-900">Added to Cart!</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  {quantity}x {product.title} - {currentVariant?.title}
+                  {quantity}x {product.title} - {currentVariant?.title} ({formatPrice(parseFloat(currentVariant?.price.amount || '0') * quantity)})
                 </p>
               </div>
             </motion.div>
@@ -316,7 +318,7 @@ const ProductVariantModal = ({ isOpen, onClose, product, onAddToCart }: ProductV
                     >
                       <span className="text-sm font-medium text-gray-900">{variant.title}</span>
                       <span className="mt-0.5 text-sm text-gray-500">
-                        ${parseFloat(variant.price.amount).toFixed(2)}
+                        {formatPrice(parseFloat(variant.price.amount))}
                       </span>
                     </button>
                   ))}
@@ -330,7 +332,7 @@ const ProductVariantModal = ({ isOpen, onClose, product, onAddToCart }: ProductV
                   <div className="rounded-md bg-white p-3">
                     <p className="text-sm font-medium text-gray-900">Selected: {currentVariant.title}</p>
                     <p className="text-sm text-gray-500">
-                      ${parseFloat(currentVariant.price.amount).toFixed(2)}
+                      {formatPrice(parseFloat(currentVariant.price.amount))}
                     </p>
                   </div>
                 )}
@@ -363,7 +365,7 @@ const ProductVariantModal = ({ isOpen, onClose, product, onAddToCart }: ProductV
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-gray-700">Total:</span>
                       <span className="text-lg font-bold text-gray-900">
-                        ${(parseFloat(currentVariant.price.amount) * quantity).toFixed(2)}
+                        {formatPrice(parseFloat(currentVariant.price.amount) * quantity)}
                       </span>
                     </div>
                   </div>
@@ -393,210 +395,210 @@ const ProductVariantModal = ({ isOpen, onClose, product, onAddToCart }: ProductV
 };
 
 // Update ProductCard component
-const ProductCard = memo(
-  ({ product, onQuickView, isPriority = false, cardsToShow = 4 }: ProductCardProps) => {
-    const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
+const ProductCard = memo(function ProductCard({ product, onQuickView, isPriority = false, cardsToShow = 4 }: ProductCardProps) {
+  const { formatPrice } = useCurrency();
+  
+  const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
 
-    const handleQuickView = useCallback(
-      (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onQuickView(e);
-      },
-      [onQuickView]
-    );
-
-    const handleAddToCart = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleQuickView = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
       e.stopPropagation();
-      setIsVariantModalOpen(true);
-    }, []);
+      onQuickView(e);
+    },
+    [onQuickView]
+  );
 
-    const handleModalClose = useCallback(() => {
-      setIsVariantModalOpen(false);
-    }, []);
+  const handleAddToCart = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsVariantModalOpen(true);
+  }, []);
 
-    // Memoize category determination
-    const category = useMemo(() => determineProductCategory(product), [product]);
+  const handleModalClose = useCallback(() => {
+    setIsVariantModalOpen(false);
+  }, []);
 
-    return (
-      <>
-        <motion.div
-          whileHover={{ y: -8 }}
-          className="group relative h-full w-full min-w-[200px] rounded-sm bg-white shadow-lg backdrop-blur-sm transition-all duration-500 hover:shadow-xl hover:shadow-primary-900/10"
-        >
-          <div className="relative">
-            <ImageGallery product={product} />
-            <div className="p-4">
-              {/* Category Tag */}
-              <div className="inline-flex rounded-full bg-primary-100/80 px-2 py-1 text-xs font-medium tracking-wide text-primary-800">
-                {category}
-              </div>
+  // Memoize category determination
+  const category = useMemo(() => determineProductCategory(product), [product]);
 
-              {/* Make only the title area clickable */}
-              <Link 
-                href={`/product/${product.handle}`}
-                className="block cursor-pointer hover:opacity-80"
-              >
-                <h3 className="mt-2 line-clamp-1 text-base font-semibold tracking-tight text-primary-900">
-                  {product.title}
-                </h3>
-              </Link>
+  return (
+    <>
+      <motion.div
+        whileHover={{ y: -8 }}
+        className="group relative h-full w-full min-w-[200px] rounded-sm bg-white shadow-lg backdrop-blur-sm transition-all duration-500 hover:shadow-xl hover:shadow-primary-900/10"
+      >
+        <div className="relative">
+          <ImageGallery product={product} />
+          <div className="p-4">
+            {/* Category Tag */}
+            <div className="inline-flex rounded-full bg-primary-100/80 px-2 py-1 text-xs font-medium tracking-wide text-primary-800">
+              {category}
+            </div>
 
-              {/* Updated Price Section */}
-              <div className="mt-1 flex items-center gap-2">
-                <div className="relative">
-                  {product.compareAtPriceRange?.minVariantPrice &&
-                    parseFloat(product.compareAtPriceRange.minVariantPrice.amount) >
-                      parseFloat(product.priceRange.minVariantPrice.amount) && (
-                      <motion.div
-                        initial={{ scale: 0.8, opacity: 0, rotate: -12 }}
-                        animate={{
-                          scale: [0.8, 1.1, 1],
-                          opacity: 1,
-                          rotate: [-12, -15, -12]
-                        }}
-                        whileHover={{
-                          scale: 1.05,
-                          rotate: -15,
-                          transition: { duration: 0.2 }
-                        }}
-                        className="absolute -left-2 -top-3 z-10 -rotate-12 transform rounded-full bg-gradient-to-r from-[#FF6B6B] to-[#FF8B8B] px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm"
-                      >
-                        Sale
-                      </motion.div>
-                    )}
-                  <p className="text-lg font-bold tracking-tight text-accent-500">
-                    ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
-                  </p>
-                </div>
+            {/* Make only the title area clickable */}
+            <Link 
+              href={`/product/${product.handle}`}
+              className="block cursor-pointer hover:opacity-80"
+            >
+              <h3 className="mt-2 line-clamp-1 text-base font-semibold tracking-tight text-primary-900">
+                {product.title}
+              </h3>
+            </Link>
+
+            {/* Updated Price Section */}
+            <div className="mt-1 flex items-center gap-2">
+              <div className="relative">
                 {product.compareAtPriceRange?.minVariantPrice &&
                   parseFloat(product.compareAtPriceRange.minVariantPrice.amount) >
                     parseFloat(product.priceRange.minVariantPrice.amount) && (
-                    <>
-                      <span className="text-sm text-[#8C7E6A] line-through decoration-[#FF6B6B]/40">
-                        ${parseFloat(product.compareAtPriceRange.minVariantPrice.amount).toFixed(2)}
-                      </span>
-                      <span className="rounded-full bg-[#FF6B6B]/10 px-2 py-0.5 text-xs font-medium text-[#FF6B6B]">
-                        Save{' '}
-                        {Math.round(
-                          ((parseFloat(product.compareAtPriceRange.minVariantPrice.amount) -
-                            parseFloat(product.priceRange.minVariantPrice.amount)) /
-                            parseFloat(product.compareAtPriceRange.minVariantPrice.amount)) *
-                            100
-                        )}
-                        %
-                      </span>
-                    </>
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0, rotate: -12 }}
+                      animate={{
+                        scale: [0.8, 1.1, 1],
+                        opacity: 1,
+                        rotate: [-12, -15, -12]
+                      }}
+                      whileHover={{
+                        scale: 1.05,
+                        rotate: -15,
+                        transition: { duration: 0.2 }
+                      }}
+                      className="absolute -left-2 -top-3 z-10 -rotate-12 transform rounded-full bg-gradient-to-r from-[#FF6B6B] to-[#FF8B8B] px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm"
+                    >
+                      Sale
+                    </motion.div>
                   )}
+                <p className="text-lg font-bold tracking-tight text-accent-500">
+                  {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
+                </p>
               </div>
+              {product.compareAtPriceRange?.minVariantPrice &&
+                parseFloat(product.compareAtPriceRange.minVariantPrice.amount) >
+                  parseFloat(product.priceRange.minVariantPrice.amount) && (
+                  <>
+                    <span className="text-sm text-[#8C7E6A] line-through decoration-[#FF6B6B]/40">
+                      {formatPrice(parseFloat(product.compareAtPriceRange.minVariantPrice.amount))}
+                    </span>
+                    <span className="rounded-full bg-[#FF6B6B]/10 px-2 py-0.5 text-xs font-medium text-[#FF6B6B]">
+                      Save{' '}
+                      {Math.round(
+                        ((parseFloat(product.compareAtPriceRange.minVariantPrice.amount) -
+                          parseFloat(product.priceRange.minVariantPrice.amount)) /
+                          parseFloat(product.compareAtPriceRange.minVariantPrice.amount)) *
+                        100
+                      )}
+                      %
+                    </span>
+                  </>
+                )}
+            </div>
 
-              <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm leading-relaxed text-primary-600/90 [@media(max-width:700px)]:hidden">
-                {product.description}
-              </p>
+            <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm leading-relaxed text-primary-600/90 [@media(max-width:700px)]:hidden">
+              {product.description}
+            </p>
 
-              <div
+            <div
+              className={cn(
+                'mt-3 flex gap-2',
+                // Stack vertically below 600px
+                '[@media(max-width:600px)]:flex-col',
+                // Stack vertically only when there are 5 or more cards in a row
+                cardsToShow >= 5 ? 'flex-col' : 'flex-row'
+              )}
+            >
+              {/* Add to Cart Button */}
+              <motion.button
+                onClick={handleAddToCart}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className={cn(
-                  'mt-3 flex gap-2',
-                  // Stack vertically below 600px
-                  '[@media(max-width:600px)]:flex-col',
-                  // Stack vertically only when there are 5 or more cards in a row
-                  cardsToShow >= 5 ? 'flex-col' : 'flex-row'
+                  'relative px-3 py-1.5',
+                  'bg-[#8B9D8B] hover:bg-[#7A8C7A]',
+                  'rounded-sm text-white',
+                  'transition-all duration-300',
+                  'flex items-center justify-center gap-1.5',
+                  'overflow-hidden shadow-sm hover:shadow-md',
+                  'group',
+                  // Adjust width based on number of cards and screen size
+                  '[@media(max-width:600px)]:w-full',
+                  cardsToShow >= 5 ? 'w-full' : 'flex-1'
                 )}
               >
-                {/* Add to Cart Button */}
-                <motion.button
-                  onClick={handleAddToCart}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={cn(
-                    'relative px-3 py-1.5',
-                    'bg-[#8B9D8B] hover:bg-[#7A8C7A]',
-                    'rounded-sm text-white',
-                    'transition-all duration-300',
-                    'flex items-center justify-center gap-1.5',
-                    'overflow-hidden shadow-sm hover:shadow-md',
-                    'group',
-                    // Adjust width based on number of cards and screen size
-                    '[@media(max-width:600px)]:w-full',
-                    cardsToShow >= 5 ? 'w-full' : 'flex-1'
-                  )}
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-all duration-1000 ease-in-out group-hover:translate-x-full group-hover:opacity-100" />
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+                <svg
+                  className="relative h-3.5 w-3.5 transform transition-transform duration-300 ease-out group-hover:-translate-y-px"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-all duration-1000 ease-in-out group-hover:translate-x-full group-hover:opacity-100" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                  />
+                </svg>
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <span className="text-shadow-sm relative transform text-xs font-medium transition-transform duration-300 ease-out group-hover:-translate-y-px">
+                  Add to Cart
+                </span>
 
-                  <svg
-                    className="relative h-3.5 w-3.5 transform transition-transform duration-300 ease-out group-hover:-translate-y-px"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                    />
-                  </svg>
+                <div className="absolute inset-0 opacity-0 ring-2 ring-white/20 transition-opacity duration-300 group-hover:opacity-100" />
+              </motion.button>
 
-                  <span className="text-shadow-sm relative transform text-xs font-medium transition-transform duration-300 ease-out group-hover:-translate-y-px">
-                    Add to Cart
-                  </span>
+              {/* Quick View Button */}
+              <motion.button
+                onClick={handleQuickView}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={cn(
+                  'relative px-3 py-1.5',
+                  'bg-[#4A4A4A] hover:bg-[#3A3A3A]',
+                  'rounded-sm text-white',
+                  'transition-all duration-300',
+                  'flex items-center justify-center',
+                  'overflow-hidden shadow-sm hover:shadow-md',
+                  'group',
+                  // Adjust width based on number of cards and screen size
+                  '[@media(max-width:600px)]:w-full',
+                  cardsToShow >= 5 ? 'w-full' : 'w-[100px]',
+                  'text-xs font-medium'
+                )}
+              >
+                {/* Shine effect */}
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-all duration-1000 ease-in-out group-hover:translate-x-full group-hover:opacity-100" />
 
-                  <div className="absolute inset-0 opacity-0 ring-2 ring-white/20 transition-opacity duration-300 group-hover:opacity-100" />
-                </motion.button>
+                {/* Subtle gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-                {/* Quick View Button */}
-                <motion.button
-                  onClick={handleQuickView}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={cn(
-                    'relative px-3 py-1.5',
-                    'bg-[#4A4A4A] hover:bg-[#3A3A3A]',
-                    'rounded-sm text-white',
-                    'transition-all duration-300',
-                    'flex items-center justify-center',
-                    'overflow-hidden shadow-sm hover:shadow-md',
-                    'group',
-                    // Adjust width based on number of cards and screen size
-                    '[@media(max-width:600px)]:w-full',
-                    cardsToShow >= 5 ? 'w-full' : 'w-[100px]',
-                    'text-xs font-medium'
-                  )}
-                >
-                  {/* Shine effect */}
-                  <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-all duration-1000 ease-in-out group-hover:translate-x-full group-hover:opacity-100" />
+                {/* Text with hover animation */}
+                <span className="relative transform transition-transform duration-300 ease-out group-hover:-translate-y-px">
+                  Quick View
+                </span>
 
-                  {/* Subtle gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-                  {/* Text with hover animation */}
-                  <span className="relative transform transition-transform duration-300 ease-out group-hover:-translate-y-px">
-                    Quick View
-                  </span>
-
-                  {/* Border glow */}
-                  <div className="absolute inset-0 opacity-0 ring-2 ring-white/10 transition-opacity duration-300 group-hover:opacity-100" />
-                </motion.button>
-              </div>
+                {/* Border glow */}
+                <div className="absolute inset-0 opacity-0 ring-2 ring-white/10 transition-opacity duration-300 group-hover:opacity-100" />
+              </motion.button>
             </div>
           </div>
-        </motion.div>
+        </div>
+      </motion.div>
 
-        <ProductVariantModal
-          isOpen={isVariantModalOpen}
-          onClose={handleModalClose}
-          product={product}
-          onAddToCart={(variantId, quantity) => {
-            // This is handled inside the modal now
-          }}
-        />
-      </>
-    );
-  }
-);
+      <ProductVariantModal
+        isOpen={isVariantModalOpen}
+        onClose={handleModalClose}
+        product={product}
+        onAddToCart={(variantId, quantity) => {
+          // This is handled inside the modal now
+        }}
+      />
+    </>
+  );
+});
 
 ProductCard.displayName = 'ProductCard';
 

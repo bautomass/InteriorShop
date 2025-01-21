@@ -3,6 +3,7 @@ import { Pinterest } from '@/components/icons/Pinterest';
 import { X } from '@/components/icons/X';
 import { useActionState } from '@/hooks/useActionState';
 import type { Product, ProductVariant } from '@/lib/shopify/types';
+import { useCurrency } from '@/providers/CurrencyProvider';
 import { addItem } from 'components/cart/actions';
 import { useCart } from 'components/cart/cart-context';
 import { motion } from 'framer-motion';
@@ -88,6 +89,7 @@ const FeaturedProduct = () => {
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const { currency, formatPrice } = useCurrency();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -182,19 +184,17 @@ const FeaturedProduct = () => {
   };
 
   const renderPrice = () => {
-    const price = selectedVariant 
-      ? selectedVariant.price.amount
-      : product?.priceRange.minVariantPrice.amount;
+    const priceInEUR = selectedVariant 
+      ? parseFloat(selectedVariant.price.amount)
+      : parseFloat(product?.priceRange.minVariantPrice.amount || '0');
     
-    const compareAtPrice = selectedVariant?.compareAtPrice
-      ? selectedVariant.compareAtPrice.amount
-      : product?.compareAtPriceRange?.minVariantPrice?.amount;
-    
-    const currencyCode = selectedVariant 
-      ? selectedVariant.price.currencyCode
-      : product?.priceRange.minVariantPrice.currencyCode;
+    const compareAtPriceInEUR = selectedVariant?.compareAtPrice
+      ? parseFloat(selectedVariant.compareAtPrice.amount)
+      : product?.compareAtPriceRange?.minVariantPrice
+        ? parseFloat(product.compareAtPriceRange.minVariantPrice.amount)
+        : null;
 
-    const isOnSale = compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price || '0');
+    const isOnSale = compareAtPriceInEUR && compareAtPriceInEUR > priceInEUR;
 
     return (
       <div className="flex items-center gap-3">
@@ -221,16 +221,13 @@ const FeaturedProduct = () => {
             </motion.div>
           )}
           <p className="text-2xl font-medium text-[#B5A48B]">
-            ${parseFloat(price || '0').toFixed(2)}
-            <span className="text-sm text-[#8C7E6A] ml-2">
-              {currencyCode}
-            </span>
+            {formatPrice(priceInEUR)}
           </p>
         </div>
         {isOnSale && (
           <>
             <span className="text-sm text-[#8C7E6A] line-through decoration-[#FF6B6B]/40">
-              ${parseFloat(compareAtPrice).toFixed(2)} {currencyCode}
+              {formatPrice(compareAtPriceInEUR)}
             </span>
             <motion.span 
               initial={{ x: -5, opacity: 0 }}
@@ -238,7 +235,7 @@ const FeaturedProduct = () => {
               className="text-xs text-[#FF6B6B] font-medium px-2 py-0.5 
                        bg-[#FF6B6B]/10 rounded-full border border-[#FF6B6B]/20"
             >
-              Save {Math.round(((parseFloat(compareAtPrice) - parseFloat(price || '0')) / parseFloat(compareAtPrice)) * 100)}%
+              Save {Math.round(((compareAtPriceInEUR - priceInEUR) / compareAtPriceInEUR) * 100)}%
             </motion.span>
           </>
         )}

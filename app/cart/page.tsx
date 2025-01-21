@@ -5,6 +5,7 @@ import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { useActionState } from '@/hooks/useActionState';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import type { Cart, Product } from '@/lib/shopify/types';
+import { useCurrency } from '@/providers/CurrencyProvider';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { addItem } from 'components/cart/actions';
 import { useCart } from 'components/cart/cart-context';
@@ -62,6 +63,7 @@ export default function CartPage() {
   const [isAddingToCart, setIsAddingToCart] = useState<{[key: string]: boolean}>({});
   const { cart: contextCart, addCartItem } = useCart();
   const router = useRouter();
+  const { formatPrice } = useCurrency();
 
   const fetchCart = async () => {
     try {
@@ -353,10 +355,10 @@ export default function CartPage() {
                             </h3>
                             <div className="mt-1 flex items-center gap-2">
                               <span className="text-red-500 font-medium text-sm xl:text-xs">
-                                ${calculateDiscountedPrice(product.priceRange.minVariantPrice.amount)}
+                                {formatPrice(parseFloat(calculateDiscountedPrice(product.priceRange.minVariantPrice.amount)))}
                               </span>
                               <span className="text-xs xl:text-[10px] text-[#8C7E6A] line-through">
-                                ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                                {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
                               </span>
                             </div>
                           </div>

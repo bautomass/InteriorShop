@@ -1,4 +1,5 @@
 // components/invoice/InvoiceTemplate.tsx
+import { useCurrency } from '@/providers/CurrencyProvider';
 import { InvoiceData } from '@/types/invoice';
 import { memo } from 'react';
 
@@ -44,23 +45,29 @@ const BillToSection = memo(({ data }: { data: InvoiceData }) => (
 ));
 BillToSection.displayName = 'BillToSection';
 
-const TotalSection = memo(({ data }: { data: InvoiceData }) => (
-  <div className="flex justify-end mb-8">
-    <div className="w-72 bg-gray-50 p-6 rounded-lg border border-gray-100">
-      <div className="flex justify-between mb-3 text-gray-600">
-        <span>Subtotal:</span>
-        <span>${data.subtotal.toFixed(2)}</span>
-      </div>
-      <div className="flex justify-between font-bold text-lg text-gray-800 pt-3 border-t border-gray-200">
-        <span>Total:</span>
-        <span>${data.total.toFixed(2)}</span>
+const TotalSection = memo(({ data }: { data: InvoiceData }) => {
+  const { formatPrice } = useCurrency();
+  
+  return (
+    <div className="flex justify-end mb-8">
+      <div className="w-72 bg-gray-50 p-6 rounded-lg border border-gray-100">
+        <div className="flex justify-between mb-3 text-gray-600">
+          <span>Subtotal:</span>
+          <span>{formatPrice(data.subtotal)}</span>
+        </div>
+        <div className="flex justify-between font-bold text-lg text-gray-800 pt-3 border-t border-gray-200">
+          <span>Total:</span>
+          <span>{formatPrice(data.total)}</span>
+        </div>
       </div>
     </div>
-  </div>
-));
+  );
+});
 TotalSection.displayName = 'TotalSection';
 
 const InvoiceTemplate = ({ data }: InvoiceTemplateProps) => {
+  const { formatPrice } = useCurrency();
+
   return (
     <div id="invoice-template" className="bg-white p-10 max-w-4xl mx-auto shadow-lg rounded-xl">
       {/* Header */}
@@ -102,10 +109,10 @@ const InvoiceTemplate = ({ data }: InvoiceTemplateProps) => {
                   <td className="py-4 px-6">{line.merchandise?.product?.title || 'Unknown Product'}</td>
                   <td className="py-4 px-6 text-right">{quantity}</td>
                   <td className="py-4 px-6 text-right">
-                    ${total.toFixed(2)}
+                    {formatPrice(total)}
                   </td>
                   <td className="py-4 px-6 text-right font-medium">
-                    ${parseFloat(price).toFixed(2)}
+                    {formatPrice(parseFloat(price))}
                   </td>
                 </tr>
               );

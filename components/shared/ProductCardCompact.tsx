@@ -1,5 +1,6 @@
 "use client"
 import type { Product } from '@/lib/shopify/types';
+import { useCurrency } from '@/providers/CurrencyProvider';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { memo, useState } from 'react';
@@ -11,6 +12,7 @@ interface ProductCardCompactProps {
 
 export const ProductCardCompact = memo(({ product, onClick }: ProductCardCompactProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { formatPrice } = useCurrency();
 
   // Get first two images (featured image and first additional image)
   const images = Array.from(new Set([
@@ -105,14 +107,14 @@ export const ProductCardCompact = memo(({ product, onClick }: ProductCardCompact
                 </motion.div>
               )}
               <p className="text-lg font-bold tracking-tight text-accent-500 dark:text-accent-400">
-                ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
               </p>
             </div>
             {product.compareAtPriceRange?.minVariantPrice && 
              parseFloat(product.compareAtPriceRange.minVariantPrice.amount) > parseFloat(product.priceRange.minVariantPrice.amount) && (
               <>
                 <span className="text-sm text-[#8C7E6A] line-through decoration-[#FF6B6B]/40">
-                  ${parseFloat(product.compareAtPriceRange.minVariantPrice.amount).toFixed(2)}
+                  {formatPrice(parseFloat(product.compareAtPriceRange.minVariantPrice.amount))}
                 </span>
                 <span className="text-xs text-[#FF6B6B] font-medium px-2 py-0.5 
                                bg-[#FF6B6B]/10 rounded-full">

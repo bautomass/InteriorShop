@@ -3,6 +3,7 @@
 
 import { useActionState } from '@/hooks/useActionState';
 import type { Product } from '@/lib/shopify/types';
+import { useCurrency } from '@/providers/CurrencyProvider';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { addItem } from 'components/cart/actions';
 import { useCart } from 'components/cart/cart-context';
@@ -26,27 +27,9 @@ import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import { useInView } from 'react-intersection-observer';
 import { TagProductsModal } from './tag-products-modal';
 
-function AnimatedNumber({ number }: { number: number }) {
-  return (
-    <motion.span
-      key={number}
-      initial={{ y: 10, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: -10, opacity: 0 }}
-      transition={{
-        duration: 0.15,
-        ease: 'easeInOut',
-        opacity: { duration: 0.1 }
-      }}
-      className="absolute left-1/2 -translate-x-1/2"
-    >
-      {number}
-    </motion.span>
-  );
-}
-
 export function ProductDetails({ product }: { product: Product }) {
   const { state, updateOption } = useProduct();
+  const { formatPrice } = useCurrency();
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const { ref, inView } = useInView({
     threshold: 0.2,
@@ -230,10 +213,6 @@ export function ProductDetails({ product }: { product: Product }) {
         ? parseFloat(product.compareAtPriceRange.minVariantPrice.amount)
         : null;
 
-    const currencyCode = selectedVariant
-      ? selectedVariant.price.currencyCode
-      : product.priceRange.minVariantPrice.currencyCode;
-
     const discountPercentage =
       compareAtPrice && compareAtPrice > currentPrice
         ? Math.round(((compareAtPrice - currentPrice) / compareAtPrice) * 100)
@@ -271,12 +250,12 @@ export function ProductDetails({ product }: { product: Product }) {
               </motion.div>
             )}
             <span className="text-3xl font-medium text-[#6B5E4C]">
-              {currentPrice.toFixed(2)} {currencyCode}
+              {formatPrice(currentPrice)}
             </span>
           </div>
           {compareAtPrice && compareAtPrice > currentPrice && (
             <span className="text-xl text-[#8C7E6A] line-through decoration-[#FF6B6B]/40 decoration-2">
-              {compareAtPrice.toFixed(2)} {currencyCode}
+              {formatPrice(compareAtPrice)}
             </span>
           )}
         </div>
@@ -284,7 +263,7 @@ export function ProductDetails({ product }: { product: Product }) {
           <motion.span
             initial={{ x: -10, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className="rounded-full border border-[#FF6B6B]/20 bg-gradient-to-r from-[#FF6B6B]/10 to-[#FF8B8B]/10 px-3 py-1 text-sm font-medium text-[#FF6B6B] shadow-sm"
+            className="rounded-full border border-[#FF6B6B]/20 bg-gradient-to-r from-[#FF6B6B]/10 to-[#FF8B8B]/10 px-3 py-1 text-sm font-medium text-[#FF6B6B]"
           >
             Save {discountPercentage}%
           </motion.span>
@@ -793,9 +772,7 @@ export function ProductDetails({ product }: { product: Product }) {
                       </motion.div>
                     )}
                   <span className="text-sm font-medium text-[#6B5E4C]">
-                    {selectedVariant?.price.amount || product.priceRange.minVariantPrice.amount}{' '}
-                    {selectedVariant?.price.currencyCode ||
-                      product.priceRange.minVariantPrice.currencyCode}
+                    {formatPrice(parseFloat(selectedVariant?.price.amount || product.priceRange.minVariantPrice.amount))}
                   </span>
                 </div>
                 {selectedVariant?.compareAtPrice &&
@@ -803,8 +780,7 @@ export function ProductDetails({ product }: { product: Product }) {
                     parseFloat(selectedVariant.price.amount) && (
                     <>
                       <span className="text-xs text-[#8C7E6A] line-through decoration-[#FF6B6B]/40">
-                        {selectedVariant.compareAtPrice.amount}{' '}
-                        {selectedVariant.compareAtPrice.currencyCode}
+                        {formatPrice(parseFloat(selectedVariant.compareAtPrice.amount))}
                       </span>
                       <motion.span
                         initial={{ x: -5, opacity: 0 }}

@@ -45,7 +45,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-4',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-Banner-Slide_4.webp?v=1737238155',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-image-banner-slide.webp?v=1737480691',
     alt: 'Minimalist Living',
   }
 ];

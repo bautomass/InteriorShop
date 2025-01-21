@@ -1,10 +1,10 @@
 //components/cart/modal.tsx
 'use client';
 
+import { useCurrency } from '@/providers/CurrencyProvider';
 import { Dialog, Transition } from '@headlessui/react';
 import { ShoppingCartIcon } from '@heroicons/react/24/outline';
 import LoadingDots from 'components/loading-dots';
-import Price from 'components/price';
 import { DEFAULT_OPTION } from 'lib/constants';
 import type { Cart } from 'lib/shopify/types';
 import { createUrl } from 'lib/utils';
@@ -35,6 +35,7 @@ export default function CartModal({
   const quantityRef = useRef(cart?.totalQuantity);
   const openCart = () => setIsOpen(true);
   const closeCart = () => setIsOpen(false);
+  const { formatPrice } = useCurrency();
 
   const handleCheckout = async () => {
     console.log('Checkout attempted:', {
@@ -153,11 +154,9 @@ export default function CartModal({
                             </p>
                           )}
                         </div>
-                        <Price
-                          className="text-sm font-medium text-neutral-900"
-                          amount={item.cost.totalAmount.amount}
-                          currencyCode={item.cost.totalAmount.currencyCode}
-                        />
+                        <span className="text-sm font-medium text-neutral-900">
+                          {formatPrice(parseFloat(item.cost.totalAmount.amount))}
+                        </span>
                       </div>
 
                       {/* Quantity Controls */}
@@ -194,11 +193,9 @@ export default function CartModal({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between text-sm">
                     <p className="text-neutral-600">Subtotal</p>
-                    <Price
-                      className="font-medium text-neutral-900"
-                      amount={cart.cost.totalAmount.amount}
-                      currencyCode={cart.cost.totalAmount.currencyCode}
-                    />
+                    <span className="font-medium text-neutral-900">
+                      {formatPrice(parseFloat(cart.cost.totalAmount.amount))}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <p className="text-neutral-600">Shipping</p>
@@ -206,20 +203,16 @@ export default function CartModal({
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <p className="text-neutral-600">Tax</p>
-                    <Price
-                      className="font-medium text-neutral-900"
-                      amount={cart.cost.totalTaxAmount.amount}
-                      currencyCode={cart.cost.totalTaxAmount.currencyCode}
-                    />
+                    <span className="font-medium text-neutral-900">
+                      {formatPrice(parseFloat(cart.cost.totalTaxAmount.amount))}
+                    </span>
                   </div>
                   <div className="border-t border-neutral-200 pt-4">
                     <div className="flex items-center justify-between">
                       <p className="text-base font-medium text-neutral-900">Total</p>
-                      <Price
-                        className="text-lg font-medium text-neutral-900"
-                        amount={cart.cost.totalAmount.amount}
-                        currencyCode={cart.cost.totalAmount.currencyCode}
-                      />
+                      <span className="text-lg font-medium text-neutral-900">
+                        {formatPrice(parseFloat(cart.cost.totalAmount.amount))}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -342,11 +335,9 @@ export default function CartModal({
                                   </Link>
                                 </div>
                                 <div className="flex h-16 flex-col justify-between">
-                                  <Price
-                                    className="flex justify-end space-y-2 text-right text-sm"
-                                    amount={item.cost.totalAmount.amount}
-                                    currencyCode={item.cost.totalAmount.currencyCode}
-                                  />
+                                  <span className="flex justify-end space-y-2 text-right text-sm">
+                                    {formatPrice(parseFloat(item.cost.totalAmount.amount))}
+                                  </span>
                                   <div className="ml-auto flex h-9 flex-row items-center rounded-full border border-primary-200 dark:border-primary-700">
                                     <EditItemQuantityButton
                                       item={item}
@@ -371,11 +362,9 @@ export default function CartModal({
                     <div className="py-4 text-sm text-primary-500 dark:text-primary-400">
                       <div className="mb-3 flex items-center justify-between border-b border-primary-200 pb-1 dark:border-primary-700">
                         <p>Taxes</p>
-                        <Price
-                          className="text-right text-base text-primary-900 dark:text-primary-50"
-                          amount={cart.cost.totalTaxAmount.amount}
-                          currencyCode={cart.cost.totalTaxAmount.currencyCode}
-                        />
+                        <span className="text-right text-base text-primary-900 dark:text-primary-50">
+                          {formatPrice(parseFloat(cart.cost.totalTaxAmount.amount))}
+                        </span>
                       </div>
                       <div className="mb-3 flex items-center justify-between border-b border-primary-200 pb-1 pt-1 dark:border-primary-700">
                         <p>Shipping</p>
@@ -383,11 +372,9 @@ export default function CartModal({
                       </div>
                       <div className="mb-3 flex items-center justify-between border-b border-primary-200 pb-1 pt-1 dark:border-primary-700">
                         <p>Total</p>
-                        <Price
-                          className="text-right text-base text-primary-900 dark:text-primary-50"
-                          amount={cart.cost.totalAmount.amount}
-                          currencyCode={cart.cost.totalAmount.currencyCode}
-                        />
+                        <span className="text-right text-base text-primary-900 dark:text-primary-50">
+                          {formatPrice(parseFloat(cart.cost.totalAmount.amount))}
+                        </span>
                       </div>
                     </div>
                     <button

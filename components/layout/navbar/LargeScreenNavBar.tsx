@@ -35,6 +35,9 @@ import {
   Wine
 } from 'lucide-react';
 
+import type { CurrencyCode } from '@/lib/currency';
+import { CURRENCY_CONFIG } from '@/lib/currency';
+import { useCurrency } from '@/providers/CurrencyProvider';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -63,11 +66,14 @@ interface Currency {
 }
 
 // Constants
-const currencies: readonly Currency[] = [
-  { code: 'EUR', symbol: '€' },
-  { code: 'USD', symbol: '$' },
-  { code: 'GBP', symbol: '£' }
-] as const;
+const currencies: { code: CurrencyCode }[] = [
+  { code: 'USD' },
+  { code: 'EUR' },
+  { code: 'GBP' },
+  { code: 'CAD' },
+  { code: 'AUD' },
+  { code: 'JPY' }
+];
 
 const promos: PromoItem[] = [
   {
@@ -228,7 +234,7 @@ export const DesktopHeader = () => {
   });
   const [isCartHovered, setIsCartHovered] = useState(false);
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(() => currencies[0]!);
+  const { currency, setCurrency, isLoading, formatPrice } = useCurrency();
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
   const [filters, setFilters] = useState({
@@ -390,10 +396,10 @@ export const DesktopHeader = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [handleClickOutside]);
 
-  const handleCurrencySelect = useCallback((currency: Currency) => {
-    setSelectedCurrency(currency);
+  const handleCurrencySelect = useCallback((selectedCurrency: CurrencyCode) => {
+    setCurrency(selectedCurrency);
     setIsCurrencyOpen(false);
-  }, []);
+  }, [setCurrency]);
 
   return (
     <div 
@@ -527,15 +533,20 @@ export const DesktopHeader = () => {
                 <div className="relative currency-dropdown">
                   <button
                     onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
-                    className="flex items-center gap-1 rounded-md p-1 text-sm hover:bg-white/10 transition-colors"
-                    aria-label={`Select currency (currently ${selectedCurrency.code})`}
-                    aria-expanded={isCurrencyOpen}
+                    disabled={isLoading}
+                    className="flex items-center gap-1 rounded-md p-1 text-sm hover:bg-white/10 
+                               transition-colors disabled:opacity-50"
                   >
-                    <DollarSign className="h-4 w-4" />
-                    <span>{selectedCurrency.code}</span>
-                    <ChevronDown className={`h-3 w-3 transform transition-transform 
-                                          duration-200 ${isCurrencyOpen ? 'rotate-180' : ''}`}
-                    />
+                    <span className="w-4 h-4 flex items-center justify-center">
+                      {CURRENCY_CONFIG[currency].symbol}
+                    </span>
+                    <span>{currency}</span>
+                    {isLoading ? (
+                      <div className="w-3 h-3 border-2 border-[#6B5E4C] border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <ChevronDown className={`h-3 w-3 transform transition-transform duration-200 
+                        ${isCurrencyOpen ? 'rotate-180' : ''}`} />
+                    )}
                   </button>
 
                   <AnimatePresence>
@@ -544,23 +555,24 @@ export const DesktopHeader = () => {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="absolute right-0 top-full z-50 mt-2 w-24 rounded-md 
-                                 bg-white shadow-lg ring-1 ring-black/5"
+                        className="absolute right-0 top-full z-50 mt-2 w-24 rounded-md bg-white shadow-lg ring-1 ring-black/5"
                       >
-                        {currencies.map((currency) => (
+                        {currencies.map((curr) => (
                           <button
-                            key={currency.code}
-                            onClick={() => handleCurrencySelect(currency)}
-                            className="flex w-full items-center justify-between px-4 py-2 
-                                     text-left text-sm text-gray-900 transition-colors 
-                                     hover:bg-gray-100"
-                            aria-label={`Select ${currency.code} as currency`}
-                            aria-selected={selectedCurrency.code === currency.code}
+                            key={curr.code}
+                            onClick={() => {
+                              setCurrency(curr.code);
+                              setIsCurrencyOpen(false);
+                            }}
+                            disabled={isLoading}
+                            className="flex w-full items-center justify-between px-4 py-2 text-left text-sm 
+                                     text-gray-900 transition-colors hover:bg-gray-100 disabled:opacity-50"
                           >
-                            <span>{currency.code}</span>
-                            {selectedCurrency.code === currency.code && (
-                              <Check className="h-4 w-4" />
-                            )}
+                            <div className="flex items-center gap-2">
+                              <span>{CURRENCY_CONFIG[curr.code].symbol}</span>
+                              <span>{curr.code}</span>
+                            </div>
+                            {currency === curr.code && <Check className="h-4 w-4" />}
                           </button>
                         ))}
                       </motion.div>
@@ -650,7 +662,7 @@ export const DesktopHeader = () => {
                                       Qty: {item.quantity}
                                     </span>
                                     <span className="text-sm font-medium text-neutral-900">
-                                      ${parseFloat(item.cost.totalAmount.amount).toFixed(2)}
+                                      {formatPrice(parseFloat(item.cost.totalAmount.amount))}
                                     </span>
                                   </div>
                                 </div>
@@ -662,7 +674,7 @@ export const DesktopHeader = () => {
                             <div className="flex justify-between items-center mb-4">
                               <span className="text-sm font-medium text-neutral-600">Subtotal</span>
                               <span className="text-base font-medium text-neutral-900">
-                                ${parseFloat(cart.cost.totalAmount.amount).toFixed(2)}
+                                {formatPrice(parseFloat(cart.cost.totalAmount.amount))}
                               </span>
                             </div>
                             
@@ -891,10 +903,10 @@ export const DesktopHeader = () => {
                                   className="text-sm border-2 border-[#9e896c]/20 rounded-md px-2 py-1 bg-white hover:border-[#9e896c]/40 focus:border-[#9e896c] focus:outline-none transition-colors duration-200 cursor-pointer font-medium"
                                 >
                                   <option value="0-1000">All Prices</option>
-                                  <option value="0-50">Under $50</option>
-                                  <option value="50-100">$50 - $100</option>
-                                  <option value="100-200">$100 - $200</option>
-                                  <option value="200-1000">$200+</option>
+                                  <option value="0-50">Under {CURRENCY_CONFIG[currency].symbol}50</option>
+                                  <option value="50-100">{CURRENCY_CONFIG[currency].symbol}50 - {CURRENCY_CONFIG[currency].symbol}100</option>
+                                  <option value="100-200">{CURRENCY_CONFIG[currency].symbol}100 - {CURRENCY_CONFIG[currency].symbol}200</option>
+                                  <option value="200-1000">{CURRENCY_CONFIG[currency].symbol}200+</option>
                                 </select>
                               </div>
 
@@ -1012,7 +1024,7 @@ export const DesktopHeader = () => {
                                           {product.title}
                                         </h4>
                                         <p className="text-sm text-neutral-500 mt-1">
-                                          ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                                          {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
                                         </p>
                                       </div>
                                     </Link>

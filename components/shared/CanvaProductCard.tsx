@@ -3,6 +3,7 @@
 import { ProductVariantModal } from '@/components/quickview/ProductVariantModal';
 import type { Product } from '@/lib/shopify/types';
 import { cn } from '@/lib/utils';
+import { useCurrency } from '@/providers/CurrencyProvider';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Maximize2, Star, X } from 'lucide-react';
 import Image from 'next/image';
@@ -740,6 +741,7 @@ const ReviewsModal = ({ reviews, onClose, product }: {
 };
 
 const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToShow = 4 }: ProductCardProps) => {
+  const { formatPrice } = useCurrency();
   const [showGallery, setShowGallery] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
   const reviewData = useMemo(() => generateProductReviews(product), [product]);
@@ -891,14 +893,14 @@ const ProductCard = memo(({ product, onQuickView, isPriority = false, cardsToSho
                     </motion.div>
                   )}
                   <p className="text-lg font-bold tracking-tight text-accent-500 dark:text-accent-400">
-                    ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                    {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
                   </p>
                 </div>
                 {product.compareAtPriceRange?.minVariantPrice && 
                  parseFloat(product.compareAtPriceRange.minVariantPrice.amount) > parseFloat(product.priceRange.minVariantPrice.amount) && (
                   <>
                     <span className="text-sm text-[#8C7E6A] line-through decoration-[#FF6B6B]/40">
-                      ${parseFloat(product.compareAtPriceRange.minVariantPrice.amount).toFixed(2)}
+                      {formatPrice(parseFloat(product.compareAtPriceRange.minVariantPrice.amount))}
                     </span>
                     <span className="text-xs text-[#FF6B6B] font-medium px-2 py-0.5 
                                    bg-[#FF6B6B]/10 rounded-full">

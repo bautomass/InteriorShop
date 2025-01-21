@@ -2,6 +2,7 @@
 import { useActionState } from '@/hooks/useActionState'
 import type { Product, ProductVariant } from '@/lib/shopify/types'
 import { cn } from '@/lib/utils'
+import { useCurrency } from '@/providers/CurrencyProvider'
 import { addItem } from 'components/cart/actions'
 import { useCart } from 'components/cart/cart-context'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -48,6 +49,7 @@ export const ProductQuickView = memo(({ product, isOpen, onClose }: ProductQuick
   const { addCartItem } = useCart();
   const [isPending, startTransition] = useTransition();
   const [message, formAction] = useActionState(addItem, null);
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     const defaultOptions: Record<string, string> = {}
@@ -255,9 +257,9 @@ export const ProductQuickView = memo(({ product, isOpen, onClose }: ProductQuick
                   </div>
 
                   <p className="text-xl font-bold text-accent-600 dark:text-accent-400">
-                    ${selectedVariant 
-                      ? parseFloat(selectedVariant.price.amount).toFixed(2)
-                      : parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)
+                    {selectedVariant 
+                      ? formatPrice(parseFloat(selectedVariant.price.amount))
+                      : formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))
                     }
                   </p>
                   <motion.div 

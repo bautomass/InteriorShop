@@ -3,6 +3,7 @@
 import { ProductVariantModal } from '@/components/quickview/ProductVariantModal';
 import type { Product } from '@/lib/shopify/types';
 import { cn } from '@/lib/utils';
+import { useCurrency } from '@/providers/CurrencyProvider';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -182,6 +183,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardProps) => {
+  const { formatPrice } = useCurrency();
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
 
   const handleQuickView = useCallback((e: React.MouseEvent) => {
@@ -260,14 +262,14 @@ export const ProductCard = ({ product, cardsToShow, onQuickView }: ProductCardPr
                   </motion.div>
                 )}
                 <p className="text-lg font-bold tracking-tight text-accent-500 dark:text-accent-400">
-                  ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                  {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
                 </p>
               </div>
               {product.compareAtPriceRange?.minVariantPrice && 
                parseFloat(product.compareAtPriceRange.minVariantPrice.amount) > parseFloat(product.priceRange.minVariantPrice.amount) && (
                 <>
                   <span className="text-sm text-[#8C7E6A] line-through decoration-[#FF6B6B]/40">
-                    ${parseFloat(product.compareAtPriceRange.minVariantPrice.amount).toFixed(2)}
+                    {formatPrice(parseFloat(product.compareAtPriceRange.minVariantPrice.amount))}
                   </span>
                   <span className="text-xs text-[#FF6B6B] font-medium px-2 py-0.5 
                                    bg-[#FF6B6B]/10 rounded-full">
