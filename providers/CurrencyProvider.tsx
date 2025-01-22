@@ -53,10 +53,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     }
   }, [currency]);
 
-  const formatPrice = (amountInUSD: number): string => {
-    // First convert USD amount to EUR (our new base currency)
-    const amountInEUR = amountInUSD / rates.USD;
-    // Then convert to target currency
+  const formatPrice = (amountInEUR: number): string => {
     const convertedAmount = amountInEUR * rates[currency];
     
     const options: Intl.NumberFormatOptions = {

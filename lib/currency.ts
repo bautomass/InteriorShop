@@ -17,12 +17,13 @@ export const CURRENCY_CONFIG: Record<CurrencyCode, {
 // Fallback rates in case API fails
 export const FALLBACK_RATES: Record<CurrencyCode, number> = {
   EUR: 1,
-  USD: 1.04,
+  USD: 1.09,
   GBP: 0.85,
   CAD: 1.41,
   AUD: 1.58,
   JPY: 154.44
 };
+
 
 export async function fetchExchangeRates() {
   try {
