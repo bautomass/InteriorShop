@@ -35,10 +35,10 @@ import {
   Wine
 } from 'lucide-react';
 
+import { AccountModal } from '@/components/AccountModal';
 import type { CurrencyCode } from '@/lib/currency';
 import { CURRENCY_CONFIG } from '@/lib/currency';
 import { useCurrency } from '@/providers/CurrencyProvider';
-import { AccountModal } from '@/components/AccountModal';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -635,6 +635,8 @@ export const DesktopHeader = () => {
                   <button
                     onClick={() => {
                       if ((cart?.lines as any[])?.length > 0) {
+                        // Do nothing if there are items in the cart
+                      } else {
                         handlePanelChange('cart');
                       }
                     }}

@@ -2,6 +2,7 @@
 'use client';
 
 import { Product } from '@/lib/shopify/types';
+import { useCurrency } from '@/providers/CurrencyProvider';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDownWideNarrow, ArrowUpWideNarrow, X } from 'lucide-react';
 import Image from 'next/image';
@@ -20,6 +21,7 @@ type SortOption = 'none' | 'price-asc' | 'price-desc';
 
 export function TagProductsModal({ isOpen, onClose, tag, products, isLoading = false }: TagProductsModalProps) {
   const [sortBy, setSortBy] = useState<SortOption>('none');
+  const { formatPrice } = useCurrency();
 
   const sortedProducts = [...products].sort((a, b) => {
     if (sortBy === 'price-asc') {
@@ -158,7 +160,7 @@ export function TagProductsModal({ isOpen, onClose, tag, products, isLoading = f
                             {product.title}
                           </h3>
                           <p className="text-xs text-[#8C7E6A]">
-                            ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                            {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
                           </p>
                         </div>
                       </Link>
