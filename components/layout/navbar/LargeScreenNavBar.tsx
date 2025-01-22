@@ -406,7 +406,7 @@ export const DesktopHeader = () => {
   }, [setCurrency]);
 
   return (
-    <div 
+    <div id="navbar"
       className={`hidden lg:block relative ${
         (isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) 
           ? 'h-[100vh]' 

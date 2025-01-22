@@ -1,8 +1,8 @@
 // /app/collections/[handle]/page.tsx
 import PaginatedProductGrid from '@/components/collections/PaginatedProductGrid';
 import { SortOptions } from '@/components/collections/sort-options';
-// import { NavigationHeader } from '@/components/layout/navigation-header';
 import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
+import { ScrollHandler } from '@/components/ScrollHandler'; 
 import { Footer } from '@/components/layout/site-footer';
 import { defaultSort, sorting } from 'lib/constants';
 import { getCollectionProductsQuery, getCollectionQuery } from 'lib/shopify/queries/collection';
@@ -129,8 +129,10 @@ export default async function CollectionPage({ params, searchParams }: Collectio
   const sort = resolvedSearchParams.sort;
   const handle = resolvedParams.handle;
 
-  const sortKey = sorting.find((item) => item.slug === sort)?.sortKey || defaultSort.sortKey;
-  const reverse = sorting.find((item) => item.slug === sort)?.reverse || defaultSort.reverse;
+  // Improved sort validation
+  const sortOption = sorting.find((item) => item.slug === sort);
+  const sortKey = sortOption?.sortKey || defaultSort.sortKey;
+  const reverse = sortOption?.reverse ?? defaultSort.reverse;
 
   try {
     // Fetch collection data with proper error handling
@@ -163,6 +165,7 @@ export default async function CollectionPage({ params, searchParams }: Collectio
     return (
       <>
         <LargeScreenNavBar />
+        <ScrollHandler />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -180,88 +183,97 @@ export default async function CollectionPage({ params, searchParams }: Collectio
             <div className="absolute inset-0 bg-gradient-to-b from-primary-100/50 to-transparent dark:from-primary-900/50" />
           </div>
 
-          <div className="relative mx-auto max-w-[90rem] px-4 py-12 sm:px-6 lg:px-8">
-            {/* Collection Header - Updated styling */}
-            <div className="mb-12">
-              {collection.image ? (
-                <div className="relative mb-8 aspect-[21/9] overflow-hidden rounded-3xl">
-                  <div className="absolute inset-0 bg-black/20" />
-                  <Image
-                    src={collection.image.url}
-                    alt={collection.image.altText || collection.title}
-                    width={collection.image.width || 2100}
-                    height={collection.image.height || 900}
-                    className="h-full w-full object-cover"
-                    priority
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 p-8 text-white">
-                    <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+          <div className="relative mx-auto max-w-[90rem]">
+            {/* Collection Header */}
+            <div className="px-4 py-12 sm:px-6 lg:px-8">
+              <div className="mb-6">
+                {collection.image ? (
+                  <div className="relative mb-8 aspect-[21/9] overflow-hidden rounded-3xl">
+                    <div className="absolute inset-0 bg-black/20" />
+                    <Image
+                      src={collection.image.url}
+                      alt={collection.image.altText || collection.title}
+                      width={collection.image.width || 2100}
+                      height={collection.image.height || 900}
+                      className="h-full w-full object-cover"
+                      priority
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 p-8 text-white">
+                      <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+                        {collection.title}
+                      </h1>
+                      {collection.description && (
+                        <p className="mx-auto max-w-2xl text-lg text-primary-100">
+                          {collection.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <h1 className="mb-4 text-4xl font-bold tracking-tight text-primary-900 dark:text-primary-50 sm:text-5xl">
                       {collection.title}
                     </h1>
                     {collection.description && (
-                      <p className="mx-auto max-w-2xl text-lg text-primary-100">
+                      <p className="mx-auto max-w-2xl text-lg text-primary-700 dark:text-primary-200">
                         {collection.description}
                       </p>
                     )}
                   </div>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <h1 className="mb-4 text-4xl font-bold tracking-tight text-primary-900 dark:text-primary-50 sm:text-5xl">
-                    {collection.title}
-                  </h1>
-                  {collection.description && (
-                    <p className="mx-auto max-w-2xl text-lg text-primary-700 dark:text-primary-200">
-                      {collection.description}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Sort and Filter Section */}
-            <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-primary-600 dark:text-primary-300">
-                  {products.length} Products
-                </span>
+                )}
               </div>
-              <SortOptions currentValue={sort} />
             </div>
 
-            {/* Products Grid - Updated styling */}
-            <Suspense
-              fallback={
-                <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="group relative animate-pulse">
-                      <div className="aspect-square w-full overflow-hidden rounded-2xl bg-primary-100 dark:bg-primary-800" />
-                      <div className="mt-4 h-4 w-3/4 rounded bg-primary-100 dark:bg-primary-800" />
-                      <div className="mt-2 h-4 w-1/2 rounded bg-primary-100 dark:bg-primary-800" />
-                    </div>
-                  ))}
-                </div>
-              }
+            {/* Sticky Sort Section - Dynamic positioning */}
+            <div 
+              id="sticky-sort"
+              className="sticky z-10 bg-primary-50/80 px-4 py-6 backdrop-blur-sm transition-all dark:bg-primary-900/80 sm:px-6 lg:px-8"
+              style={{
+                top: 'var(--header-offset, 0px)',
+                marginTop: '-24px'
+              }}
             >
-              {products.length > 0 ? (
-                <PaginatedProductGrid
-                  products={products}
-                  initialProductCount={8}
-                  productsPerLoad={8}
-                />
-              ) : (
-                <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-dashed border-primary-300 bg-white/50 backdrop-blur-sm dark:border-primary-700 dark:bg-primary-800/50">
-                  <div className="text-center">
-                    <h2 className="mb-2 text-xl font-medium text-primary-900 dark:text-primary-50">
-                      No Products Found
-                    </h2>
-                    <p className="text-primary-700 dark:text-primary-200">
-                      This collection is currently empty. Please check back later.
-                    </p>
+              <SortOptions 
+                currentValue={sort} 
+                productCount={products.length} 
+              />
+            </div>
+
+            {/* Products Grid Section */}
+            <div className="px-4 pt-6 sm:px-6 lg:px-8">
+              <Suspense
+                fallback={
+                  <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+                    {[...Array(8)].map((_, i) => (
+                      <div key={i} className="group relative animate-pulse">
+                        <div className="aspect-square w-full overflow-hidden rounded-2xl bg-primary-100 dark:bg-primary-800" />
+                        <div className="mt-4 h-4 w-3/4 rounded bg-primary-100 dark:bg-primary-800" />
+                        <div className="mt-2 h-4 w-1/2 rounded bg-primary-100 dark:bg-primary-800" />
+                      </div>
+                    ))}
                   </div>
-                </div>
-              )}
-            </Suspense>
+                }
+              >
+                {products.length > 0 ? (
+                  <PaginatedProductGrid
+                    products={products}
+                    initialProductCount={8}
+                    productsPerLoad={8}
+                  />
+                ) : (
+                  <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-dashed border-primary-300 bg-white/50 backdrop-blur-sm dark:border-primary-700 dark:bg-primary-800/50">
+                    <div className="text-center">
+                      <h2 className="mb-2 text-xl font-medium text-primary-900 dark:text-primary-50">
+                        No Products Found
+                      </h2>
+                      <p className="text-primary-700 dark:text-primary-200">
+                        This collection is currently empty. Please check back later.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </Suspense>
+            </div>
           </div>
         </main>
         <Footer />

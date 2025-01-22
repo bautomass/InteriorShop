@@ -1,4 +1,4 @@
-
+// components/filter/PriceRangeFilter.tsx
 type PriceRange = {
   min: number;
   max: number | null;
