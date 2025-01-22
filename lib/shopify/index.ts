@@ -574,34 +574,41 @@ export async function searchCollections({ query }: { query?: string }): Promise<
   return reshapeCollections(collections);
 }
 
+
 export async function getProductsByTag(tag: string): Promise<Product[]> {
-  console.log('Executing Shopify query for tag:', tag);
+  console.log('Shopify lib - Executing query for tag:', tag);
 
   try {
+    // Format the query properly for Shopify's API
+    const formattedTag = tag.toLowerCase().trim();
+    console.log('Shopify lib - Formatted tag:', formattedTag);
+
     const res = await shopifyFetch<ShopifyProductsOperation>({
       query: getProductsByTagQuery,
       tags: [TAGS.products],
       variables: {
-        query: `tag:${tag}`
+        query: `tag:"${formattedTag}"`  // Note the double quotes here
       }
     });
 
-    console.log('Raw Shopify response:', res.body);
+    console.log('Shopify lib - Raw API response:', JSON.stringify(res.body, null, 2));
 
     if (!res.body.data?.products?.edges) {
-      console.error('Unexpected response structure:', res.body);
+      console.error('Shopify lib - Unexpected response structure:', res.body);
       return [];
     }
 
     const products = reshapeProducts(removeEdgesAndNodes(res.body.data.products));
-    console.log('Reshaped products:', products);
+    console.log('Shopify lib - Reshaped products count:', products.length);
 
     return products;
   } catch (error) {
-    console.error('Error in getProductsByTag:', error);
-    return [];
+    console.error('Shopify lib - Error in getProductsByTag:', error);
+    throw error;
   }
 }
+
+
 
 // This is called from `app/api/revalidate.ts` so providers can control revalidation logic.
 export async function revalidate(req: NextRequest): Promise<NextResponse> {

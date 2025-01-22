@@ -1,3 +1,4 @@
+//components/product/tag-products-modal.tsx
 'use client';
 
 import { Product } from '@/lib/shopify/types';
@@ -69,10 +70,10 @@ export function TagProductsModal({ isOpen, onClose, tag, products, isLoading = f
 
               {/* Sort Controls */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-[#8C7E6A]">Sort by:</span>
+                <span className="text-xs text-[#8C7E6A]">Sort by:</span>
                 <button
                   onClick={() => setSortBy(sortBy === 'price-asc' ? 'none' : 'price-asc')}
-                  className={`px-3 py-1.5 text-sm rounded-md flex items-center gap-1.5
+                  className={`px-3 py-1.5 text-xs rounded-md flex items-center gap-1.5
                            transition-colors duration-200 ${
                              sortBy === 'price-asc'
                                ? 'bg-[#6B5E4C] text-white'
@@ -84,7 +85,7 @@ export function TagProductsModal({ isOpen, onClose, tag, products, isLoading = f
                 </button>
                 <button
                   onClick={() => setSortBy(sortBy === 'price-desc' ? 'none' : 'price-desc')}
-                  className={`px-3 py-1.5 text-sm rounded-md flex items-center gap-1.5
+                  className={`px-3 py-1.5 text-xs rounded-md flex items-center gap-1.5
                            transition-colors duration-200 ${
                              sortBy === 'price-desc'
                                ? 'bg-[#6B5E4C] text-white'
@@ -119,13 +120,8 @@ export function TagProductsModal({ isOpen, onClose, tag, products, isLoading = f
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   {sortedProducts.map((product) => {
-                    const images = Array.from(new Set([
-                      product.featuredImage?.url,
-                      ...(product.images || []).map(img => img?.url)
-                    ])).filter((url): url is string => !!url);
-
-                    const primaryImage = images[0];
-                    const secondaryImage = images[1] || images[0]; // Fallback to first image if no second exists
+                    const primaryImage = product.featuredImage?.url || product.images?.[0]?.url;
+                    const secondaryImage = product.images?.[1]?.url || primaryImage;
 
                     return (
                       <Link

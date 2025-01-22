@@ -7,7 +7,7 @@ export const CURRENCY_CONFIG: Record<CurrencyCode, {
   position: 'before' | 'after';
 }> = {
   USD: { symbol: '$', locale: 'en-US', position: 'before' },
-  EUR: { symbol: '€', locale: 'de-DE', position: 'before' },
+  EUR: { symbol: '€', locale: 'de-DE', position: 'after' },
   GBP: { symbol: '£', locale: 'en-GB', position: 'before' },
   CAD: { symbol: '$', locale: 'en-CA', position: 'before' },
   AUD: { symbol: '$', locale: 'en-AU', position: 'before' },
@@ -16,12 +16,12 @@ export const CURRENCY_CONFIG: Record<CurrencyCode, {
 
 // Fallback rates in case API fails
 export const FALLBACK_RATES: Record<CurrencyCode, number> = {
-  USD: 1,
-  EUR: 0.96,
-  GBP: 0.81,
-  CAD: 1.35,
-  AUD: 1.52,
-  JPY: 148.50
+  EUR: 1,
+  USD: 1.04,
+  GBP: 0.85,
+  CAD: 1.41,
+  AUD: 1.58,
+  JPY: 154.44
 };
 
 export async function fetchExchangeRates() {
@@ -31,14 +31,13 @@ export async function fetchExchangeRates() {
     
     const data = await response.json();
     
-    // Transform the API response to our format
     const rates: Record<CurrencyCode, number> = {
-      USD: 1, // Base currency is always 1
-      EUR: data.data.EUR.value,
-      GBP: data.data.GBP.value,
-      CAD: data.data.CAD.value,
-      AUD: data.data.AUD.value,
-      JPY: data.data.JPY.value
+      EUR: 1,
+      USD: 1 / data.data.EUR.value,
+      GBP: data.data.GBP.value / data.data.EUR.value,
+      CAD: data.data.CAD.value / data.data.EUR.value,
+      AUD: data.data.AUD.value / data.data.EUR.value,
+      JPY: data.data.JPY.value / data.data.EUR.value
     };
 
     return rates;

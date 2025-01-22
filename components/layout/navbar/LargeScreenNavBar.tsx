@@ -68,8 +68,8 @@ interface Currency {
 
 // Constants
 const currencies: { code: CurrencyCode }[] = [
-  { code: 'USD' },
   { code: 'EUR' },
+  { code: 'USD' },
   { code: 'GBP' },
   { code: 'CAD' },
   { code: 'AUD' },
@@ -678,7 +678,6 @@ export const DesktopHeader = () => {
                                         alt={item.merchandise.product.title}
                                         fill
                                         className="object-cover"
-                                        sizes="80px"
                                       />
                                     </div>
                                   )}
@@ -686,11 +685,11 @@ export const DesktopHeader = () => {
                                     <h4 className="text-sm font-medium text-neutral-900">
                                       {item.merchandise.product.title}
                                     </h4>
-                                    <p className="text-sm text-neutral-500 mt-1">
+                                    <p className="text-xs text-neutral-500 mt-1">
                                       {item.merchandise.title}
                                     </p>
                                     <div className="flex justify-between items-center mt-2">
-                                      <span className="text-sm text-neutral-500">
+                                      <span className="text-xs text-neutral-500">
                                         Qty: {item.quantity}
                                       </span>
                                       <span className="text-sm font-medium text-neutral-900">
@@ -748,7 +747,7 @@ export const DesktopHeader = () => {
                               Discover our beautiful collections, find something for your home
                             </p>
                             <Link
-                              href="/collections/all"
+                              href="/collections/all-products"
                               className="inline-block px-6 py-2 bg-[#9e896c] text-white rounded-lg 
                                        hover:bg-[#8a775d] transition-colors text-sm font-medium"
                             >

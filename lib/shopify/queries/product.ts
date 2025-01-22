@@ -33,71 +33,18 @@ export const getProductRecommendationsQuery = /* GraphQL */ `
 `;
 
 export const getProductsByTagQuery = `
-  query GetProductsByTag($tag: String!) {
-    products(first: 250, query: $tag) {
+  query GetProductsByTag($query: String!) {
+    products(first: 250, query: $query) {
       edges {
         node {
-          id
-          title
-          handle
-          availableForSale
-          description
-          descriptionHtml
-          options {
-            id
-            name
-            values
-          }
-          priceRange {
-            minVariantPrice {
-              amount
-              currencyCode
-            }
-          }
-          variants(first: 250) {
-            edges {
-              node {
-                id
-                title
-                availableForSale
-                selectedOptions {
-                  name
-                  value
-                }
-                price {
-                  amount
-                  currencyCode
-                }
-              }
-            }
-          }
-          featuredImage {
-            url
-            altText
-            width
-            height
-          }
-          images(first: 20) {
-            edges {
-              node {
-                url
-                altText
-                width
-                height
-              }
-            }
-          }
-          seo {
-            title
-            description
-          }
-          tags
-          updatedAt
+          ...product
         }
       }
     }
   }
+  ${productFragment}
 `;
+
 
 export const getProductsByCollectionQuery = /* GraphQL */ `
   query getProductsByCollection($collection: String!, $first: Int!, $after: String) {

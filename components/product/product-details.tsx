@@ -386,25 +386,35 @@ export function ProductDetails({ product }: { product: Product }) {
     setStickyBarClosed(true);
   };
 
-  const getProductsByTag = async (tag: string) => {
-    console.log('Fetching products for tag:', tag);
-    const response = await fetch(`/api/products/by-tag?tag=${encodeURIComponent(tag)}`);
-    const data = await response.json();
-    console.log('API Response:', data);
-    return data.products || [];
-  };
-
   const handleTagClick = async (tag: string) => {
+    console.log('Component - Tag clicked:', tag);
     setSelectedTag(tag);
     setIsLoadingTagProducts(true);
     setTagProducts([]);
 
     try {
-      const tagProducts = await getProductsByTag(tag);
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      setTagProducts(tagProducts);
+      const url = `/api/products/by-tag?tag=${encodeURIComponent(tag)}`;
+      console.log('Component - Fetching from:', url);
+      
+      const response = await fetch(url);
+      console.log('Component - Response status:', response.status);
+      
+      const data = await response.json();
+      console.log('Component - Full response data:', data);
+
+      // Add a small delay to show loading state
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      if (data.products && Array.isArray(data.products)) {
+        console.log('Component - Setting products array of length:', data.products.length);
+        setTagProducts(data.products);
+      } else {
+        console.log('Component - Invalid products data:', data);
+        setTagProducts([]);
+      }
     } catch (error) {
-      console.error('Error fetching tag products:', error);
+      console.error('Component - Error in handleTagClick:', error);
+      setTagProducts([]);
     } finally {
       setIsLoadingTagProducts(false);
     }

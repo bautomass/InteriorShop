@@ -54,7 +54,10 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   }, [currency]);
 
   const formatPrice = (amountInUSD: number): string => {
-    const convertedAmount = amountInUSD * rates[currency];
+    // First convert USD amount to EUR (our new base currency)
+    const amountInEUR = amountInUSD / rates.USD;
+    // Then convert to target currency
+    const convertedAmount = amountInEUR * rates[currency];
     
     const options: Intl.NumberFormatOptions = {
       style: 'currency',
@@ -62,7 +65,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       minimumFractionDigits: currency === 'JPY' ? 0 : 2,
       maximumFractionDigits: currency === 'JPY' ? 0 : 2,
     };
-
+  
     return new Intl.NumberFormat(CURRENCY_CONFIG[currency].locale, options)
       .format(convertedAmount);
   };
