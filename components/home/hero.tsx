@@ -45,7 +45,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-4',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-image-banner-slide.webp?v=1737480691',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-banner-slide_3.1.webp?v=1737819187',
     alt: 'Minimalist Living',
   }
 ];
@@ -425,6 +425,77 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                         </div>
                       </div>
                     )}
+
+                    {/* New Heading and Buttons for the second slide */}
+                    {currentSlide === 1 && (
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="absolute right-32 top-[35%] transform -translate-y-1/2 z-20 max-w-2xl"
+                      >
+                        <motion.span
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
+                          className="inline-block text-white/90 font-medium tracking-[0.2em] uppercase text-sm mb-4"
+                        >
+                          A Masterpiece Collection
+                        </motion.span>
+
+                        <motion.h2
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
+                          className="text-[5.5rem] font-thin text-white leading-none mb-6"
+                        >
+                          Signature
+                          <span className="block font-light text-[3.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
+                            Lighting Icons
+                          </span>
+                        </motion.h2>
+
+                        <motion.p
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }}
+                          className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide mb-8"
+                        >
+                          Elevate your space with our most cherished designs. Each piece tells a story of timeless elegance.
+                        </motion.p>
+
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.9, duration: 0.5 }}
+                          whileHover={{ scale: 1.02 }}
+                          className="group inline-flex items-center"
+                        >
+                          <Link 
+                            href="/collections/best-sellers"
+                            className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
+                                     shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
+                                     transition-all duration-500 px-4 py-4 relative"
+                          >
+                            <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap">
+                              View The Collection
+                            </span>
+                            <motion.div 
+                              className="flex items-center"
+                              initial={{ x: 0 }}
+                              animate={{ x: [0, 5, 0] }}
+                              transition={{ 
+                                repeat: Infinity, 
+                                duration: 1.5,
+                                ease: "easeInOut"
+                              }}
+                            >
+                              <ChevronRight className="w-5 h-5 text-[#9c826b]" />
+                            </motion.div>
+                          </Link>
+                        </motion.div>
+                      </motion.div>
+                    )}
+                    {/* End of Heading and Buttons for the second slide */}
                   </div>
                 ))}
               </div>
@@ -597,77 +668,79 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
       </div>
 
       {/* Navigation Buttons - Added opposite to carousel thumbnails */}
-      <div className="absolute bottom-6 left-8 z-20 hidden lg:flex items-center gap-4">
-        <motion.div 
-          className="flex items-center gap-4 perspective-[1200px] transform-gpu"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Link
-            href="/story"
-            aria-label="Read our story"
-            className="relative group inline-flex items-center justify-center px-6 py-3 
-                      bg-white/90 backdrop-blur-sm text-[#9e896c]
-                      hover:bg-[#9e896c] hover:text-white
-                      transition-all duration-300 shadow-lg shadow-black/5
-                      focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
-                      transform transition-transform duration-300 scale-100 group-hover:scale-105"
+      {currentSlide === 0 && (
+        <div className="absolute bottom-6 left-8 z-20 hidden lg:flex items-center gap-4">
+          <motion.div 
+            className="flex items-center gap-4 perspective-[1200px] transform-gpu"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
           >
-            <span className="relative text-sm font-medium">
-              Our Story
-            </span>
-            <motion.div
-              className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
-              initial={false}
-              animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            />
-          </Link>
+            <Link
+              href="/story"
+              aria-label="Read our story"
+              className="relative group inline-flex items-center justify-center px-6 py-3 
+                        bg-white/90 backdrop-blur-sm text-[#9e896c]
+                        hover:bg-[#9e896c] hover:text-white
+                        transition-all duration-300 shadow-lg shadow-black/5
+                        focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
+                        transform transition-transform duration-300 scale-100 group-hover:scale-105"
+            >
+              <span className="relative text-sm font-medium">
+                Our Story
+              </span>
+              <motion.div
+                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
+                initial={false}
+                animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              />
+            </Link>
 
-          <Link
-            href="/collections/all-products"
-            aria-label="Browse all products"
-            className="relative group inline-flex items-center justify-center px-6 py-3
-                      bg-[#9e896c]/90 backdrop-blur-sm text-white
-                      hover:bg-[#dcd5ca] hover:text-[#9e896c] 
-                      transition-all duration-300 shadow-lg shadow-black/5
-                      focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
-                      transform transition-transform duration-300 scale-100 group-hover:scale-105"
-          >
-            <span className="relative text-sm font-medium">
-              All Products
-            </span>
-            <motion.div
-              className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
-              initial={false}
-              animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            />
-          </Link>
+            <Link
+              href="/collections/all-products"
+              aria-label="Browse all products"
+              className="relative group inline-flex items-center justify-center px-6 py-3
+                        bg-[#9e896c]/90 backdrop-blur-sm text-white
+                        hover:bg-[#dcd5ca] hover:text-[#9e896c] 
+                        transition-all duration-300 shadow-lg shadow-black/5
+                        focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
+                        transform transition-transform duration-300 scale-100 group-hover:scale-105"
+            >
+              <span className="relative text-sm font-medium">
+                All Products
+              </span>
+              <motion.div
+                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
+                initial={false}
+                animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              />
+            </Link>
 
-          <Link
-            href="/collections"
-            aria-label="Browse all collections"
-            className="relative group inline-flex items-center justify-center px-6 py-3
-                      bg-[#eaeadf] backdrop-blur-sm text-white
-                      hover:bg-[#dcd5ca] hover:text-[#9e896c] 
-                      transition-all duration-300 shadow-lg shadow-black/5
-                      focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
-                      transform transition-transform duration-300 scale-100 group-hover:scale-110"
-          >
-            <span className="relative text-sm font-medium text-[#9e896c]">
-              All Collections
-            </span>
-            <motion.div
-              className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
-              initial={false}
-              animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            />
-          </Link>
-        </motion.div>
-      </div>
+            <Link
+              href="/collections"
+              aria-label="Browse all collections"
+              className="relative group inline-flex items-center justify-center px-6 py-3
+                        bg-[#eaeadf] backdrop-blur-sm text-white
+                        hover:bg-[#dcd5ca] hover:text-[#9e896c] 
+                        transition-all duration-300 shadow-lg shadow-black/5
+                        focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
+                        transform transition-transform duration-300 scale-100 group-hover:scale-110"
+            >
+              <span className="relative text-sm font-medium text-[#9e896c]">
+                All Collections
+              </span>
+              <motion.div
+                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
+                initial={false}
+                animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              />
+            </Link>
+          </motion.div>
+        </div>
+      )}
     </>
   );
 };

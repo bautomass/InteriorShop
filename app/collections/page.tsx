@@ -47,6 +47,7 @@ interface PageProps {
     q?: string;
     sort?: string;
     layout?: 'grid' | 'list' | 'table';
+    date?: string;
   };
 }
 
@@ -109,6 +110,17 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
             collection.title.toLowerCase().includes(searchTerm) ||
             collection.description?.toLowerCase().includes(searchTerm)
         );
+      }
+
+      if (searchParams.date) {
+        collections = collections.filter(collection => {
+          const collectionDate = new Date(collection.updatedAt);
+          const filterDate = new Date(searchParams.date as string);
+          return (
+            collectionDate.getFullYear() === filterDate.getFullYear() &&
+            collectionDate.getMonth() === filterDate.getMonth()
+          );
+        });
       }
 
       if (searchParams.sort && sortFunctions[searchParams.sort as keyof typeof sortFunctions]) {
