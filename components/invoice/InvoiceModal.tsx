@@ -1,23 +1,22 @@
 // components/invoice/InvoiceModal.tsx
 'use client';
-
 import { Cart } from '@/lib/shopify/types';
 import { InvoiceFormData, calculateTotals, formatDate, generateInvoiceNumber } from '@/types/invoice';
 import { AnimatePresence, motion } from 'framer-motion';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { FileDown, X } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import InvoiceTemplate from './InvoiceTemplate';
 
+const InvoiceTemplate = dynamic(() => import('./InvoiceTemplate'), {
+  loading: () => null
+});
 interface InvoiceModalProps {
   isOpen: boolean;
   onClose: () => void;
   cart: Cart;
   onSubmit: (formData: any) => void;
 }
-
 const CustomInput = ({ 
   label, 
   name, 
@@ -53,7 +52,6 @@ const CustomInput = ({
     />
   </div>
 );
-
 const CustomButton = ({ 
   onClick, 
   disabled, 
@@ -85,7 +83,6 @@ const CustomButton = ({
     {children}
   </button>
 );
-
 export default function InvoiceModal({ isOpen, onClose, cart, onSubmit }: InvoiceModalProps) {
   const [formData, setFormData] = useState<InvoiceFormData>({
     firstName: '',
@@ -99,60 +96,39 @@ export default function InvoiceModal({ isOpen, onClose, cart, onSubmit }: Invoic
     phone: '',
     vatNumber: ''
   });
-
   const [isLoading, setIsLoading] = useState(false);
   const [showTemplate, setShowTemplate] = useState(false);
   const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(null);
-
-  // Create portal container on mount
   useEffect(() => {
     const container = document.createElement('div');
-    container.style.cssText = `
-      position: fixed;
-      left: -9999px;
-      top: -9999px;
-      width: 800px;
-      height: 0;
-      overflow: hidden;
-      opacity: 0;
-      pointer-events: none;
-      background-color: white;
-      padding: 20px;
-      z-index: -1;
-    `;
+    container.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:800px;height:0;overflow:hidden;opacity:0;pointer-events:none;background-color:white;padding:20px;z-index:-1;';
     document.body.appendChild(container);
     setPortalContainer(container);
-
     return () => {
       document.body.removeChild(container);
     };
   }, []);
-
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
-
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !isLoading) {
         onClose();
       }
     };
-
     window.addEventListener('keydown', handleEscape);
     return () => {
       window.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
     };
   }, [isOpen, isLoading, onClose]);
-
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   }, []);
-
   const generateInvoice = useCallback(() => {
     return {
       ...formData,
@@ -162,24 +138,20 @@ export default function InvoiceModal({ isOpen, onClose, cart, onSubmit }: Invoic
       ...calculateTotals(cart)
     };
   }, [formData, cart]);
-
   const validateForm = useCallback(() => {
     const requiredFields = ['firstName', 'lastName', 'email', 'address', 'city', 'country', 'postalCode', 'phone'] as const;
     const emptyField = requiredFields.find(field => !formData[field]);
-    
     if (emptyField) {
       alert(`Please fill in the ${emptyField.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
       return false;
     }
     return true;
   }, [formData]);
-
   const captureElement = useCallback(async () => {
     const element = document.getElementById('invoice-template');
     if (!element) throw new Error('Invoice template element not found');
-
+    const html2canvas = (await import('html2canvas')).default;
     await new Promise(resolve => setTimeout(resolve, 100));
-
     return html2canvas(element, {
       scale: 2,
       useCORS: true,
@@ -190,27 +162,22 @@ export default function InvoiceModal({ isOpen, onClose, cart, onSubmit }: Invoic
       logging: false
     });
   }, []);
-
   const handleDownload = useCallback(async (format: 'pdf' | 'image') => {
     if (!validateForm() || !portalContainer) return;
-
     setIsLoading(true);
     setShowTemplate(true);
-
     try {
       await new Promise(resolve => setTimeout(resolve, 100));
       const invoiceData = generateInvoice();
       onSubmit(invoiceData);
-      
       const canvas = await captureElement();
-      
       if (format === 'pdf') {
+        const { default: jsPDF } = await import('jspdf');
         const pdf = new jsPDF({
           orientation: 'portrait',
           unit: 'mm',
           format: 'a4'
         });
-
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
@@ -254,7 +221,6 @@ export default function InvoiceModal({ isOpen, onClose, cart, onSubmit }: Invoic
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="relative w-full max-w-[500px] max-h-[85vh] overflow-y-auto bg-white rounded-xl shadow-xl"
               >
-                {/* Header */}
                 <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-[#6B5E4C]/10 bg-white">
                   <h2 className="text-lg font-semibold text-[#6B5E4C]">Generate Invoice</h2>
                   <button
@@ -265,14 +231,12 @@ export default function InvoiceModal({ isOpen, onClose, cart, onSubmit }: Invoic
                   </button>
                 </div>
 
-                {/* Content */}
                 <div className="p-4">
                   <p className="text-xs text-[#8C7E6A] mb-4">
                     Note: These details are used only for invoice generation and are not stored.
                   </p>
 
                   <div className="space-y-4">
-                    {/* Personal Info */}
                     <div className="grid grid-cols-2 gap-3">
                       <CustomInput
                         label="First Name"
@@ -358,8 +322,6 @@ export default function InvoiceModal({ isOpen, onClose, cart, onSubmit }: Invoic
                       />
                     </div>
                   </div>
-
-                  {/* Actions */}
                   <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-end">
                     <CustomButton
                       onClick={() => handleDownload('image')}
