@@ -2,11 +2,10 @@
 'use client';
 
 import { ClientOnlyDate } from '@/components/ui/client-only-date';
-import { motion } from 'framer-motion';
 import { Clock, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface ViewedCollection {
   handle: string;
@@ -22,34 +21,38 @@ export function RecentlyViewed() {
   const [viewedCollections, setViewedCollections] = useState<ViewedCollection[]>([]);
   const [isVisible, setIsVisible] = useState(false);
 
-  useEffect(() => {
-    const stored = localStorage.getItem('viewedCollections');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      // Sort by most recent first
-      const sorted = parsed.sort(
-        (a: ViewedCollection, b: ViewedCollection) => b.timestamp - a.timestamp
-      );
-      setViewedCollections(sorted);
-      setIsVisible(true);
+  const loadCollections = useCallback(() => {
+    try {
+      const stored = localStorage.getItem('viewedCollections');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const sorted = parsed
+          .slice(0, 4)
+          .sort((a: ViewedCollection, b: ViewedCollection) => b.timestamp - a.timestamp);
+        setViewedCollections(sorted);
+        setIsVisible(true);
+      }
+    } catch (error) {
+      console.error('Error loading collections:', error);
     }
   }, []);
 
-  const removeCollection = (handle: string) => {
-    const updated = viewedCollections.filter((c) => c.handle !== handle);
-    setViewedCollections(updated);
-    localStorage.setItem('viewedCollections', JSON.stringify(updated));
-    if (updated.length === 0) setIsVisible(false);
-  };
+  useEffect(() => {
+    loadCollections();
+  }, [loadCollections]);
+
+  const removeCollection = useCallback((handle: string) => {
+    setViewedCollections(prev => {
+      const updated = prev.filter(c => c.handle !== handle);
+      localStorage.setItem('viewedCollections', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   if (!isVisible || viewedCollections.length === 0) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mb-8 rounded-xl border border-primary-200 bg-white/80 p-4 backdrop-blur-sm dark:border-primary-700 dark:bg-primary-800/80"
-    >
+    <div className="mb-8 rounded-xl border border-primary-200 bg-white/80 p-4 backdrop-blur-sm dark:border-primary-700 dark:bg-primary-800/80">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2 text-accent-500">
           <Clock className="h-5 w-5" />
@@ -67,7 +70,7 @@ export function RecentlyViewed() {
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-2">
-        {viewedCollections.slice(0, 4).map((collection) => (
+        {viewedCollections.map((collection) => (
           <Link
             key={collection.handle}
             href={`/collections/${collection.handle}`}
@@ -80,6 +83,7 @@ export function RecentlyViewed() {
                   alt={collection.image.altText || collection.title}
                   width={128}
                   height={96}
+                  loading="lazy"
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               ) : (
@@ -107,6 +111,6 @@ export function RecentlyViewed() {
           </Link>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }

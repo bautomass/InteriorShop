@@ -121,3 +121,31 @@ img {
 img.opacity-100 {
   opacity: 1;
 }
+
+
+/* Collection Item Animations */
+.collection-item {
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+.collection-item.is-visible {
+  opacity: 1;
+}
+
+/* Collection Grid Memory Optimizations */
+.collection-grid img {
+  content-visibility: auto;
+}
+
+/* Optimize Paint Performance */
+.collection-card {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Layer Promotion for Animations */
+.collection-item {
+  will-change: opacity;
+  transform: translateZ(0);
+}

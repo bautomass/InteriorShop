@@ -3,8 +3,8 @@
 
 import { ClientOnlyDate } from '@/components/ui/client-only-date';
 import { Collection } from '@/lib/shopify/types';
-import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
+import { useCallback, useEffect, useRef } from 'react';
 import CollectionCard from './collection-card';
 
 interface CollectionGridProps {
@@ -12,22 +12,35 @@ interface CollectionGridProps {
   layout: 'grid' | 'list' | 'table';
 }
 
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
 export function CollectionGrid({ collections, layout }: CollectionGridProps) {
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  const observeItems = useCallback(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (gridRef.current) {
+      const items = gridRef.current.querySelectorAll('.collection-item');
+      items.forEach((item) => observer.observe(item));
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const cleanup = observeItems();
+    return cleanup;
+  }, [collections, observeItems]);
+
   if (layout === 'table') {
     return (
       <div className="overflow-hidden rounded-xl border border-primary-200 bg-white/80 backdrop-blur-sm dark:border-primary-700 dark:bg-primary-800/80">
@@ -48,51 +61,45 @@ export function CollectionGrid({ collections, layout }: CollectionGridProps) {
               </th>
             </tr>
           </thead>
-          <tbody>
-            <AnimatePresence>
-              {collections.map((collection) => (
-                <motion.tr
-                  key={collection.handle}
-                  variants={item}
-                  initial="hidden"
-                  animate="show"
-                  exit="hidden"
-                  className="border-b border-primary-200 last:border-0 dark:border-primary-700"
-                >
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      {collection.image && (
-                        <div className="h-10 w-10 overflow-hidden rounded-lg">
-                          <img
-                            src={collection.image.url}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                      )}
-                      <span className="font-medium text-primary-900 dark:text-primary-50">
-                        {collection.title}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-4 text-primary-600 dark:text-primary-300">
-                    {/* Add item count if available */}
-                    --
-                  </td>
-                  <td className="p-4 text-primary-600 dark:text-primary-300">
-                    <ClientOnlyDate date={collection.updatedAt} />
-                  </td>
-                  <td className="p-4 text-right">
-                    <Link
-                      href={`/collections/${collection.handle}`}
-                      className="text-sm font-medium text-accent-500 hover:text-accent-600"
-                    >
-                      View Collection →
-                    </Link>
-                  </td>
-                </motion.tr>
-              ))}
-            </AnimatePresence>
+          <tbody ref={gridRef}>
+            {collections.map((collection) => (
+              <tr
+                key={collection.handle}
+                className="collection-item border-b border-primary-200 last:border-0 dark:border-primary-700 opacity-0 transition-opacity duration-300"
+              >
+                <td className="p-4">
+                  <div className="flex items-center gap-3">
+                    {collection.image && (
+                      <div className="h-10 w-10 overflow-hidden rounded-lg">
+                        <img
+                          src={collection.image.url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+                    <span className="font-medium text-primary-900 dark:text-primary-50">
+                      {collection.title}
+                    </span>
+                  </div>
+                </td>
+                <td className="p-4 text-primary-600 dark:text-primary-300">
+                  --
+                </td>
+                <td className="p-4 text-primary-600 dark:text-primary-300">
+                  <ClientOnlyDate date={collection.updatedAt} />
+                </td>
+                <td className="p-4 text-right">
+                  <Link
+                    href={`/collections/${collection.handle}`}
+                    className="text-sm font-medium text-accent-500 hover:text-accent-600"
+                  >
+                    View Collection →
+                  </Link>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -100,25 +107,20 @@ export function CollectionGrid({ collections, layout }: CollectionGridProps) {
   }
 
   return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className={layout === 'grid' ? 'grid gap-8 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-6'}
+    <div
+      ref={gridRef}
+      className={`${
+        layout === 'grid' ? 'grid gap-8 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-6'
+      }`}
     >
-      <AnimatePresence>
-        {collections.map((collection) => (
-          <motion.div
-            key={collection.handle}
-            variants={item}
-            initial="hidden"
-            animate="show"
-            exit="hidden"
-          >
-            <CollectionCard collection={collection} layout={layout} />
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </motion.div>
+      {collections.map((collection) => (
+        <div
+          key={collection.handle}
+          className="collection-item opacity-0 transition-opacity duration-300"
+        >
+          <CollectionCard collection={collection} layout={layout} />
+        </div>
+      ))}
+    </div>
   );
 }

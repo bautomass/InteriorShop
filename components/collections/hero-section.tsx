@@ -1,9 +1,17 @@
 // components/collections/hero-section.tsx
 'use client';
 
-import { motion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 
 export function CollectionsHero() {
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const descRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (titleRef.current) titleRef.current.style.opacity = '1';
+    if (descRef.current) descRef.current.style.opacity = '1';
+  }, []);
+
   return (
     <div className="mb-8 relative w-full min-h-[300px] lg:flex lg:items-center lg:justify-between lg:gap-12">
       <div className="absolute inset-0 w-full h-full">
@@ -27,27 +35,23 @@ export function CollectionsHero() {
       </div>
 
       <div className="lg:text-left text-center lg:w-1/2">
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-6 text-4xl font-bold tracking-tight text-primary-900 dark:text-primary-50 sm:text-5xl lg:text-6xl"
+        <h1
+          ref={titleRef}
+          className="mb-6 text-4xl font-bold tracking-tight text-primary-900 dark:text-primary-50 sm:text-5xl lg:text-6xl transition-opacity duration-500 opacity-0"
         >
           Quality Furniture
           <br />
           for Modern Spaces
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="max-w-2xl text-lg text-primary-700 dark:text-primary-200 lg:pr-8"
+        <p
+          ref={descRef}
+          className="max-w-2xl text-lg text-primary-700 dark:text-primary-200 lg:pr-8 transition-opacity duration-500 delay-100 opacity-0"
         >
           Elevate your space with our premium furniture selection. 
           We combine contemporary design with exceptional craftsmanship 
           to create lasting pieces for your home.
-        </motion.p>
+        </p>
       </div>
     </div>
   );

@@ -1,9 +1,10 @@
 // components/collections/search-bar.tsx
 'use client';
 
+import debounce from 'lodash/debounce';
 import { Search, X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useCallback, useEffect, useState, useTransition } from 'react';
 import { FilterMenu } from './filter-menu';
 import { LayoutSwitch } from './layout-switch';
 
@@ -14,18 +15,32 @@ export function SearchBar() {
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [isPending, startTransition] = useTransition();
 
+  const updateSearch = useCallback(
+    debounce((term: string) => {
+      startTransition(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (term) {
+          params.set('q', term);
+        } else {
+          params.delete('q');
+        }
+        router.push(`${pathname}?${params.toString()}`);
+      });
+    }, 300),
+    [pathname, router, searchParams]
+  );
+
   const handleSearch = (term: string) => {
     setQuery(term);
-    startTransition(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (term) {
-        params.set('q', term);
-      } else {
-        params.delete('q');
-      }
-      router.push(`${pathname}?${params.toString()}`);
-    });
+    updateSearch(term);
   };
+
+  // Cleanup function for the debounced search
+  useEffect(() => {
+    return () => {
+      updateSearch.cancel();
+    };
+  }, [updateSearch]);
 
   return (
     <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
