@@ -17,6 +17,7 @@ import WishboneChairSection from 'components/home/WishboneChairSection';
 import LargeScreenNavBar from 'components/layout/navbar/LargeScreenNavBar';
 import type { Metadata } from 'next';
 import BlogSection from '@/components/home/BlogSection';
+import InstagramBanner from '@/components/home/InstagramBanner';
 export const metadata: Metadata = {
   title: 'Modern Interior Design & Home Decor',
   description:
@@ -56,6 +57,7 @@ export default function HomePage() {
         <CeramicVaseSection />
         <WishboneChairSection/>
         <InteriorTipsSection/>
+        <InstagramBanner/>
         <Footer/>
         <BackToTop />
       </div>

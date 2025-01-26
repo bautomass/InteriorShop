@@ -34,7 +34,7 @@ export function CollectionsHero() {
         />
       </div>
 
-      <div className="lg:text-left text-center lg:w-1/2">
+      <div className="lg:text-left text-center lg:w-1/2 px-4">
         <h1
           ref={titleRef}
           className="mb-6 text-4xl font-bold tracking-tight text-primary-900 dark:text-primary-50 sm:text-5xl lg:text-6xl transition-opacity duration-500 opacity-0"
