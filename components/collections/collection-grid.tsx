@@ -1,3 +1,5 @@
+// components/collections/collection-grid.tsx
+'use client';
 import { ClientOnlyDate } from '@/components/ui/client-only-date';
 import { Collection } from '@/lib/shopify/types';
 import Link from 'next/link';
