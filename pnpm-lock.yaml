@@ -84,6 +84,9 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+      lucide:
+        specifier: ^0.474.0
+        version: 0.474.0
       lucide-react:
         specifier: ^0.263.1
         version: 0.263.1(react@18.2.0)
@@ -1172,6 +1175,9 @@ packages:
     resolution: {integrity: sha512-keqxAx97PlaEN89PXZ6ki1N8nRjGWtDa4021GFYLNj0RgruM5odbpl8GHTExj0hhPq3sF6Up0gnxt6TSHu+ovw==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0
+
+  lucide@0.474.0:
+    resolution: {integrity: sha512-2rfORNh9fzhCUKu0ciE48ogR1Zg7hleABLO5MBF06vOb4esTtE8FbfQJiC+wveiNFoeojWKz6zXheUToRR5uIg==}
 
   media-engine@1.0.3:
     resolution: {integrity: sha512-aa5tG6sDoK+k70B9iEX1NeyfT8ObCKhNDs6lJVpwF6r8vhUfuKMslIcirq6HIUYuuUYLefcEQOn9bSBOvawtwg==}
@@ -2776,6 +2782,8 @@ snapshots:
   lucide-react@0.263.1(react@18.2.0):
     dependencies:
       react: 18.2.0
+
+  lucide@0.474.0: {}
 
   media-engine@1.0.3: {}
 

@@ -1152,3 +1152,4 @@ const getIcon = (handle: string) => {
 };
 
 export default DesktopHeader;
+
