@@ -3,7 +3,6 @@ import AboutHero from '@/components/home/about-hero';
 import AnturamStoolsCollection from '@/components/home/AnturamStoolsCollection';
 import CanvasCollection from '@/components/home/CanvasCollection';
 import CeramicVaseSection from '@/components/home/CeramicVaseSection';
-// import { GiftBuilderSection } from '@/components/home/gift-builder-section';
 import InfiniteProductBanner from '@/components/home/InfiniteProductBanner';
 import InteriorTipsSection from '@/components/home/InteriorTipsSection';
 import MaterialsStorySection from '@/components/home/MaterialsStorySection';
@@ -49,7 +48,6 @@ export default function HomePage() {
         <InfiniteProductBanner/>
         <LampsCollection />
         <MaterialsStorySection />
-        {/* <GiftBuilderSection /> */}
         <NewArrivalsCollection />
         <AnturamStoolsCollection />
         <CanvasCollection />
