@@ -1,9 +1,10 @@
 // /components/shared/UniversalProductCard.tsx
 "use client"
 import { cn } from '@/lib/utils';
+import { useCurrency } from '@/providers/CurrencyProvider';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 
 // Generic product type that can be extended
 export interface BaseProduct {
@@ -135,33 +136,6 @@ const ImageGallery = memo(({ product }: { product: BaseProduct }) => {
 
 ImageGallery.displayName = 'ImageGallery'
 
-const determineProductCategory = (product: BaseProduct): string => {
-  const title = product.title?.toLowerCase() || ''
-  const type = product.productType?.toLowerCase() || ''
-  const tags = Array.isArray(product.tags) 
-    ? product.tags.map(tag => tag.toLowerCase()) 
-    : []
-  const description = product.description?.toLowerCase() || ''
-
-  const searchText = `${title} ${type} ${tags.join(' ')} ${description}`
-
-  const patterns = {
-    'Chandelier': ['chandelier', 'hanging light', 'pendant light', 'ceiling light'],
-    'Wall Lamp': ['wall lamp', 'sconce', 'wall light', 'wall mount'],
-    'Floor Lamp': ['floor lamp', 'standing lamp', 'floor light', 'standing light'],
-    'Table Lamp': ['table lamp', 'desk lamp', 'bedside lamp', 'desk light'],
-    'Pendant Light': ['pendant', 'hanging lamp', 'suspended', 'drop light']
-  }
-
-  for (const [category, keywords] of Object.entries(patterns)) {
-    if (keywords.some(keyword => searchText.includes(keyword))) {
-      return category
-    }
-  }
-
-  return 'Lamp'
-}
-
 export interface UniversalProductCardProps {
   product: BaseProduct;
   onQuickView?: (e: React.MouseEvent) => void;
@@ -185,6 +159,7 @@ export const UniversalProductCard = memo(({
   hideAddToCart = false,
   renderCustomActions
 }: UniversalProductCardProps) => {
+  const { formatPrice } = useCurrency();
   const handleQuickView = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -196,8 +171,6 @@ export const UniversalProductCard = memo(({
     e.stopPropagation()
     onAddToCart?.(e)
   }, [onAddToCart])
-
-  const category = useMemo(() => determineProductCategory(product), [product])
 
   const showDefaultActions = !hideAddToCart || !hideQuickView
   const customActions = renderCustomActions?.(product)
@@ -216,13 +189,6 @@ export const UniversalProductCard = memo(({
       <div className="relative">
         <ImageGallery product={product} />
         <div className="p-4">
-          <div className="inline-flex px-2 py-1 rounded-full 
-                        text-xs font-medium tracking-wide
-                        bg-primary-100/80 dark:bg-primary-700/80
-                        text-primary-800 dark:text-primary-100">
-            {category}
-          </div>
-
           <h3 className="font-semibold text-base tracking-tight mt-2 
                        text-primary-900 dark:text-primary-100 
                        line-clamp-1">
@@ -248,14 +214,14 @@ export const UniversalProductCard = memo(({
                 </motion.div>
               )}
               <p className="text-lg font-bold tracking-tight text-accent-500 dark:text-accent-400">
-                ${parseFloat(product.priceRange.minVariantPrice.amount).toFixed(2)}
+                {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
               </p>
             </div>
             {product.compareAtPriceRange?.minVariantPrice && 
              parseFloat(product.compareAtPriceRange.minVariantPrice.amount) > parseFloat(product.priceRange.minVariantPrice.amount) && (
               <>
                 <span className="text-sm text-[#8C7E6A] line-through decoration-[#FF6B6B]/40">
-                  ${parseFloat(product.compareAtPriceRange.minVariantPrice.amount).toFixed(2)}
+                  {formatPrice(parseFloat(product.compareAtPriceRange.minVariantPrice.amount))}
                 </span>
                 <span className="text-xs text-[#FF6B6B] font-medium px-2 py-0.5 
                                bg-[#FF6B6B]/10 rounded-full">

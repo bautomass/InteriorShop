@@ -767,12 +767,7 @@ export const DesktopHeader = () => {
             {/* Navigation Menu Content */}
             <AnimatePresence>
               {isNavOpen && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="flex-1 overflow-hidden border-t border-neutral-200"
-                >
+                <div className="flex-1 overflow-hidden border-t border-neutral-200">
                   <div className="container mx-auto py-8 px-4">
                     <div className="flex">
                       {/* Left side - Collections Grid */}
@@ -914,7 +909,7 @@ export const DesktopHeader = () => {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
             </AnimatePresence>
 

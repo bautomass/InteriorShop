@@ -45,7 +45,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-4',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/hero-banner-slide_3.1.webp?v=1737819187',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-Banner-Slide-3.webp?v=1737888964',
     alt: 'Minimalist Living',
   }
 ];
@@ -317,10 +317,10 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                                             animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
                               
                               {/* Main dot */}
-                              <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] border-2 border-[#9c826b]
-                                            shadow-[0_0_10px_rgba(199,186,168,0.8)]
-                                            transition-all duration-500 ease-in-out
-                                            group-hover:scale-125" />
+                              <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] 
+                                    shadow-[0_0_10px_rgba(199,186,168,0.8)]
+                                    transition-all duration-500 ease-in-out
+                                    group-hover:scale-125" />
 
                               {/* Simplified hover button */}
                               <div className="absolute left-6 opacity-0 group-hover:opacity-100 
@@ -367,10 +367,10 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                                         animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
                           
                           {/* Main dot */}
-                          <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] border-2 border-[#9c826b]
-                                        shadow-[0_0_10px_rgba(199,186,168,0.8)]
-                                        transition-all duration-500 ease-in-out
-                                        group-hover:scale-125" />
+                          <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] 
+                                    shadow-[0_0_10px_rgba(199,186,168,0.8)]
+                                    transition-all duration-500 ease-in-out
+                                    group-hover:scale-125" />
 
                           {/* Hover button */}
                           <div className="absolute left-6 opacity-0 group-hover:opacity-100 
@@ -402,10 +402,10 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                                         animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
                           
                           {/* Main dot */}
-                          <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] border-2 border-[#9c826b]
-                                        shadow-[0_0_10px_rgba(199,186,168,0.8)]
-                                        transition-all duration-500 ease-in-out
-                                        group-hover:scale-125" />
+                          <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] 
+                                    shadow-[0_0_10px_rgba(199,186,168,0.8)]
+                                    transition-all duration-500 ease-in-out
+                                    group-hover:scale-125" />
 
                           {/* Hover button */}
                           <div className="absolute left-6 opacity-0 group-hover:opacity-100 
@@ -431,7 +431,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="absolute right-32 top-[35%] transform -translate-y-1/2 z-20 max-w-2xl"
+                        className="absolute right-32 top-[43%] transform -translate-y-1/2 z-20 max-w-2xl"
                       >
                         <motion.span
                           initial={{ opacity: 0, x: -20 }}
@@ -439,7 +439,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
                           className="inline-block text-white/90 font-medium tracking-[0.2em] uppercase text-sm mb-4"
                         >
-                          A Masterpiece Collection
+                          The Art of Living
                         </motion.span>
 
                         <motion.h2
@@ -448,9 +448,9 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
                           className="text-[5.5rem] font-thin text-white leading-none mb-6"
                         >
-                          Signature
+                          Crafted for
                           <span className="block font-light text-[3.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
-                            Lighting Icons
+                            Timeless Living
                           </span>
                         </motion.h2>
 
@@ -460,7 +460,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }}
                           className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide mb-8"
                         >
-                          Elevate your space with our most cherished designs. Each piece tells a story of timeless elegance.
+                          Where comfort meets sophistication. Each piece in our furniture collection is curated to transform your space into a sanctuary of modern elegance.
                         </motion.p>
 
                         <motion.div
@@ -471,13 +471,13 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           className="group inline-flex items-center"
                         >
                           <Link 
-                            href="/collections/best-sellers"
+                            href="/collections/organic-decoration"
                             className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
                                      shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
                                      transition-all duration-500 px-4 py-4 relative"
                           >
                             <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap">
-                              View The Collection
+                              Discover the Collection
                             </span>
                             <motion.div 
                               className="flex items-center"
@@ -623,7 +623,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             className="absolute bottom-2 left-2 z-20 p-1 bg-black/60 rounded-full group"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
+                            aria-label={isPaused ? "Play" : "Pause"}
                           >
                             {isPaused ? (
                               <Play className="h-2.5 w-2.5 text-white" />

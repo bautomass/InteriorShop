@@ -842,3 +842,4 @@ CollectionCard.displayName = 'CollectionCard';
 ViewAllCard.displayName = 'ViewAllCard';
 
 export default AboutHero;
+
