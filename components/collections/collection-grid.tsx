@@ -1,6 +1,3 @@
-// components/collections/collection-grid.tsx
-'use client';
-
 import { ClientOnlyDate } from '@/components/ui/client-only-date';
 import { Collection } from '@/lib/shopify/types';
 import Link from 'next/link';
@@ -14,6 +11,7 @@ interface CollectionGridProps {
 
 export function CollectionGrid({ collections, layout }: CollectionGridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLTableSectionElement>(null);
 
   const observeItems = useCallback(() => {
     const observer = new IntersectionObserver(
@@ -28,13 +26,14 @@ export function CollectionGrid({ collections, layout }: CollectionGridProps) {
       { threshold: 0.1 }
     );
 
-    if (gridRef.current) {
-      const items = gridRef.current.querySelectorAll('.collection-item');
+    const currentRef = layout === 'table' ? tableRef.current : gridRef.current;
+    if (currentRef) {
+      const items = currentRef.querySelectorAll('.collection-item');
       items.forEach((item) => observer.observe(item));
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [layout]);
 
   useEffect(() => {
     const cleanup = observeItems();
@@ -61,7 +60,7 @@ export function CollectionGrid({ collections, layout }: CollectionGridProps) {
               </th>
             </tr>
           </thead>
-          <tbody ref={gridRef}>
+          <tbody ref={tableRef}>
             {collections.map((collection) => (
               <tr
                 key={collection.handle}
