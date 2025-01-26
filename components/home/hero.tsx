@@ -39,12 +39,12 @@ const heroSlides: SlideContent[] = [
     productLink: '/product/sleek-curve-japandi-glow-minimalist-pendant-light',
   },
   {
-    id: 'slide-3',
+    id: 'slide-2',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-Banner-Slide_2.webp?v=1737230223',
     alt: 'Architectural Beauty',
   },
   {
-    id: 'slide-4',
+    id: 'slide-3',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/image-slide-banner.webp?v=1737894828',
     alt: 'Minimalist Living',
   }
@@ -496,6 +496,59 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       </motion.div>
                     )}
                     {/* End of Heading and Buttons for the second slide */}
+
+                    {/* Content for the third slide */}
+                    {currentSlide === 2 && (
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="absolute left-1/2 top-1/4 transform -translate-x-1/2 -translate-y-1/2 z-20 max-w-3xl text-center"
+                      >
+                        <motion.h2
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
+                          className="text-[5.5rem] font-thin text-white leading-none mb-8"
+                        >
+                          Handcrafted
+                          <span className="block font-light text-[4.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
+                            Wooden Stools
+                          </span>
+                        </motion.h2>
+
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.9, duration: 0.5 }}
+                          whileHover={{ scale: 1.02 }}
+                          className="group inline-flex items-center"
+                        >
+                          <Link 
+                            href="/collections/wooden-stools"
+                            className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
+                                     shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
+                                     transition-all duration-500 px-6 py-4 relative"
+                          >
+                            <span className="text-base font-medium text-[#9c826b] whitespace-nowrap">
+                              Shop Collection
+                            </span>
+                            <motion.div 
+                              className="flex items-center"
+                              initial={{ x: 0 }}
+                              animate={{ x: [0, 5, 0] }}
+                              transition={{ 
+                                repeat: Infinity, 
+                                duration: 1.5,
+                                ease: "easeInOut"
+                              }}
+                            >
+                              <ChevronRight className="w-5 h-5 text-[#9c826b]" />
+                            </motion.div>
+                          </Link>
+                        </motion.div>
+                      </motion.div>
+                    )}
+                    {/* End of Content for the third slide */}
                   </div>
                 ))}
               </div>
