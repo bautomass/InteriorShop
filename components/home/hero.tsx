@@ -45,7 +45,7 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-4',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-Banner-Slide-3.webp?v=1737888964',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/image-slide-banner.webp?v=1737894828',
     alt: 'Minimalist Living',
   }
 ];
@@ -270,7 +270,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       }"
                       sizes="(min-width: 1536px) 1536px, (min-width: 1280px) 1280px, (min-width: 1024px) 1024px, 100vw"
                       style={{
-                        objectPosition: 'center'
+                        objectPosition: index === 2 ? 'center -150px' : 'center'
                       }}
                       onLoad={() => {
                         setLoadedImages(prev => new Set(prev).add(slide.image));
