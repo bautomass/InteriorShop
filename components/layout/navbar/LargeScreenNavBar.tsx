@@ -769,9 +769,9 @@ export const DesktopHeader = () => {
               {isNavOpen && (
                 <div className="flex-1 overflow-hidden border-t border-neutral-200">
                   <div className="container mx-auto py-8 px-4">
-                    <div className="flex">
+                    <div className="flex justify-between">
                       {/* Left side - Collections Grid */}
-                      <div className="w-[400px]">
+                      <div className="w-[400px] flex-shrink-0">
                         <h2 className="text-base font-medium text-neutral-900 mb-4">Our Collections</h2>
                         <div className="grid grid-cols-2 gap-x-8 gap-y-1">
                           {collections.map((collection) => (
@@ -785,58 +785,59 @@ export const DesktopHeader = () => {
                       </div>
 
                       {/* Center - Special Products */}
-                      <div className="w-[500px] border-l border-r border-neutral-100 px-8 mx-8">
-                        <h2 className="text-base font-medium text-neutral-900 mb-4">Featured</h2>
-                        <div className="space-y-6">
-                          {/* New Arrivals Box */}
-                          <Link
-                            href="/collections/new-arrivals"
-                            onClick={() => setIsNavOpen(false)}
-                            className="block group relative overflow-hidden rounded-lg bg-neutral-50 aspect-[3/2]"
-                          >
-                            <Image
-                              src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/menu-image_2.png?v=1737235633"
-                              alt="New Arrivals"
-                              fill
-                              className="object-cover"
-                            />
-                            <div className="absolute inset-0 p-4 flex flex-col justify-end">
-                              <span className="px-2 py-1 bg-[#9e896c] text-white text-xs rounded-full w-fit mb-2">
-                                New In
-                              </span>
-                              <h3 className="text-base font-medium text-white">New Arrivals</h3>
-                              <p className="text-xs text-white/90 mt-1">Spring Collection 2024</p>
+                      <div className="flex-1 min-w-[500px] max-w-[800px] border-l border-r border-neutral-100 px-8 mx-8 relative">
+                        <div className="w-[500px] mx-auto">
+                          <div className="space-y-6">
+                            <div className="featured-container">
+                              <h2 className="text-lg text-neutral-900 mb-1">Featured</h2>
                             </div>
-                          </Link>
+                            {/* New Arrivals Box */}
+                            <Link
+                              href="/collections/new-arrivals"
+                              onClick={() => setIsNavOpen(false)}
+                              className="block group relative overflow-hidden rounded-lg bg-neutral-50 aspect-[3/2]"
+                            >
+                              <Image
+                                src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/menu-image-2.jpg?v=1737895114"
+                                alt="New Arrivals"
+                                fill
+                                className="object-cover"
+                              />
+                              <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col justify-end bg-gradient-to-t from-black/70 to-transparent h-32">
+                                <span className="px-2 py-1 bg-[#9e896c] text-white text-xs rounded-full w-fit mb-2">
+                                  New In
+                                </span>
+                                <h3 className="text-base font-medium text-white">New Arrivals</h3>
+                                <p className="text-xs text-white/90 mt-1">Spring Collection 2024</p>
+                              </div>
+                            </Link>
 
-                          {/* Sale Box */}
-                          <Link
-                            href="/collections/sale"
-                            onClick={() => setIsNavOpen(false)}
-                            className="block group relative overflow-hidden rounded-lg bg-neutral-50 aspect-[3/2]"
-                          >
-                            <Image
-                              src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/menu-image_1.png?v=1737235633"
-                              alt="Special Offers"
-                              fill
-                              className="object-cover"
-                            />
-                            <div className="absolute inset-0 p-4 flex flex-col justify-end">
-                              <span className="px-2 py-1 bg-red-500 text-white text-xs rounded-full w-fit mb-2">
-                                Sale
-                              </span>
-                              <h3 className="text-base font-medium text-white">Special Offers</h3>
-                              <p className="text-xs text-white/90 mt-1">Up to 50% off</p>
-                            </div>
-                          </Link>
+                            {/* Sale Box */}
+                            <Link
+                              href="/collections/sale"
+                              onClick={() => setIsNavOpen(false)}
+                              className="block group relative overflow-hidden rounded-lg bg-neutral-50 aspect-[3/2]"
+                            >
+                              <Image
+                                src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/menu-image.jpg?v=1737895114"
+                                alt="Special Offers"
+                                fill
+                                className="object-cover"
+                              />
+                              <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col justify-end bg-gradient-to-t from-black/70 to-transparent h-32">
+                                <span className="px-2 py-1 bg-red-500 text-white text-xs rounded-full w-fit mb-2">
+                                  Sale
+                                </span>
+                                <h3 className="text-base font-medium text-white">Special Offers</h3>
+                                <p className="text-xs text-white/90 mt-1">Up to 50% off</p>
+                              </div>
+                            </Link>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Spacer to push sidebar to the right */}
-                      <div className="flex-1" />
-
                       {/* Right Sidebar */}
-                      <div className="w-[280px]">
+                      <div className="w-[280px] flex-shrink-0">
                         <div className="space-y-4">
                           {/* Shop Section */}
                           <div>
