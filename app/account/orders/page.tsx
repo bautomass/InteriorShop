@@ -10,6 +10,7 @@ import { Package, Search } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 
 export default function OrdersPage() {
   const { user } = useAuth();
@@ -126,6 +127,7 @@ export default function OrdersPage() {
 
   return (
     <div className="p-6">
+      <LargeScreenNavBar />
       {/* Header */}
       <div className="flex justify-between items-start mb-8">
         <div>

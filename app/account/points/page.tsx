@@ -10,7 +10,7 @@ import { LoyaltyInfo } from '@/types/account';
 import { motion } from 'framer-motion';
 import { Award, CircleDollarSign, Gift, Star } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-
+import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 export default function PointsPage() {
   const { user } = useAuth();
   const { formatPrice } = useCurrency();
@@ -82,6 +82,8 @@ export default function PointsPage() {
 
   return (
     <div className="p-6">
+      <LargeScreenNavBar />
+
       {/* Header & Points Overview */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-900">Loyalty Program</h1>

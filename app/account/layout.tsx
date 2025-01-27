@@ -49,7 +49,7 @@ export default function AccountLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-neutral-50 mt-16">
       <div className="container mx-auto py-8 px-4">
         <div className="flex gap-8">
           {/* Sidebar Navigation */}

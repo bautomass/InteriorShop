@@ -153,11 +153,10 @@ export default function AccountPage() {
   }
 
   return (
-
     <div className="p-6">
       <LargeScreenNavBar />
       {/* Welcome Section */}
-      <div className="flex justify-between items-start mb-8 mt-10">
+      <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">
             Welcome back, {user?.firstName || 'Valued Customer'}
