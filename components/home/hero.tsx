@@ -499,63 +499,115 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
                     {/* Content for the third slide */}
                     {currentSlide === 2 && (
-                      <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="absolute right-52 top-[5%] z-20 max-w-2xl"
-                      >
-                        <motion.h2
-                          initial={{ opacity: 0, y: 30 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
-                          className="text-[3.5rem] font-thin text-white leading-none mb-8"
+                      <>
+                        {/* Text content - keeping exact same position */}
+                        <motion.div 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="absolute right-52 top-[10%] z-20 max-w-2xl"
                         >
-                          Handcrafted
-                          <span className="block font-light text-[2.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
-                            Living Pieces
-                          </span>
-                        </motion.h2>
-
-                        <motion.p
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }}
-                          className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide mb-8"
-                        >
-                          Crafted from solid wood by skilled artisans, bringing timeless beauty to your daily moments.
-                        </motion.p>
-
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.9, duration: 0.5 }}
-                          whileHover={{ scale: 1.02 }}
-                          className="group inline-flex items-center"
-                        >
-                          <Link 
-                            href="/collections/wooden-stools"
-                            className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
-                                    shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
-                                    transition-all duration-500 px-4 py-4 relative"
+                          <motion.span
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
+                          className="inline-block text-white/90 font-medium tracking-[0.2em] uppercase text-sm mb-4"
                           >
-                            <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap">
-                              Meet Our Crafts
+                          Art & Nature
+                          </motion.span>
+
+                          <motion.h2
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
+                            className="text-[3.5rem] font-thin text-white leading-none mb-8"
+                          >
+                            Mindfully Made
+                            <span className="block font-light text-[2.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
+                              Living Pieces
                             </span>
-                            <motion.div 
-                              className="flex items-center"
-                              initial={{ x: 0 }}
-                              animate={{ x: [0, 5, 0] }}
-                              transition={{ 
-                                repeat: Infinity, 
-                                duration: 1.5,
-                                ease: "easeInOut"
-                              }}
-                            >
-                              <ChevronRight className="w-5 h-5 text-[#9c826b]" />
-                            </motion.div>
-                          </Link>
+                          </motion.h2>
+
+                          <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }}
+                            className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide"
+                          >
+                            Each piece is handcrafted from nature's materials, creating healthier, more beautiful spaces.
+                          </motion.p>
                         </motion.div>
-                      </motion.div>
+
+                        {/* Buttons positioned at bottom left */}
+                        <motion.div 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="absolute left-14 bottom-24 z-20 flex flex-row gap-4"
+                        >
+                          {/* First Button */}
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 1.1, duration: 0.5 }}
+                            whileHover={{ scale: 1.02 }}
+                            className="group inline-flex items-center"
+                          >
+                            <Link 
+                              href="/collections/anturam-eco-wooden-stools"
+                              className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
+                                      shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
+                                      transition-all duration-500 px-4 py-4 relative"
+                            >
+                              <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap">
+                              View Wood Collection
+                              </span>
+                              <motion.div 
+                                className="flex items-center"
+                                initial={{ x: 0 }}
+                                animate={{ x: [0, 5, 0] }}
+                                transition={{ 
+                                  repeat: Infinity, 
+                                  duration: 1.5,
+                                  ease: "easeInOut"
+                                }}
+                              >
+                                <ChevronRight className="w-5 h-5 text-[#9c826b]" />
+                              </motion.div>
+                            </Link>
+                          </motion.div>
+
+                          {/* Second Button */}
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 1.3, duration: 0.5 }}
+                            whileHover={{ scale: 1.02 }}
+                            className="group inline-flex items-center"
+                          >
+                            <Link 
+                              href="/collections/ceramic-vases"
+                              className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
+                                      shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
+                                      transition-all duration-500 px-4 py-4 relative"
+                            >
+                              <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap">
+                              Shop Ceramics
+                              </span>
+                              <motion.div 
+                                className="flex items-center"
+                                initial={{ x: 0 }}
+                                animate={{ x: [0, 5, 0] }}
+                                transition={{ 
+                                  repeat: Infinity, 
+                                  duration: 1.5,
+                                  ease: "easeInOut"
+                                }}
+                              >
+                                <ChevronRight className="w-5 h-5 text-[#9c826b]" />
+                              </motion.div>
+                            </Link>
+                          </motion.div>
+                        </motion.div>
+                      </>
                     )}
                     {/* End of Content for the third slide */}
                   </div>
