@@ -6,7 +6,7 @@ export interface TierConfig {
   required: number;
   multiplier: number;
   color: string;
-  benefits: string[];
+  benefits: readonly string[];
 }
 
 export interface PointsRule {

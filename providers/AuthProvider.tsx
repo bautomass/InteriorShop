@@ -1,6 +1,7 @@
 'use client';
 
 import { shopifyFetch } from '@/lib/shopify/client/customerAuth';
+import { initializeCustomerLoyalty } from '@/lib/shopify/loyalty/ initializeLoyalty';
 import {
   customerAccessTokenCreateMutation,
   customerAccessTokenDeleteMutation,
@@ -100,6 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       localStorage.setItem(TOKEN_KEY, customerAccessToken.accessToken);
       await fetchCustomer(customerAccessToken.accessToken);
+      return customerAccessToken;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in');
       throw err;
@@ -140,7 +142,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // After creating account, sign in to get access token
-      await signIn(email, password);
+      const customerAccessToken = await signIn(email, password);
+      await initializeCustomerLoyalty(customerAccessToken);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account');
       throw err;

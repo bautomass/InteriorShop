@@ -2,6 +2,7 @@
 
 import { LOYALTY_CONFIG } from '@/lib/constants/loyalty';
 import { shopifyFetch } from '@/lib/shopify/client/customerAuth';
+import { redeemPoints } from '@/lib/shopify/loyalty/handleRedemption';
 import { formatDate } from '@/lib/utils';
 import { useAuth } from '@/providers/AuthProvider';
 import { useCurrency } from '@/providers/CurrencyProvider';
@@ -141,12 +142,16 @@ export default function PointsPage() {
 }
 
 function RewardsTab({ points }: { points: number }) {
-  const handleRedeemReward = async (rewardPoints: number) => {
+  const handleRedeemReward = async (rewardPoints: number, reward: { id: string; description: string }) => {
     if (points < rewardPoints) return;
     
     try {
-      // Implement reward redemption logic here
-      // This would typically involve a Shopify checkout with a discount
+      await redeemPoints({
+        customerAccessToken: localStorage.getItem('shopifyCustomerAccessToken') || '',
+        rewardId: parseInt(reward.id),
+        points: rewardPoints,
+        description: reward.description
+      });
       console.log('Redeeming reward:', rewardPoints);
     } catch (error) {
       console.error('Error redeeming reward:', error);
@@ -177,7 +182,7 @@ function RewardsTab({ points }: { points: number }) {
               </p>
             </div>
             <button
-              onClick={() => handleRedeemReward(reward.points)}
+              onClick={() => handleRedeemReward(reward.points, reward)}
               disabled={points < reward.points}
               className={`px-4 py-2 rounded-lg text-sm font-medium
                         ${points >= reward.points
