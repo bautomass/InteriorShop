@@ -1,6 +1,7 @@
 // app/account/page.tsx
 'use client';
 
+import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { shopifyFetch } from '@/lib/shopify/client/customerAuth';
 import { formatDate } from '@/lib/utils';
 import { useAuth } from '@/providers/AuthProvider';
@@ -152,7 +153,9 @@ export default function AccountPage() {
   }
 
   return (
+
     <div className="p-6">
+      <LargeScreenNavBar />
       {/* Welcome Section */}
       <div className="flex justify-between items-start mb-8">
         <div>
