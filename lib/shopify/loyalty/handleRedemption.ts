@@ -3,9 +3,9 @@
 import { LOYALTY_CONFIG } from '@/lib/constants/loyalty';
 import { getLoyaltyInfo, updateLoyaltyMetafields } from './loyaltyUtils';
 
-interface RedeemPointsParams {
+export interface RedeemPointsParams {
   customerAccessToken: string;
-  rewardId: number;
+  rewardId: string;
   points: number;
   description: string;
 }
@@ -26,7 +26,7 @@ export async function redeemPoints({
     }
     
     // Find reward
-    const reward = LOYALTY_CONFIG.rewards.find(r => r.points === points);
+    const reward = LOYALTY_CONFIG.rewards.find(r => r.id === rewardId);
     if (!reward) {
       throw new Error('Invalid reward selected');
     }
@@ -39,7 +39,7 @@ export async function redeemPoints({
       {
         id: Date.now().toString(),
         type: 'redeemed',
-        points: -points,
+        points: points,
         description: description || `Redeemed ${reward.description}`,
         date: new Date().toISOString()
       },

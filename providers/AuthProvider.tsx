@@ -1,7 +1,9 @@
+// providers/AuthProvider.tsx
+
 'use client';
 
 import { shopifyFetch } from '@/lib/shopify/client/customerAuth';
-import { initializeCustomerLoyalty } from '@/lib/shopify/loyalty/ initializeLoyalty';
+import { initializeCustomerLoyalty } from '@/lib/shopify/loyalty/initializeLoyalty';
 import {
   customerAccessTokenCreateMutation,
   customerAccessTokenDeleteMutation,
@@ -50,7 +52,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (body.data?.customer) {
-        setUser(body.data.customer);
+        const metafields = (body.data.customer.metafields || []).reduce(
+          (acc: any, field: any) => {
+            if (field && field.key) {
+              const keyWithoutPrefix = field.key.replace('custom.', '');
+              acc[keyWithoutPrefix] = field.value;
+            }
+            return acc;
+          },
+          {}
+        );
+
+        setUser({
+          ...body.data.customer,
+          metafields
+        });
       }
     } catch (err) {
       console.error('Failed to fetch customer:', err);
@@ -142,15 +158,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // After creating account, sign in to get access token
-      const customerAccessToken = await signIn(email, password);
-      await initializeCustomerLoyalty(customerAccessToken);
+      const { body: signInBody } = await shopifyFetch({
+        query: customerAccessTokenCreateMutation,
+        variables: {
+          input: { email, password }
+        },
+        cache: 'no-store'
+      });
+
+      const { customerAccessToken } = signInBody.data.customerAccessTokenCreate;
+
+      if (!customerAccessToken) {
+        throw new Error('Failed to create access token');
+      }
+
+      // Store the access token
+      localStorage.setItem(TOKEN_KEY, customerAccessToken.accessToken);
+
+      // Initialize loyalty program
+      await initializeCustomerLoyalty(customerAccessToken.accessToken);
+
+      // Fetch customer data
+      await fetchCustomer(customerAccessToken.accessToken);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [signIn]);
+  }, [fetchCustomer]);
 
   const signOut = useCallback(async () => {
     setLoading(true);

@@ -1,8 +1,10 @@
 'use client';
 
+import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { LOYALTY_CONFIG } from '@/lib/constants/loyalty';
 import { shopifyFetch } from '@/lib/shopify/client/customerAuth';
 import { redeemPoints } from '@/lib/shopify/loyalty/handleRedemption';
+import { getCustomerMetafieldsQuery } from '@/lib/shopify/loyalty/mutations';
 import { formatDate } from '@/lib/utils';
 import { useAuth } from '@/providers/AuthProvider';
 import { useCurrency } from '@/providers/CurrencyProvider';
@@ -10,7 +12,7 @@ import { LoyaltyInfo } from '@/types/account';
 import { motion } from 'framer-motion';
 import { Award, CircleDollarSign, Gift, Star } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
+
 export default function PointsPage() {
   const { user } = useAuth();
   const { formatPrice } = useCurrency();
@@ -24,28 +26,18 @@ export default function PointsPage() {
     try {
       setIsLoading(true);
       const { body } = await shopifyFetch({
-        query: `
-          query getCustomerLoyalty($customerAccessToken: String!) {
-            customer(customerAccessToken: $customerAccessToken) {
-              metafields(first: 10) {
-                edges {
-                  node {
-                    key
-                    value
-                  }
-                }
-              }
-            }
-          }
-        `,
+        query: getCustomerMetafieldsQuery,
         variables: {
           customerAccessToken: localStorage.getItem('shopifyCustomerAccessToken')
         }
       });
 
-      const metafields = body.data.customer.metafields.edges.reduce(
-        (acc: any, { node }: any) => {
-          acc[node.key] = node.value;
+      const metafields = (body.data.customer.metafields || []).reduce(
+        (acc: any, field: any) => {
+          if (field && field.key) {
+            const keyWithoutPrefix = field.key.replace('custom.', '');
+            acc[keyWithoutPrefix] = field.value;
+          }
           return acc;
         },
         {}
@@ -144,17 +136,17 @@ export default function PointsPage() {
 }
 
 function RewardsTab({ points }: { points: number }) {
-  const handleRedeemReward = async (rewardPoints: number, reward: { id: string; description: string }) => {
-    if (points < rewardPoints) return;
+  const handleRedeemReward = async (reward: typeof LOYALTY_CONFIG.rewards[number]) => {
+    if (points < reward.points) return;
     
     try {
       await redeemPoints({
         customerAccessToken: localStorage.getItem('shopifyCustomerAccessToken') || '',
-        rewardId: parseInt(reward.id),
-        points: rewardPoints,
+        rewardId: reward.id,
+        points: reward.points,
         description: reward.description
       });
-      console.log('Redeeming reward:', rewardPoints);
+      window.location.reload();
     } catch (error) {
       console.error('Error redeeming reward:', error);
     }
@@ -164,7 +156,7 @@ function RewardsTab({ points }: { points: number }) {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {LOYALTY_CONFIG.rewards.map((reward, index) => (
         <motion.div
-          key={index}
+          key={reward.id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
@@ -184,7 +176,7 @@ function RewardsTab({ points }: { points: number }) {
               </p>
             </div>
             <button
-              onClick={() => handleRedeemReward(reward.points, reward)}
+              onClick={() => handleRedeemReward(reward)}
               disabled={points < reward.points}
               className={`px-4 py-2 rounded-lg text-sm font-medium
                         ${points >= reward.points
