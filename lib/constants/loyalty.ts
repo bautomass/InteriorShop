@@ -1,0 +1,182 @@
+// lib/constants/loyalty.ts
+
+export const LOYALTY_CONFIG = {
+    points: {
+      perDollar: 1, // 1 point per $1 spent
+      minimumPurchase: 10 // Minimum $10 purchase to earn points
+    },
+    
+    bonuses: {
+      firstPurchase: 100,    // Welcome bonus
+      birthday: 200,         // Birthday bonus
+      reviewSubmission: 50,  // Points for product review
+      referral: 150,         // Points for referring a friend
+      socialShare: 25        // Points for social media share
+    },
+    
+    tiers: {
+      bronze: {
+        required: 0,
+        multiplier: 1,
+        color: '#CD7F32',
+        benefits: [
+          'Earn 1 point per $1 spent',
+          'Birthday bonus points',
+          'Access to member-only sales',
+          'Special seasonal offers'
+        ]
+      },
+      silver: {
+        required: 1000,
+        multiplier: 1.25,
+        color: '#C0C0C0',
+        benefits: [
+          'Earn 1.25 points per $1 spent',
+          'Free shipping on orders over $50',
+          'Early access to sales',
+          'Exclusive seasonal gifts',
+          'All Bronze benefits'
+        ]
+      },
+      gold: {
+        required: 5000,
+        multiplier: 1.5,
+        color: '#FFD700',
+        benefits: [
+          'Earn 1.5 points per $1 spent',
+          'Free shipping on all orders',
+          'Priority customer service',
+          'Double points days',
+          'Birthday double points',
+          'All Silver benefits'
+        ]
+      },
+      platinum: {
+        required: 10000,
+        multiplier: 2,
+        color: '#E5E4E2',
+        benefits: [
+          'Earn 2 points per $1 spent',
+          'VIP customer service',
+          'Exclusive early access to new collections',
+          'Annual loyalty gift',
+          'Private shopping events',
+          'Custom interior design consultation',
+          'All Gold benefits'
+        ]
+      }
+    },
+    
+    rewards: [
+      {
+        points: 500,
+        value: 5,
+        description: '$5 off your next purchase'
+      },
+      {
+        points: 1000,
+        value: 10,
+        description: '$10 off your next purchase'
+      },
+      {
+        points: 2000,
+        value: 25,
+        description: '$25 off your next purchase'
+      },
+      {
+        points: 3000,
+        value: 50,
+        description: '$50 off your next purchase'
+      },
+      {
+        points: 5000,
+        value: 100,
+        description: '$100 off your next purchase'
+      },
+      {
+        points: 1500,
+        value: 0,
+        description: 'Free shipping on your next order',
+        type: 'shipping'
+      },
+      {
+        points: 2500,
+        value: 0,
+        description: 'Early access to next sale',
+        type: 'access'
+      },
+      {
+        points: 7500,
+        value: 0,
+        description: 'Free interior design consultation',
+        type: 'service'
+      }
+    ],
+  
+    // Special event multipliers
+    events: {
+      blackFriday: 2,      // Double points during Black Friday
+      holidays: 1.5,       // 1.5x points during holiday season
+      memberDay: 3         // Triple points on member days
+    },
+  
+    // Point expiration
+    expiration: {
+      days: 365,           // Points expire after 1 year
+      minimumPoints: 100   // Minimum points before expiration applies
+    },
+  
+    // Referral program
+    referral: {
+      pointsForReferrer: 150,     // Points earned by the referrer
+      pointsForReferred: 100,     // Points earned by the referred friend
+      minimumPurchaseAmount: 50   // Minimum purchase amount for referral points
+    }
+  };
+  
+  // Helper functions for loyalty calculations
+  export const calculatePointsForPurchase = (
+    amount: number,
+    tier: keyof typeof LOYALTY_CONFIG.tiers,
+    isSpecialEvent?: boolean
+  ): number => {
+    const basePoints = Math.floor(amount) * LOYALTY_CONFIG.points.perDollar;
+    const tierMultiplier = LOYALTY_CONFIG.tiers[tier].multiplier;
+    const eventMultiplier = isSpecialEvent ? LOYALTY_CONFIG.events.memberDay : 1;
+    
+    return Math.floor(basePoints * tierMultiplier * eventMultiplier);
+  };
+  
+  export const getNextTier = (
+    currentTier: keyof typeof LOYALTY_CONFIG.tiers
+  ): keyof typeof LOYALTY_CONFIG.tiers | null => {
+    const tiers = Object.keys(LOYALTY_CONFIG.tiers) as Array<keyof typeof LOYALTY_CONFIG.tiers>;
+    const currentIndex = tiers.indexOf(currentTier);
+    
+    if (currentIndex === tiers.length - 1) return null;
+    return tiers[currentIndex + 1] as keyof typeof LOYALTY_CONFIG.tiers;
+  };
+  
+  export const getPointsToNextTier = (
+    currentPoints: number,
+    currentTier: keyof typeof LOYALTY_CONFIG.tiers
+  ): number => {
+    const nextTier = getNextTier(currentTier);
+    if (!nextTier) return 0;
+    
+    return Math.max(0, LOYALTY_CONFIG.tiers[nextTier].required - currentPoints);
+  };
+  
+  export const getTierProgress = (
+    points: number,
+    currentTier: keyof typeof LOYALTY_CONFIG.tiers
+  ): number => {
+    const nextTier = getNextTier(currentTier);
+    if (!nextTier) return 100;
+  
+    const currentTierPoints = LOYALTY_CONFIG.tiers[currentTier].required;
+    const nextTierPoints = LOYALTY_CONFIG.tiers[nextTier].required;
+    const progress = ((points - currentTierPoints) / (nextTierPoints - currentTierPoints)) * 100;
+    
+    return Math.min(Math.max(progress, 0), 100);
+  };
