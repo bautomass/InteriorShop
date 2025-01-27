@@ -684,7 +684,7 @@ export const DesktopHeader = () => {
                         </Link>
                         
                         <Link
-                          href="/orders"
+                          href="/account/orders"
                           className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
                           onClick={() => setIsAccountDropdownOpen(false)}
                         >
