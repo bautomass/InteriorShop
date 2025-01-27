@@ -2,6 +2,7 @@
 
 import { LOYALTY_CONFIG } from '@/lib/constants/loyalty';
 import { getCurrentTier, getLoyaltyInfo, updateLoyaltyMetafields } from './loyaltyUtils';
+import { updateTierStatus } from './updateTierStatus';
 
 interface CalculatePointsParams {
   orderAmount: number;
@@ -46,7 +47,8 @@ export async function calculateAndAwardPoints({
         type: 'earned',
         points: pointsEarned,
         description: `Points earned from purchase${isSpecialEvent ? ' (Special Event)' : ''}`,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        orderId: Date.now().toString()
       },
       ...loyaltyInfo.history
     ];
@@ -59,11 +61,16 @@ export async function calculateAndAwardPoints({
       history
     });
 
+    // Check and update tier status
+    const tierUpdateResult = await updateTierStatus(customerAccessToken, newPoints);
+
     return {
       pointsEarned,
       newTotalPoints: newPoints,
-      newTier,
-      previousTier: loyaltyInfo.tier
+      previousTier: tierUpdateResult.previousTier,
+      newTier: tierUpdateResult.newTier,
+      upgraded: tierUpdateResult.upgraded,
+      pointsToNextTier: tierUpdateResult.pointsToNextTier
     };
   } catch (error) {
     console.error('Error calculating and awarding points:', error);
