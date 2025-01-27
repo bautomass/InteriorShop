@@ -1,3 +1,4 @@
+// @/lib/shopify/client.ts
 'use client';
 
 import { addToCart, createCart, getCart, removeFromCart, updateCart } from './index';

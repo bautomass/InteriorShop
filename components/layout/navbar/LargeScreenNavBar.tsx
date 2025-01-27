@@ -38,6 +38,7 @@ import {
 import { AccountModal } from '@/components/AccountModal';
 import type { CurrencyCode } from '@/lib/currency';
 import { CURRENCY_CONFIG } from '@/lib/currency';
+import { useAuth } from '@/providers/AuthProvider';
 import { useCurrency } from '@/providers/CurrencyProvider';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -244,6 +245,9 @@ export const DesktopHeader = () => {
     collections: [] as string[]
   });
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const accountDropdownRef = useRef<HTMLDivElement>(null);
 
   // Constants
   const email = 'info@simpleinteriorideas.com';
@@ -404,6 +408,17 @@ export const DesktopHeader = () => {
     setCurrency(selectedCurrency);
     setIsCurrencyOpen(false);
   }, [setCurrency]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target as Node)) {
+        setIsAccountDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div id="navbar"
@@ -616,15 +631,89 @@ export const DesktopHeader = () => {
                 </Link>
 
                 {/* Account */}
-                <button
-                  onClick={() => setIsAccountModalOpen(true)}
-                  className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
-                  aria-label="Open account menu"
-                >
-                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" />
-                  </svg>
-                </button>
+                <div className="relative" ref={accountDropdownRef}>
+                  <button
+                    onClick={() => {
+                      if (user) {
+                        setIsAccountDropdownOpen(!isAccountDropdownOpen);
+                      } else {
+                        setIsAccountModalOpen(true);
+                      }
+                    }}
+                    className="p-2 rounded-full hover:bg-neutral-100 transition-colors relative"
+                    aria-label={user ? 'Account menu' : 'Sign in'}
+                  >
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" />
+                    </svg>
+                    {user && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#9e896c] rounded-full" />
+                    )}
+                  </button>
+
+                  {/* Account Dropdown Menu */}
+                  {user && isAccountDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg 
+                                 border border-neutral-200 z-50"
+                    >
+                      <div className="p-4 border-b border-neutral-100">
+                        <p className="text-sm font-medium text-neutral-900 truncate">
+                          {user.email}
+                        </p>
+                        {(user.firstName || user.lastName) && (
+                          <p className="text-xs text-neutral-500 mt-0.5 truncate">
+                            {[user.firstName, user.lastName].filter(Boolean).join(' ')}
+                          </p>
+                        )}
+                      </div>
+                      
+                      <div className="py-2">
+                        <Link
+                          href="/account"
+                          className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+                          onClick={() => setIsAccountDropdownOpen(false)}
+                        >
+                          <svg className="w-4 h-4 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Account Settings
+                        </Link>
+                        
+                        <Link
+                          href="/orders"
+                          className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+                          onClick={() => setIsAccountDropdownOpen(false)}
+                        >
+                          <svg className="w-4 h-4 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                          </svg>
+                          Order History
+                        </Link>
+                        
+                        <button
+                          onClick={async () => {
+                            try {
+                              await signOut();
+                              setIsAccountDropdownOpen(false);
+                            } catch (error) {
+                              console.error('Error signing out:', error);
+                            }
+                          }}
+                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        >
+                          <svg className="w-4 h-4 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                          Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
 
                 {/* Cart with Hover Preview */}
                 <div 
@@ -1060,7 +1149,7 @@ export const DesktopHeader = () => {
                                           <Image
                                             src={product.featuredImage.url}
                                             alt={product.featuredImage.altText || product.title}
-                                            fill={true}
+                                            fill
                                             className="object-cover"
                                             sizes="(max-width: 1280px) 25vw, 20vw"
                                           />
@@ -1096,7 +1185,7 @@ export const DesktopHeader = () => {
       </div>
 
       <AccountModal 
-        isOpen={isAccountModalOpen}
+        isOpen={!user && isAccountModalOpen}
         onClose={() => setIsAccountModalOpen(false)}
       />
     </div>

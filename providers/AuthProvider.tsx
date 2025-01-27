@@ -1,12 +1,25 @@
 'use client';
 
+import { shopifyFetch } from '@/lib/shopify/client/customerAuth';
+import {
+  customerAccessTokenCreateMutation,
+  customerAccessTokenDeleteMutation,
+  customerCreateMutation,
+  customerQuery
+} from '@/lib/shopify/mutations/customer';
+import type { ShopifyCustomer } from '@/lib/shopify/types/customer';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 interface User {
   id: string;
   email: string;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
+  displayName?: string;
+  phone?: string;
 }
+
+interface User extends ShopifyCustomer {}
 
 interface AuthContextType {
   user: User | null;
@@ -20,19 +33,37 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const TOKEN_KEY = 'shopifyCustomerAccessToken';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchCustomer = async (accessToken: string) => {
+    try {
+      const { body } = await shopifyFetch({
+        query: customerQuery,
+        variables: { customerAccessToken: accessToken },
+        cache: 'no-store'
+      });
+
+      if (body.data?.customer) {
+        setUser(body.data.customer);
+      }
+    } catch (err) {
+      console.error('Failed to fetch customer:', err);
+      localStorage.removeItem(TOKEN_KEY);
+      setUser(null);
+    }
+  };
+
   useEffect(() => {
-    // Check for existing session
     const checkAuth = async () => {
       try {
-        // Here you would typically check for an existing session with your backend
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token) {
+          await fetchCustomer(token);
         }
       } catch (err) {
         console.error('Auth check failed:', err);
@@ -49,19 +80,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     
     try {
-      // Here you would typically make an API call to your auth endpoint
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
-      const user = {
-        id: '1',
-        email,
-        name: 'John Doe'
-      };
-      
-      setUser(user);
-      localStorage.setItem('user', JSON.stringify(user));
+      const { body } = await shopifyFetch({
+        query: customerAccessTokenCreateMutation,
+        variables: {
+          input: { email, password }
+        },
+        cache: 'no-store'
+      });
+
+      const { customerAccessToken, customerUserErrors } = body.data.customerAccessTokenCreate;
+
+      if (customerUserErrors.length > 0) {
+        throw new Error(customerUserErrors[0].message);
+      }
+
+      if (!customerAccessToken) {
+        throw new Error('Failed to create access token');
+      }
+
+      localStorage.setItem(TOKEN_KEY, customerAccessToken.accessToken);
+      await fetchCustomer(customerAccessToken.accessToken);
     } catch (err) {
-      setError('Invalid email or password');
+      setError(err instanceof Error ? err.message : 'Failed to sign in');
       throw err;
     } finally {
       setLoading(false);
@@ -73,34 +113,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     
     try {
-      // Here you would typically make an API call to your auth endpoint
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
-      const user = {
-        id: '1',
-        email,
-        name
-      };
-      
-      setUser(user);
-      localStorage.setItem('user', JSON.stringify(user));
+      const [firstName, ...lastNameParts] = name.trim().split(' ');
+      const lastName = lastNameParts.join(' ');
+
+      const { body } = await shopifyFetch({
+        query: customerCreateMutation,
+        variables: {
+          input: {
+            email,
+            password,
+            firstName,
+            lastName: lastName || undefined
+          }
+        },
+        cache: 'no-store'
+      });
+
+      const { customer, customerUserErrors } = body.data.customerCreate;
+
+      if (customerUserErrors.length > 0) {
+        throw new Error(customerUserErrors[0].message);
+      }
+
+      if (!customer) {
+        throw new Error('Failed to create customer');
+      }
+
+      // After creating account, sign in to get access token
+      await signIn(email, password);
     } catch (err) {
-      setError('Failed to create account');
+      setError(err instanceof Error ? err.message : 'Failed to create account');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [signIn]);
 
   const signOut = useCallback(async () => {
     setLoading(true);
     
     try {
-      // Here you would typically make an API call to your auth endpoint
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (token) {
+        await shopifyFetch({
+          query: customerAccessTokenDeleteMutation,
+          variables: { customerAccessToken: token },
+          cache: 'no-store'
+        });
+      }
       
+      localStorage.removeItem(TOKEN_KEY);
       setUser(null);
-      localStorage.removeItem('user');
     } catch (err) {
       setError('Failed to sign out');
       throw err;
