@@ -55,22 +55,22 @@ const getLoopedIndex = (index: number, length: number) => {
   return ((index % length) + length) % length;
 };
 
-const getMenuPosition = (menu: { position?: string; alignment?: string }, slideId: string) => {
-  switch (slideId) {
-    case 'slide-1':
-      return 'right-[160px] top-32';
-    case 'slide-2':
-      return 'left-16 top-24';
-    case 'slide-3':
-      return 'right-16 top-24';
-    case 'slide-4':
-      return 'right-16 top-24';
-    case 'slide-5':
-      return 'right-16 top-24';
-    default:
-      return `${menu.position === 'left' ? 'left-16' : 'right-16'} top-1/2 -translate-y-1/2`;
-  }
-};
+// const getMenuPosition = (menu: { position?: string; alignment?: string }, slideId: string) => {
+//   switch (slideId) {
+//     case 'slide-1':
+//       return 'right-[160px] top-32';
+//     case 'slide-2':
+//       return 'left-16 top-24';
+//     case 'slide-3':
+//       return 'right-16 top-24';
+//     case 'slide-4':
+//       return 'right-16 top-24';
+//     case 'slide-5':
+//       return 'right-16 top-24';
+//     default:
+//       return `${menu.position === 'left' ? 'left-16' : 'right-16'} top-1/2 -translate-y-1/2`;
+//   }
+// };
 
 // Custom hooks
 const useSlideNavigation = (totalSlides: number) => {
@@ -270,7 +270,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       }"
                       sizes="(min-width: 1536px) 1536px, (min-width: 1280px) 1280px, (min-width: 1024px) 1024px, 100vw"
                       style={{
-                        objectPosition: index === 2 ? 'center -150px' : 'center'
+                        objectPosition: index === 2 ? 'center -70px' : 'center'
                       }}
                       onLoad={() => {
                         setLoadedImages(prev => new Set(prev).add(slide.image));
@@ -431,7 +431,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="absolute right-32 top-[43%] transform -translate-y-1/2 z-20 max-w-2xl"
+                        className="absolute right-24 top-[43%] transform -translate-y-1/2 z-20 max-w-2xl"
                       >
                         <motion.span
                           initial={{ opacity: 0, x: -20 }}
@@ -439,7 +439,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
                           className="inline-block text-white/90 font-medium tracking-[0.2em] uppercase text-sm mb-4"
                         >
-                          The Art of Living
+                          Nature's Gift
                         </motion.span>
 
                         <motion.h2
@@ -448,9 +448,9 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
                           className="text-[5.5rem] font-thin text-white leading-none mb-6"
                         >
-                          Crafted for
+                          Pure Living
                           <span className="block font-light text-[3.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
-                            Timeless Living
+                          Art in Wood
                           </span>
                         </motion.h2>
 
@@ -460,7 +460,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }}
                           className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide mb-8"
                         >
-                          Where comfort meets sophistication. Each piece in our furniture collection is curated to transform your space into a sanctuary of modern elegance.
+                          Each piece brings nature's warmth to your home. Crafted by skilled artisans using real wood, our furniture purifies your air while creating spaces that feel alive and peaceful.
                         </motion.p>
 
                         <motion.div
@@ -502,19 +502,28 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="absolute left-1/2 top-1/4 transform -translate-x-1/2 -translate-y-1/2 z-20 max-w-3xl text-center"
+                        className="absolute right-52 top-[5%] z-20 max-w-2xl"
                       >
                         <motion.h2
                           initial={{ opacity: 0, y: 30 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
-                          className="text-[5.5rem] font-thin text-white leading-none mb-8"
+                          className="text-[3.5rem] font-thin text-white leading-none mb-8"
                         >
                           Handcrafted
-                          <span className="block font-light text-[4.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
-                            Wooden Stools
+                          <span className="block font-light text-[2.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
+                            Living Pieces
                           </span>
                         </motion.h2>
+
+                        <motion.p
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }}
+                          className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide mb-8"
+                        >
+                          Crafted from solid wood by skilled artisans, bringing timeless beauty to your daily moments.
+                        </motion.p>
 
                         <motion.div
                           initial={{ opacity: 0, scale: 0.95 }}
@@ -526,11 +535,11 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           <Link 
                             href="/collections/wooden-stools"
                             className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
-                                     shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
-                                     transition-all duration-500 px-6 py-4 relative"
+                                    shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
+                                    transition-all duration-500 px-4 py-4 relative"
                           >
-                            <span className="text-base font-medium text-[#9c826b] whitespace-nowrap">
-                              Shop Collection
+                            <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap">
+                              Meet Our Crafts
                             </span>
                             <motion.div 
                               className="flex items-center"
@@ -683,8 +692,8 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             ) : (
                               <Pause className="h-2.5 w-2.5 text-white" />
                             )}
-                            <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs text-white bg-black/70 rounded px-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              {isPaused ? "Play slideshow" : "Pause slideshow"}
+                            <span className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-xs text-white bg-black/70 rounded px-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              {isPaused ? "Play" : "Pause"}
                             </span>
                           </motion.button>
                         )}
@@ -755,7 +764,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
               aria-label="Browse all products"
               className="relative group inline-flex items-center justify-center px-6 py-3
                         bg-[#9e896c]/90 backdrop-blur-sm text-white
-                        hover:bg-[#dcd5ca] hover:text-[#9e896c] 
+                        hover:bg-[#dcd5ca] hover:text-[#9e89ā6c] 
                         transition-all duration-300 shadow-lg shadow-black/5
                         focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
                         transform transition-transform duration-300 scale-100 group-hover:scale-105"
