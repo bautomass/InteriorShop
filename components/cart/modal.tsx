@@ -38,12 +38,16 @@ export default function CartModal({
   const { formatPrice } = useCurrency();
 
   const handleCheckout = async () => {
+    const currentHostname = window.location.hostname;
+    const isDevEnvironment = currentHostname.includes('vercel.app') || currentHostname === 'localhost';
+    
     console.log('Checkout attempted:', {
       hasCart: !!cart,
       checkoutUrl: cart?.checkoutUrl,
       isCheckingOut,
       cartId: cart?.id,
-      isDevelopment: window.location.hostname.includes('vercel.app')
+      environment: isDevEnvironment ? 'development' : 'production',
+      currentHostname
     });
     
     if (!cart || !cart.lines?.length) {
@@ -63,8 +67,12 @@ export default function CartModal({
         }
         console.log('New cart created with checkout URL:', newCart.checkoutUrl);
         
-        if (window.location.hostname.includes('vercel.app')) {
-          console.log('Development environment detected. Checkout URL:', newCart.checkoutUrl);
+        // Development environment handling
+        if (isDevEnvironment) {
+          console.log('Development environment detected:', {
+            url: newCart.checkoutUrl,
+            hostname: currentHostname
+          });
           window.open(newCart.checkoutUrl, '_blank');
           setIsCheckingOut(false);
           return;
@@ -74,10 +82,15 @@ export default function CartModal({
         return;
       }
       
-      console.log('Redirecting to:', cart.checkoutUrl);
+      // If we have a checkout URL
+      console.log('Using existing checkout URL:', cart.checkoutUrl);
       
-      if (window.location.hostname.includes('vercel.app')) {
-        console.log('Development environment detected. Checkout URL:', cart.checkoutUrl);
+      // Development environment handling
+      if (isDevEnvironment) {
+        console.log('Development environment detected:', {
+          url: cart.checkoutUrl,
+          hostname: currentHostname
+        });
         window.open(cart.checkoutUrl, '_blank');
         setIsCheckingOut(false);
         return;
@@ -85,7 +98,11 @@ export default function CartModal({
       
       window.location.assign(cart.checkoutUrl);
     } catch (error) {
-      console.error('Checkout error:', error);
+      console.error('Checkout error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        hostname: currentHostname,
+        isDev: isDevEnvironment
+      });
       setIsCheckingOut(false);
       // You might want to show an error message to the user here
     }
