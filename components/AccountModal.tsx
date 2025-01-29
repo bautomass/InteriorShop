@@ -1,3 +1,4 @@
+// components/AccountModal.tsx
 'use client';
 
 import { useAuth } from '@/providers/AuthProvider';

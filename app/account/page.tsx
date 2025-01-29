@@ -23,9 +23,10 @@ export default function AccountPage() {
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [loyaltyInfo, setLoyaltyInfo] = useState<LoyaltyInfo | null>(null);
 
+
   const fetchAccountData = useCallback(async () => {
     if (!user) return;
-
+  
     try {
       setIsLoading(true);
       // Fetch orders and loyalty info in parallel
@@ -78,13 +79,19 @@ export default function AccountPage() {
           query: `
             query getCustomerLoyalty($customerAccessToken: String!) {
               customer(customerAccessToken: $customerAccessToken) {
-                metafields(first: 10) {
-                  edges {
-                    node {
-                      key
-                      value
-                    }
-                  }
+                metafields(
+                  identifiers: [
+                    {namespace: "custom", key: "signup_points"},
+                    {namespace: "custom", key: "loyalty_points"},
+                    {namespace: "custom", key: "loyalty_tier"},
+                    {namespace: "custom", key: "points_to_next_tier"},
+                    {namespace: "custom", key: "total_spent"},
+                    {namespace: "custom", key: "joined_at"},
+                    {namespace: "custom", key: "loyalty_history"}
+                  ]
+                ) {
+                  key
+                  value
                 }
               }
             }
@@ -94,7 +101,7 @@ export default function AccountPage() {
           }
         })
       ]);
-
+  
       // Process orders data
       const orders = ordersRes.body.data.customer.orders.edges.map(
         ({ node }: any) => ({
@@ -112,16 +119,19 @@ export default function AccountPage() {
           }))
         })
       );
-
+  
       // Process loyalty data
-      const loyaltyMetafields = loyaltyRes.body.data.customer.metafields.edges.reduce(
-        (acc: any, { node }: any) => {
-          acc[node.key] = node.value;
+      const metafields = loyaltyRes.body.data.customer.metafields || [];
+      const loyaltyMetafields = metafields.reduce(
+        (acc: any, field: any) => {
+          if (field && field.key) {
+            acc[field.key] = field.value;
+          }
           return acc;
         },
         {}
       );
-
+  
       const loyaltyInfo: LoyaltyInfo = {
         points: parseInt(loyaltyMetafields.loyalty_points || '0'),
         tier: loyaltyMetafields.loyalty_tier || 'bronze',
@@ -130,7 +140,7 @@ export default function AccountPage() {
         joinedAt: loyaltyMetafields.joined_at || new Date().toISOString(),
         history: JSON.parse(loyaltyMetafields.loyalty_history || '[]')
       };
-
+  
       setRecentOrders(orders);
       setLoyaltyInfo(loyaltyInfo);
     } catch (error) {

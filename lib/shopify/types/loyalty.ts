@@ -27,8 +27,6 @@ export interface PointsReward {
   description: string;
 }
 
-// lib/constants/loyalty.ts
-
 export const LOYALTY_CONFIG = {
   points: {
     perDollar: 1,

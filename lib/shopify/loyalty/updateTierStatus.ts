@@ -1,3 +1,4 @@
+// lib/shopify/loyalty/updateTierStatus.ts
 import { LOYALTY_CONFIG, LoyaltyTier } from '@/lib/constants/loyalty';
 import { getLoyaltyInfo, updateLoyaltyMetafields } from './loyaltyUtils';
 

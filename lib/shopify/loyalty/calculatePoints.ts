@@ -1,5 +1,4 @@
 // lib/shopify/loyalty/calculatePoints.ts
-
 import { LOYALTY_CONFIG } from '@/lib/constants/loyalty';
 import { getCurrentTier, getLoyaltyInfo, updateLoyaltyMetafields } from './loyaltyUtils';
 import { updateTierStatus } from './updateTierStatus';

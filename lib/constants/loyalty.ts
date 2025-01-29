@@ -1,5 +1,4 @@
 // lib/constants/loyalty.ts
-
 export type LoyaltyTier = 'bronze' | 'silver' | 'gold' | 'platinum';
 export type RewardType = 'discount' | 'shipping' | 'access' | 'service';
 
@@ -18,7 +17,8 @@ export const LOYALTY_CONFIG = {
   },
   
   bonuses: {
-    firstPurchase: 100,    // Welcome bonus
+    signup: 100,           // Points for signing up
+    firstPurchase: 100,    // Additional bonus for first purchase
     birthday: 200,         // Birthday bonus
     reviewSubmission: 50,  // Points for product review
     referral: 150,         // Points for referring a friend

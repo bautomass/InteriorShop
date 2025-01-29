@@ -1,5 +1,4 @@
 // lib/shopify/client/customerAuth.ts
-
 import { SHOPIFY_GRAPHQL_API_ENDPOINT, SHOPIFY_STOREFRONT_ACCESS_TOKEN } from '../constants';
 
 export async function shopifyFetch({

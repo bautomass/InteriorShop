@@ -1,7 +1,5 @@
 // providers/AuthProvider.tsx
-
 'use client';
-
 import { shopifyFetch } from '@/lib/shopify/client/customerAuth';
 import { initializeCustomerLoyalty } from '@/lib/shopify/loyalty/initializeLoyalty';
 import {
@@ -43,6 +41,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // const fetchCustomer = async (accessToken: string) => {
+  //   try {
+  //     const { body } = await shopifyFetch({
+  //       query: customerQuery,
+  //       variables: { customerAccessToken: accessToken },
+  //       cache: 'no-store'
+  //     });
+  
+  //     if (body.data?.customer) {
+  //       const metafields = (body.data.customer.metafields || []).reduce(
+  //         (acc: any, field: any) => {
+  //           if (field && field.key) {
+  //             acc[field.key.replace('custom.', '')] = field.value;
+  //           }
+  //           return acc;
+  //         },
+  //         {}
+  //       );
+  
+  //       setUser({
+  //         ...body.data.customer,
+  //         metafields
+  //       });
+  //     }
+  //   } catch (err) {
+  //     console.error('Failed to fetch customer:', err);
+  //     localStorage.removeItem(TOKEN_KEY);
+  //     setUser(null);
+  //   }
+  // };
+
   const fetchCustomer = async (accessToken: string) => {
     try {
       const { body } = await shopifyFetch({
@@ -50,22 +79,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         variables: { customerAccessToken: accessToken },
         cache: 'no-store'
       });
-
+  
       if (body.data?.customer) {
-        const metafields = (body.data.customer.metafields || []).reduce(
-          (acc: any, field: any) => {
-            if (field && field.key) {
-              const keyWithoutPrefix = field.key.replace('custom.', '');
-              acc[keyWithoutPrefix] = field.value;
-            }
-            return acc;
-          },
-          {}
-        );
-
+        const metafields = body.data.customer.metafields || [];
+        const metafieldValues = metafields.reduce((acc: any, field: any) => {
+          if (field && field.key) {
+            acc[field.key.replace('custom.', '')] = field.value;
+          }
+          return acc;
+        }, {});
+  
         setUser({
           ...body.data.customer,
-          metafields
+          metafields: metafieldValues
         });
       }
     } catch (err) {
@@ -125,7 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     }
   }, []);
-
+  
   const signUp = useCallback(async (email: string, password: string, name: string) => {
     setLoading(true);
     setError(null);
@@ -133,8 +159,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const [firstName, ...lastNameParts] = name.trim().split(' ');
       const lastName = lastNameParts.join(' ');
-
-      const { body } = await shopifyFetch({
+  
+      // First create the customer
+      const { body: createBody } = await shopifyFetch({
         query: customerCreateMutation,
         variables: {
           input: {
@@ -146,18 +173,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         cache: 'no-store'
       });
-
-      const { customer, customerUserErrors } = body.data.customerCreate;
-
-      if (customerUserErrors.length > 0) {
-        throw new Error(customerUserErrors[0].message);
+  
+      if (createBody.data?.customerCreate?.customerUserErrors?.length > 0) {
+        throw new Error(createBody.data.customerCreate.customerUserErrors[0].message);
       }
-
-      if (!customer) {
+  
+      const customerId = createBody.data?.customerCreate?.customer?.id;
+      if (!customerId) {
         throw new Error('Failed to create customer');
       }
-
-      // After creating account, sign in to get access token
+  
+      // Then sign in to get access token
       const { body: signInBody } = await shopifyFetch({
         query: customerAccessTokenCreateMutation,
         variables: {
@@ -165,22 +191,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         cache: 'no-store'
       });
-
-      const { customerAccessToken } = signInBody.data.customerAccessTokenCreate;
-
-      if (!customerAccessToken) {
+  
+      const accessToken = signInBody.data?.customerAccessTokenCreate?.customerAccessToken?.accessToken;
+      if (!accessToken) {
         throw new Error('Failed to create access token');
       }
-
+  
       // Store the access token
-      localStorage.setItem(TOKEN_KEY, customerAccessToken.accessToken);
-
+      localStorage.setItem(TOKEN_KEY, accessToken);
+  
       // Initialize loyalty program
-      await initializeCustomerLoyalty(customerAccessToken.accessToken);
-
-      // Fetch customer data
-      await fetchCustomer(customerAccessToken.accessToken);
-
+      await initializeCustomerLoyalty(accessToken, customerId);
+  
+      // Finally fetch customer data
+      await fetchCustomer(accessToken);
+  
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account');
       throw err;

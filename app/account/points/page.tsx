@@ -1,7 +1,7 @@
+// app/account/points/page.tsx
 'use client';
-
 import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
-import { LOYALTY_CONFIG } from '@/lib/constants/loyalty';
+import { LOYALTY_CONFIG, LoyaltyTier } from '@/lib/constants/loyalty';
 import { shopifyFetch } from '@/lib/shopify/client/customerAuth';
 import { redeemPoints } from '@/lib/shopify/loyalty/handleRedemption';
 import { getCustomerMetafieldsQuery } from '@/lib/shopify/loyalty/mutations';
@@ -13,6 +13,17 @@ import { motion } from 'framer-motion';
 import { Award, CircleDollarSign, Gift, Star } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
+interface MetafieldValues {
+  loyalty_points?: number;
+  loyalty_tier?: string;
+  points_to_next_tier?: number;
+  total_spent?: number;
+  joined_at?: string;
+  signup_points?: number;
+  loyalty_history?: any[];
+  [key: string]: any;
+}
+
 export default function PointsPage() {
   const { user } = useAuth();
   const { formatPrice } = useCurrency();
@@ -22,7 +33,7 @@ export default function PointsPage() {
 
   const fetchLoyaltyData = useCallback(async () => {
     if (!user) return;
-
+  
     try {
       setIsLoading(true);
       const { body } = await shopifyFetch({
@@ -31,25 +42,41 @@ export default function PointsPage() {
           customerAccessToken: localStorage.getItem('shopifyCustomerAccessToken')
         }
       });
-
-      const metafields = (body.data.customer.metafields || []).reduce(
-        (acc: any, field: any) => {
-          if (field && field.key) {
-            const keyWithoutPrefix = field.key.replace('custom.', '');
-            acc[keyWithoutPrefix] = field.value;
+  
+      console.log('Loyalty data response:', body);
+  
+      const metafields = body.data?.customer?.metafields || [];
+      
+      const metafieldValues: MetafieldValues = {};
+      for (const field of metafields) {
+        if (!field || !field.key) continue;
+        
+        const key = field.key;
+        let value = field.value;
+  
+        if (key === 'loyalty_points' || key === 'points_to_next_tier' || key === 'signup_points') {
+          value = parseInt(value, 10) || 0;
+        } else if (key === 'total_spent') {
+          value = parseFloat(value) || 0;
+        } else if (key === 'loyalty_history') {
+          try {
+            value = JSON.parse(value);
+          } catch {
+            value = [];
           }
-          return acc;
-        },
-        {}
-      );
-
+        }
+  
+        metafieldValues[key] = value;
+      }
+  
       setLoyaltyInfo({
-        points: parseInt(metafields.loyalty_points || '0'),
-        tier: metafields.loyalty_tier || 'bronze',
-        pointsToNextTier: parseInt(metafields.points_to_next_tier || '1000'),
-        totalSpent: parseFloat(metafields.total_spent || '0'),
-        joinedAt: metafields.joined_at || new Date().toISOString(),
-        history: JSON.parse(metafields.loyalty_history || '[]')
+        points: metafieldValues.loyalty_points || 0,
+        tier: (metafieldValues.loyalty_tier as LoyaltyTier) || 'bronze',
+        pointsToNextTier: metafieldValues.points_to_next_tier || 1000,
+        totalSpent: metafieldValues.total_spent || 0,
+        joinedAt: metafieldValues.joined_at || new Date().toISOString(),
+        signupPoints: metafieldValues.signup_points || 0,
+        history: metafieldValues.loyalty_history || []
       });
     } catch (error) {
       console.error('Error fetching loyalty data:', error);

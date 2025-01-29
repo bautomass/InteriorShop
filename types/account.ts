@@ -1,5 +1,4 @@
 // types/account.ts
-
 export interface OrderVariant {
     id: string;
     title: string;
@@ -55,18 +54,20 @@ export interface OrderVariant {
     isDefault: boolean;
   }
   
-  export interface LoyaltyInfo {
+// Updated interface in types/account.ts
+export interface LoyaltyInfo {
+  points: number;
+  tier: 'bronze' | 'silver' | 'gold' | 'platinum';
+  pointsToNextTier: number;
+  totalSpent: number;
+  joinedAt: string;
+  signupPoints?: number;
+  history: {
+    id: string;
+    type: 'earned' | 'redeemed';
     points: number;
-    tier: 'bronze' | 'silver' | 'gold' | 'platinum';
-    pointsToNextTier: number;
-    totalSpent: number;
-    joinedAt: string;
-    history: {
-      id: string;
-      type: 'earned' | 'redeemed';
-      points: number;
-      description: string;
-      date: string;
-      orderId?: string;
-    }[];
-  }
+    description: string;
+    date: string;
+    orderId?: string;
+  }[];
+}

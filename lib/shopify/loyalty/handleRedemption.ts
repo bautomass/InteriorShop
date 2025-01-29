@@ -1,5 +1,4 @@
 // lib/shopify/loyalty/handleRedemption.ts
-
 import { LOYALTY_CONFIG } from '@/lib/constants/loyalty';
 import { getLoyaltyInfo, updateLoyaltyMetafields } from './loyaltyUtils';
 

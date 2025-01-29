@@ -1,4 +1,4 @@
-// lib/shopify/mutations/customer.ts - COPY AND REPLACE ENTIRE FILE
+// lib/shopify/mutations/customer.ts
 
 export const customerQuery = `
   query getCustomer($customerAccessToken: String!) {
@@ -11,12 +11,13 @@ export const customerQuery = `
       phone
       metafields(
         identifiers: [
-          {namespace: "custom", key: "custom.loyalty_points"},
-          {namespace: "custom", key: "custom.loyalty_tier"},
-          {namespace: "custom", key: "custom.points_to_next_tier"},
-          {namespace: "custom", key: "custom.total_spent"},
-          {namespace: "custom", key: "custom.joined_at"},
-          {namespace: "custom", key: "custom.loyalty_history"}
+          {namespace: "custom", key: "signup_points"},
+          {namespace: "custom", key: "loyalty_points"},
+          {namespace: "custom", key: "loyalty_tier"},
+          {namespace: "custom", key: "points_to_next_tier"},
+          {namespace: "custom", key: "total_spent"},
+          {namespace: "custom", key: "joined_at"},
+          {namespace: "custom", key: "loyalty_history"}
         ]
       ) {
         key
