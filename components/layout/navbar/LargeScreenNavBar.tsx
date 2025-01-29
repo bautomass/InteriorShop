@@ -471,7 +471,7 @@ export const DesktopHeader = () => {
                   </span>
                 </button>
                 <Link href="/" className="flex-shrink-0 ml-6">
-                  <span className="text-xl font-semibold text-transparent">Simple Interior Ideas</span>
+                  <span className="text-xl font-semibold font-alogo">Simple Interior Ideas</span>
                 </Link>
               </div>
 
