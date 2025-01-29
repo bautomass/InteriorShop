@@ -42,7 +42,8 @@ export default function CartModal({
       hasCart: !!cart,
       checkoutUrl: cart?.checkoutUrl,
       isCheckingOut,
-      cartId: cart?.id
+      cartId: cart?.id,
+      isDevelopment: window.location.hostname.includes('vercel.app')
     });
     
     if (!cart || !cart.lines?.length) {
@@ -61,11 +62,27 @@ export default function CartModal({
           throw new Error('Failed to get checkout URL');
         }
         console.log('New cart created with checkout URL:', newCart.checkoutUrl);
+        
+        if (window.location.hostname.includes('vercel.app')) {
+          console.log('Development environment detected. Checkout URL:', newCart.checkoutUrl);
+          window.open(newCart.checkoutUrl, '_blank');
+          setIsCheckingOut(false);
+          return;
+        }
+        
         window.location.assign(newCart.checkoutUrl);
         return;
       }
       
       console.log('Redirecting to:', cart.checkoutUrl);
+      
+      if (window.location.hostname.includes('vercel.app')) {
+        console.log('Development environment detected. Checkout URL:', cart.checkoutUrl);
+        window.open(cart.checkoutUrl, '_blank');
+        setIsCheckingOut(false);
+        return;
+      }
+      
       window.location.assign(cart.checkoutUrl);
     } catch (error) {
       console.error('Checkout error:', error);
