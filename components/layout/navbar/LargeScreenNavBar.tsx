@@ -632,7 +632,8 @@ export const DesktopHeader = () => {
 
                 {/* Account */}
                 <div className="relative" ref={accountDropdownRef}>
-                  <button
+                  <div 
+                    className="flex items-center gap-2 cursor-pointer"
                     onClick={() => {
                       if (user) {
                         setIsAccountDropdownOpen(!isAccountDropdownOpen);
@@ -640,16 +641,31 @@ export const DesktopHeader = () => {
                         setIsAccountModalOpen(true);
                       }
                     }}
-                    className="p-2 rounded-full hover:bg-neutral-100 transition-colors relative"
-                    aria-label={user ? 'Account menu' : 'Sign in'}
                   >
-                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" />
-                    </svg>
+                    <button
+                      className="p-2 rounded-full hover:bg-neutral-100 transition-colors relative"
+                      aria-label={user ? 'Account menu' : 'Sign in'}
+                    >
+                      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" />
+                      </svg>
+                      {user && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#9e896c] rounded-full" />
+                      )}
+                    </button>
+
+                    {/* User Name - Only shown when logged in */}
                     {user && (
-                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#9e896c] rounded-full" />
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm font-medium text-neutral-700 hover:text-[#9e896c] transition-colors">
+                          {[user.firstName, user.lastName].filter(Boolean).join(' ') || 'Account'}
+                        </span>
+                        <ChevronDown className={`h-3 w-3 transform transition-transform duration-200 
+                          ${isAccountDropdownOpen ? 'rotate-180' : ''} text-[#6B5E4C]`} 
+                        />
+                      </div>
                     )}
-                  </button>
+                  </div>
 
                   {/* Account Dropdown Menu */}
                   {user && isAccountDropdownOpen && (
@@ -664,11 +680,6 @@ export const DesktopHeader = () => {
                         <p className="text-sm font-medium text-neutral-900 truncate">
                           {user.email}
                         </p>
-                        {(user.firstName || user.lastName) && (
-                          <p className="text-xs text-neutral-500 mt-0.5 truncate">
-                            {[user.firstName, user.lastName].filter(Boolean).join(' ')}
-                          </p>
-                        )}
                       </div>
                       
                       <div className="py-2">
@@ -835,7 +846,7 @@ export const DesktopHeader = () => {
                               Your Cart is Empty
                             </h3>
                             <p className="text-sm text-neutral-600 mb-6">
-                              Discover our beautiful collections, find something for your home
+                              Discover our beautiful collections, <br/>find something for your home
                             </p>
                             <Link
                               href="/collections/all-products"

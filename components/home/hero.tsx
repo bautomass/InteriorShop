@@ -55,23 +55,6 @@ const getLoopedIndex = (index: number, length: number) => {
   return ((index % length) + length) % length;
 };
 
-// const getMenuPosition = (menu: { position?: string; alignment?: string }, slideId: string) => {
-//   switch (slideId) {
-//     case 'slide-1':
-//       return 'right-[160px] top-32';
-//     case 'slide-2':
-//       return 'left-16 top-24';
-//     case 'slide-3':
-//       return 'right-16 top-24';
-//     case 'slide-4':
-//       return 'right-16 top-24';
-//     case 'slide-5':
-//       return 'right-16 top-24';
-//     default:
-//       return `${menu.position === 'left' ? 'left-16' : 'right-16'} top-1/2 -translate-y-1/2`;
-//   }
-// };
-
 // Custom hooks
 const useSlideNavigation = (totalSlides: number) => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -504,7 +487,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                         <motion.div 
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          className="absolute right-52 top-[10%] z-20 max-w-2xl"
+                          className="absolute right-64 top-[10%] z-20 max-w-2xl"
                         >
                           <motion.span
                           initial={{ opacity: 0, x: -20 }}
@@ -533,7 +516,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }}
                             className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide"
                           >
-                            Each piece is handcrafted from nature's materials, creating healthier, more beautiful spaces.
+                            Each piece is handcrafted from nature's materials,<br/>creating healthier, more beautiful spaces.
                           </motion.p>
                         </motion.div>
 
