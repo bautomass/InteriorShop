@@ -343,6 +343,9 @@ export default function SettingsPage() {
         throw new Error(result.error || 'Failed to delete account');
       }
 
+      // Clear local storage
+      localStorage.removeItem('shopifyCustomerAccessToken');
+      
       // Sign out and redirect to home
       await signOut();
       window.location.href = '/';

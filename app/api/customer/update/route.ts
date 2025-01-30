@@ -7,7 +7,51 @@ export async function POST(request: Request) {
     const data = await request.json();
     const { firstName, lastName, phone, acceptsMarketing, customerId } = data;
 
-    // Update customer using admin API
+    // First, check if customer has already edited their profile
+    const checkResponse = await fetch(SHOPIFY_ADMIN_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Access-Token': process.env.SHOPIFY_ADMIN_ACCESS_TOKEN!
+      },
+      body: JSON.stringify({
+        query: `
+          query getCustomer($customerId: ID!) {
+            customer(id: $customerId) {
+              metafields(first: 10) {
+                edges {
+                  node {
+                    namespace
+                    key
+                    value
+                  }
+                }
+              }
+            }
+          }
+        `,
+        variables: {
+          customerId
+        }
+      })
+    });
+
+    const checkResult = await checkResponse.json();
+    const metafields = checkResult.data?.customer?.metafields?.edges || [];
+    const hasEditedProfile = metafields.some(
+      ({ node }: any) => node.namespace === 'custom' && 
+                        node.key === 'has_edited_profile' && 
+                        node.value === 'true'
+    );
+
+    if (hasEditedProfile) {
+      return NextResponse.json(
+        { error: 'Profile has already been edited once. Please contact customer support for further changes.' },
+        { status: 400 }
+      );
+    }
+
+    // If not edited before, proceed with update
     const response = await fetch(SHOPIFY_ADMIN_API_URL, {
       method: 'POST',
       headers: {

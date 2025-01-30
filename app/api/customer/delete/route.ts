@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     const data = await request.json();
     const { customerId } = data;
 
-    // Delete customer using admin API
+    // First revoke all customer tokens
     const response = await fetch(SHOPIFY_ADMIN_API_URL, {
       method: 'POST',
       headers: {
@@ -43,11 +43,16 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ success: true });
+    // Clear any local storage tokens after successful deletion
+    return NextResponse.json({ 
+      success: true,
+      message: 'Account deleted successfully' 
+    });
+
   } catch (error) {
     console.error('Error deleting customer:', error);
     return NextResponse.json(
-      { error: 'Failed to delete customer account' },
+      { error: 'Failed to delete account' },
       { status: 500 }
     );
   }
