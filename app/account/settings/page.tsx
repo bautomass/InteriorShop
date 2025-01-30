@@ -146,11 +146,56 @@ export default function SettingsPage() {
     fetchCustomerData();
   }, [fetchCustomerData]);
 
+  // const handleUpdateProfile = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setIsSaving(true);
+  //   setErrorMessage('');
+
+  //   try {
+  //     const response = await fetch('/api/customer/update', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         firstName: formData.firstName,
+  //         lastName: formData.lastName,
+  //         phone: formData.phone,
+  //         acceptsMarketing: formData.acceptsMarketing,
+  //         customerId: user?.id || ''
+  //       })
+  //     });
+
+  //     const result = await response.json();
+
+  //     if (!response.ok) {
+  //       setErrorMessage(result.error || 'Failed to update profile');
+  //       throw new Error(result.error);
+  //     }
+
+  //     setSuccessMessage('Profile updated successfully. You will not be able to edit it again.');
+  //     setIsEditing(false);
+  //     setHasEditedProfile(true);
+  //     setTimeout(() => setSuccessMessage(''), 5000);
+  //   } catch (error) {
+  //     console.error('Error updating profile:', error);
+  //     if (!errorMessage && error instanceof Error) {
+  //       setErrorMessage(error.message);
+  //     }
+  //   } finally {
+  //     setIsSaving(false);
+  //   }
+  // };
+
+
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setErrorMessage('');
-
+  
+    console.log('1. Starting profile update with user ID:', user?.id);
+    console.log('2. Form data being sent:', formData);
+  
     try {
       const response = await fetch('/api/customer/update', {
         method: 'POST',
@@ -165,20 +210,23 @@ export default function SettingsPage() {
           customerId: user?.id || ''
         })
       });
-
+  
       const result = await response.json();
-
+      console.log('3. Update API response:', result);
+  
       if (!response.ok) {
+        console.log('4. Update failed:', result.error);
         setErrorMessage(result.error || 'Failed to update profile');
         throw new Error(result.error);
       }
-
+  
+      console.log('5. Update successful');
       setSuccessMessage('Profile updated successfully. You will not be able to edit it again.');
       setIsEditing(false);
       setHasEditedProfile(true);
       setTimeout(() => setSuccessMessage(''), 5000);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('6. Error updating profile:', error);
       if (!errorMessage && error instanceof Error) {
         setErrorMessage(error.message);
       }
