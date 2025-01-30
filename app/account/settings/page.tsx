@@ -78,6 +78,7 @@ export default function SettingsPage() {
                   {namespace: "custom", key: "joined_at"}
                 ]
               ) {
+                namespace
                 key
                 value
               }
@@ -108,9 +109,12 @@ export default function SettingsPage() {
       
       // Set has edited profile status
       const hasEditedMetafield = metafields.find(
-        (field: any) => field && field.key === 'has_edited_profile'
+        (field: any) => field && 
+                        field.namespace === 'custom' && 
+                        field.key === 'has_edited_profile' &&
+                        field.value === 'true'
       );
-      setHasEditedProfile(hasEditedMetafield?.value === 'true');
+      setHasEditedProfile(!!hasEditedMetafield);
 
       // Set addresses with null checks
       const defaultAddressId = customerData?.defaultAddress?.id;
