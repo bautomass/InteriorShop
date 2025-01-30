@@ -149,3 +149,9 @@ img.opacity-100 {
   will-change: opacity;
   transform: translateZ(0);
 }
+
+@media (max-width: 640px) {
+  .headlessui-dialog {
+    padding-top: 4rem;
+  }
+}

@@ -18,6 +18,7 @@ export const customerQuery = `
           {namespace: "custom", key: "total_spent"},
           {namespace: "custom", key: "joined_at"},
           {namespace: "custom", key: "loyalty_history"}
+          {namespace: "custom", key: "has_edited_profile"} 
         ]
       ) {
         key
