@@ -334,7 +334,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="absolute right-16 top-[40%] transform -translate-y-1/2 z-20 max-w-2xl"
+                        className="absolute right-16 top-[38%] transform -translate-y-1/2 z-20 max-w-2xl"
                       >
                         <motion.span
                           initial={{ opacity: 0, x: -20 }}
@@ -349,7 +349,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           initial={{ opacity: 0, y: 30 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
-                          className="text-[5.5rem] font-thin text-white leading-none mb-6"
+                          className="text-[4.5rem] font-thin text-white leading-none mb-6"
                         >
                           Pure Living
                           <span className="block font-light text-[3.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
