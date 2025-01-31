@@ -334,7 +334,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="absolute right-24 top-[43%] transform -translate-y-1/2 z-20 max-w-2xl"
+                        className="absolute right-16 top-[40%] transform -translate-y-1/2 z-20 max-w-2xl"
                       >
                         <motion.span
                           initial={{ opacity: 0, x: -20 }}
