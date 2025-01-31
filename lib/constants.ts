@@ -1,3 +1,5 @@
+//lib/constants.ts
+
 export type SortFilterItem = {
   title: string;
   slug: string | null;
