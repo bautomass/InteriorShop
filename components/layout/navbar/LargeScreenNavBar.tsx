@@ -434,15 +434,15 @@ export const DesktopHeader = () => {
       >
         <div 
           className={`w-full backdrop-blur-sm shadow-lg 
-            relative border-r-[3px] border-white
+            relative border-r-[2px] border-white
             before:absolute before:inset-0 before:-z-10 
             before:bg-[#eaeadf]
-            before:border-r-[3px] 
+            before:border-r-[2px] 
             before:border-black/10
             transition-[background,shadow,transform] duration-500
             ${isScrolled 
-              ? 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]' 
-              : 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]'
+              ? 'border-b-[2px] rounded-br-[10px] before:border-b-[2px] before:rounded-br-[10px]' 
+              : 'border-b-[2px] rounded-br-[10px] before:border-b-[2px] before:rounded-br-[10px]'
             }
             ${(isNavOpen || (isSearchOpen && searchQuery) || isAccountOpen || isCartOpen) 
               ? 'h-screen' 
@@ -658,7 +658,7 @@ export const DesktopHeader = () => {
                     {user && (
                       <div className="flex items-center gap-1">
                         <span className="text-sm font-medium text-neutral-700 hover:text-[#9e896c] transition-colors">
-                          {[user.firstName, user.lastName].filter(Boolean).join(' ') || 'Account'}
+                          {`Hello, ${user.firstName || 'Account'}`}
                         </span>
                         <ChevronDown className={`h-3 w-3 transform transition-transform duration-200 
                           ${isAccountDropdownOpen ? 'rotate-180' : ''} text-[#6B5E4C]`} 
@@ -678,7 +678,10 @@ export const DesktopHeader = () => {
                     >
                       <div className="p-4 border-b border-neutral-100">
                         <p className="text-sm font-medium text-neutral-900 truncate">
-                          {user.email}
+                          {`${user.firstName} ${user.lastName}`}
+                        </p>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          We're glad to have you here, {user.firstName}!
                         </p>
                       </div>
                       

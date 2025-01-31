@@ -75,3 +75,43 @@ export const customerAccessTokenDeleteMutation = `
     }
   }
 `;
+
+export const customerMetafieldUpdateMutation = `
+  mutation customerMetafieldUpdate($input: CustomerInput!) {
+    customerUpdate(input: $input) {
+      customer {
+        id
+        firstName
+        lastName
+        phone
+        metafields(
+          identifiers: [
+            {namespace: "custom", key: "has_edited_profile"}
+          ]
+        ) {
+          key
+          value
+        }
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+export const getCustomerMetafieldsQuery = `
+  query getCustomerMetafields($customerId: ID!) {
+    customer(id: $customerId) {
+      metafields(
+        identifiers: [
+          {namespace: "custom", key: "has_edited_profile"}
+        ]
+      ) {
+        key
+        value
+      }
+    }
+  }
+`;

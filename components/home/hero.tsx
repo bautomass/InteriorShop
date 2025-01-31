@@ -9,13 +9,11 @@ import Link from 'next/link';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import MobileHero from './MobileMenuHeader';
 
-// Constants
-const CONSTANTS = {
-  ANIMATION: {
-    DURATION: 500,
-    CAROUSEL_INTERVAL: 7000,
-    DEBOUNCE_DELAY: 300,
-  }
+// Constants moved outside component to prevent recreation
+const ANIMATION = {
+  DURATION: 500,
+  CAROUSEL_INTERVAL: 7000,
+  DEBOUNCE_DELAY: 300,
 } as const;
 
 // Types and Interfaces
@@ -50,12 +48,53 @@ const heroSlides: SlideContent[] = [
   }
 ];
 
-// Helper functions
-const getLoopedIndex = (index: number, length: number) => {
-  return ((index % length) + length) % length;
-};
+// Memoized helper functions
+const getLoopedIndex = (index: number, length: number) => ((index % length) + length) % length;
 
-// Custom hooks
+// Memoized components for better performance
+const ProductDot = memo(({ className, href }: { className: string; href: string }) => (
+  <div className={`relative inline-flex ${className}`}>
+    <div className="absolute -inset-1 w-5 h-5 rounded-full bg-[#dcd5ca]/60 animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
+    <div className="absolute -inset-1 w-5 h-5 rounded-full bg-[#ebe7e0]/50 animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
+    <div className="relative w-3 h-3 rounded-full bg-[#ebe7e0] shadow-[0_0_8px_rgba(199,186,168,0.8)] transition-all duration-500 ease-in-out group-hover:scale-125" />
+    <div className="absolute left-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      <Link 
+        href={href}
+        className="flex items-center gap-2 bg-[#ebe7e0]/95 backdrop-blur-sm shadow-lg rounded-lg p-2 border border-[#b39e86] hover:bg-[#dcd5ca]/95"
+      >
+        <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
+          View Product
+        </span>
+        <ChevronRight className="w-4 h-4 text-[#9c826b]" />
+      </Link>
+    </div>
+  </div>
+));
+
+ProductDot.displayName = 'ProductDot';
+
+const NavigationButton = memo(({ direction, onClick }: { direction: 'prev' | 'next'; onClick: () => void }) => (
+  <motion.button
+    onClick={onClick}
+    className={`relative group scale-90 ${direction === 'prev' ? 'ml-2' : 'mr-2'}`}
+    whileHover={{ scale: 0.95 }}
+    whileTap={{ scale: 0.85 }}
+    aria-label={`${direction === 'prev' ? 'Previous' : 'Next'} slide`}
+  >
+    <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm group-hover:bg-black/60 transition-all duration-300 -z-10" />
+    <div className="p-2.5 text-white flex items-center">
+      {direction === 'prev' ? (
+        <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+      ) : (
+        <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+      )}
+    </div>
+  </motion.button>
+));
+
+NavigationButton.displayName = 'NavigationButton';
+
+// Custom hooks refactored for better performance
 const useSlideNavigation = (totalSlides: number) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -65,18 +104,10 @@ const useSlideNavigation = (totalSlides: number) => {
     setIsAnimating(true);
     
     const nextIndex = getLoopedIndex(index, totalSlides);
-    
-    const nextSlide = heroSlides[nextIndex];
-    if (nextSlide) {
-      const imagesToPreload = [nextSlide.image].filter(Boolean);
-      imagesToPreload.forEach(src => {
-        const img = new window.Image();
-        img.src = src;
-      });
-    }
-    
     setCurrentSlide(nextIndex);
-    setTimeout(() => setIsAnimating(false), CONSTANTS.ANIMATION.DURATION);
+    
+    const timer = setTimeout(() => setIsAnimating(false), ANIMATION.DURATION);
+    return () => clearTimeout(timer);
   }, [isAnimating, totalSlides]);
 
   return { currentSlide, isAnimating, goToSlide };
@@ -118,29 +149,46 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     setMounted(true);
   }, []);
 
-  // Event handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches[0]) {
-      setTouchStart(e.touches[0].clientX);
+  useEffect(() => {
+    if (!isPaused && !isMenuHovered) {
+      const timer = setTimeout(() => {
+        goToSlide(currentSlide + 1);
+      }, ANIMATION.CAROUSEL_INTERVAL + 4000);
+      
+      return () => clearTimeout(timer);
     }
-  };
+  }, [currentSlide, isMenuHovered, isPaused, goToSlide]);
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  useEffect(() => {
+    if (isNavOpen) {
+      document.body.style.cssText = 'overflow: hidden; position: fixed; width: 100%; height: 100%;';
+    } else {
+      document.body.style.cssText = '';
+    }
+
+    return () => {
+      document.body.style.cssText = '';
+    };
+  }, [isNavOpen]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches[0]) setTouchStart(e.touches[0].clientX);
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (touchStart === null || !e.touches[0]) return;
     
-    const currentTouch = e.touches[0].clientX;
-    const diff = touchStart - currentTouch;
+    const diff = touchStart - e.touches[0].clientX;
     
     if (Math.abs(diff) > 50) {
-      if (diff > 0 && currentSlide < heroSlides.length - 1) {
-        goToSlide(currentSlide + 1);
-      } else if (diff < 0 && currentSlide > 0) {
-        goToSlide(currentSlide - 1);
-      }
+      goToSlide(currentSlide + (diff > 0 ? 1 : -1));
       setTouchStart(null);
     }
-  };
+  }, [touchStart, currentSlide, goToSlide]);
 
+  const togglePause = useCallback(() => setIsPaused(prev => !prev), []);
+
+  // Event handlers
   const handleMenuHover = (isHovering: boolean) => {
     setIsMenuHovered(isHovering);
   };
@@ -160,50 +208,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     }
   }, [currentSlide, handleScroll]);
 
-  useEffect(() => {
-    if (isPaused || isMenuHovered) {
-      return;
-    }
-
-    const delayTime = CONSTANTS.ANIMATION.CAROUSEL_INTERVAL + 4000;
-    
-    const timer = setTimeout(() => {
-      goToSlide(currentSlide + 1);
-    }, delayTime);
-    
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [currentSlide, isMenuHovered, isPaused, goToSlide]);
-
-  useEffect(() => {
-    const shouldPreventScroll = isNavOpen;
-    
-    if (shouldPreventScroll) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-    } else {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-    }
-
-    return () => {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-    };
-  }, [isNavOpen]);
-
-  // Toggle pause handler
-  const togglePause = () => {
-    setIsPaused(prev => !prev);
-  };
-
   return (
     <>
       {/* Mobile Hero */}
@@ -213,7 +217,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
       <div className="hidden lg:block">
         <div className="relative">
           <section 
-            className="relative h-[100vh] w-full overflow-hidden pt-12"
+            className="relative h-[100vh] w-full overflow-hidden pt-[57px]"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
           >
@@ -253,7 +257,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       }"
                       sizes="(min-width: 1536px) 1536px, (min-width: 1280px) 1280px, (min-width: 1024px) 1024px, 100vw"
                       style={{
-                        objectPosition: index === 2 ? 'center -70px' : 'center'
+                        objectPosition: index === 2 ? 'center -75px' : 'center'
                       }}
                       onLoad={() => {
                         setLoadedImages(prev => new Set(prev).add(slide.image));
@@ -278,49 +282,21 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             ease: "easeInOut"
                           }
                         }}
-                        className="absolute left-[15%] top-[-2%] z-10 w-[120px] origin-top md:w-[180px]"
+                        className="absolute left-[15%] top-[-4%] z-10 w-[120px] origin-top md:w-[175px]"
                       >
                         <div className="relative">
                           <Image
                             src={slide.lampImage}
                             alt=""
-                            width={180}
-                            height={180}
+                            width={175}
+                            height={175}
                             priority
                             className="h-auto w-full"
                           />
                           
                           {/* Keep the interactive product dot */}
                           <div className="group absolute bottom-[20%] left-[65%] -translate-x-1/2 translate-y-1/2">
-                            <div className="relative inline-flex">
-                              {/* Pulse rings */}
-                              <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#dcd5ca]/60
-                                            animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
-                              <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#ebe7e0]/50
-                                            animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
-                              
-                              {/* Main dot */}
-                              <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] 
-                                    shadow-[0_0_10px_rgba(199,186,168,0.8)]
-                                    transition-all duration-500 ease-in-out
-                                    group-hover:scale-125" />
-
-                              {/* Simplified hover button */}
-                              <div className="absolute left-6 opacity-0 group-hover:opacity-100 
-                                            transition-opacity duration-300">
-                                <Link 
-                                  href={slide.productLink || '#'}
-                                  className="flex items-center gap-2 bg-[#ebe7e0]/95 backdrop-blur-sm 
-                                           shadow-lg rounded-lg p-2 border border-[#b39e86] 
-                                           hover:bg-[#dcd5ca]/95"
-                                >
-                                  <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
-                                    View Product
-                                  </span>
-                                  <ChevronRight className="w-4 h-4 text-[#9c826b]" />
-                                </Link>
-                              </div>
-                            </div>
+                            <ProductDot className="w-4 h-4" href={slide.productLink || '#'} />
                           </div>
                         </div>
                       </motion.div>
@@ -342,70 +318,14 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                     {/* New Product Dot 1 - Render only on the first slide */}
                     {currentSlide === 0 && (
                       <div className="group absolute bottom-[30%] right-[38%] -translate-x-1/2 translate-y-1/2">
-                        <div className="relative inline-flex">
-                          {/* Pulse rings */}
-                          <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#dcd5ca]/60
-                                        animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
-                          <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#ebe7e0]/50
-                                        animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
-                          
-                          {/* Main dot */}
-                          <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] 
-                                    shadow-[0_0_10px_rgba(199,186,168,0.8)]
-                                    transition-all duration-500 ease-in-out
-                                    group-hover:scale-125" />
-
-                          {/* Hover button */}
-                          <div className="absolute left-6 opacity-0 group-hover:opacity-100 
-                                        transition-opacity duration-300">
-                            <Link 
-                              href="/product/product-1"
-                              className="flex items-center gap-2 bg-[#ebe7e0]/95 backdrop-blur-sm 
-                                       shadow-lg rounded-lg p-2 border border-[#b39e86] 
-                                       hover:bg-[#dcd5ca]/95"
-                            >
-                              <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
-                                View Product
-                              </span>
-                              <ChevronRight className="w-4 h-4 text-[#9c826b]" />
-                            </Link>
-                          </div>
-                        </div>
+                        <ProductDot className="w-4 h-4" href="/product/product-1" />
                       </div>
                     )}
 
                     {/* New Product Dot 2 - Render only on the first slide */}
                     {currentSlide === 0 && (
                       <div className="group absolute bottom-[32%] left-[36%] -translate-x-1/2 translate-y-1/2">
-                        <div className="relative inline-flex">
-                          {/* Pulse rings */}
-                          <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#dcd5ca]/60
-                                        animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
-                          <div className="absolute -inset-1.5 w-7 h-7 rounded-full bg-[#ebe7e0]/50
-                                        animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
-                          
-                          {/* Main dot */}
-                          <div className="relative w-4 h-4 rounded-full bg-[#ebe7e0] 
-                                    shadow-[0_0_10px_rgba(199,186,168,0.8)]
-                                    transition-all duration-500 ease-in-out
-                                    group-hover:scale-125" />
-
-                          {/* Hover button */}
-                          <div className="absolute left-6 opacity-0 group-hover:opacity-100 
-                                        transition-opacity duration-300">
-                            <Link 
-                              href="/product/product-2"
-                              className="flex items-center gap-2 bg-[#ebe7e0]/95 backdrop-blur-sm 
-                                       shadow-lg rounded-lg p-2 border border-[#b39e86] 
-                                       hover:bg-[#dcd5ca]/95"
-                            >
-                              <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
-                                View Product
-                              </span>
-                              <ChevronRight className="w-4 h-4 text-[#9c826b]" />
-                            </Link>
-                          </div>
-                        </div>
+                        <ProductDot className="w-4 h-4" href="/product/product-2" />
                       </div>
                     )}
 
@@ -599,29 +519,8 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
               {/* Enhanced Professional Pagination with Navigation and Pause Button */}
               <div className="absolute bottom-16 right-8 z-20 flex items-center gap-4 perspective-[1200px] transform-gpu scale-80">
-                {/* Previous Button - smaller size */}
-                <motion.button
-                  onClick={() => goToSlide(currentSlide - 1)}
-                  disabled={isAnimating}
-                  className="relative group scale-90"
-                  whileHover={{ scale: 0.95 }}
-                  whileTap={{ scale: 0.85 }}
-                  aria-label="Previous slide"
-                >
-                  <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
-                                  group-hover:bg-black/60 transition-all duration-300 -z-10" />
-                  <div className="p-2.5 text-white flex items-center overflow-hidden">
-                    <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-                    <div className="w-0 group-hover:w-16 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
-                      <span className="text-xs font-medium pl-2 opacity-0 group-hover:opacity-100 
-                                    transition-opacity duration-200 delay-100">
-                        Previous
-                      </span>
-                    </div>
-                  </div>
-                </motion.button>
+                <NavigationButton direction="prev" onClick={() => goToSlide(currentSlide - 1)} />
 
-                {/* Thumbnails */}
                 <div className="flex items-center gap-1 relative">
                   {[...Array(3)].map((_, i) => {
                     const slideIndex = getLoopedIndex(currentSlide - 1 + i, heroSlides.length);
@@ -737,27 +636,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                   })}
                 </div>
 
-                {/* Next Button - smaller size */}
-                <motion.button
-                  onClick={() => goToSlide(currentSlide + 1)}
-                  disabled={isAnimating}
-                  className="relative group scale-90"
-                  whileHover={{ scale: 0.95 }}
-                  whileTap={{ scale: 0.85 }}
-                  aria-label="Next slide"
-                >
-                  <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm 
-                                 group-hover:bg-black/60 transition-all duration-300 -z-10" />
-                  <div className="p-2.5 text-white flex items-center overflow-hidden">
-                    <div className="w-0 group-hover:w-16 transition-all duration-300 ease-out overflow-hidden whitespace-nowrap">
-                      <span className="text-xs font-medium pr-2 opacity-0 group-hover:opacity-100 
-                                    transition-opacity duration-200 delay-100">
-                        Next
-                      </span>
-                    </div>
-                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                  </div>
-                </motion.button>
+                <NavigationButton direction="next" onClick={() => goToSlide(currentSlide + 1)} />
               </div>
             </div>
           </section>
