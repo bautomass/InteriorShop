@@ -32,7 +32,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/1_4a1ed1f2-1f28-465f-960a-8f58bcb22838.png?v=1738429093',
+        source: '/:path*',
         headers: [
           {
             key: 'Link',
