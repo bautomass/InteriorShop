@@ -265,6 +265,10 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       loading="eager"
                       quality={100}
                       className="object-cover w-full h-full"
+                      sizes="100vw"
+                      decoding="sync"
+                      id="hero-main-image"
+                      data-lcp-element="true"
                     />
                   </div>
                 )}
