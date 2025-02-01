@@ -1,7 +1,7 @@
 'use client';
 
 import type { Product } from '@/lib/shopify/types';
-import { memo } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { Autoplay, Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { LAMP_CONSTANTS } from '../constants/lamp-constants';
@@ -31,6 +31,15 @@ export const CarouselView = memo(function CarouselView({
   isBeginning,
   isEnd
 }: CarouselViewProps) {
+  const swiperRef = useRef<any | null>(null);
+
+  useEffect(() => {
+    if (swiperRef.current) {
+      swiperRef.current.params.slidesPerView = cardsToShow;
+      swiperRef.current.update();
+    }
+  }, [cardsToShow]);
+
   return (
     <div
       className="relative"
@@ -51,11 +60,17 @@ export const CarouselView = memo(function CarouselView({
         navigation={{
           prevEl: '.custom-swiper-button-prev',
           nextEl: '.custom-swiper-button-next',
-          enabled: true
+          enabled: true,
         }}
-        breakpoints={LAMP_CONSTANTS.SWIPER_CONFIG.breakpoints}
+        breakpoints={{
+          ...LAMP_CONSTANTS.SWIPER_CONFIG.breakpoints,
+          1024: { slidesPerView: cardsToShow, spaceBetween: 16 }
+        }}
         className="px-0"
-        onSwiper={handleSwiperInit}
+        onSwiper={(swiper) => {
+          swiperRef.current = swiper;
+          handleSwiperInit(swiper);
+        }}
         onSlideChange={handleSlideChange}
       >
         {products.map((product) => (

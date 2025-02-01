@@ -13,6 +13,7 @@ export const useLampSwiperControls = () => {
     setMainSwiper(swiperInstance);
     setIsBeginning(swiperInstance.isBeginning);
     setIsEnd(swiperInstance.isEnd);
+    swiperInstance.navigation.update();
   }, []);
 
   const handleSlideChange = useCallback((swiper: SwiperType) => {

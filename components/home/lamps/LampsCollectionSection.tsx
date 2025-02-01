@@ -10,7 +10,6 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 
 import { LAMP_CONSTANTS } from './constants/lamp-constants';
-import { useLampCardsView } from './hooks/useLampCardsView';
 import { useLampProducts } from './hooks/useLampProducts';
 import { useLampSwiperControls } from './hooks/useLampSwiperControls';
 
@@ -52,9 +51,17 @@ function LampsCollectionSection() {
     setActiveThumbIndex
   } = useLampSwiperControls();
 
-  const { cardsToShow, handleViewChange } = useLampCardsView(LAMP_CONSTANTS.VIEW_SETTINGS);
   const [isGridView, setIsGridView] = useState(false);
+  const [cardsToShow, setCardsToShow] = useState<number>(LAMP_CONSTANTS.VIEW_SETTINGS.defaultCards);
   const quickView = useQuickView();
+
+  const handleViewChange = useCallback((isGrid: boolean) => {
+    setIsGridView(isGrid);
+  }, []);
+
+  const handleCardCountChange = useCallback((value: number) => {
+    setCardsToShow(value);
+  }, []);
 
   const handleQuickView = useCallback(
     (product: Product) => {
@@ -120,9 +127,9 @@ function LampsCollectionSection() {
                     current={cardsToShow}
                     min={LAMP_CONSTANTS.VIEW_SETTINGS.minCards}
                     max={LAMP_CONSTANTS.VIEW_SETTINGS.maxCards}
-                    onChange={handleViewChange}
+                    onChange={handleCardCountChange}
                     isGridView={isGridView}
-                    onViewChange={setIsGridView}
+                    onViewChange={handleViewChange}
                   />
                 </div>
               </div>
