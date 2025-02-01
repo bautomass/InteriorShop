@@ -371,7 +371,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                     {/* Lamp Image - Explicitly disable initial animation */}
                     {index === 0 && slide.lampImage && (
                       <motion.div
-                        initial={false}
                         animate={{ 
                           rotate: [0, 2, -2, 2, 0],
                         }}
