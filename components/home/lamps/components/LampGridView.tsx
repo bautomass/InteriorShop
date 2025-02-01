@@ -62,7 +62,7 @@ export const LampGridView = memo(function LampGridView({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={cn(
-              'inline-flex items-center justify-center gap-2',
+              'inline-flex items-center justify-center gap-2 mb-3',
               'px-8 py-3 text-base font-medium',
               'bg-primary-900',
               'text-white',

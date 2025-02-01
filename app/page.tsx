@@ -11,7 +11,6 @@ import PendantLightSection from '@/components/home/PendantLightSection';
 import { Footer } from '@/components/layout/site-footer';
 import BackToTop from 'components/home/BackToTop';
 import Hero from 'components/home/hero';
-// import LampsCollection from 'components/home/LampsCollection';
 import LampsCollectionSection from 'components/home/lamps/LampsCollectionSection';
 import WishboneChairSection from 'components/home/WishboneChairSection';
 import LargeScreenNavBar from 'components/layout/navbar/LargeScreenNavBar';
