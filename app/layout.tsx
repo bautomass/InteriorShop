@@ -38,7 +38,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <head>
           <link
             rel="preload"
-            href="/images/hero/1.png"
+            href="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/1_4a1ed1f2-1f28-465f-960a-8f58bcb22838.png?v=1738429093"
             as="image"
             type="image/png"
           />

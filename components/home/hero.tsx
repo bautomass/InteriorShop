@@ -41,7 +41,7 @@ interface HeroProps {}
 const heroSlides: SlideContent[] = [
   {
     id: 'slide-1',
-    image: '/images/hero/1.png',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/1_4a1ed1f2-1f28-465f-960a-8f58bcb22838.png?v=1738429093',
     alt: 'Simple Interior Ideas',
     width: FIRST_SLIDE_DIMENSIONS.width,
     height: FIRST_SLIDE_DIMENSIONS.height,
@@ -52,13 +52,13 @@ const heroSlides: SlideContent[] = [
   },
   {
     id: 'slide-2',
-    image: '/images/hero/2.png',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2_624ad208-26bc-4437-a2d2-857726a8a421.png?v=1738429094',
     alt: 'Architectural Beauty',
     loading: 'lazy'
   },
   {
     id: 'slide-3',
-    image: '/images/hero/3.png',
+    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/3_36d88f5d-7420-49c3-9c1c-bfad1a6be399.png?v=1738429093',
     alt: 'Minimalist Living',
     loading: 'lazy'
   }

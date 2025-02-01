@@ -32,11 +32,11 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/images/hero/1.png',
+        source: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/1_4a1ed1f2-1f28-465f-960a-8f58bcb22838.png?v=1738429093',
         headers: [
           {
             key: 'Link',
-            value: '</images/hero/1.png>; rel=preload; as=image; fetchpriority=high',
+            value: '<https://cdn.shopify.com/s/files/1/0640/6868/1913/files/1_4a1ed1f2-1f28-465f-960a-8f58bcb22838.png?v=1738429093>; rel=preload; as=image; fetchpriority=high',
           },
           {
             key: 'Cache-Control',
