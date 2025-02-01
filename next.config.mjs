@@ -31,15 +31,6 @@ const nextConfig = {
     optimizePackageImports: ['framer-motion', '@headlessui/react']
   },
   webpack: (config, { dev, isServer }) => {
-    // Optimize framer-motion - Updated path
-    if (!dev && !isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        // Updated framer-motion path to use the ESM bundle
-        'framer-motion': 'framer-motion/dist/es/index.mjs',
-      }
-    }
-
     // Optimize large modules
     if (!dev) {
       config.optimization = {
@@ -82,7 +73,6 @@ const nextConfig = {
 };
 
 export default withBundleAnalyzer(nextConfig);
-
 
 
 
