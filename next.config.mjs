@@ -21,11 +21,26 @@ const nextConfig = {
         hostname: 'cdn.shopify.com',
         pathname: '/assets/**'
       }
-    ]
+    ],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   transpilePackages: ['framer-motion'],
   poweredByHeader: false,
-  reactStrictMode: true
+  reactStrictMode: true,
+  async headers() {
+    return [
+      {
+        source: '/images/hero/1.png', // Update this path to match your first hero image
+        headers: [
+          {
+            key: 'Link',
+            value: '</images/hero/1.png>; rel=preload; as=image',
+          },
+        ],
+      },
+    ]
+  },
 };
 
 export default withBundleAnalyzer(nextConfig);

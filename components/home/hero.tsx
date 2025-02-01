@@ -265,8 +265,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       loading="eager"
                       quality={100}
                       className="object-cover w-full h-full"
-                      placeholder="blur"
-                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRseHSMlHx4gJScuJyQkLSowPjA1Nzc1MDElLUFBPUE9NC5DRUVDRE1QTURBQTf/2wBDAQoLCw4NDhwQEBw3JSAlNzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzf/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                     />
                   </div>
                 )}
@@ -303,29 +301,35 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                     }}
                     className="flex-shrink-0"
                   >
-                    {/* Loading placeholder */}
-                    <div 
-                      className={`absolute inset-0 bg-gray-200 animate-pulse transition-opacity duration-500 ${
-                        loadedImages.has(slide.image) ? 'opacity-0' : 'opacity-100'
-                      }`} 
-                    />
+                    {/* Remove loading placeholder for first slide */}
+                    {index !== 0 && (
+                      <div 
+                        className={`absolute inset-0 bg-gray-200 animate-pulse transition-opacity duration-500 ${
+                          loadedImages.has(slide.image) ? 'opacity-0' : 'opacity-100'
+                        }`} 
+                      />
+                    )}
                     
                     {/* Image component */}
                     <Image
                       src={slide.image}
                       alt={slide.alt}
                       fill
-                      priority={index === 0 || index === 1} // Preload first two slides
-                      quality={100}
-                      className="object-cover w-full h-full transition-opacity duration-500 ${
-                        loadedImages.has(slide.image) ? 'opacity-100' : 'opacity-0'
-                      }"
+                      priority={index === 0}
+                      quality={index === 0 ? 100 : 75}
+                      className={`object-cover w-full h-full ${
+                        index === 0 ? '' : 'transition-opacity duration-500'
+                      } ${
+                        index === 0 ? 'opacity-100' : loadedImages.has(slide.image) ? 'opacity-100' : 'opacity-0'
+                      }`}
                       sizes="(min-width: 1536px) 1536px, (min-width: 1280px) 1280px, (min-width: 1024px) 1024px, 100vw"
                       style={{
                         objectPosition: index === 2 ? 'center -30px' : 'center'
                       }}
                       onLoad={() => {
-                        setLoadedImages(prev => new Set(prev).add(slide.image));
+                        if (index !== 0) {
+                          setLoadedImages(prev => new Set(prev).add(slide.image));
+                        }
                       }}
                     />
 

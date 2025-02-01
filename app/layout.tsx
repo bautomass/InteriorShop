@@ -35,6 +35,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <AuthProvider>
       <html lang="en" className={GeistSans.variable}>
+        <head>
+          <link
+            rel="preload"
+            href="/images/hero/1.png"
+            as="image"
+          />
+        </head>
         <body className="bg-primary-50 text-primary-900 selection:bg-accent-200">
           <ThemeProvider>
             <QueryProvider>
