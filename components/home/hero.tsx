@@ -16,6 +16,12 @@ const ANIMATION = {
   DEBOUNCE_DELAY: 300,
 } as const;
 
+// Pre-define image dimensions for the first slide
+const FIRST_SLIDE_DIMENSIONS = {
+  width: 1020,
+  height: 1080
+};
+
 // Types and Interfaces
 interface SlideContent {
   id: string;
@@ -23,6 +29,10 @@ interface SlideContent {
   alt: string;
   lampImage?: string;
   productLink?: string;
+  width?: number;
+  height?: number;
+  priority?: boolean;
+  loading?: 'eager' | 'lazy';
 }
 
 interface HeroProps {}
@@ -31,23 +41,26 @@ interface HeroProps {}
 const heroSlides: SlideContent[] = [
   {
     id: 'slide-1',
-    // image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-banner.webp?v=1737225966',
     image: '/images/hero/1.png',
     alt: 'Simple Interior Ideas',
+    width: FIRST_SLIDE_DIMENSIONS.width,
+    height: FIRST_SLIDE_DIMENSIONS.height,
+    priority: true,
+    loading: 'eager',
     lampImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/lamp-el.svg',
     productLink: '/product/sleek-curve-japandi-glow-minimalist-pendant-light',
   },
   {
     id: 'slide-2',
-    // image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-Banner-Slide_2.webp?v=1737230223',
     image: '/images/hero/2.png',
     alt: 'Architectural Beauty',
+    loading: 'lazy'
   },
   {
     id: 'slide-3',
-    // image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/image-slide-banner.webp?v=1737894828',
     image: '/images/hero/3.png',
     alt: 'Minimalist Living',
+    loading: 'lazy'
   }
 ];
 
@@ -147,6 +160,15 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   const [isMenuHovered, setIsMenuHovered] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
 
+  // First slide optimization
+  const firstSlideRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    // Preload first slide image
+    const image = new window.Image();
+    image.src = heroSlides[0]?.image || '';
+  }, []);
+
   // Effects
   useEffect(() => {
     setMounted(true);
@@ -227,6 +249,46 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
             {/* Updated Hero Content */}
             <div className="relative h-[100vh] w-full overflow-hidden">
               <div className="flex h-full">
+                {/* First Slide - Optimized Loading */}
+                {currentSlide === 0 && (
+                  <div 
+                    ref={firstSlideRef}
+                    className="relative w-full h-full"
+                  >
+                    <Image
+                      src={heroSlides[0]?.image || ''}
+                      alt={heroSlides[0]?.alt || ''}
+                      width={FIRST_SLIDE_DIMENSIONS.width}
+                      height={FIRST_SLIDE_DIMENSIONS.height}
+                      priority={true}
+                      fetchPriority="high"
+                      loading="eager"
+                      quality={100}
+                      className="object-cover w-full h-full"
+                      placeholder="blur"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRseHSMlHx4gJScuJyQkLSowPjA1Nzc1MDElLUFBPUE9NC5DRUVDRE1QTURBQTf/2wBDAQoLCw4NDhwQEBw3JSAlNzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzf/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                    />
+                  </div>
+                )}
+
+                {/* Other Slides - Lazy Loaded */}
+                {currentSlide > 0 && (
+                  <div className="flex h-full">
+                    {heroSlides.slice(1).map((slide, index) => (
+                      <Image
+                        key={slide.id}
+                        src={slide.image}
+                        alt={slide.alt}
+                        loading="lazy"
+                        quality={75}
+                        className="object-cover w-full h-full"
+                        width={1920}
+                        height={1080}
+                      />
+                    ))}
+                  </div>
+                )}
+
                 {heroSlides.map((slide, index) => (
                   <div
                     key={slide.id}
