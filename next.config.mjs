@@ -27,7 +27,14 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === "production",
   },
   experimental: {
-    optimizeCss: true,
+    optimizeCss: {
+      critters: {
+        ssrMode: true,
+        preload: 'media',
+        pruneSource: true,
+        reduceInlineStyles: false,
+      }
+    },
     optimizePackageImports: ['framer-motion', '@headlessui/react']
   },
   webpack: (config, { dev, isServer }) => {
@@ -65,33 +72,14 @@ const nextConfig = {
       };
     }
 
-    // Add polyfills and handle browser APIs for server
-    if (isServer) {
-      config.resolve = {
-        ...config.resolve,
-        fallback: {
-          ...config.resolve?.fallback,
-          canvas: false,
-          encoding: false,
-          bufferutil: false,
-          'utf-8-validate': false,
-        }
-      };
-    }
-
     return config;
   },
-  // Ensure these packages are properly handled
-  transpilePackages: [
-    'framer-motion',
-    '@radix-ui/react-tooltip',
-  ],
+  transpilePackages: ['framer-motion'],
   poweredByHeader: false,
   reactStrictMode: true,
 };
 
 export default withBundleAnalyzer(nextConfig);
-
 
 
 
