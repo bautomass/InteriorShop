@@ -628,7 +628,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             priority={isActive}
                             className="object-cover transition-all duration-500 ease-out rounded-lg"
                             sizes="(min-width: 768px) 160px, 128px"
-                            quality={90}
+                            quality={100}
                           />
                           <div className={`absolute inset-0 transition-all duration-500
                                         bg-gradient-to-t from-black/30 to-transparent

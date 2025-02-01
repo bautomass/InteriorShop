@@ -8,7 +8,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    unoptimized: false,  // This will disable image optimization
+    unoptimized: true,  // This will disable image optimization
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
