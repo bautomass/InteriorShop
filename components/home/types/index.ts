@@ -54,6 +54,9 @@ export interface ProductGalleryProps {
   onImageChange: (index: number) => void;
   isHovering: boolean;
   setIsHovering: (value: boolean) => void;
+  onTouchStart: (event: React.TouchEvent) => void;
+  onTouchMove: (event: React.TouchEvent) => void;
+  onTouchEnd: () => void;
 }
 
 export interface ProductOptionsProps {
@@ -79,4 +82,18 @@ export interface AddToCartButtonProps {
   onClick: () => void;
   disabled: boolean;
   isPending: boolean;
+}
+//INFINITE PRODUCT BANNER
+
+export interface LampSnippet {
+  text: string;
+}
+
+export interface ProductCardProps {
+  product: Product;
+  snippet: string;
+}
+
+export interface InfiniteProductBannerProps {
+  className?: string;
 }

@@ -22,11 +22,13 @@ const ProductReviews = dynamic(() => import('@/components/reviews/ProductReviews
 
 // Local component imports
 import { AddToCartButton } from './AddToCartButton';
+import { ProductGallery } from './ProductGallery';
 import { ProductOptions } from './ProductOptions';
 import { QuantityPicker } from './QuantityPicker';
 import { ShareButtons } from './ShareButtons';
 
 // Import hooks, constants and utils
+import { Star } from 'lucide-react';
 import Image from 'next/image';
 import { HIGHLIGHTS, PRODUCT_CONSTANTS } from './constants';
 import { useProductGallery } from './hooks/useProductGallery';
@@ -124,66 +126,26 @@ const FeaturedProduct = () => {
           <div className="flex flex-col lg:grid lg:grid-cols-2 min-w-0 gap-4 sm:gap-6 lg:gap-16">
             {/* Product Gallery */}
             <div className="order-2 lg:order-1">
-              <div 
-                className="relative aspect-square rounded-lg sm:rounded-2xl overflow-hidden group"
+              <ProductGallery
+                images={product.images}
+                title={product.title}
+                activeImage={activeImage}
+                onImageChange={(index: number) => {
+                  setActiveImage(index);
+                  scrollToThumbnail(index);
+                }}
+                isHovering={isHovering}
+                setIsHovering={setIsHovering}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
-              >
-                {product.images.map((image, index) => (
-                  <div
-                    key={image.url}
-                    className={`absolute inset-0 transition-opacity duration-700 ease-in-out
-                      ${index === activeImage ? 'opacity-100' : 'opacity-0'}`}
-                  >
-                    <Image
-                      src={image.url}
-                      alt={image.altText || product.title}
-                      fill
-                      priority={index === activeImage}
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      sizes={PRODUCT_CONSTANTS.IMAGE_SIZES.MAIN}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#6B5E4C]/95 via-[#6B5E4C]/20 to-transparent 
-                      opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out" />
-                    
-                    <div className="absolute inset-x-0 bottom-0 p-12 transform translate-y-full 
-                      group-hover:translate-y-0 transition-all duration-700 ease-out">
-                      <div className="overflow-hidden">
-                        <p className="text-white text-2xl font-light leading-relaxed transform 
-                          translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 
-                          transition-all duration-700 delay-100 ease-out">
-                          {/* Add your image text here */}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Navigation buttons */}
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
-                  {product.images.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setActiveImage(index);
-                        scrollToThumbnail(index);
-                      }}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 
-                        ${activeImage === index 
-                          ? 'bg-white w-6' 
-                          : 'bg-white/50 hover:bg-white/75'}`}
-                      aria-label={`View image ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
+              />
 
               {/* Thumbnails */}
               <div className="relative mt-2">
                 <motion.div 
                   ref={thumbnailsRef}
-                  className="flex gap-2 overflow-x-auto scroll-smooth no-scrollbar"
+                  className="flex gap-2 overflow-x-auto scroll-smooth no-scrollbar py-2 px-2"
                 >
                   {product.images.map((image, index) => (
                     <motion.button
@@ -192,8 +154,10 @@ const FeaturedProduct = () => {
                         setActiveImage(index);
                         scrollToThumbnail(index);
                       }}
-                      className={`relative flex-shrink-0 w-20 aspect-square rounded-lg 
-                        ${activeImage === index ? 'ring-2 ring-[#6B5E4C]' : 'opacity-70 hover:opacity-100'} 
+                      className={`relative flex-shrink-0 w-20 aspect-square rounded-lg overflow-hidden
+                        ${activeImage === index 
+                          ? 'ring-2 ring-offset-1 ring-[#6B5E4C] opacity-100'
+                          : 'opacity-70 hover:opacity-100'} 
                         transition-all duration-200`}
                     >
                       <Image
@@ -203,9 +167,21 @@ const FeaturedProduct = () => {
                         className="object-cover"
                         sizes={PRODUCT_CONSTANTS.IMAGE_SIZES.THUMBNAIL}
                       />
+                      {activeImage === index && (
+                        <div className="absolute inset-0 border-2 border-[#6B5E4C] rounded-lg" />
+                      )}
                     </motion.button>
                   ))}
                 </motion.div>
+              </div>
+
+              {/* Share Section - without additional border */}
+              <div className="mt-6">
+                <ShareButtons
+                  product={product}
+                  shareCount={shareCount}
+                  onShare={(platform) => handleShare(platform, product.handle)}
+                />
               </div>
             </div>
 
@@ -243,22 +219,61 @@ const FeaturedProduct = () => {
                     </>
                   )}
                 </div>
-              </div>
 
-              {/* Description */}
-              <div>
-                <div className={`prose prose-neutral max-w-none ${
-                  !isDescriptionExpanded ? 'line-clamp-3' : ''
-                }`}>
-                  <div dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
+                {/* Description and Reviews Section */}
+                <div>
+                  {/* Star Rating and Reviews Button */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, index) => {
+                        const fillPercentage = index === 4 ? (4.8 % 1) * 100 : 100;
+                        return (
+                          <div key={index} className="relative w-4 h-4">
+                            {/* Background star (empty) */}
+                            <Star className="absolute w-4 h-4 text-gray-200" />
+                            {/* Foreground star (filled) */}
+                            <div className="absolute w-4 h-4 overflow-hidden" style={{ width: `${fillPercentage}%` }}>
+                              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <button 
+                      onClick={() => setIsReviewsExpanded(!isReviewsExpanded)}
+                      className="text-sm text-[#6B5E4C] hover:underline"
+                    >
+                      4.8 (17 reviews)
+                    </button>
+                  </div>
+
+                  {/* Render Reviews directly below the stars when expanded */}
+                  {isReviewsExpanded && (
+                    <div className="mt-2">
+                      <ProductReviews 
+                        productId={product.id}
+                        onToggle={() => setIsReviewsExpanded(!isReviewsExpanded)}
+                      />
+                    </div>
+                  )}
+
+                  <div className={`prose prose-neutral max-w-none mt-1 ${
+                    !isDescriptionExpanded ? 'line-clamp-3' : ''
+                  }`}>
+                    <div dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
+                  </div>
+                  
+                  {/* Show Read full description button only if reviews are not expanded */}
+                  {!isReviewsExpanded && (
+                    <button
+                      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                      className="text-[#6B5E4C] hover:text-[#8C7E6A] text-sm font-medium 
+                        flex items-center gap-1 mt-2"
+                    >
+                      {isDescriptionExpanded ? 'Show less' : 'Read full description'}
+                    </button>
+                  )}
                 </div>
-                <button
-                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                  className="text-[#6B5E4C] hover:text-[#8C7E6A] text-sm font-medium 
-                    flex items-center gap-1 mt-2"
-                >
-                  {isDescriptionExpanded ? 'Show less' : 'Read more'}
-                </button>
               </div>
 
               {/* Product Options */}
@@ -297,13 +312,25 @@ const FeaturedProduct = () => {
                   </div>
                 ))}
               </div>
-
-              {/* Share Section */}
-              <ShareButtons
-                product={product}
-                shareCount={shareCount}
-                onShare={(platform) => handleShare(platform, product.handle)}
-              />
+              {/* Product Tags with border */}
+              <div className="pt-6 border-t border-[#6B5E4C]/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-[#6B5E4C]">
+                    {product.tags.length === 1 ? 'Tag:' : 'Tags:'} {/* Added colon */}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                    {product.tags.map((tag) => (
+                      <span 
+                        key={tag}
+                        className="px-1.5 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs 
+                                  bg-[#B5A48B]/10 text-[#6B5E4C] rounded-full border border-[#B5A48B]/20"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -314,13 +341,6 @@ const FeaturedProduct = () => {
         isOpen={isSizeGuideOpen} 
         onClose={() => setIsSizeGuideOpen(false)}
       />
-
-      {isReviewsExpanded && (
-        <ProductReviews 
-          productId={product.id}
-          onToggle={() => setIsReviewsExpanded(!isReviewsExpanded)}
-        />
-      )}
     </>
   );
 };

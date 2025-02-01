@@ -1,5 +1,4 @@
 // /components/home/components/ProductGallery.tsx
-import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { memo } from 'react';
 import { PRODUCT_CONSTANTS } from './constants';
@@ -11,27 +10,32 @@ export const ProductGallery = memo(function ProductGallery({
   activeImage,
   onImageChange,
   isHovering,
-  setIsHovering
+  setIsHovering,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd
 }: ProductGalleryProps) {
   const getImagePriority = (index: number): boolean => {
     return index === activeImage || index === (activeImage + 1) % images.length;
   };
 
   return (
-    <div className="relative aspect-square rounded-lg sm:rounded-2xl overflow-hidden group">
-      <motion.div 
-        animate={PRODUCT_CONSTANTS.ANIMATION.IMAGE_ZOOM}
-        className="absolute inset-0"
-      >
+    <div 
+      className="relative aspect-square rounded-lg sm:rounded-2xl overflow-hidden group"
+      onTouchStart={(e: React.TouchEvent<HTMLDivElement>) => onTouchStart(e)}
+      onTouchMove={(e: React.TouchEvent<HTMLDivElement>) => onTouchMove(e)}
+      onTouchEnd={() => onTouchEnd()}
+    >
+      <div className="absolute inset-0">
         <Image
           src={images[activeImage]?.url || ''}
           alt={images[activeImage]?.altText || title}
           fill
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          className="object-cover"
           priority={getImagePriority(activeImage)}
           sizes={PRODUCT_CONSTANTS.IMAGE_SIZES.MAIN}
         />
-      </motion.div>
+      </div>
 
       <button
         onClick={() => {
@@ -39,8 +43,9 @@ export const ProductGallery = memo(function ProductGallery({
           onImageChange(newIndex);
         }}
         className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 
-                   rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center 
-                   text-white transition-opacity duration-300 hover:bg-black/60"
+                  rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center 
+                  text-white transition-opacity duration-300 hover:bg-black/60 touch-manipulation
+                  opacity-0 group-hover:opacity-100"
         aria-label="Previous image"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,8 +59,9 @@ export const ProductGallery = memo(function ProductGallery({
           onImageChange(newIndex);
         }}
         className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 
-                   rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center 
-                   text-white transition-opacity duration-300 hover:bg-black/60"
+                  rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center 
+                  text-white transition-opacity duration-300 hover:bg-black/60 touch-manipulation
+                  opacity-0 group-hover:opacity-100"
         aria-label="Next image"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

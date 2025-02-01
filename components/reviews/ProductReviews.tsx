@@ -97,24 +97,6 @@ const ProductReviews = ({ productId, onToggle }: ProductReviewsProps) => {
       
       {/* Gradient Overlay - Made stronger */}
       <div className="absolute bottom-0 left-0 right-0 h-[250px] bg-gradient-to-t from-[#F9F7F4] via-[#F9F7F4]/80 to-transparent pointer-events-none" />
-      
-      {/* Call to Action - Simplified */}
-      <div className="relative pt-4 text-center">
-        <button 
-          onClick={onToggle}
-          className="text-[#6B5E4C] hover:text-[#8C7E6A] text-sm font-medium 
-                   flex items-center gap-1 transition-colors duration-200 mx-auto"
-        >
-          Read full description
-          <motion.span
-            initial={{ rotate: 180 }}
-            animate={{ rotate: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            ↓
-          </motion.span>
-        </button>
-      </div>
     </div>
   );
 };

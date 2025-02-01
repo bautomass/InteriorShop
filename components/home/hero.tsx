@@ -225,7 +225,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
             onTouchMove={handleTouchMove}
           >
             {/* Updated Hero Content */}
-            <div className="relative h-[101vh] w-full overflow-hidden">
+            <div className="relative h-[100vh] w-full overflow-hidden">
               <div className="flex h-full">
                 {heroSlides.map((slide, index) => (
                   <div
@@ -260,7 +260,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       }"
                       sizes="(min-width: 1536px) 1536px, (min-width: 1280px) 1280px, (min-width: 1024px) 1024px, 100vw"
                       style={{
-                        objectPosition: index === 2 ? 'center -75px' : 'center'
+                        objectPosition: index === 2 ? 'center -30px' : 'center'
                       }}
                       onLoad={() => {
                         setLoadedImages(prev => new Set(prev).add(slide.image));
@@ -285,14 +285,14 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             ease: "easeInOut"
                           }
                         }}
-                        className="absolute left-[15%] top-[-4%] z-10 w-[120px] origin-top md:w-[200px]"
+                        className="absolute left-[15%] top-[-4%] z-10 w-[120px] origin-top md:w-[180px]"
                       >
                         <div className="relative">
                           <Image
                             src={slide.lampImage}
                             alt=""
-                            width={200}
-                            height={200}
+                            width={180}
+                            height={180}
                             priority
                             className="h-auto w-full"
                           />
