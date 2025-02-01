@@ -8,7 +8,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    unoptimized: true,  // This will disable image optimization
+    unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
@@ -31,8 +31,8 @@ const nextConfig = {
     optimizePackageImports: ['framer-motion', '@headlessui/react']
   },
   webpack: (config, { dev, isServer }) => {
-    // Optimize large modules
-    if (!dev) {
+    // Only optimize in production and for client-side bundles
+    if (!dev && !isServer) {
       config.optimization = {
         ...config.optimization,
         splitChunks: {
@@ -57,7 +57,7 @@ const nextConfig = {
                 const packageName = match ? match[1] : 'vendor';
                 return `npm.${packageName.replace('@', '')}`;
               },
-              chunks: (chunk) => !/^(polyfills|pages\/_app)$/.test(chunk.name),
+              chunks: 'all',
               priority: 1,
             },
           },
@@ -65,28 +65,32 @@ const nextConfig = {
       };
     }
 
-    // Handle browser-specific modules
+    // Add polyfills and handle browser APIs for server
     if (isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-        canvas: false,
-        'utf-8-validate': false,
-        'bufferutil': false,
+      config.resolve = {
+        ...config.resolve,
+        fallback: {
+          ...config.resolve?.fallback,
+          canvas: false,
+          encoding: false,
+          bufferutil: false,
+          'utf-8-validate': false,
+        }
       };
     }
 
     return config;
   },
-  transpilePackages: ['framer-motion'],
+  // Ensure these packages are properly handled
+  transpilePackages: [
+    'framer-motion',
+    '@radix-ui/react-tooltip',
+  ],
   poweredByHeader: false,
   reactStrictMode: true,
 };
 
 export default withBundleAnalyzer(nextConfig);
-
 
 
 
