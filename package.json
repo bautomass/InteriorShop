@@ -82,5 +82,11 @@
   "resolutions": {
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.0"
-  }
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ]
 }
+

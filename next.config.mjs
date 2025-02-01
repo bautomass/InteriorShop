@@ -57,11 +57,24 @@ const nextConfig = {
                 const packageName = match ? match[1] : 'vendor';
                 return `npm.${packageName.replace('@', '')}`;
               },
-              chunks: 'all',
+              chunks: (chunk) => !/^(polyfills|pages\/_app)$/.test(chunk.name),
               priority: 1,
             },
           },
         },
+      };
+    }
+
+    // Handle browser-specific modules
+    if (isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        canvas: false,
+        'utf-8-validate': false,
+        'bufferutil': false,
       };
     }
 
@@ -73,7 +86,6 @@ const nextConfig = {
 };
 
 export default withBundleAnalyzer(nextConfig);
-
 
 
 
