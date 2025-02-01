@@ -31,19 +31,22 @@ interface HeroProps {}
 const heroSlides: SlideContent[] = [
   {
     id: 'slide-1',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-banner.webp?v=1737225966',
+    // image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-banner.webp?v=1737225966',
+    image: '/images/hero/1.png',
     alt: 'Simple Interior Ideas',
     lampImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/lamp-el.svg',
     productLink: '/product/sleek-curve-japandi-glow-minimalist-pendant-light',
   },
   {
     id: 'slide-2',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-Banner-Slide_2.webp?v=1737230223',
+    // image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Hero-Banner-Slide_2.webp?v=1737230223',
+    image: '/images/hero/2.png',
     alt: 'Architectural Beauty',
   },
   {
     id: 'slide-3',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/image-slide-banner.webp?v=1737894828',
+    // image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/image-slide-banner.webp?v=1737894828',
+    image: '/images/hero/3.png',
     alt: 'Minimalist Living',
   }
 ];
@@ -217,12 +220,12 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
       <div className="hidden lg:block">
         <div className="relative">
           <section 
-            className="relative h-[100vh] w-full overflow-hidden pt-[57px]"
+            className="relative h-[100vh] w-full overflow-hidden pt-[30px]"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
           >
             {/* Updated Hero Content */}
-            <div className="relative h-[100vh] w-full overflow-hidden">
+            <div className="relative h-[101vh] w-full overflow-hidden">
               <div className="flex h-full">
                 {heroSlides.map((slide, index) => (
                   <div
@@ -282,14 +285,14 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             ease: "easeInOut"
                           }
                         }}
-                        className="absolute left-[15%] top-[-4%] z-10 w-[120px] origin-top md:w-[175px]"
+                        className="absolute left-[15%] top-[-4%] z-10 w-[120px] origin-top md:w-[200px]"
                       >
                         <div className="relative">
                           <Image
                             src={slide.lampImage}
                             alt=""
-                            width={175}
-                            height={175}
+                            width={200}
+                            height={200}
                             priority
                             className="h-auto w-full"
                           />
@@ -308,7 +311,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                         <Image
                           src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Simple_Interior_Ideas_1_157c17e3-9c9d-4485-bf2c-1fabdcb870c5.svg?v=1711363730"
                           alt="Simple Interior Ideas"
-                          width={550}
+                          width={630}
                           height={400}
                           className="object-contain"
                         />
@@ -553,7 +556,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       >
                         <div className="absolute inset-0 w-full h-full overflow-hidden rounded-lg">
                           <Image
-                            src={`${slide.image}&width=400&height=240&crop=center&quality=90`}
+                            src={slide.image}
                             alt={slide.alt}
                             fill
                             priority={isActive}

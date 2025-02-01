@@ -450,7 +450,7 @@ export const DesktopHeader = () => {
             }`}
         >
           <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between p-2.5 container mx-auto">
+            <div className="flex items-center justify-between p-1 container mx-auto">
               {/* Left side with Logo and Burger */}
               <div className="flex items-center gap-4">
                 <button
