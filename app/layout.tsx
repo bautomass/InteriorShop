@@ -40,7 +40,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             rel="preload"
             href="/images/hero/1.png"
             as="image"
+            type="image/png"
           />
+          <link rel="preconnect" href="https://cdn.shopify.com" />
+          <link rel="dns-prefetch" href="https://cdn.shopify.com" />
         </head>
         <body className="bg-primary-50 text-primary-900 selection:bg-accent-200">
           <ThemeProvider>
