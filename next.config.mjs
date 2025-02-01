@@ -31,11 +31,12 @@ const nextConfig = {
     optimizePackageImports: ['framer-motion', '@headlessui/react']
   },
   webpack: (config, { dev, isServer }) => {
-    // Optimize framer-motion
+    // Optimize framer-motion - Updated path
     if (!dev && !isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
-        'framer-motion': 'framer-motion/dist/framer-motion.min.js',
+        // Updated framer-motion path to use the ESM bundle
+        'framer-motion': 'framer-motion/dist/es/index.mjs',
       }
     }
 
@@ -59,7 +60,6 @@ const nextConfig = {
             lib: {
               test: /[\\/]node_modules[\\/]/,
               name(module) {
-                // Add null check and fallback
                 if (!module.context) return 'npm.vendor';
                 
                 const match = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/);
@@ -82,7 +82,6 @@ const nextConfig = {
 };
 
 export default withBundleAnalyzer(nextConfig);
-
 
 
 
