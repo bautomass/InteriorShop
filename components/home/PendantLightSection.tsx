@@ -30,32 +30,11 @@ import { ShareButtons } from './ShareButtons';
 // Import hooks, constants and utils
 import { Star } from 'lucide-react';
 import Image from 'next/image';
-import { HIGHLIGHTS } from './constants';
+import { HIGHLIGHTS, PRODUCT_CONSTANTS } from './constants';
 import { useProductGallery } from './hooks/useProductGallery';
 import { useProductVariant } from './hooks/useProductVariant';
 import { useShare } from './hooks/useShare';
 import { getProductPrices } from './utils';
-
-// Add ARIA labels and sizes constant at the top with other constants
-const ACCESSIBILITY = {
-  QUANTITY: {
-    INCREMENT: 'Increase quantity',
-    DECREMENT: 'Decrease quantity',
-    LABEL: 'Product quantity'
-  },
-  GALLERY: {
-    NEXT: 'Next image',
-    PREVIOUS: 'Previous image',
-    THUMBNAIL: (index: number) => `View product image ${index + 1}`
-  },
-  REVIEWS: {
-    TOGGLE: 'Toggle product reviews',
-    RATING: (score: number) => `Product rating ${score} out of 5 stars`
-  },
-  DESCRIPTION: {
-    TOGGLE: 'Toggle full product description'
-  }
-};
 
 const FeaturedProduct = () => {
   // Core state management
@@ -175,7 +154,6 @@ const FeaturedProduct = () => {
                         setActiveImage(index);
                         scrollToThumbnail(index);
                       }}
-                      aria-label={ACCESSIBILITY.GALLERY.THUMBNAIL(index)}
                       className={`relative flex-shrink-0 w-20 aspect-square rounded-lg overflow-hidden
                         ${activeImage === index 
                           ? 'ring-2 ring-offset-1 ring-[#6B5E4C] opacity-100'
@@ -184,11 +162,10 @@ const FeaturedProduct = () => {
                     >
                       <Image
                         src={image.url}
-                        alt={image.altText || `Product image ${index + 1}`}
+                        alt={image.altText || `Product thumbnail ${index + 1}`}
                         fill
                         className="object-cover"
-                        sizes="80px"
-                        priority={index === 0}
+                        sizes={PRODUCT_CONSTANTS.IMAGE_SIZES.THUMBNAIL}
                       />
                       {activeImage === index && (
                         <div className="absolute inset-0 border-2 border-[#6B5E4C] rounded-lg" />
@@ -247,11 +224,7 @@ const FeaturedProduct = () => {
                 <div>
                   {/* Star Rating and Reviews Button */}
                   <div className="flex items-center gap-2 mb-1">
-                    <div 
-                      className="flex items-center"
-                      role="img"
-                      aria-label={ACCESSIBILITY.REVIEWS.RATING(4.8)}
-                    >
+                    <div className="flex items-center">
                       {[...Array(5)].map((_, index) => {
                         const fillPercentage = index === 4 ? (4.8 % 1) * 100 : 100;
                         return (
@@ -268,8 +241,6 @@ const FeaturedProduct = () => {
                     </div>
                     <button 
                       onClick={() => setIsReviewsExpanded(!isReviewsExpanded)}
-                      aria-label={ACCESSIBILITY.REVIEWS.TOGGLE}
-                      aria-expanded={isReviewsExpanded}
                       className="text-sm text-[#6B5E4C] hover:underline"
                     >
                       4.8 (17 reviews)
@@ -296,8 +267,6 @@ const FeaturedProduct = () => {
                   {!isReviewsExpanded && (
                     <button
                       onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                      aria-label={ACCESSIBILITY.DESCRIPTION.TOGGLE}
-                      aria-expanded={isDescriptionExpanded}
                       className="text-[#6B5E4C] hover:text-[#8C7E6A] text-sm font-medium 
                         flex items-center gap-1 mt-2"
                     >

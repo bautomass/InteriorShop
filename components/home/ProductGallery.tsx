@@ -72,7 +72,7 @@ export const ProductGallery = memo(function ProductGallery({
       <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
 
       <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
-        {images.map((image, index) => (
+        {images.map((_, index) => (
           <button
             key={index}
             onClick={() => onImageChange(index)}
