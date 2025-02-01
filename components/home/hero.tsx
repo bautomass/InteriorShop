@@ -16,10 +16,12 @@ const ANIMATION = {
   DEBOUNCE_DELAY: 300,
 } as const;
 
-// Pre-define image dimensions for the first slide
-const FIRST_SLIDE_DIMENSIONS = {
+// Define consistent image dimensions for all slides
+const SLIDE_DIMENSIONS = {
   width: 1920,
-  height: 1080
+  height: 1080,
+  thumbnailWidth: 160,
+  thumbnailHeight: 90
 } as const;
 
 // Types and Interfaces
@@ -29,22 +31,22 @@ interface SlideContent {
   alt: string;
   lampImage?: string;
   productLink?: string;
-  width?: number;
-  height?: number;
+  width: number;
+  height: number;
   priority?: boolean;
   loading?: 'eager' | 'lazy';
 }
 
 interface HeroProps {}
 
-// Hero slides data
+// Hero slides data with consistent dimensions
 export const heroSlides: SlideContent[] = [
   {
     id: 'slide-1',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/1_4a1ed1f2-1f28-465f-960a-8f58bcb22838.png?v=1738429093',
-    alt: 'Simple Interior Ideas',
-    width: FIRST_SLIDE_DIMENSIONS.width,
-    height: FIRST_SLIDE_DIMENSIONS.height,
+    alt: 'Modern minimalist living room featuring a sleek pendant light and natural wood furniture',
+    width: SLIDE_DIMENSIONS.width,
+    height: SLIDE_DIMENSIONS.height,
     priority: true,
     loading: 'eager',
     lampImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/lamp-el.svg',
@@ -53,13 +55,17 @@ export const heroSlides: SlideContent[] = [
   {
     id: 'slide-2',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2_624ad208-26bc-4437-a2d2-857726a8a421.png?v=1738429094',
-    alt: 'Architectural Beauty',
+    alt: 'Contemporary architectural space with natural wood elements and minimalist design',
+    width: SLIDE_DIMENSIONS.width,
+    height: SLIDE_DIMENSIONS.height,
     loading: 'lazy'
   },
   {
     id: 'slide-3',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/3_36d88f5d-7420-49c3-9c1c-bfad1a6be399.png?v=1738429093',
-    alt: 'Minimalist Living',
+    alt: 'Minimalist living space showcasing organic materials and clean lines',
+    width: SLIDE_DIMENSIONS.width,
+    height: SLIDE_DIMENSIONS.height,
     loading: 'lazy'
   }
 ];
@@ -262,22 +268,29 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
             className="relative h-[100vh] w-full overflow-hidden pt-[30px]"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
+            role="region"
+            aria-label="Hero Image Carousel"
           >
-            {/* Updated Hero Content */}
-            <div className="relative h-[100vh] w-full overflow-hidden">
+            {/* Carousel Container */}
+            <div 
+              className="relative h-[100vh] w-full overflow-hidden"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               <div className="flex h-full">
                 {/* First Slide - Optimized Loading */}
                 {currentSlide === 0 && (
                   <div 
                     ref={firstSlideRef}
                     className="relative w-full h-full"
+                    role="tabpanel"
+                    aria-label="Slide 1"
                   >
-                    {/* Native img tag for maximum performance */}
                     <img
                       src={heroSlides[0]?.image || ''}
                       alt={heroSlides[0]?.alt || ''}
-                      width={FIRST_SLIDE_DIMENSIONS.width}
-                      height={FIRST_SLIDE_DIMENSIONS.height}
+                      width={SLIDE_DIMENSIONS.width}
+                      height={SLIDE_DIMENSIONS.height}
                       fetchPriority="high"
                       decoding="sync"
                       id="hero-main-image"
@@ -285,15 +298,18 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       className="object-cover w-full h-full"
                       style={{ 
                         contentVisibility: 'auto',
-                        containIntrinsicSize: `${FIRST_SLIDE_DIMENSIONS.width}px ${FIRST_SLIDE_DIMENSIONS.height}px`
+                        containIntrinsicSize: `${SLIDE_DIMENSIONS.width}px ${SLIDE_DIMENSIONS.height}px`
                       }}
                     />
 
-                    {/* SVG overlay - load after main image */}
-                    <div className="absolute left-1/3 top-[35%] transform -translate-x-1/3 z-20">
+                    {/* SVG overlay */}
+                    <div 
+                      className="absolute left-1/3 top-[35%] transform -translate-x-1/3 z-20"
+                      aria-hidden="true"
+                    >
                       <img
                         src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Simple_Interior_Ideas_1_157c17e3-9c9d-4485-bf2c-1fabdcb870c5.svg"
-                        alt="Simple Interior Ideas"
+                        alt=""
                         width="630"
                         height="400"
                         loading="lazy"
@@ -304,427 +320,57 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                   </div>
                 )}
 
-                {/* Other Slides - Lazy Loaded */}
-                {currentSlide > 0 && (
-                  <div className="flex h-full">
-                    {heroSlides.slice(1).map((slide, index) => (
-                      <img
+                {/* Carousel Navigation */}
+                <div 
+                  className="absolute bottom-16 right-8 z-20 flex items-center gap-4"
+                  role="tablist"
+                  aria-label="Carousel Navigation"
+                >
+                  <NavigationButton 
+                    direction="prev" 
+                    onClick={() => goToSlide(currentSlide - 1)}
+                    aria-label="Previous slide"
+                  />
+
+                  {/* Thumbnails */}
+                  <div className="flex items-center gap-1">
+                    {heroSlides.map((slide, index) => (
+                      <button
                         key={slide.id}
-                        src={slide.image}
-                        alt={slide.alt}
-                        loading="lazy"
-                        className="object-cover w-full h-full"
-                        width="1920"
-                        height="1080"
-                        decoding="async"
-                      />
+                        onClick={() => goToSlide(index)}
+                        className={`relative ${currentSlide === index ? 'active' : ''}`}
+                        role="tab"
+                        aria-selected={currentSlide === index}
+                        aria-label={`Slide ${index + 1}`}
+                        aria-controls={`slide-${index + 1}`}
+                      >
+                        <Image
+                          src={slide.image}
+                          alt=""
+                          width={SLIDE_DIMENSIONS.thumbnailWidth}
+                          height={SLIDE_DIMENSIONS.thumbnailHeight}
+                          className="object-cover rounded"
+                          aria-hidden="true"
+                        />
+                      </button>
                     ))}
                   </div>
-                )}
 
-                {heroSlides.map((slide, index) => (
-                  <div
-                    key={slide.id}
-                    ref={el => slideRefs.current[index] = el}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      position: 'absolute',
-                      left: `${index * 100}%`,
-                      transform: `translateX(${-currentSlide * 100}%)`,
-                      transition: 'transform 0.5s ease-in-out'
-                    }}
-                    className="flex-shrink-0"
-                  >
-                    {/* Remove loading placeholder for first slide */}
-                    {index !== 0 && (
-                      <div 
-                        className={`absolute inset-0 bg-gray-200 animate-pulse transition-opacity duration-500 ${
-                          loadedImages.has(slide.image) ? 'opacity-0' : 'opacity-100'
-                        }`} 
-                      />
-                    )}
-                    
-                    {/* Image component */}
-                    <Image
-                      src={slide.image}
-                      alt={slide.alt}
-                      fill
-                      priority={index === 0}
-                      quality={index === 0 ? 100 : 75}
-                      className={`object-cover w-full h-full ${
-                        index === 0 ? '' : 'transition-opacity duration-500'
-                      } ${
-                        index === 0 ? 'opacity-100' : loadedImages.has(slide.image) ? 'opacity-100' : 'opacity-0'
-                      }`}
-                      sizes="(min-width: 1536px) 1536px, (min-width: 1280px) 1280px, (min-width: 1024px) 1024px, 100vw"
-                      style={{
-                        objectPosition: index === 2 ? 'center -30px' : 'center'
-                      }}
-                      onLoad={() => {
-                        if (index !== 0) {
-                          setLoadedImages(prev => new Set(prev).add(slide.image));
-                        }
-                      }}
-                    />
-
-                    {/* Lamp Image - Explicitly disable initial animation */}
-                    {index === 0 && slide.lampImage && (
-                      <motion.div
-                        initial={false}
-                        animate={{ 
-                          rotate: [0, 2, -2, 2, 0],
-                        }}
-                        transition={{
-                          rotate: {
-                            duration: 6,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }
-                        }}
-                        className="absolute left-[15%] top-[-4%] z-10 w-[120px] origin-top md:w-[180px]"
-                      >
-                        <div className="relative">
-                          <img
-                            src={slide.lampImage}
-                            alt=""
-                            width="180"
-                            height="180"
-                            loading="lazy"
-                            decoding="async"
-                            className="h-auto w-full"
-                          />
-                          
-                          {/* Interactive product dot */}
-                          <div className="group absolute bottom-[20%] left-[65%] -translate-x-1/2 translate-y-1/2">
-                            <ProductDot className="w-4 h-4" href={slide.productLink || '#'} />
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {/* New Product Dot 1 - Render only on the first slide */}
-                    {currentSlide === 0 && (
-                      <div className="group absolute bottom-[30%] right-[38%] -translate-x-1/2 translate-y-1/2">
-                        <ProductDot className="w-4 h-4" href="/product/product-1" />
-                      </div>
-                    )}
-
-                    {/* New Product Dot 2 - Render only on the first slide */}
-                    {currentSlide === 0 && (
-                      <div className="group absolute bottom-[32%] left-[36%] -translate-x-1/2 translate-y-1/2">
-                        <ProductDot className="w-4 h-4" href="/product/product-2" />
-                      </div>
-                    )}
-
-                    {/* New Heading and Buttons for the second slide */}
-                    {currentSlide === 1 && (
-                      <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="absolute right-16 top-[38%] transform -translate-y-1/2 z-20 max-w-2xl"
-                      >
-                        <motion.span
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
-                          className="inline-block text-white/90 font-medium tracking-[0.2em] uppercase text-sm mb-4"
-                        >
-                          Nature's Gift
-                        </motion.span>
-
-                        <motion.h2
-                          initial={{ opacity: 0, y: 30 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
-                          className="text-[4.5rem] font-thin text-white leading-none mb-6"
-                        >
-                          Pure Living
-                          <span className="block font-light text-[3.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
-                          Art in Wood
-                          </span>
-                        </motion.h2>
-
-                        <motion.p
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }}
-                          className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide mb-8"
-                        >
-                          Each piece brings nature's warmth to your home. Crafted by skilled artisans using real wood, our furniture purifies your air while creating spaces that feel alive and peaceful.
-                        </motion.p>
-
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.9, duration: 0.5 }}
-                          whileHover={{ scale: 1.02 }}
-                          className="group inline-flex items-center"
-                        >
-                          <Link 
-                            href="/collections/organic-decoration"
-                            className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
-                                     shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
-                                     transition-all duration-500 px-4 py-4 relative"
-                          >
-                            <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap">
-                              Discover the Collection
-                            </span>
-                            <motion.div 
-                              className="flex items-center"
-                              initial={{ x: 0 }}
-                              animate={{ x: [0, 5, 0] }}
-                              transition={{ 
-                                repeat: Infinity, 
-                                duration: 1.5,
-                                ease: "easeInOut"
-                              }}
-                            >
-                              <ChevronRight className="w-5 h-5 text-[#9c826b]" />
-                            </motion.div>
-                          </Link>
-                        </motion.div>
-                      </motion.div>
-                    )}
-                    {/* End of Heading and Buttons for the second slide */}
-
-                    {/* Content for the third slide */}
-                    {currentSlide === 2 && (
-                      <>
-                        {/* Text content - keeping exact same position */}
-                        <motion.div 
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="absolute right-64 top-[10%] z-20 max-w-2xl"
-                        >
-                          <motion.span
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
-                          className="inline-block text-white/90 font-medium tracking-[0.2em] uppercase text-sm mb-4"
-                          >
-                          Art & Nature
-                          </motion.span>
-
-                          <motion.h2
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
-                            className="text-[3.5rem] font-thin text-white leading-none mb-8"
-                          >
-                            Mindfully Made
-                            <span className="block font-light text-[2.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
-                              Living Pieces
-                            </span>
-                          </motion.h2>
-
-                          <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }}
-                            className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide"
-                          >
-                            Each piece is handcrafted from nature's materials,<br/>creating healthier, more beautiful spaces.
-                          </motion.p>
-                        </motion.div>
-
-                        {/* Buttons positioned at bottom left */}
-                        <motion.div 
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="absolute left-14 bottom-24 z-20 flex flex-row gap-4"
-                        >
-                          {/* First Button */}
-                          <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 1.1, duration: 0.5 }}
-                            whileHover={{ scale: 1.02 }}
-                            className="group inline-flex items-center"
-                          >
-                            <Link 
-                              href="/collections/anturam-eco-wooden-stools"
-                              className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
-                                      shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
-                                      transition-all duration-500 px-4 py-4 relative"
-                            >
-                              <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap">
-                              View Wood Collection
-                              </span>
-                              <motion.div 
-                                className="flex items-center"
-                                initial={{ x: 0 }}
-                                animate={{ x: [0, 5, 0] }}
-                                transition={{ 
-                                  repeat: Infinity, 
-                                  duration: 1.5,
-                                  ease: "easeInOut"
-                                }}
-                              >
-                                <ChevronRight className="w-5 h-5 text-[#9c826b]" />
-                              </motion.div>
-                            </Link>
-                          </motion.div>
-
-                          {/* Second Button */}
-                          <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 1.3, duration: 0.5 }}
-                            whileHover={{ scale: 1.02 }}
-                            className="group inline-flex items-center"
-                          >
-                            <Link 
-                              href="/collections/ceramic-vases"
-                              className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
-                                      shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
-                                      transition-all duration-500 px-4 py-4 relative"
-                            >
-                              <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap">
-                              Shop Ceramics
-                              </span>
-                              <motion.div 
-                                className="flex items-center"
-                                initial={{ x: 0 }}
-                                animate={{ x: [0, 5, 0] }}
-                                transition={{ 
-                                  repeat: Infinity, 
-                                  duration: 1.5,
-                                  ease: "easeInOut"
-                                }}
-                              >
-                                <ChevronRight className="w-5 h-5 text-[#9c826b]" />
-                              </motion.div>
-                            </Link>
-                          </motion.div>
-                        </motion.div>
-                      </>
-                    )}
-                    {/* End of Content for the third slide */}
-                  </div>
-                ))}
-              </div>
-
-              {/* Enhanced Professional Pagination with Navigation and Pause Button */}
-              <div className="absolute bottom-16 right-8 z-20 flex items-center gap-4 perspective-[1200px] transform-gpu scale-80">
-                <NavigationButton direction="prev" onClick={() => goToSlide(currentSlide - 1)} />
-
-                <div className="flex items-center gap-1 relative">
-                  {[...Array(3)].map((_, i) => {
-                    const slideIndex = getLoopedIndex(currentSlide - 1 + i, heroSlides.length);
-                    const slide = heroSlides[slideIndex];
-                    if (!slide) return null;
-                    const isActive = i === 1;
-                    const actualSlideNumber = slideIndex + 1;
-                    
-                    return (
-                      <motion.div
-                        key={`${slide.id}-${i}`}
-                        onClick={() => goToSlide(slideIndex)}
-                        initial={false}
-                        animate={{
-                          scale: isActive ? 1 : 0.9,
-                          rotateY: (i - 1) * 12,
-                          z: isActive ? 0 : -30,
-                          y: isActive ? -4 : 0
-                        }}
-                        whileHover={{ 
-                          scale: isActive ? 1.02 : 0.95,
-                          y: isActive ? -8 : -4,
-                          transition: { duration: 0.2 }
-                        }}
-                        className={`relative cursor-pointer rounded-lg
-                                    transition-shadow duration-300
-                                    ${isActive ? 
-                                      'w-40 h-20 shadow-lg hover:shadow-xl z-10' : 
-                                      'w-32 h-16 shadow-md hover:shadow-lg z-0'}`}
-                      >
-                        <div className="absolute inset-0 w-full h-full overflow-hidden rounded-lg">
-                          <Image
-                            src={slide.image}
-                            alt={slide.alt}
-                            fill
-                            priority={isActive}
-                            className="object-cover transition-all duration-500 ease-out rounded-lg"
-                            sizes="(min-width: 768px) 160px, 128px"
-                            quality={100}
-                          />
-                          <div className={`absolute inset-0 transition-all duration-500
-                                        bg-gradient-to-t from-black/30 to-transparent
-                                        ${isActive ? 'opacity-0' : 'opacity-100 hover:opacity-50'}`}
-                          />
-                          
-                          {/* Active Highlight Effects */}
-                          {isActive && (
-                            <>
-                              <motion.div
-                                initial={{ opacity: 0, scale: 1.2 }}
-                                animate={{ opacity: [0, 1, 0], scale: 1 }}
-                                transition={{ duration: 0.6, ease: "easeOut" }}
-                                className="absolute inset-0 bg-white/20 pointer-events-none"
-                              />
-                              {/* Shimmering effect */}
-                              <motion.div
-                                initial={{ x: '-100%', opacity: 0.5 }}
-                                animate={{ x: '100%', opacity: 0 }}
-                                transition={{
-                                  duration: 1.5,
-                                  repeat: Infinity,
-                                  repeatDelay: 3,
-                                  ease: "easeInOut"
-                                }}
-                                className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent 
-                                           transform rotate-15 pointer-events-none blur-sm"
-                                style={{
-                                  clipPath: 'polygon(5% 0, 95% 0, 85% 100%, 15% 100%)'
-                                }}
-                              />
-                            </>
-                          )}
-                        </div>
-                        
-                        {/* Active Indicator with Enhanced Animation */}
-                        {isActive && (
-                          <motion.div
-                            layoutId="activeThumb"
-                            className="absolute inset-0 border-2 border-white"
-                            transition={{ duration: 0.3 }}
-                          />
-                        )}
-
-                        {/* Slide number indicator - slightly reduced size */}
-                        <div className="absolute -top-2 -right-2 z-[100] bg-black/50 backdrop-blur-sm 
-                                rounded-full w-6 h-6 border border-white/10
-                                flex items-center justify-center text-white/90 
-                                text-xs font-medium shadow-lg">
-                          {actualSlideNumber}
-                        </div>
-
-                        {/* Pause/Play Button - preserved */}
-                        {isActive && (
-                          <motion.button
-                            onClick={togglePause}
-                            className="absolute bottom-2 left-2 z-20 p-1 bg-black/60 rounded-full group"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            aria-label={isPaused ? "Play" : "Pause"}
-                          >
-                            {isPaused ? (
-                              <Play className="h-2.5 w-2.5 text-white" />
-                            ) : (
-                              <Pause className="h-2.5 w-2.5 text-white" />
-                            )}
-                            <span className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-xs text-white bg-black/70 rounded px-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              {isPaused ? "Play" : "Pause"}
-                            </span>
-                          </motion.button>
-                        )}
-                      </motion.div>
-                    );
-                  })}
+                  <NavigationButton 
+                    direction="next" 
+                    onClick={() => goToSlide(currentSlide + 1)}
+                    aria-label="Next slide"
+                  />
                 </div>
 
-                <NavigationButton direction="next" onClick={() => goToSlide(currentSlide + 1)} />
+                {/* Play/Pause Button */}
+                <button
+                  onClick={togglePause}
+                  className="absolute bottom-16 right-32 z-20"
+                  aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
+                >
+                  {isPaused ? <Play className="h-6 w-6" /> : <Pause className="h-6 w-6" />}
+                </button>
               </div>
             </div>
           </section>

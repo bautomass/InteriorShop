@@ -6,8 +6,11 @@ import { memo, useCallback, useState } from 'react';
 
 const INSTA_IMAGES = Array.from({ length: 15 }, (_, i) => ({
   src: `/images/instagram-section/instagram-${i + 1}.png`,
-  alt: `Instagram story ${i + 1}`
+  alt: `Instagram story ${i + 1}`,
+  width: 337,
+  height: 600
 }));
+
 interface InstagramBannerProps {
   className?: string;
   instagramHandle?: string;
@@ -29,16 +32,25 @@ const InstagramBanner = ({
   }, []);
 
   return (
-    <div className={`relative w-full overflow-hidden py-2 sm:py-8 ${className}
-      bg-gradient-to-r from-[#E8E2D9] via-[#F0EDE9] to-[#E8E2D9]
-      before:absolute before:inset-0 
-      before:bg-[radial-gradient(circle_at_50%_50%,rgba(107,94,76,0.08),transparent_45%)]
-      before:opacity-60`}
+    <div 
+      className={`relative w-full overflow-hidden py-2 sm:py-8 ${className}
+        bg-gradient-to-r from-[#E8E2D9] via-[#F0EDE9] to-[#E8E2D9]
+        before:absolute before:inset-0 
+        before:bg-[radial-gradient(circle_at_50%_50%,rgba(107,94,76,0.08),transparent_45%)]
+        before:opacity-60`}
+      role="region"
+      aria-label="Instagram Feed Banner"
     >
-      <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-32 
-        bg-gradient-to-r from-[#E8E2D9] to-transparent z-10" />
-      <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-32 
-        bg-gradient-to-l from-[#E8E2D9] to-transparent z-10" />
+      <div 
+        className="absolute left-0 top-0 bottom-0 w-8 sm:w-32 
+          bg-gradient-to-r from-[#E8E2D9] to-transparent z-10" 
+        aria-hidden="true"
+      />
+      <div 
+        className="absolute right-0 top-0 bottom-0 w-8 sm:w-32 
+          bg-gradient-to-l from-[#E8E2D9] to-transparent z-10"
+        aria-hidden="true"
+      />
 
       <motion.div
         initial={{ x: 0 }}
@@ -54,6 +66,8 @@ const InstagramBanner = ({
         onHoverStart={handleHoverStart}
         onHoverEnd={handleHoverEnd}
         className="flex gap-1 sm:gap-4 w-fit"
+        role="list"
+        aria-label="Instagram Posts Carousel"
       >
         {[...INSTA_IMAGES, ...INSTA_IMAGES].map((image, index) => (
           <motion.div
@@ -65,6 +79,7 @@ const InstagramBanner = ({
             }}
             className="relative h-[300px] sm:h-[600px] w-[168px] sm:w-[337px] overflow-hidden transform-gpu"
             style={{ filter: 'grayscale(20%)' }}
+            role="listitem"
           >
             <Image
               src={image.src}
@@ -73,6 +88,7 @@ const InstagramBanner = ({
               className="object-cover"
               sizes="(min-width: 640px) 337px, 168px"
               loading={index < 5 ? 'eager' : 'lazy'}
+              quality={85}
             />
           </motion.div>
         ))}
@@ -84,11 +100,15 @@ const InstagramBanner = ({
         rel="noopener noreferrer"
         className="absolute inset-0 z-30 flex items-center justify-center 
                   bg-black/0 transition-colors hover:bg-black/70 group"
+        aria-label={`Follow ${instagramHandle} on Instagram`}
       >
         <div className="text-center opacity-0 transform scale-95 transition-all duration-300 group-hover:opacity-100 group-hover:scale-100 px-4">
-          <p className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">Follow Us on Instagram</p>
+          <h2 className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">Follow Us on Instagram</h2>
           <p className="text-base sm:text-lg text-white/80 mb-3 sm:mb-6">@{instagramHandle}</p>
-          <button className="px-4 sm:px-6 py-2 sm:py-3 bg-white text-black text-sm sm:text-base font-medium rounded hover:bg-white/90 transition-colors">
+          <button 
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-white text-black text-sm sm:text-base font-medium rounded hover:bg-white/90 transition-colors"
+            aria-label="Visit our Instagram profile"
+          >
             Visit Our Instagram
           </button>
         </div>
