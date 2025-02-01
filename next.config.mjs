@@ -59,9 +59,11 @@ const nextConfig = {
             lib: {
               test: /[\\/]node_modules[\\/]/,
               name(module) {
-                const packageName = module.context.match(
-                  /[\\/]node_modules[\\/](.*?)([\\/]|$)/
-                )[1];
+                // Add null check and fallback
+                if (!module.context) return 'npm.vendor';
+                
+                const match = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/);
+                const packageName = match ? match[1] : 'vendor';
                 return `npm.${packageName.replace('@', '')}`;
               },
               chunks: 'all',
@@ -80,7 +82,6 @@ const nextConfig = {
 };
 
 export default withBundleAnalyzer(nextConfig);
-
 
 
 

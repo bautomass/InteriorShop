@@ -1,4 +1,4 @@
-//LargeScreenNavBar
+// components/layout/navbar/LargeScreenNavBar.tsx
 'use client';
 
 import { useHeaderState } from '@/hooks/useHeaderState';
