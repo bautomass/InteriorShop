@@ -368,18 +368,14 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       }}
                     />
 
-                    {/* Lamp Image - Deferred loading */}
+                    {/* Lamp Image - Explicitly disable initial animation */}
                     {index === 0 && slide.lampImage && (
                       <motion.div
-                        initial={{ opacity: 0, y: -50 }}
+                        initial={false}
                         animate={{ 
-                          opacity: currentSlide === index ? 1 : 0,
-                          y: currentSlide === index ? 0 : -50,
                           rotate: [0, 2, -2, 2, 0],
                         }}
                         transition={{
-                          opacity: { duration: 0.5 },
-                          y: { duration: 0.5 },
                           rotate: {
                             duration: 6,
                             repeat: Infinity,
@@ -399,7 +395,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             className="h-auto w-full"
                           />
                           
-                          {/* Keep the interactive product dot */}
+                          {/* Interactive product dot */}
                           <div className="group absolute bottom-[20%] left-[65%] -translate-x-1/2 translate-y-1/2">
                             <ProductDot className="w-4 h-4" href={slide.productLink || '#'} />
                           </div>
