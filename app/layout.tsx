@@ -2,7 +2,6 @@ import { AuthProvider } from '@/providers/AuthProvider';
 import { CurrencyProvider } from '@/providers/CurrencyProvider';
 import { QueryProvider } from '@/providers/query-provider';
 import { CartProvider } from 'components/cart/cart-context';
-import { heroSlides } from 'components/home/hero';
 import { ThemeProvider } from 'components/theme-provider';
 import { GeistSans } from 'geist/font/sans';
 import { getCart, getMenu } from 'lib/shopify';
@@ -39,7 +38,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <head>
           <link 
             rel="preload" 
-            href={heroSlides[0]?.image || ''}
+            href="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/1_4a1ed1f2-1f28-465f-960a-8f58bcb22838.png?v=1738429093"
             as="image"
             data-fetchpriority="high"
             type="image/png"
