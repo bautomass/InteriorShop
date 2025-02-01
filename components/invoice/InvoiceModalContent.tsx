@@ -1,21 +1,14 @@
-import { InvoiceFormData } from '@/types/invoice';
 import { FileDown, X } from 'lucide-react';
 import { CustomButton, CustomInput } from './CustomComponents';
-
-interface InvoiceModalContentProps {
-  formData: InvoiceFormData;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleDownload: (format: 'pdf' | 'image') => void;
-  isLoading: boolean;
-  onClose: () => void;
-}
+import { InvoiceModalContentProps } from './InvoiceModal';
 
 export default function InvoiceModalContent({
   formData,
   handleInputChange,
   handleDownload,
   isLoading,
-  onClose
+  onClose,
+  error
 }: InvoiceModalContentProps) {
   return (
     <>

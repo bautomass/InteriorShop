@@ -23,12 +23,103 @@ const nextConfig = {
       }
     ]
   },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: ['framer-motion', '@headlessui/react']
+  },
+  webpack: (config, { dev, isServer }) => {
+    // Optimize framer-motion
+    if (!dev && !isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'framer-motion': 'framer-motion/dist/framer-motion.min.js',
+      }
+    }
+
+    // Optimize large modules
+    if (!dev) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          minSize: 20000,
+          maxSize: 244000,
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            commons: {
+              name: 'commons',
+              chunks: 'all',
+              minChunks: 2,
+              reuseExistingChunk: true,
+            },
+            lib: {
+              test: /[\\/]node_modules[\\/]/,
+              name(module) {
+                const packageName = module.context.match(
+                  /[\\/]node_modules[\\/](.*?)([\\/]|$)/
+                )[1];
+                return `npm.${packageName.replace('@', '')}`;
+              },
+              chunks: 'all',
+              priority: 1,
+            },
+          },
+        },
+      };
+    }
+
+    return config;
+  },
   transpilePackages: ['framer-motion'],
   poweredByHeader: false,
-  reactStrictMode: true
+  reactStrictMode: true,
 };
 
 export default withBundleAnalyzer(nextConfig);
+
+
+
+
+
+
+
+
+
+// import { createRequire } from 'module';
+// const require = createRequire(import.meta.url);
+
+// const withBundleAnalyzer = require('@next/bundle-analyzer')({
+//   enabled: process.env.ANALYZE === 'true',
+// });
+
+// /** @type {import('next').NextConfig} */
+// const nextConfig = {
+//   images: {
+//     unoptimized: false,  // This will disable image optimization
+//     formats: ['image/avif', 'image/webp'],
+//     remotePatterns: [
+//       {
+//         protocol: 'https',
+//         hostname: 'cdn.shopify.com',
+//         pathname: '/s/files/**'
+//       },
+//       {
+//         protocol: 'https',
+//         hostname: 'cdn.shopify.com',
+//         pathname: '/assets/**'
+//       }
+//     ]
+//   },
+//   transpilePackages: ['framer-motion'],
+//   poweredByHeader: false,
+//   reactStrictMode: true
+// };
+
+// export default withBundleAnalyzer(nextConfig);
 
 
 
