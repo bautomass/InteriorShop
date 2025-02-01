@@ -18,9 +18,9 @@ const ANIMATION = {
 
 // Pre-define image dimensions for the first slide
 const FIRST_SLIDE_DIMENSIONS = {
-  width: 1020,
+  width: 1920,
   height: 1080
-};
+} as const;
 
 // Types and Interfaces
 interface SlideContent {
@@ -38,7 +38,7 @@ interface SlideContent {
 interface HeroProps {}
 
 // Hero slides data
-const heroSlides: SlideContent[] = [
+export const heroSlides: SlideContent[] = [
   {
     id: 'slide-1',
     image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/1_4a1ed1f2-1f28-465f-960a-8f58bcb22838.png?v=1738429093',
@@ -141,6 +141,19 @@ const useImagePreloader = (images: string[]) => {
   }, [images]);
 };
 
+// Preload critical images function
+const preloadCriticalImages = () => {
+  if (typeof window === 'undefined') return;
+  
+  // Create a single hidden image element for preloading
+  const preloadLink = document.createElement('link');
+  preloadLink.rel = 'preload';
+  preloadLink.as = 'image';
+  preloadLink.href = heroSlides[0]?.image || '';
+  preloadLink.fetchPriority = 'high';
+  document.head.appendChild(preloadLink);
+};
+
 // Main Hero Component
 const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   // Add to the HeroComponent state
@@ -233,6 +246,10 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     }
   }, [currentSlide, handleScroll]);
 
+  useEffect(() => {
+    preloadCriticalImages();
+  }, []);
+
   return (
     <>
       {/* Mobile Hero */}
@@ -255,21 +272,35 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                     ref={firstSlideRef}
                     className="relative w-full h-full"
                   >
-                    <Image
+                    {/* Native img tag for maximum performance */}
+                    <img
                       src={heroSlides[0]?.image || ''}
                       alt={heroSlides[0]?.alt || ''}
                       width={FIRST_SLIDE_DIMENSIONS.width}
                       height={FIRST_SLIDE_DIMENSIONS.height}
-                      priority={true}
                       fetchPriority="high"
-                      loading="eager"
-                      quality={100}
-                      className="object-cover w-full h-full"
-                      sizes="100vw"
                       decoding="sync"
                       id="hero-main-image"
                       data-lcp-element="true"
+                      className="object-cover w-full h-full"
+                      style={{ 
+                        contentVisibility: 'auto',
+                        containIntrinsicSize: `${FIRST_SLIDE_DIMENSIONS.width}px ${FIRST_SLIDE_DIMENSIONS.height}px`
+                      }}
                     />
+
+                    {/* SVG overlay - load after main image */}
+                    <div className="absolute left-1/3 top-[35%] transform -translate-x-1/3 z-20">
+                      <img
+                        src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Simple_Interior_Ideas_1_157c17e3-9c9d-4485-bf2c-1fabdcb870c5.svg"
+                        alt="Simple Interior Ideas"
+                        width="630"
+                        height="400"
+                        loading="lazy"
+                        className="object-contain"
+                        decoding="async"
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -277,15 +308,15 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                 {currentSlide > 0 && (
                   <div className="flex h-full">
                     {heroSlides.slice(1).map((slide, index) => (
-                      <Image
+                      <img
                         key={slide.id}
                         src={slide.image}
                         alt={slide.alt}
                         loading="lazy"
-                        quality={75}
                         className="object-cover w-full h-full"
-                        width={1920}
-                        height={1080}
+                        width="1920"
+                        height="1080"
+                        decoding="async"
                       />
                     ))}
                   </div>
@@ -337,7 +368,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       }}
                     />
 
-                    {/* Lamp Image - Keep animation for visual interest */}
+                    {/* Lamp Image - Deferred loading */}
                     {index === 0 && slide.lampImage && (
                       <motion.div
                         initial={{ opacity: 0, y: -50 }}
@@ -358,12 +389,13 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                         className="absolute left-[15%] top-[-4%] z-10 w-[120px] origin-top md:w-[180px]"
                       >
                         <div className="relative">
-                          <Image
+                          <img
                             src={slide.lampImage}
                             alt=""
-                            width={180}
-                            height={180}
-                            priority
+                            width="180"
+                            height="180"
+                            loading="lazy"
+                            decoding="async"
                             className="h-auto w-full"
                           />
                           
@@ -373,19 +405,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           </div>
                         </div>
                       </motion.div>
-                    )}
-
-                    {/* New Image for the first slide */}
-                    {index === 0 && (
-                      <div className="absolute left-1/3 top-[35%] transform -translate-x-1/3 z-20">
-                        <Image
-                          src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Simple_Interior_Ideas_1_157c17e3-9c9d-4485-bf2c-1fabdcb870c5.svg?v=1711363730"
-                          alt="Simple Interior Ideas"
-                          width={630}
-                          height={400}
-                          className="object-contain"
-                        />
-                      </div>
                     )}
 
                     {/* New Product Dot 1 - Render only on the first slide */}

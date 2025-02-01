@@ -2,6 +2,7 @@ import { AuthProvider } from '@/providers/AuthProvider';
 import { CurrencyProvider } from '@/providers/CurrencyProvider';
 import { QueryProvider } from '@/providers/query-provider';
 import { CartProvider } from 'components/cart/cart-context';
+import { heroSlides } from 'components/home/hero';
 import { ThemeProvider } from 'components/theme-provider';
 import { GeistSans } from 'geist/font/sans';
 import { getCart, getMenu } from 'lib/shopify';
@@ -36,14 +37,18 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <AuthProvider>
       <html lang="en" className={GeistSans.variable}>
         <head>
-          <link
-            rel="preload"
-            href="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/1_4a1ed1f2-1f28-465f-960a-8f58bcb22838.png?v=1738429093"
+          <link 
+            rel="preload" 
+            href={heroSlides[0]?.image || ''}
             as="image"
+            data-fetchpriority="high"
             type="image/png"
           />
-          <link rel="preconnect" href="https://cdn.shopify.com" />
+          <link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous" />
           <link rel="dns-prefetch" href="https://cdn.shopify.com" />
+          
+          <meta httpEquiv="Accept-CH" content="DPR, Viewport-Width, Width" />
+          <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
         </head>
         <body className="bg-primary-50 text-primary-900 selection:bg-accent-200">
           <ThemeProvider>
