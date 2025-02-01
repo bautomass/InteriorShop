@@ -5,7 +5,7 @@ import CanvasCollection from '@/components/home/CanvasCollection';
 import CeramicVaseSection from '@/components/home/CeramicVaseSection';
 import InfiniteProductBanner from '@/components/home/InfiniteProductBanner';
 import InteriorTipsSection from '@/components/home/InteriorTipsSection';
-import MaterialsStorySection from '@/components/home/MaterialsStorySection';
+import MaterialsSection from '@/components/home/materials/MaterialsSection';
 import NewArrivalsCollection from '@/components/home/NewArrivalsCollection';
 import PendantLightSection from '@/components/home/PendantLightSection';
 import { Footer } from '@/components/layout/site-footer';
@@ -48,7 +48,7 @@ export default function HomePage() {
         <PendantLightSection />
         <InfiniteProductBanner/>
         <LampsCollectionSection />
-        <MaterialsStorySection />
+        <MaterialsSection />
         <NewArrivalsCollection />
         <AnturamStoolsCollection />
         <CanvasCollection />
