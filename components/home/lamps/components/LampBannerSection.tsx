@@ -48,12 +48,14 @@ export const LampBannerSection = memo(function LampBannerSection({
                 priority={true}
               />
 
-              {(index === 1 || (index === 2 && window.innerWidth < 768)) && (
+              {(index === 1 || index === LAMP_CONSTANTS.BANNER_IMAGES.length - 1) && (
                 <div className={cn(
                   "absolute inset-0 bg-gradient-to-t from-primary-900/95 via-primary-900/80 to-transparent",
                   "transition-transform duration-500 ease-out",
                   "md:translate-y-full md:group-hover:translate-y-0",
-                  index === 2 ? "translate-y-0 md:hidden" : "translate-y-full md:block"
+                  index === LAMP_CONSTANTS.BANNER_IMAGES.length - 1 
+                    ? "translate-y-0 md:hidden" 
+                    : "hidden md:block md:translate-y-full"
                 )}>
                   <div className="absolute inset-0 flex flex-col justify-end p-6">
                     <div className="space-y-4">
