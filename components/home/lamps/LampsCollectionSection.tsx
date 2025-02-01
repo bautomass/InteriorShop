@@ -4,7 +4,7 @@ import { PriceSortFilter } from '@/components/filter/PriceSortFilter';
 import { ProductQuickView } from '@/components/quickview/ProductQuickView';
 import { useQuickView } from '@/hooks/useQuickView';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -25,7 +25,7 @@ import { MobileControls } from './components/MobileControls';
 function LampsCollectionSection() {
   const { ref, inView } = useInView({
     threshold: 0.1,
-    triggerOnce: false
+    triggerOnce: true
   });
 
   const {
@@ -54,6 +54,20 @@ function LampsCollectionSection() {
   const [isGridView, setIsGridView] = useState(false);
   const [cardsToShow, setCardsToShow] = useState<number>(LAMP_CONSTANTS.VIEW_SETTINGS.defaultCards);
   const quickView = useQuickView();
+
+  const [hasAnimated, setHasAnimated] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lampBannerAnimated') === 'true';
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (inView && !hasAnimated) {
+      localStorage.setItem('lampBannerAnimated', 'true');
+      setHasAnimated(true);
+    }
+  }, [inView, hasAnimated]);
 
   const handleViewChange = useCallback((isGrid: boolean) => {
     setIsGridView(isGrid);
@@ -111,7 +125,7 @@ function LampsCollectionSection() {
           </div>
 
           {/* Banner Section */}
-          {inView && <LampBannerSection />}
+          {inView && <LampBannerSection shouldAnimate={!hasAnimated} />}
 
           {/* Products Section */}
           <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen px-10 [@media(max-width:700px)]:px-4">

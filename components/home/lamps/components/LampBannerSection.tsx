@@ -3,10 +3,27 @@
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { LAMP_CONSTANTS } from '../constants/lamp-constants';
 
-export const LampBannerSection = memo(function LampBannerSection() {
+export const LampBannerSection = memo(function LampBannerSection({ 
+  shouldAnimate = false 
+}: { 
+  shouldAnimate?: boolean 
+}) {
+  const [hasAnimated, setHasAnimated] = useState(false);
+  
+  useEffect(() => {
+    // Check if animation has played this session
+    const animationPlayed = localStorage.getItem('lampBannerAnimated');
+    if (!animationPlayed) {
+      setHasAnimated(false);
+      localStorage.setItem('lampBannerAnimated', 'true');
+    } else {
+      setHasAnimated(true);
+    }
+  }, []);
+
   return (
     <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen px-4 md:px-8">
       <div className="mx-auto max-w-[2000px]">
@@ -14,9 +31,9 @@ export const LampBannerSection = memo(function LampBannerSection() {
           {LAMP_CONSTANTS.BANNER_IMAGES.map((image, index) => (
             <motion.div
               key={image.src}
-              initial={{ opacity: 0, y: 20 }}
+              initial={shouldAnimate ? { opacity: 0, y: 20 } : { opacity: 1, y: 0 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.2 }}
+              transition={{ delay: shouldAnimate ? index * 0.2 : 0 }}
               className={cn(
                 "group relative aspect-[4/5] overflow-hidden rounded-md",
                 index !== LAMP_CONSTANTS.BANNER_IMAGES.length - 1 ? "hidden md:block" : ""
@@ -102,7 +119,6 @@ export const LampBannerSection = memo(function LampBannerSection() {
                 </div>
               )}
 
-              {/* Interactive Dot for Last Image */}
               {index === LAMP_CONSTANTS.BANNER_IMAGES.length - 1 && (
                 <BannerInteractiveDot />
               )}
@@ -116,6 +132,7 @@ export const LampBannerSection = memo(function LampBannerSection() {
 
 LampBannerSection.displayName = 'LampBannerSection';
 
+// BannerInteractiveDot component remains unchanged
 const BannerInteractiveDot = memo(function BannerInteractiveDot() {
   return (
     <a
