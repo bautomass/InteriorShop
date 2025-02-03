@@ -166,29 +166,42 @@ const useSlideNavigation = (totalSlides: number) => {
   return { currentSlide, isAnimating, goToSlide };
 };
 
+// Update useImagePreloader with cleanup
 const useImagePreloader = (images: string[]) => {
   const [loadingStatus, setLoadingStatus] = useState<Record<string, boolean>>({});
+  const imageRefs = useRef<HTMLImageElement[]>([]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const preloadImages = () => {
-      images.forEach(src => {
+      imageRefs.current = images.map(src => {
         const img = new window.Image();
         img.onload = () => setLoadingStatus(prev => ({ ...prev, [src]: true }));
         img.onerror = () => console.error(`Failed to load image: ${src}`);
         img.src = src;
+        return img;
       });
     };
-    if (typeof window !== 'undefined') {
-      preloadImages();
-    }
+
+    preloadImages();
+
+    // Cleanup function to remove image references
+    return () => {
+      imageRefs.current.forEach(img => {
+        img.onload = null;
+        img.onerror = null;
+      });
+      imageRefs.current = [];
+    };
   }, [images]);
 
   return loadingStatus;
 };
 
-// Preload critical images function
+// Update preloadCriticalImages function to return cleanup
 const preloadCriticalImages = () => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') return null;
   
   // Create a single hidden image element for preloading
   const preloadLink = document.createElement('link');
@@ -197,6 +210,12 @@ const preloadCriticalImages = () => {
   preloadLink.href = heroSlides[0]?.image || '';
   preloadLink.fetchPriority = 'high';
   document.head.appendChild(preloadLink);
+
+  return () => {
+    if (preloadLink.parentNode) {
+      document.head.removeChild(preloadLink);
+    }
+  };
 };
 
 // Main Hero Component
@@ -231,23 +250,13 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     setMounted(true);
   }, []);
 
+  // Update effect for preloading critical images
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
-    if (!isPaused && !isMenuHovered) {
-      timer = setTimeout(() => {
-        goToSlide(currentSlide + 1);
-      }, ANIMATION.CAROUSEL_INTERVAL + 4000);
-    }
-    
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-    };
-  }, [currentSlide, isMenuHovered, isPaused, goToSlide]);
+    const cleanup = preloadCriticalImages();
+    return () => cleanup?.();
+  }, []);
 
-  // Updated useEffect for body style manipulation
+  // Update body style manipulation effect
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -262,7 +271,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     };
 
     if (isNavOpen) {
-      // Lock scroll position
       document.body.style.top = `-${originalStyles.scrollY}px`;
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
@@ -284,6 +292,36 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
       }
     };
   }, [isNavOpen]);
+
+  // Update autoplay effect with proper cleanup
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (!isPaused && !isMenuHovered) {
+      timer = setTimeout(() => {
+        goToSlide(currentSlide + 1);
+      }, ANIMATION.CAROUSEL_INTERVAL + 4000);
+    }
+    
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [currentSlide, isMenuHovered, isPaused, goToSlide]);
+
+  const handleScroll = useCallback((e: WheelEvent) => {
+  }, [currentSlide, goToSlide]);
+
+  // Update scroll event listener effect
+  useEffect(() => {
+    const element = slideRefs.current[currentSlide];
+    if (element) {
+      const handleScrollWrapper = (e: WheelEvent) => handleScroll(e);
+      element.addEventListener('wheel', handleScrollWrapper, { passive: true });
+      return () => element.removeEventListener('wheel', handleScrollWrapper);
+    }
+  }, [currentSlide, handleScroll]);
 
   // Update touch handlers with better error handling
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -319,21 +357,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
     setIsPaused(prev => !prev);
   }, []);
 
-  const handleScroll = useCallback((e: WheelEvent) => {
-  }, [currentSlide, goToSlide]);
-
-  useEffect(() => {
-    const element = slideRefs.current[currentSlide];
-    if (element) {
-      element.addEventListener('wheel', handleScroll, { passive: true });
-      return () => element.removeEventListener('wheel', handleScroll);
-    }
-  }, [currentSlide, handleScroll]);
-
-  useEffect(() => {
-    preloadCriticalImages();
-  }, []);
-
   return (
     <>
       {/* Mobile Hero */}
@@ -347,6 +370,15 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
           >
+            {/* Screen reader announcements */}
+            <div 
+              aria-live="polite" 
+              aria-atomic="true"
+              className="sr-only"
+            >
+              {`Showing slide ${currentSlide + 1} of ${heroSlides.length}`}
+            </div>
+
             {/* Updated Hero Content */}
             <div className="relative h-[100vh] w-full overflow-hidden">
               <div className="flex h-full">
@@ -466,6 +498,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                               ease: "easeInOut"
                             }
                           }}
+                          style={{ willChange: 'transform' }}
                           className="absolute left-[15%] top-[-4%] z-10 w-[120px] origin-top md:w-[180px]"
                         >
                           <div className="relative">
@@ -507,6 +540,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                       <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
+                        style={{ willChange: 'opacity, transform' }}
                         className="absolute right-16 top-[38%] transform -translate-y-1/2 z-20 max-w-2xl"
                       >
                         <motion.span
@@ -692,7 +726,11 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
               {/* Enhanced Professional Pagination with Navigation and Pause Button */}
               <div className="absolute bottom-16 right-8 z-20 flex items-center gap-4 perspective-[1200px] transform-gpu scale-80">
-                <NavigationButton direction="prev" onClick={() => goToSlide(currentSlide - 1)} />
+                <NavigationButton 
+                  direction="prev" 
+                  onClick={() => goToSlide(currentSlide - 1)} 
+                  aria-label={`Previous slide. Currently on slide ${currentSlide + 1} of ${heroSlides.length}`}
+                />
 
                 <div className="flex items-center gap-1 relative">
                   {[...Array(3)].map((_, i) => {
@@ -709,6 +747,8 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           e.stopPropagation();
                           goToSlide(slideIndex);
                         }}
+                        aria-label={`Go to slide ${actualSlideNumber} of ${heroSlides.length}${isActive ? '. Current slide' : ''}`}
+                        aria-current={isActive ? 'true' : undefined}
                         initial={false}
                         animate={{
                           scale: isActive ? 1 : 0.9,
@@ -721,6 +761,7 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                           y: isActive ? -8 : -4,
                           transition: { duration: 0.2 }
                         }}
+                        style={{ willChange: 'transform' }}
                         className={`relative cursor-pointer rounded-lg
                                     transition-shadow duration-300
                                     ${isActive ? 
@@ -761,11 +802,12 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                                   repeatDelay: 3,
                                   ease: "easeInOut"
                                 }}
-                                className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent 
-                                           transform rotate-15 pointer-events-none blur-sm"
-                                style={{
+                                style={{ 
+                                  willChange: 'transform, opacity',
                                   clipPath: 'polygon(5% 0, 95% 0, 85% 100%, 15% 100%)'
                                 }}
+                                className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent 
+                                           transform rotate-15 pointer-events-none blur-sm"
                               />
                             </>
                           )}
@@ -798,7 +840,8 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                             className="absolute bottom-2 left-2 z-20 p-1 bg-black/60 rounded-full group"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            aria-label={isPaused ? "Play" : "Pause"}
+                            aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
+                            aria-pressed={isPaused}
                           >
                             {isPaused ? (
                               <Play className="h-2.5 w-2.5 text-white" />
@@ -815,7 +858,11 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                   })}
                 </div>
 
-                <NavigationButton direction="next" onClick={() => goToSlide(currentSlide + 1)} />
+                <NavigationButton 
+                  direction="next" 
+                  onClick={() => goToSlide(currentSlide + 1)} 
+                  aria-label={`Next slide. Currently on slide ${currentSlide + 1} of ${heroSlides.length}`}
+                />
               </div>
             </div>
           </section>
