@@ -2,11 +2,12 @@
 
 'use client';
 
-import { motion, useAnimation } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import MobileHero from './MobileMenuHeader';
 
 // Constants moved outside component to prevent recreation
@@ -69,13 +70,17 @@ const getLoopedIndex = (index: number, length: number) => ((index % length) + le
 
 // Memoized components for better performance
 const ProductDot = memo(({ className, href }: { className: string; href: string }) => (
-  <div className={`relative inline-flex ${className}`}>
+  <div 
+    className={`relative inline-flex ${className}`}
+    onClick={(e) => e.stopPropagation()}
+  >
     <div className="absolute -inset-1 w-5 h-5 rounded-full bg-[#dcd5ca]/60 animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
     <div className="absolute -inset-1 w-5 h-5 rounded-full bg-[#ebe7e0]/50 animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
     <div className="relative w-3 h-3 rounded-full bg-[#ebe7e0] shadow-[0_0_8px_rgba(199,186,168,0.8)] transition-all duration-500 ease-in-out group-hover:scale-125" />
     <div className="absolute left-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
       <Link 
         href={href}
+        onClick={(e) => e.stopPropagation()}
         className="flex items-center gap-2 bg-[#ebe7e0]/95 backdrop-blur-sm shadow-lg rounded-lg p-2 border border-[#b39e86] hover:bg-[#dcd5ca]/95"
       >
         <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
@@ -91,7 +96,10 @@ ProductDot.displayName = 'ProductDot';
 
 const NavigationButton = memo(({ direction, onClick }: { direction: 'prev' | 'next'; onClick: () => void }) => (
   <motion.button
-    onClick={onClick}
+    onClick={(e: React.MouseEvent) => {
+      e.stopPropagation();
+      onClick();
+    }}
     className={`relative group scale-90 ${direction === 'prev' ? 'ml-2' : 'mr-2'}`}
     whileHover={{ scale: 0.95 }}
     whileTap={{ scale: 0.85 }}
@@ -110,35 +118,72 @@ const NavigationButton = memo(({ direction, onClick }: { direction: 'prev' | 'ne
 
 NavigationButton.displayName = 'NavigationButton';
 
-// Custom hooks refactored for better performance
+// Add ErrorBoundary component
+const AnimationErrorBoundary = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <ErrorBoundary 
+      fallback={<div className="contents">{children}</div>}
+      onError={(error) => console.error('Animation error:', error)}
+    >
+      {children}
+    </ErrorBoundary>
+  );
+};
+
+// Update useSlideNavigation hook with functional updates
 const useSlideNavigation = (totalSlides: number) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout>();
 
   const goToSlide = useCallback((index: number) => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    
-    const nextIndex = getLoopedIndex(index, totalSlides);
-    setCurrentSlide(nextIndex);
-    
-    const timer = setTimeout(() => setIsAnimating(false), ANIMATION.DURATION);
-    return () => clearTimeout(timer);
-  }, [isAnimating, totalSlides]);
+    setIsAnimating(prev => {
+      if (prev) return prev;
+      
+      // Clear any existing timer
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+
+      const nextIndex = getLoopedIndex(index, totalSlides);
+      setCurrentSlide(nextIndex);
+      
+      // Set new timer
+      timerRef.current = setTimeout(() => setIsAnimating(false), ANIMATION.DURATION);
+      return true;
+    });
+  }, [totalSlides]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   return { currentSlide, isAnimating, goToSlide };
 };
 
 const useImagePreloader = (images: string[]) => {
+  const [loadingStatus, setLoadingStatus] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
     const preloadImages = () => {
       images.forEach(src => {
         const img = new window.Image();
+        img.onload = () => setLoadingStatus(prev => ({ ...prev, [src]: true }));
+        img.onerror = () => console.error(`Failed to load image: ${src}`);
         img.src = src;
       });
     };
-    preloadImages();
+    if (typeof window !== 'undefined') {
+      preloadImages();
+    }
   }, [images]);
+
+  return loadingStatus;
 };
 
 // Preload critical images function
@@ -165,7 +210,6 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   // State and hooks
   const { currentSlide, isAnimating, goToSlide } = useSlideNavigation(heroSlides.length);
   const [touchStart, setTouchStart] = useState<number | null>(null);
-  const controls = useAnimation();
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const autoPlayRef = useRef<NodeJS.Timeout | null>();
   const [isPaused, setIsPaused] = useState(false);
@@ -188,54 +232,94 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
   }, []);
 
   useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
     if (!isPaused && !isMenuHovered) {
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         goToSlide(currentSlide + 1);
       }, ANIMATION.CAROUSEL_INTERVAL + 4000);
-      
-      return () => clearTimeout(timer);
     }
+    
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
   }, [currentSlide, isMenuHovered, isPaused, goToSlide]);
 
+  // Updated useEffect for body style manipulation
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Store original body styles
+    const originalStyles = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      width: document.body.style.width,
+      height: document.body.style.height,
+      top: document.body.style.top,
+      scrollY: window.scrollY
+    };
+
     if (isNavOpen) {
-      document.body.style.cssText = 'overflow: hidden; position: fixed; width: 100%; height: 100%;';
-    } else {
-      document.body.style.cssText = '';
+      // Lock scroll position
+      document.body.style.top = `-${originalStyles.scrollY}px`;
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
     }
 
     return () => {
-      document.body.style.cssText = '';
+      // Restore original styles and scroll position
+      document.body.style.overflow = originalStyles.overflow;
+      document.body.style.position = originalStyles.position;
+      document.body.style.width = originalStyles.width;
+      document.body.style.height = originalStyles.height;
+      document.body.style.top = originalStyles.top;
+
+      // Restore scroll position
+      if (isNavOpen) {
+        window.scrollTo(0, originalStyles.scrollY);
+      }
     };
   }, [isNavOpen]);
 
+  // Update touch handlers with better error handling
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (e.touches[0]) setTouchStart(e.touches[0].clientX);
+    try {
+      e.stopPropagation();
+      const touch = e?.touches?.[0];
+      if (touch?.clientX) {
+        setTouchStart(touch.clientX);
+      }
+    } catch (error) {
+      console.error('Touch start error:', error);
+    }
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (touchStart === null || !e.touches[0]) return;
-    
-    const diff = touchStart - e.touches[0].clientX;
-    
-    if (Math.abs(diff) > 50) {
-      goToSlide(currentSlide + (diff > 0 ? 1 : -1));
-      setTouchStart(null);
+    try {
+      e.stopPropagation();
+      if (!e?.touches?.[0] || touchStart === null) return;
+      
+      const diff = touchStart - e.touches[0].clientX;
+      if (Math.abs(diff) > 50) {
+        goToSlide(currentSlide + (diff > 0 ? 1 : -1));
+        setTouchStart(null);
+      }
+    } catch (error) {
+      console.error('Touch move error:', error);
+      setTouchStart(null); // Reset touch state on error
     }
   }, [touchStart, currentSlide, goToSlide]);
 
-  const togglePause = useCallback(() => setIsPaused(prev => !prev), []);
-
-  // Event handlers
-  const handleMenuHover = (isHovering: boolean) => {
-    setIsMenuHovered(isHovering);
-  };
+  const togglePause = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setIsPaused(prev => !prev);
+  }, []);
 
   const handleScroll = useCallback((e: WheelEvent) => {
-    // Commenting out the slide change logic on scroll
-    // if (Math.abs(e.deltaY) > 30) {
-    //   goToSlide(currentSlide + (e.deltaY > 0 ? 1 : -1));
-    // }
   }, [currentSlide, goToSlide]);
 
   useEffect(() => {
@@ -370,36 +454,38 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
 
                     {/* Lamp Image - Explicitly disable initial animation */}
                     {index === 0 && slide.lampImage && (
-                      <motion.div
-                        animate={{ 
-                          rotate: [0, 2, -2, 2, 0],
-                        }}
-                        transition={{
-                          rotate: {
-                            duration: 6,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }
-                        }}
-                        className="absolute left-[15%] top-[-4%] z-10 w-[120px] origin-top md:w-[180px]"
-                      >
-                        <div className="relative">
-                          <img
-                            src={slide.lampImage}
-                            alt=""
-                            width="180"
-                            height="180"
-                            loading="lazy"
-                            decoding="async"
-                            className="h-auto w-full"
-                          />
-                          
-                          {/* Interactive product dot */}
-                          <div className="group absolute bottom-[20%] left-[65%] -translate-x-1/2 translate-y-1/2">
-                            <ProductDot className="w-4 h-4" href={slide.productLink || '#'} />
+                      <AnimationErrorBoundary>
+                        <motion.div
+                          animate={{ 
+                            rotate: [0, 2, -2, 2, 0],
+                          }}
+                          transition={{
+                            rotate: {
+                              duration: 6,
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }
+                          }}
+                          className="absolute left-[15%] top-[-4%] z-10 w-[120px] origin-top md:w-[180px]"
+                        >
+                          <div className="relative">
+                            <img
+                              src={slide.lampImage}
+                              alt=""
+                              width="180"
+                              height="180"
+                              loading="lazy"
+                              decoding="async"
+                              className="h-auto w-full"
+                            />
+                            
+                            {/* Interactive product dot */}
+                            <div className="group absolute bottom-[20%] left-[65%] -translate-x-1/2 translate-y-1/2">
+                              <ProductDot className="w-4 h-4" href={slide.productLink || '#'} />
+                            </div>
                           </div>
-                        </div>
-                      </motion.div>
+                        </motion.div>
+                      </AnimationErrorBoundary>
                     )}
 
                     {/* New Product Dot 1 - Render only on the first slide */}
@@ -619,7 +705,10 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                     return (
                       <motion.div
                         key={`${slide.id}-${i}`}
-                        onClick={() => goToSlide(slideIndex)}
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          goToSlide(slideIndex);
+                        }}
                         initial={false}
                         animate={{
                           scale: isActive ? 1 : 0.9,
@@ -702,7 +791,10 @@ const HeroComponent = function Hero({}: HeroProps): JSX.Element {
                         {/* Pause/Play Button - preserved */}
                         {isActive && (
                           <motion.button
-                            onClick={togglePause}
+                            onClick={(e: React.MouseEvent) => {
+                              e.stopPropagation();
+                              togglePause();
+                            }}
                             className="absolute bottom-2 left-2 z-20 p-1 bg-black/60 rounded-full group"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}

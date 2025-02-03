@@ -17,6 +17,9 @@ const LoyaltySignup = () => {
     <>
       <motion.div
         className="fixed left-0 top-1/2 -translate-y-1/2 z-50"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={() => setIsAccountModalOpen(true)}
       >
         <motion.div
           className="flex items-center"
@@ -32,8 +35,7 @@ const LoyaltySignup = () => {
         >
           {/* Main content */}
           <div className="bg-white/95 backdrop-blur-sm rounded-r-lg shadow-lg 
-                        border-y border-r border-[#b39e86] p-4 cursor-pointer group"
-                onClick={() => setIsAccountModalOpen(true)}>
+                        border-y border-r border-[#b39e86] p-4 cursor-pointer group">
             <div className="w-[180px]">
               <div className="mb-3">
                 <span className="text-sm font-medium text-[#6B5E4C]">
@@ -63,12 +65,8 @@ const LoyaltySignup = () => {
           </div>
 
           {/* Tab with animated arrow */}
-          <div 
-            className="bg-white/95 backdrop-blur-sm h-12 w-8 rounded-r-lg shadow-lg 
-                       border-y border-r border-[#b39e86] flex items-center justify-center cursor-pointer"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-          >
+          <div className="bg-white/95 backdrop-blur-sm h-12 w-8 rounded-r-lg shadow-lg 
+                       border-y border-r border-[#b39e86] flex items-center justify-center cursor-pointer">
             <motion.div
               animate={{
                 x: [3, 8, 3],
