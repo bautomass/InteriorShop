@@ -1,8 +1,6 @@
 "use client";
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/custom/accordion';
-import { NavigationHeader } from '@/components/layout/navigation-header';
-import { Footer } from '@/components/layout/site-footer';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
@@ -264,9 +262,7 @@ export default function FAQPage() {
     : filteredFaqs;
 
   return (
-    <>
-      <NavigationHeader />
-      
+    <> 
       <main className="min-h-screen bg-[#FAF9F6]">
         <div className="w-full bg-[#EDE8E3] py-24">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -340,8 +336,6 @@ export default function FAQPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 } 

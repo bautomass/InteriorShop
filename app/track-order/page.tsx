@@ -1,5 +1,3 @@
-import { NavigationHeader } from '@/components/layout/navigation-header';
-import { Footer } from '@/components/layout/site-footer';
 import { Box, CheckCircle2, Package, Truck } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -20,9 +18,7 @@ export const metadata: Metadata = {
 
 export default function TrackOrderPage() {
   return (
-    <>
-      <NavigationHeader />
-      
+    <>  
       <main className="min-h-screen bg-[#FAF9F6]">
         <div className="w-full bg-[#EDE8E3] py-24">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -158,8 +154,6 @@ export default function TrackOrderPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 } 

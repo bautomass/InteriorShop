@@ -1,12 +1,8 @@
-import { NavigationHeader } from '@/components/layout/navigation-header';
-import { Footer } from '@/components/layout/site-footer';
 import { Clock, MessageSquare, Phone } from 'lucide-react';
 
 export default function ContactPage() {
   return (
     <>
-      <NavigationHeader />
-      
       <main className="min-h-screen bg-[#FAF9F6]">
         {/* Hero Section */}
         <div className="w-full bg-[#EDE8E3] py-24">
@@ -102,8 +98,6 @@ export default function ContactPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 } 

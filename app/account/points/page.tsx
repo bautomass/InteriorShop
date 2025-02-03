@@ -1,6 +1,5 @@
 // app/account/points/page.tsx
 'use client';
-import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { LOYALTY_CONFIG, LoyaltyTier } from '@/lib/constants/loyalty';
 import { shopifyFetch } from '@/lib/shopify/client/customerAuth';
 import { redeemPoints } from '@/lib/shopify/loyalty/handleRedemption';
@@ -101,8 +100,6 @@ export default function PointsPage() {
 
   return (
     <div className="p-6">
-      <LargeScreenNavBar />
-
       {/* Header & Points Overview */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-900">Loyalty Program</h1>

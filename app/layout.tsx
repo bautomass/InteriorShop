@@ -10,6 +10,8 @@ import { cookies } from 'next/headers';
 import { ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import './globals.css';
+import  LargeScreenNavBar  from '@/components/layout/navbar/LargeScreenNavBar';
+import { Footer } from '@/components/layout/site-footer'; 
 const { SITE_NAME } = process.env;
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
@@ -54,7 +56,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             <QueryProvider>
               <CurrencyProvider>
                 <CartProvider cartPromise={cartPromise}>
+                  <LargeScreenNavBar />
                   <main>{children}</main>
+                  <Footer />
                   <Toaster closeButton />
                 </CartProvider>
               </CurrencyProvider>

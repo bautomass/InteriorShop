@@ -1,6 +1,4 @@
 // /app/blog/page.tsx
-import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
-import { Footer } from '@/components/layout/site-footer';
 import { Article } from '@/lib/shopify/types';
 import { getBlogQuery } from 'lib/shopify/queries/blog';
 import { shopifyFetch } from 'lib/utils';
@@ -122,7 +120,6 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
   return (
     <main className="relative min-h-screen bg-primary-50 pb-20 dark:bg-primary-900">
-      <LargeScreenNavBar />
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-gradient-to-b from-primary-100/50 to-transparent dark:from-primary-900/50"
@@ -170,7 +167,6 @@ export default async function BlogPage({ searchParams }: PageProps) {
           </div>
         )}
       </div>
-      <Footer />
     </main>
   );
 }

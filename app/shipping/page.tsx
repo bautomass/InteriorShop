@@ -1,14 +1,8 @@
 "use client";
-
-import { NavigationHeader } from '@/components/layout/navigation-header';
-import { Footer } from '@/components/layout/site-footer';
 import { Clock, Leaf, Package, PackageCheck, Shield, Truck } from 'lucide-react';
-
 export default function ShippingPage() {
   return (
     <>
-      <NavigationHeader />
-      
       <main className="min-h-screen bg-[#FAF9F6]">
         {/* Hero Section */}
         <div className="w-full bg-[#EDE8E3] py-24">
@@ -139,8 +133,6 @@ export default function ShippingPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 } 

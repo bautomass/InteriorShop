@@ -1,6 +1,4 @@
 import { ProductsGrid } from '@/components/collections/ProductsGrid';
-// import { NavigationHeader } from '@/components/layout/navigation-header';
-import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { Footer } from '@/components/layout/site-footer';
 import { defaultSort, sorting } from '@/lib/constants';
 import { getProducts } from '@/lib/shopify';
@@ -102,8 +100,6 @@ export default async function AllProductsPage({ searchParams = {} }: PageProps) 
 
   return (
     <>
-      <LargeScreenNavBar />
-      
       <main className="bg-primary-50 pb-20 dark:bg-primary-900">
         <div className="mx-auto max-w-[90rem] px-4 sm:px-6 lg:px-8">
           {/* Page Header */}
@@ -115,7 +111,6 @@ export default async function AllProductsPage({ searchParams = {} }: PageProps) 
               Showing {products.length} products
             </p>
           </div>
-
           <Suspense fallback={<LoadingSkeleton />}>
             <ProductsGrid
               products={currentProducts}
@@ -123,7 +118,6 @@ export default async function AllProductsPage({ searchParams = {} }: PageProps) 
               isGridView={isGridView}
               viewSettings={viewSettings}
             />
-
             {/* Pagination */}
             {totalPages > 1 && (
               <nav className="mt-8 flex justify-center" aria-label="Pagination">
@@ -138,7 +132,6 @@ export default async function AllProductsPage({ searchParams = {} }: PageProps) 
                       Previous
                     </PaginationLink>
                   </li>
-
                   {/* Page Numbers */}
                   {getPaginationRange().map((pageNum, idx) => (
                     <li key={idx}>
@@ -155,7 +148,6 @@ export default async function AllProductsPage({ searchParams = {} }: PageProps) 
                       )}
                     </li>
                   ))}
-
                   {/* Next Page */}
                   <li>
                     <PaginationLink
@@ -170,14 +162,13 @@ export default async function AllProductsPage({ searchParams = {} }: PageProps) 
               </nav>
             )}
           </Suspense>
-
           {/* Empty State */}
           {products.length === 0 && (
             <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-dashed border-primary-300 bg-white/50 backdrop-blur-sm dark:border-primary-700 dark:bg-primary-800/50">
               <div className="text-center">
                 <h2 className="mb-2 text-xl font-medium text-primary-900 dark:text-primary-50">
                   No Products Found
-                  
+                
                 </h2>
                 <p className="text-primary-700 dark:text-primary-200">
                   Please check back later for new products.

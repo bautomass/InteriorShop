@@ -1,9 +1,7 @@
 // app/account/settings/page.tsx
 'use client';
-
 import AddressModal from '@/components/AddressModal';
 import DeleteAccountModal from '@/components/DeleteAccountModal';
-import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { shopifyFetch } from '@/lib/shopify/client/customerAuth';
 import { useAuth } from '@/providers/AuthProvider';
 import { CustomerAddress } from '@/types/account';
@@ -376,8 +374,6 @@ export default function SettingsPage() {
 
   return (
     <div className="p-6">
-    <LargeScreenNavBar />
-
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-900">Account Settings</h1>

@@ -1,6 +1,5 @@
 // pages/cart.tsx
 'use client';
-
 import { useCartActions } from '@/components/cart/hooks/useCartActions';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useServerCart } from '@/components/cart/hooks/useServerCart';
@@ -8,20 +7,12 @@ import type { Product } from '@/lib/shopify/types';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
-
-// Dynamic imports for better code splitting
-const LargeScreenNavBar = dynamic(() => import('@/components/layout/navbar/LargeScreenNavBar'), {
-  loading: () => <div className="h-20 bg-white" />
-});
-
 const CartModal = dynamic(() => import('components/cart/modal'), {
   loading: () => <div className="animate-pulse h-64 bg-gray-100 rounded-xl" />
 });
-
 const InvoiceSection = dynamic(() => import('@/components/invoice/InvoiceSection'), {
   loading: () => <div className="animate-pulse h-32 bg-gray-100 rounded-xl" />
 });
-
 // Regular imports for smaller components
 import CartHeader from '@/components/cart/sections/CartHeader';
 import HelpSection from '@/components/cart/sections/HelpSection';
@@ -59,7 +50,6 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#F8F6F3]">
-      <LargeScreenNavBar />
       <div className="pt-20">
         <motion.div 
           initial="hidden"
@@ -69,7 +59,6 @@ export default function CartPage() {
         >
           <NavigationButtons />
           <CartHeader isLoading={isLoading} cart={cart} />
-
           <div className="lg:grid lg:grid-cols-3 lg:gap-8">
             {/* Cart Content */}
             <div className="lg:col-span-2">
@@ -81,7 +70,6 @@ export default function CartPage() {
                 </div>
               </motion.div>
             </div>
-
             {/* Trust Badges and Invoice */}
             <motion.div variants={containerVariants} className="space-y-6 lg:pl-8">
               <TrustBadges />
@@ -98,7 +86,6 @@ export default function CartPage() {
               )}
             </motion.div>
           </div>
-
           {displayedRecentItems.length > 0 && (
             <RecentlyViewed 
               products={displayedRecentItems}
@@ -107,7 +94,6 @@ export default function CartPage() {
               calculateDiscountedPrice={calculateDiscountedPrice}
             />
           )}
-
           <HelpSection />
         </motion.div>
       </div>

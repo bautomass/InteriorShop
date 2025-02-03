@@ -1,7 +1,4 @@
-import { NavigationHeader } from '@/components/layout/navigation-header';
-import { Footer } from '@/components/layout/site-footer';
 import type { Metadata } from 'next';
-
 export const metadata: Metadata = {
   title: 'Our Story | Simple Interior Ideas - Natural & Eco-Friendly Home Decor',
   description: 'Discover the journey of Simple Interior Ideas, from our humble beginnings to becoming a leading provider of natural, eco-friendly home decor. Learn about our commitment to sustainability, artisanal craftsmanship, and mindful living.',
@@ -19,9 +16,7 @@ export const metadata: Metadata = {
 
 export default function StoryPage() {
   return (
-    <>
-      <NavigationHeader />
-      
+    <>   
       <main className="min-h-screen bg-[#FAF9F6]">
         <div className="w-full bg-[#EDE8E3] py-24">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -131,8 +126,6 @@ export default function StoryPage() {
           </div>
         </article>
       </main>
-
-      <Footer />
     </>
   );
 } 

@@ -1,15 +1,9 @@
 "use client";
-
-import { NavigationHeader } from '@/components/layout/navigation-header';
-import { Footer } from '@/components/layout/site-footer';
 import { Heart, Leaf, Sparkles } from 'lucide-react';
 import Image from 'next/image';
-
 export default function AboutPage() {
   return (
     <>
-      <NavigationHeader />
-      
       <main className="min-h-screen bg-[#FAF9F6]">
         {/* Hero Section */}
         <div className="relative w-full bg-[#EDE8E3] py-24">
@@ -143,8 +137,6 @@ export default function AboutPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 } 

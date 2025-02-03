@@ -1,7 +1,6 @@
 // /app/collections/[handle]/page.tsx
 import PaginatedProductGrid from '@/components/collections/PaginatedProductGrid';
 import { SortOptions } from '@/components/collections/sort-options';
-import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { ScrollHandler } from '@/components/ScrollHandler'; 
 import { Footer } from '@/components/layout/site-footer';
 import { defaultSort, sorting } from 'lib/constants';
@@ -164,7 +163,6 @@ export default async function CollectionPage({ params, searchParams }: Collectio
 
     return (
       <>
-        <LargeScreenNavBar />
         <ScrollHandler />
         <script
           type="application/ld+json"

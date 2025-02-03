@@ -3,18 +3,15 @@ import { CollectionGrid } from '@/components/collections/collection-grid';
 import { CollectionsHero } from '@/components/collections/hero-section';
 import { RecentlyViewed } from '@/components/collections/recently-viewed';
 import { SearchBar } from '@/components/collections/search-bar';
-import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { getCollectionsQuery } from 'lib/shopify/queries/collection';
 import { shopifyFetch } from 'lib/utils';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-
 interface SEO {
   title: string;
   description: string;
 }
-
 interface Collection {
   handle: string;
   title: string;
@@ -29,7 +26,6 @@ interface Collection {
     height: number;
   };
 }
-
 interface CollectionQueryResponse {
   body: {
     data: {
@@ -41,7 +37,6 @@ interface CollectionQueryResponse {
     };
   };
 }
-
 interface PageProps {
   searchParams: {
     q?: string;
@@ -50,9 +45,7 @@ interface PageProps {
     date?: string;
   };
 }
-
 const EXCLUDED_COLLECTIONS = ['FreshFreshFresh', 'SALE', 'BEST SELLERS'];
-
 export const metadata: Metadata = {
   title: 'Collections | Modern Living',
   description: 'Explore our curated collections of contemporary furniture and home decor.',
@@ -73,7 +66,6 @@ export const metadata: Metadata = {
     description: 'Explore our curated collections of contemporary furniture and home decor.'
   }
 };
-
 const sortFunctions = {
   'date-desc': (a: Collection, b: Collection) => 
     new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
@@ -84,17 +76,14 @@ const sortFunctions = {
   'title-desc': (a: Collection, b: Collection) => 
     b.title.localeCompare(a.title)
 };
-
 export default async function CollectionsPage({ searchParams }: PageProps) {
   let collections: Collection[] = [];
   const layout = searchParams.layout || 'grid';
-
   try {
     const response = await shopifyFetch<CollectionQueryResponse['body']>({
       query: getCollectionsQuery,
       cache: 'force-cache'
     });
-
     if (response?.body?.data?.collections?.edges) {
       collections = response.body.data.collections.edges
         .map(({ node }) => ({
@@ -134,21 +123,16 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
 
   return (
     <main className="min-h-screen bg-primary-50 pb-20 dark:bg-primary-900 pt-12">
-      <LargeScreenNavBar />
-
       <div className="mx-auto max-w-[90rem] px-4 py-12 sm:px-6 lg:px-8">
         <Suspense>
           <CollectionsHero />
         </Suspense>
-
         <Suspense>
           <RecentlyViewed />
         </Suspense>
-
         <Suspense>
           <SearchBar />
         </Suspense>
-
         <div className="mb-8">
           <p className="text-sm text-primary-600 dark:text-primary-300">
             Showing {collections.length} collection{collections.length !== 1 ? 's' : ''}
@@ -159,11 +143,9 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
             )}
           </p>
         </div>
-
         <section aria-label="Collections">
           <CollectionGrid collections={collections} layout={layout as 'grid' | 'list' | 'table'} />
         </section>
-
         {collections.length === 0 && (
           <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-dashed border-primary-300 bg-white/50 dark:border-primary-700 dark:bg-primary-800/50">
             <div className="text-center">
