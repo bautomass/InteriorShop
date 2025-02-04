@@ -433,7 +433,7 @@ export const DesktopHeader = () => {
           ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
       >
         <div 
-          className={`w-full backdrop-blur-sm shadow-lg 
+          className={`w-full backdrop-blur-sm shadow-lg px-8
             relative border-r-[2px] border-white
             before:absolute before:inset-0 before:-z-10 
             before:bg-[#eaeadf]
