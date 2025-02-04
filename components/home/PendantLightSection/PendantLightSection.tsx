@@ -3,38 +3,38 @@
 import { useActionState } from '@/hooks/useActionState';
 import type { Product } from '@/lib/shopify/types';
 import { useCurrency } from '@/providers/CurrencyProvider';
-import { addItem } from 'components/cart/actions';
-import { useCart } from 'components/cart/cart-context';
+import { addItem } from '@/components/cart/actions';
+import { useCart } from '@/components/cart/cart-context';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { memo, useCallback, useEffect, useState, useTransition } from 'react';
 
 // Dynamic imports with loading states
-const SizeGuideModal = dynamic(() => import('@/components/modals/SizeGuideModal'), {
+const SizeGuideModal = dynamic(() => import('@/components/home/PendantLightSection/modals/SizeGuideModal'), {
   loading: () => <div className="animate-pulse bg-gray-200 h-full w-full rounded-lg" />,
   ssr: false
 });
 
-const ProductReviews = dynamic(() => import('@/components/reviews/ProductReviews'), {
+const ProductReviews = dynamic(() => import('@/components/home/PendantLightSection/reviews/ProductReviews'), {
   loading: () => <div className="animate-pulse bg-gray-200 h-24 w-full rounded-lg" />,
   ssr: false
 });
 
 // Local component imports
-import { AddToCartButton } from './AddToCartButton';
-import { ProductGallery } from './ProductGallery';
-import { ProductOptions } from './ProductOptions';
-import { QuantityPicker } from './QuantityPicker';
-import { ShareButtons } from './ShareButtons';
+import { AddToCartButton } from './components/AddToCartButton';
+import { ProductGallery } from './components/ProductGallery';
+import { ProductOptions } from './components/ProductOptions';
+import { QuantityPicker } from './components/QuantityPicker';
+import { ShareButtons } from './components/ShareButtons';
 
 // Import hooks, constants and utils
 import { Star } from 'lucide-react';
 import Image from 'next/image';
 import { HIGHLIGHTS, PRODUCT_CONSTANTS } from './constants';
-import { useProductGallery } from './hooks/useProductGallery';
 import { useProductVariant } from './hooks/useProductVariant';
 import { useShare } from './hooks/useShare';
 import { getProductPrices } from './utils';
+import { useProductGallery } from './hooks/useProductGallery';
 
 const FeaturedProduct = () => {
   // Core state management
@@ -180,7 +180,7 @@ const FeaturedProduct = () => {
                 <ShareButtons
                   product={product}
                   shareCount={shareCount}
-                  onShare={(platform) => handleShare(platform, product.handle)}
+                  onShare={(platform: string) => handleShare(platform, product.handle)}
                 />
               </div>
             </div>

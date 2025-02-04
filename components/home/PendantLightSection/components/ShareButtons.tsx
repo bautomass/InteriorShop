@@ -2,7 +2,7 @@
 import { Pinterest } from '@/components/icons/Pinterest';
 import { Facebook, LinkIcon, Mail, X as Twitter } from 'lucide-react';
 import { memo } from 'react';
-import type { ShareButtonsProps } from './types';
+import type { ShareButtonsProps } from '../types';
 
 export const ShareButtons = memo(function ShareButtons({
   product,

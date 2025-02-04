@@ -2,8 +2,8 @@
 import { motion } from 'framer-motion';
 import { ShoppingCart } from 'lucide-react';
 import { memo } from 'react';
-import { PRODUCT_CONSTANTS } from './constants';
-import type { AddToCartButtonProps } from './types';
+import { PRODUCT_CONSTANTS } from '../constants';
+import type { AddToCartButtonProps } from '../types';
 
 export const AddToCartButton = memo(function AddToCartButton({
   onClick,

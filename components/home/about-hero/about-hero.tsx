@@ -7,7 +7,7 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useInView } from 'react-intersection-observer';
 
-import { ErrorFallback } from './ErrorFallback';
+import { ErrorFallback } from './components/ErrorFallback';
 import { CONSTANTS, features, images } from './constants';
 import { useImagePreloader } from './hooks/useImagePreloader';
 import type { ScrollMetrics } from './types';

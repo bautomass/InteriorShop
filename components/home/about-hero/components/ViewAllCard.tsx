@@ -2,8 +2,8 @@ import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { memo } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { CONSTANTS } from './constants';
-import type { ViewAllCardProps } from './types';
+import { CONSTANTS } from '../constants';
+import type { ViewAllCardProps } from '../types';
 
 export const ViewAllCard = memo(function ViewAllCard({ inView, index }: ViewAllCardProps) {
   const { ref, inView: cardInView } = useInView(CONSTANTS.INTERSECTION);

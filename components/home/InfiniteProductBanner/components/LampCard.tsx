@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { memo, useCallback } from 'react';
-import type { ProductCardProps } from './types';
+import type { ProductCardProps } from '../types';
 
 export const LampCard = memo(function LampCard({ product, snippet }: ProductCardProps) {
   const { formatPrice } = useCurrency();

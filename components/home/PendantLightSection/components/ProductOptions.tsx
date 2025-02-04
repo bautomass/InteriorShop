@@ -1,7 +1,7 @@
 // /components/home/components/ProductOptions.tsx
 import { Info } from 'lucide-react';
 import { memo } from 'react';
-import type { ProductOptionsProps } from './types';
+import type { ProductOptionsProps } from '../types';
 import { ProductOption } from '@/lib/shopify/types';
 
 export const ProductOptions = memo(function ProductOptions({

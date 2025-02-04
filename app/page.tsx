@@ -1,11 +1,11 @@
-import AboutHero from '@/components/home/about-hero';
+import AboutHero from '@/components/home/about-hero/about-hero';
 import LoyaltyTeaser from '@/components/home/LoyaltyTeaser';
-import PendantLightSection from '@/components/home/PendantLightSection';
+import PendantLightSection from '@/components/home/PendantLightSection/PendantLightSection';
 import Hero from 'components/home/hero';
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
-const InfiniteProductBanner = dynamic(() => import('@/components/home/InfiniteProductBanner'), {
+const InfiniteProductBanner = dynamic(() => import('@/components/home/InfiniteProductBanner/InfiniteProductBanner'), {
  loading: () => <div className="min-h-[300px] animate-pulse bg-gray-100" />
 });
 const LampsCollectionSection = dynamic(() => import('components/home/lamps/LampsCollectionSection'));

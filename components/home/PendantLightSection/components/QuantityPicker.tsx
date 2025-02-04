@@ -1,7 +1,7 @@
 // /components/home/components/QuantityPicker.tsx
 import { memo } from 'react';
 import { Minus, Plus } from 'lucide-react';
-import type { QuantityPickerProps } from './types';
+import type { QuantityPickerProps } from '../types';
 
 export const QuantityPicker = memo(function QuantityPicker({
   quantity,

@@ -1,8 +1,8 @@
 // /components/home/components/ProductGallery.tsx
 import Image from 'next/image';
 import { memo } from 'react';
-import { PRODUCT_CONSTANTS } from './constants';
-import type { ProductGalleryProps } from './types';
+import { PRODUCT_CONSTANTS } from '../constants';
+import type { ProductGalleryProps } from '../types';
 
 export const ProductGallery = memo(function ProductGallery({
   images,

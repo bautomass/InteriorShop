@@ -1,9 +1,9 @@
 'use client'
 
+import ProductReviews from '@/components/home/PendantLightSection/reviews/ProductReviews';
 import { Pinterest } from '@/components/icons/Pinterest';
 import { X } from '@/components/icons/X';
 import { ProductQuickView } from '@/components/quickview/ProductQuickView';
-import ProductReviews from '@/components/reviews/ProductReviews';
 import { useActionState } from '@/hooks/useActionState';
 import type { Product, ProductVariant } from '@/lib/shopify/types';
 import { useCurrency } from '@/providers/CurrencyProvider';
