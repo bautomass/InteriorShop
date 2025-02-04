@@ -47,30 +47,30 @@ export default function HomePage() {
      <Hero />
      <AboutHero />
      <LoyaltyTeaser />
-       {/* <PendantLightSection /> */}
-       {/* <Suspense fallback={<SectionLoader />}>
+       <PendantLightSection />
+       <Suspense fallback={<SectionLoader />}>
          <InfiniteProductBanner />
-       </Suspense> */}
-       {/* <Suspense fallback={<SectionLoader />}>
+       </Suspense>
+       <Suspense fallback={<SectionLoader />}>
          <LampsCollectionSection />
          <MaterialsSection />
-       </Suspense> */}
-       {/* <Suspense fallback={<SectionLoader />}>
+       </Suspense>
+       <Suspense fallback={<SectionLoader />}>
          <NewArrivalsCollection />
          <AnturamStoolsCollection />
-       </Suspense> */}
-       {/* <Suspense fallback={<SectionLoader />}>
+       </Suspense>
+       <Suspense fallback={<SectionLoader />}>
          <CanvasCollection />
          <BlogSection />
-       </Suspense> */}
-       {/* <Suspense fallback={<SectionLoader />}>
+       </Suspense>
+       <Suspense fallback={<SectionLoader />}>
          <CeramicVaseSection />
          <WishboneChairSection />
-       </Suspense> */}
-       {/* <Suspense fallback={<SectionLoader />}>
+       </Suspense>
+       <Suspense fallback={<SectionLoader />}>
          <InteriorTipsSection />
          <InstagramBanner />
-       </Suspense> */}
+       </Suspense>
        <BackToTop />
    </>
  );
