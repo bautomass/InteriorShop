@@ -1,22 +1,23 @@
 // app/product/[handle]/page.tsx
 import { ProductDetails } from '@/components/product/product-details';
 import { ProductGallery } from '@/components/product/product-gallery';
-import { ProductTabs } from '@/components/product/product-tabs';
 import { RecentlyViewedTracker } from '@/components/product/RecentlyViewedTracker';
-import { RelatedProductsClient } from '@/components/product/related-products';
-import { CollectionsShowcase } from '@/components/shared/CollectionsShowcase';
-import { SustainabilityShowcase } from '@/components/shared/SustainabilityShowcase';
 import { ProductProvider } from 'components/product/product-context';
 import { HIDDEN_PRODUCT_TAG } from 'lib/constants';
 import { getProduct, getProductRecommendations } from 'lib/shopify';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, lazy } from 'react';
+
+// Lazy loaded components
+const CollectionsShowcase = lazy(() => import('@/components/shared/CollectionsShowcase').then(mod => ({ default: mod.CollectionsShowcase })));
+const SustainabilityShowcase = lazy(() => import('@/components/shared/SustainabilityShowcase').then(mod => ({ default: mod.SustainabilityShowcase })));
+const RelatedProductsClient = lazy(() => import('@/components/product/related-products').then(mod => ({ default: mod.RelatedProductsClient })));
+const ProductTabs = lazy(() => import('@/components/product/product-tabs').then(mod => ({ default: mod.ProductTabs })));
 
 export async function generateMetadata(props: {
   params: Promise<{ handle: string }>;
 }): Promise<Metadata> {
-  // Metadata generation remains unchanged
   const params = await props.params;
   const product = await getProduct(params.handle);
 
@@ -55,7 +56,9 @@ function RelatedProductsContent({ products }: { products: any[] }) {
   if (!products.length) return null;
   return (
     <div className="mt-8 px-4 sm:px-6 md:px-8">
-      <RelatedProductsClient products={products} />
+      <Suspense fallback={<div>Loading related products...</div>}>
+        <RelatedProductsClient products={products} />
+      </Suspense>
     </div>
   );
 }
@@ -106,41 +109,196 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
         }}
       />
       <div className="relative mx-auto max-w-screen-2xl px-0 pb-16 pt-16 sm:px-4 sm:pb-20 sm:pt-20">
-        {/* Background blur - adjusted for mobile */}
         <div className="pointer-events-none absolute right-0 top-0 h-[60%] w-full bg-[#eaeadf] opacity-90 blur-[100px] sm:h-[80%] sm:w-[80%] sm:blur-[150px]" />
         
-        {/* Main product container - optimized padding for mobile */}
         <div className="relative mx-auto flex max-w-[1400px] flex-col p-4 sm:p-6 md:p-8 lg:flex-row lg:gap-26 lg:p-12">
-          {/* Product Gallery - full width on mobile, constrained on larger screens */}
           <div className="mx-auto h-full w-full sm:max-w-[550px] lg:basis-[45%]">
             <ProductGallery images={product.images} product={product} />
           </div>
 
-          {/* Product Details - full width on mobile, with adjusted spacing */}
           <div className="mt-8 sm:mt-10 lg:mt-0 lg:basis-[45%]">
             <ProductDetails product={product} />
           </div>
         </div>
 
-        {/* Product Tabs - optimized padding for mobile */}
         <div className="mt-8 px-4 sm:px-6 md:px-8">
-          <ProductTabs />
+          <Suspense fallback={<div>Loading product details...</div>}>
+            <ProductTabs />
+          </Suspense>
         </div>
 
-        {/* Related Products Section */}
         <Suspense fallback={<RelatedProductsLoader />}>
           {/* @ts-expect-error Server Component */}
           <RelatedProductsSection id={product.id} />
         </Suspense>
 
-        {/* Collections and Sustainability Showcases - adjusted spacing for mobile */}
         <div className="mt-12 px-4 sm:mt-16 sm:px-6 md:px-8">
-          <CollectionsShowcase />
+          <Suspense fallback={<div>Loading collections...</div>}>
+            <CollectionsShowcase />
+          </Suspense>
         </div>
         <div className="mt-8 px-4 sm:mt-12 sm:px-6 md:px-8">
-          <SustainabilityShowcase />
+          <Suspense fallback={<div>Loading sustainability info...</div>}>
+            <SustainabilityShowcase />
+          </Suspense>
         </div>
       </div>
     </ProductProvider>
   );
 }
+
+
+
+
+
+
+
+
+
+
+// // app/product/[handle]/page.tsx
+// import { ProductDetails } from '@/components/product/product-details';
+// import { ProductGallery } from '@/components/product/product-gallery';
+// import { ProductTabs } from '@/components/product/product-tabs'; 
+// import { RecentlyViewedTracker } from '@/components/product/RecentlyViewedTracker';
+// import { RelatedProductsClient } from '@/components/product/related-products';
+// import { CollectionsShowcase } from '@/components/shared/CollectionsShowcase';
+// import { SustainabilityShowcase } from '@/components/shared/SustainabilityShowcase';
+// import { ProductProvider } from 'components/product/product-context';
+// import { HIDDEN_PRODUCT_TAG } from 'lib/constants';
+// import { getProduct, getProductRecommendations } from 'lib/shopify';
+// import type { Metadata } from 'next';
+// import { notFound } from 'next/navigation';
+// import { Suspense } from 'react';
+
+// export async function generateMetadata(props: {
+//   params: Promise<{ handle: string }>;
+// }): Promise<Metadata> {
+//   // Metadata generation remains unchanged
+//   const params = await props.params;
+//   const product = await getProduct(params.handle);
+
+//   if (!product) return notFound();
+
+//   const { url, width, height, altText: alt } = product.featuredImage || {};
+//   const indexable = !product.tags.includes(HIDDEN_PRODUCT_TAG);
+
+//   return {
+//     title: product.seo.title || product.title,
+//     description: product.seo.description || product.description,
+//     robots: {
+//       index: indexable,
+//       follow: indexable,
+//       googleBot: {
+//         index: indexable,
+//         follow: indexable
+//       }
+//     },
+//     openGraph: url
+//       ? {
+//           images: [
+//             {
+//               url,
+//               width,
+//               height,
+//               alt
+//             }
+//           ]
+//         }
+//       : null
+//   };
+// }
+
+// function RelatedProductsContent({ products }: { products: any[] }) {
+//   if (!products.length) return null;
+//   return (
+//     <div className="mt-8 px-4 sm:px-6 md:px-8">
+//       <RelatedProductsClient products={products} />
+//     </div>
+//   );
+// }
+
+// async function RelatedProductsSection({ id }: { id: string }) {
+//   const relatedProducts = await getProductRecommendations(id);
+//   return <RelatedProductsContent products={relatedProducts} />;
+// }
+
+// function RelatedProductsLoader() {
+//   return (
+//     <div className="mt-8 w-full animate-pulse px-4 sm:px-6 md:px-8">
+//       <div className="h-64 rounded-lg bg-gray-200 sm:h-80 md:h-96" />
+//     </div>
+//   );
+// }
+
+// export default async function ProductPage(props: { params: Promise<{ handle: string }> }) {
+//   const params = await props.params;
+//   const product = await getProduct(params.handle);
+
+//   if (!product) return notFound();
+
+//   const productJsonLd = {
+//     '@context': 'https://schema.org',
+//     '@type': 'Product',
+//     name: product.title,
+//     description: product.description,
+//     image: product.featuredImage.url,
+//     offers: {
+//       '@type': 'AggregateOffer',
+//       availability: product.availableForSale
+//         ? 'https://schema.org/InStock'
+//         : 'https://schema.org/OutOfStock',
+//       priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+//       highPrice: product.priceRange.maxVariantPrice.amount,
+//       lowPrice: product.priceRange.minVariantPrice.amount
+//     }
+//   };
+
+//   return (
+//     <ProductProvider variants={product.variants}>
+//       <RecentlyViewedTracker product={product} />
+//       <script
+//         type="application/ld+json"
+//         dangerouslySetInnerHTML={{
+//           __html: JSON.stringify(productJsonLd)
+//         }}
+//       />
+//       <div className="relative mx-auto max-w-screen-2xl px-0 pb-16 pt-16 sm:px-4 sm:pb-20 sm:pt-20">
+//         {/* Background blur - adjusted for mobile */}
+//         <div className="pointer-events-none absolute right-0 top-0 h-[60%] w-full bg-[#eaeadf] opacity-90 blur-[100px] sm:h-[80%] sm:w-[80%] sm:blur-[150px]" />
+        
+//         {/* Main product container - optimized padding for mobile */}
+//         <div className="relative mx-auto flex max-w-[1400px] flex-col p-4 sm:p-6 md:p-8 lg:flex-row lg:gap-26 lg:p-12">
+//           {/* Product Gallery - full width on mobile, constrained on larger screens */}
+//           <div className="mx-auto h-full w-full sm:max-w-[550px] lg:basis-[45%]">
+//             <ProductGallery images={product.images} product={product} />
+//           </div>
+
+//           {/* Product Details - full width on mobile, with adjusted spacing */}
+//           <div className="mt-8 sm:mt-10 lg:mt-0 lg:basis-[45%]">
+//             <ProductDetails product={product} />
+//           </div>
+//         </div>
+
+//         {/* Product Tabs - optimized padding for mobile */}
+//         <div className="mt-8 px-4 sm:px-6 md:px-8">
+//           <ProductTabs />
+//         </div>
+
+//         {/* Related Products Section */}
+//         <Suspense fallback={<RelatedProductsLoader />}>
+//           {/* @ts-expect-error Server Component */}
+//           <RelatedProductsSection id={product.id} />
+//         </Suspense>
+
+//         {/* Collections and Sustainability Showcases - adjusted spacing for mobile */}
+//         <div className="mt-12 px-4 sm:mt-16 sm:px-6 md:px-8">
+//           <CollectionsShowcase />
+//         </div>
+//         <div className="mt-8 px-4 sm:mt-12 sm:px-6 md:px-8">
+//           <SustainabilityShowcase />
+//         </div>
+//       </div>
+//     </ProductProvider>
+//   );
+// }

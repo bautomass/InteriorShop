@@ -1,1007 +1,173 @@
-// Hero.tsx
-
 'use client';
-
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
-import MobileHero from './MobileMenuHeader';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-// Constants moved to top and consolidated
-const CONSTANTS = {
-  ANIMATION: {
-    DURATION: 500,
-    CAROUSEL_INTERVAL: 7000,
-    DEBOUNCE_DELAY: 300,
-  },
-  IMAGES: {
-    width: 1920,
-    height: 1080,
-    thumbWidth: 160,
-    thumbHeight: 90
-  }
-} as const;
-
-// Pre-define image dimensions for the first slide
-const FIRST_SLIDE_DIMENSIONS = {
-  width: 1920,
-  height: 1080
-} as const;
-
-// Types and Interfaces
-interface SlideContent {
-  id: string;
-  image: string;
-  alt: string;
-  lampImage?: string;
-  productLink?: string;
-  width?: number;
-  height?: number;
-  priority?: boolean;
-  loading?: 'eager' | 'lazy';
-}
-
-interface HeroProps {}
-
-// Hero slides data
-export const heroSlides: SlideContent[] = [
+const heroImages = [
   {
     id: 'slide-1',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/1_4a1ed1f2-1f28-465f-960a-8f58bcb22838.png?v=1738429093',
-    alt: 'Simple Interior Ideas',
-    width: FIRST_SLIDE_DIMENSIONS.width,
-    height: FIRST_SLIDE_DIMENSIONS.height,
+    src: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2_624ad208-26bc-4437-a2d2-857726a8a421.png?v=1738429094',
+    alt: 'Hero image 1',
     priority: true,
-    loading: 'eager',
-    lampImage: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/lamp-el.svg',
-    productLink: '/product/sleek-curve-japandi-glow-minimalist-pendant-light',
+    loading: 'eager'
   },
   {
     id: 'slide-2',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2_624ad208-26bc-4437-a2d2-857726a8a421.png?v=1738429094',
-    alt: 'Architectural Beauty',
-    loading: 'lazy'
-  },
-  {
-    id: 'slide-3',
-    image: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/3_36d88f5d-7420-49c3-9c1c-bfad1a6be399.png?v=1738429093',
-    alt: 'Minimalist Living',
+    src: 'https://cdn.shopify.com/s/files/1/0640/6868/1913/files/3_36d88f5d-7420-49c3-9c1c-bfad1a6be399.png?v=1738429093',
+    alt: 'Hero image 2',
     loading: 'lazy'
   }
 ];
 
-// Memoized helper functions
-const getLoopedIndex = (index: number, length: number) => ((index % length) + length) % length;
-
-// Memoized components for better performance
-const ProductDot = memo(({ className, href }: { className: string; href: string }) => (
-  <div 
-    className={`relative inline-flex ${className}`}
-    onClick={(e) => e.stopPropagation()}
-  >
-    <div className="absolute -inset-1 w-5 h-5 rounded-full bg-[#dcd5ca]/60 animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite]" />
-    <div className="absolute -inset-1 w-5 h-5 rounded-full bg-[#ebe7e0]/50 animate-[ping_3.5s_cubic-bezier(0.35,0,0.25,1)_infinite_1.75s]" />
-    <div className="relative w-3 h-3 rounded-full bg-[#ebe7e0] shadow-[0_0_8px_rgba(199,186,168,0.8)] transition-all duration-500 ease-in-out group-hover:scale-125" />
-    <div className="absolute left-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-      <Link 
-        href={href}
-        onClick={(e) => e.stopPropagation()}
-        className="flex items-center gap-2 bg-[#ebe7e0]/95 backdrop-blur-sm shadow-lg rounded-lg p-2 border border-[#b39e86] hover:bg-[#dcd5ca]/95"
-      >
-        <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap px-1">
-          View Product
-        </span>
-        <ChevronRight className="w-4 h-4 text-[#9c826b]" />
-      </Link>
-    </div>
-  </div>
-));
-
-ProductDot.displayName = 'ProductDot';
-
-const NavigationButton = memo(({ direction, onClick }: { direction: 'prev' | 'next'; onClick: () => void }) => (
-  <motion.button
-    onClick={(e: React.MouseEvent) => {
-      e.stopPropagation();
-      onClick();
-    }}
-    className={`relative group scale-90 ${direction === 'prev' ? 'ml-2' : 'mr-2'}`}
-    whileHover={{ scale: 0.95 }}
-    whileTap={{ scale: 0.85 }}
-    aria-label={`${direction === 'prev' ? 'Previous' : 'Next'} slide`}
-  >
-    <div className="absolute inset-0 rounded-full bg-black/40 backdrop-blur-sm group-hover:bg-black/60 transition-all duration-300 -z-10" />
-    <div className="p-2.5 text-white flex items-center">
-      {direction === 'prev' ? (
-        <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-      ) : (
-        <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-      )}
-    </div>
-  </motion.button>
-));
-
-NavigationButton.displayName = 'NavigationButton';
-
-// Add ErrorBoundary component
-const AnimationErrorBoundary = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <ErrorBoundary 
-      fallback={<div className="contents">{children}</div>}
-      onError={(error) => console.error('Animation error:', error)}
+const NavigationControl = ({ onNavigate, isPaused, onPauseToggle, progress }: {
+  onNavigate: (direction: 'prev' | 'next') => void;
+  isPaused: boolean;
+  onPauseToggle: () => void;
+  progress: number;
+}) => (
+  <div className="flex items-center gap-1 bg-black/40 backdrop-blur-xl rounded-lg p-1.5 border border-white/10 shadow-lg scale-90">
+    <motion.button
+      onClick={() => onNavigate('prev')}
+      className="p-2 transition-all duration-300"
+      whileHover={{ scale: 1.2 }}
+      whileTap={{ scale: 0.95 }}
     >
-      {children}
-    </ErrorBoundary>
-  );
-};
+      <ChevronLeft className="w-4 h-4 text-white/90" />
+    </motion.button>
 
-// Update useSlideNavigation hook with functional updates
-const useSlideNavigation = (totalSlides: number) => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout>();
-
-  const goToSlide = useCallback((index: number) => {
-    setIsAnimating(prev => {
-      if (prev) return prev;
-      
-      // Clear any existing timer
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-
-      const nextIndex = getLoopedIndex(index, totalSlides);
-      setCurrentSlide(nextIndex);
-      
-      // Set new timer
-      timerRef.current = setTimeout(() => setIsAnimating(false), CONSTANTS.ANIMATION.DURATION);
-      return true;
-    });
-  }, [totalSlides]);
-
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, []);
-
-  return { currentSlide, isAnimating, goToSlide };
-};
-
-// Update useImagePreloader with cleanup
-const useImagePreloader = (images: string[]) => {
-  const [loadingStatus, setLoadingStatus] = useState<Record<string, boolean>>({});
-  const imageRefs = useRef<HTMLImageElement[]>([]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const preloadImages = () => {
-      imageRefs.current = images.map(src => {
-        const img = new window.Image();
-        img.onload = () => setLoadingStatus(prev => ({ ...prev, [src]: true }));
-        img.onerror = () => console.error(`Failed to load image: ${src}`);
-        img.src = src;
-        return img;
-      });
-    };
-
-    preloadImages();
-
-    // Cleanup function to remove image references
-    return () => {
-      imageRefs.current.forEach(img => {
-        img.onload = null;
-        img.onerror = null;
-      });
-      imageRefs.current = [];
-    };
-  }, [images]);
-
-  return loadingStatus;
-};
-
-// Update preloadCriticalImages function to return cleanup
-const preloadCriticalImages = () => {
-  if (typeof window === 'undefined') return null;
-  
-  // Create a single hidden image element for preloading
-  const preloadLink = document.createElement('link');
-  preloadLink.rel = 'preload';
-  preloadLink.as = 'image';
-  preloadLink.href = heroSlides[0]?.image || '';
-  preloadLink.fetchPriority = 'high';
-  document.head.appendChild(preloadLink);
-
-  return () => {
-    if (preloadLink.parentNode) {
-      document.head.removeChild(preloadLink);
-    }
-  };
-};
-
-// Optimized Image component with proper caching and loading strategy
-const OptimizedImage = memo(({ src, alt, fill, priority, quality, className, sizes, onLoad }: any) => {
-  const loadedRef = useRef(false);
-
-  const handleLoad = useCallback(() => {
-    if (!loadedRef.current) {
-      loadedRef.current = true;
-      onLoad?.();
-    }
-  }, [onLoad]);
-
-  return (
-    <Image
-      src={src}
-      alt={alt}
-      fill={fill}
-      priority={priority}
-      quality={quality}
-      className={className}
-      sizes={sizes}
-      onLoad={handleLoad}
-      loading={priority ? 'eager' : 'lazy'}
-    />
-  );
-});
-
-OptimizedImage.displayName = 'OptimizedImage';
-
-// Main Hero Component
-const HeroComponent: React.FC<HeroProps> = function Hero({}: HeroProps): JSX.Element {
-  // Consolidated state management
-  const [state, setState] = useState({
-    currentSlide: 0,
-    isPaused: false,
-    isAnimating: false
-  });
-
-  // Add to the HeroComponent state
-  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
-
-  // Preload all hero images
-  useImagePreloader(heroSlides.map(slide => slide.image));
-
-  // State and hooks
-  const { currentSlide, isAnimating, goToSlide } = useSlideNavigation(heroSlides.length);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const autoPlayRef = useRef<NodeJS.Timeout | null>();
-  const [mounted, setMounted] = useState(false);
-  const [isMenuHovered, setIsMenuHovered] = useState(false);
-  const [isNavOpen, setIsNavOpen] = useState(false);
-
-  // First slide optimization
-  const firstSlideRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    // Preload first slide image
-    const image = new window.Image();
-    image.src = heroSlides[0]?.image || '';
-  }, []);
-
-  // Effects
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Update effect for preloading critical images
-  useEffect(() => {
-    const cleanup = preloadCriticalImages();
-    return () => cleanup?.();
-  }, []);
-
-  // Update body style manipulation effect
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // Store original body styles
-    const originalStyles = {
-      overflow: document.body.style.overflow,
-      position: document.body.style.position,
-      width: document.body.style.width,
-      height: document.body.style.height,
-      top: document.body.style.top,
-      scrollY: window.scrollY
-    };
-
-    if (isNavOpen) {
-      document.body.style.top = `-${originalStyles.scrollY}px`;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-    }
-
-    return () => {
-      // Restore original styles and scroll position
-      document.body.style.overflow = originalStyles.overflow;
-      document.body.style.position = originalStyles.position;
-      document.body.style.width = originalStyles.width;
-      document.body.style.height = originalStyles.height;
-      document.body.style.top = originalStyles.top;
-
-      // Restore scroll position
-      if (isNavOpen) {
-        window.scrollTo(0, originalStyles.scrollY);
-      }
-    };
-  }, [isNavOpen]);
-
-  // Memoized slide transition handler
-  const handleSlideTransition = useCallback((direction: 'next' | 'prev' | number) => {
-    setState(prev => ({
-      ...prev,
-      isAnimating: true,
-      currentSlide: typeof direction === 'number' 
-        ? direction 
-        : (prev.currentSlide + (direction === 'next' ? 1 : -1) + heroSlides.length) % heroSlides.length
-    }));
-
-    // Reset animation flag after transition
-    setTimeout(() => {
-      setState(prev => ({ ...prev, isAnimating: false }));
-    }, CONSTANTS.ANIMATION.DURATION);
-  }, []);
-
-  // Optimized auto-advance with cleanup
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-
-    if (!state.isPaused && !state.isAnimating) {
-      timer = setTimeout(() => {
-        handleSlideTransition('next');
-      }, CONSTANTS.ANIMATION.CAROUSEL_INTERVAL);
-    }
-
-    return () => clearTimeout(timer);
-  }, [state.isPaused, state.isAnimating, state.currentSlide, handleSlideTransition]);
-
-  const handleScroll = useCallback((e: WheelEvent) => {
-  }, [currentSlide, goToSlide]);
-
-  // Update scroll event listener effect
-  useEffect(() => {
-    const element = slideRefs.current[currentSlide];
-    if (element) {
-      const handleScrollWrapper = (e: WheelEvent) => handleScroll(e);
-      element.addEventListener('wheel', handleScrollWrapper, { passive: true });
-      return () => element.removeEventListener('wheel', handleScrollWrapper);
-    }
-  }, [currentSlide, handleScroll]);
-
-  // Update touch handlers with better error handling
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    try {
-      e.stopPropagation();
-      const touch = e?.touches?.[0];
-      if (touch?.clientX) {
-        setTouchStart(touch.clientX);
-      }
-    } catch (error) {
-      console.error('Touch start error:', error);
-    }
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    try {
-      e.stopPropagation();
-      if (!e?.touches?.[0] || touchStart === null) return;
-      
-      const diff = touchStart - e.touches[0].clientX;
-      if (Math.abs(diff) > 50) {
-        goToSlide(currentSlide + (diff > 0 ? 1 : -1));
-        setTouchStart(null);
-      }
-    } catch (error) {
-      console.error('Touch move error:', error);
-      setTouchStart(null); // Reset touch state on error
-    }
-  }, [touchStart, currentSlide, goToSlide]);
-
-  const togglePause = useCallback((e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setState(prev => ({ ...prev, isPaused: !prev.isPaused }));
-  }, []);
-
-  return (
-    <>
-      {/* Mobile Hero */}
-      <MobileHero />
-
-      {/* Desktop Hero - hide on mobile */}
-      <div className="hidden lg:block">
-        <div className="relative">
-          <section 
-            className="relative h-[100vh] w-full overflow-hidden pt-[30px]"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-          >
-            {/* Screen reader announcements */}
-            <div 
-              aria-live="polite" 
-              aria-atomic="true"
-              className="sr-only"
-            >
-              {`Showing slide ${currentSlide + 1} of ${heroSlides.length}`}
-            </div>
-
-            {/* Updated Hero Content */}
-            <div className="relative h-[100vh] w-full overflow-hidden">
-              <div className="flex h-full">
-                {/* First Slide - Optimized Loading */}
-                {currentSlide === 0 && (
-                  <div 
-                    ref={firstSlideRef}
-                    className="relative w-full h-full"
-                  >
-                    {/* Native img tag for maximum performance */}
-                    <img
-                      src={heroSlides[0]?.image || ''}
-                      alt={heroSlides[0]?.alt || ''}
-                      width={FIRST_SLIDE_DIMENSIONS.width}
-                      height={FIRST_SLIDE_DIMENSIONS.height}
-                      fetchPriority="high"
-                      decoding="sync"
-                      id="hero-main-image"
-                      data-lcp-element="true"
-                      className="object-cover w-full h-full"
-                      style={{ 
-                        contentVisibility: 'auto',
-                        containIntrinsicSize: `${FIRST_SLIDE_DIMENSIONS.width}px ${FIRST_SLIDE_DIMENSIONS.height}px`
-                      }}
-                    />
-
-                    {/* SVG overlay - load after main image */}
-                    <div className="absolute left-1/3 top-[35%] transform -translate-x-1/3 z-20">
-                      <img
-                        src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/Simple_Interior_Ideas_1_157c17e3-9c9d-4485-bf2c-1fabdcb870c5.svg"
-                        alt="Simple Interior Ideas"
-                        width="630"
-                        height="400"
-                        loading="lazy"
-                        className="object-contain"
-                        decoding="async"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Other Slides - Lazy Loaded */}
-                {currentSlide > 0 && (
-                  <div className="flex h-full">
-                    {heroSlides.slice(1).map((slide, index) => (
-                      <img
-                        key={slide.id}
-                        src={slide.image}
-                        alt={slide.alt}
-                        loading="lazy"
-                        className="object-cover w-full h-full"
-                        width="1920"
-                        height="1080"
-                        decoding="async"
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {heroSlides.map((slide, index) => (
-                  <div
-                    key={slide.id}
-                    ref={el => slideRefs.current[index] = el}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      position: 'absolute',
-                      left: `${index * 100}%`,
-                      transform: `translateX(${-currentSlide * 100}%)`,
-                      transition: 'transform 0.5s ease-in-out'
-                    }}
-                    className="flex-shrink-0"
-                  >
-                    {/* Remove loading placeholder for first slide */}
-                    {index !== 0 && (
-                      <div 
-                        className={`absolute inset-0 bg-gray-200 animate-pulse transition-opacity duration-500 ${
-                          loadedImages.has(slide.image) ? 'opacity-0' : 'opacity-100'
-                        }`} 
-                      />
-                    )}
-                    
-                    {/* Image component */}
-                    <OptimizedImage
-                      src={slide.image}
-                      alt={slide.alt}
-                      fill
-                      priority={index === 0}
-                      quality={index === 0 ? 100 : 75}
-                      className={`object-cover w-full h-full ${
-                        index === 0 ? '' : 'transition-opacity duration-500'
-                      } ${
-                        index === 0 ? 'opacity-100' : loadedImages.has(slide.image) ? 'opacity-100' : 'opacity-0'
-                      }`}
-                      sizes="(min-width: 1536px) 1536px, (min-width: 1280px) 1280px, (min-width: 1024px) 1024px, 100vw"
-                      style={{
-                        objectPosition: index === 2 ? 'center -30px' : 'center'
-                      }}
-                      onLoad={() => {
-                        if (index !== 0) {
-                          setLoadedImages(prev => new Set(prev).add(slide.image));
-                        }
-                      }}
-                    />
-
-                    {/* Lamp Image - Explicitly disable initial animation */}
-                    {index === 0 && slide.lampImage && (
-                      <AnimationErrorBoundary>
-                        <motion.div
-                          animate={{ 
-                            rotate: [0, 2, -2, 2, 0],
-                          }}
-                          transition={{
-                            rotate: {
-                              duration: 6,
-                              repeat: Infinity,
-                              ease: "easeInOut"
-                            }
-                          }}
-                          style={{ willChange: 'transform' }}
-                          className="absolute left-[15%] top-[-4%] z-10 w-[120px] origin-top md:w-[180px]"
-                        >
-                          <div className="relative">
-                            <img
-                              src={slide.lampImage}
-                              alt=""
-                              width="180"
-                              height="180"
-                              loading="lazy"
-                              decoding="async"
-                              className="h-auto w-full"
-                            />
-                            
-                            {/* Interactive product dot */}
-                            <div className="group absolute bottom-[20%] left-[65%] -translate-x-1/2 translate-y-1/2">
-                              <ProductDot className="w-4 h-4" href={slide.productLink || '#'} />
-                            </div>
-                          </div>
-                        </motion.div>
-                      </AnimationErrorBoundary>
-                    )}
-
-                    {/* New Product Dot 1 - Render only on the first slide */}
-                    {currentSlide === 0 && (
-                      <div className="group absolute bottom-[30%] right-[38%] -translate-x-1/2 translate-y-1/2">
-                        <ProductDot className="w-4 h-4" href="/product/product-1" />
-                      </div>
-                    )}
-
-                    {/* New Product Dot 2 - Render only on the first slide */}
-                    {currentSlide === 0 && (
-                      <div className="group absolute bottom-[32%] left-[36%] -translate-x-1/2 translate-y-1/2">
-                        <ProductDot className="w-4 h-4" href="/product/product-2" />
-                      </div>
-                    )}
-
-                    {/* New Heading and Buttons for the second slide */}
-                    {currentSlide === 1 && (
-                      <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        style={{ willChange: 'opacity, transform' }}
-                        className="absolute right-16 top-[38%] transform -translate-y-1/2 z-20 max-w-2xl"
-                      >
-                        <motion.span
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
-                          className="inline-block text-white/90 font-medium tracking-[0.2em] uppercase text-sm mb-4"
-                        >
-                          Nature's Gift
-                        </motion.span>
-
-                        <motion.h2
-                          initial={{ opacity: 0, y: 30 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
-                          className="text-[4.5rem] font-thin text-white leading-none mb-6"
-                        >
-                          Pure Living
-                          <span className="block font-light text-[3.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
-                          Art in Wood
-                          </span>
-                        </motion.h2>
-
-                        <motion.p
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }}
-                          className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide mb-8"
-                        >
-                          Each piece brings nature's warmth to your home. Crafted by skilled artisans using real wood, our furniture purifies your air while creating spaces that feel alive and peaceful.
-                        </motion.p>
-
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.9, duration: 0.5 }}
-                          whileHover={{ scale: 1.02 }}
-                          className="group inline-flex items-center"
-                        >
-                          <Link 
-                            href="/collections/organic-decoration"
-                            className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
-                                     shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
-                                     transition-all duration-500 px-4 py-4 relative"
-                          >
-                            <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap">
-                              Discover the Collection
-                            </span>
-                            <motion.div 
-                              className="flex items-center"
-                              initial={{ x: 0 }}
-                              animate={{ x: [0, 5, 0] }}
-                              transition={{ 
-                                repeat: Infinity, 
-                                duration: 1.5,
-                                ease: "easeInOut"
-                              }}
-                            >
-                              <ChevronRight className="w-5 h-5 text-[#9c826b]" />
-                            </motion.div>
-                          </Link>
-                        </motion.div>
-                      </motion.div>
-                    )}
-                    {/* End of Heading and Buttons for the second slide */}
-
-                    {/* Content for the third slide */}
-                    {currentSlide === 2 && (
-                      <>
-                        {/* Text content - keeping exact same position */}
-                        <motion.div 
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="absolute right-64 top-[10%] z-20 max-w-2xl"
-                        >
-                          <motion.span
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
-                          className="inline-block text-white/90 font-medium tracking-[0.2em] uppercase text-sm mb-4"
-                          >
-                          Art & Nature
-                          </motion.span>
-
-                          <motion.h2
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
-                            className="text-[3.5rem] font-thin text-white leading-none mb-8"
-                          >
-                            Mindfully Made
-                            <span className="block font-light text-[2.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
-                              Living Pieces
-                            </span>
-                          </motion.h2>
-
-                          <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }}
-                            className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide"
-                          >
-                            Each piece is handcrafted from nature's materials,<br/>creating healthier, more beautiful spaces.
-                          </motion.p>
-                        </motion.div>
-
-                        {/* Buttons positioned at bottom left */}
-                        <motion.div 
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="absolute left-14 bottom-24 z-20 flex flex-row gap-4"
-                        >
-                          {/* First Button */}
-                          <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 1.1, duration: 0.5 }}
-                            whileHover={{ scale: 1.02 }}
-                            className="group inline-flex items-center"
-                          >
-                            <Link 
-                              href="/collections/anturam-eco-wooden-stools"
-                              className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
-                                      shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
-                                      transition-all duration-500 px-4 py-4 relative"
-                            >
-                              <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap">
-                              View Wood Collection
-                              </span>
-                              <motion.div 
-                                className="flex items-center"
-                                initial={{ x: 0 }}
-                                animate={{ x: [0, 5, 0] }}
-                                transition={{ 
-                                  repeat: Infinity, 
-                                  duration: 1.5,
-                                  ease: "easeInOut"
-                                }}
-                              >
-                                <ChevronRight className="w-5 h-5 text-[#9c826b]" />
-                              </motion.div>
-                            </Link>
-                          </motion.div>
-
-                          {/* Second Button */}
-                          <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 1.3, duration: 0.5 }}
-                            whileHover={{ scale: 1.02 }}
-                            className="group inline-flex items-center"
-                          >
-                            <Link 
-                              href="/collections/ceramic-vases"
-                              className="inline-flex items-center gap-3 bg-[#ebe7e0]/95 backdrop-blur-sm 
-                                      shadow-lg border border-[#b39e86] overflow-hidden hover:bg-[#dcd5ca]/95 
-                                      transition-all duration-500 px-4 py-4 relative"
-                            >
-                              <span className="text-sm font-medium text-[#9c826b] whitespace-nowrap">
-                              Shop Ceramics
-                              </span>
-                              <motion.div 
-                                className="flex items-center"
-                                initial={{ x: 0 }}
-                                animate={{ x: [0, 5, 0] }}
-                                transition={{ 
-                                  repeat: Infinity, 
-                                  duration: 1.5,
-                                  ease: "easeInOut"
-                                }}
-                              >
-                                <ChevronRight className="w-5 h-5 text-[#9c826b]" />
-                              </motion.div>
-                            </Link>
-                          </motion.div>
-                        </motion.div>
-                      </>
-                    )}
-                    {/* End of Content for the third slide */}
-                  </div>
-                ))}
-              </div>
-
-              {/* Enhanced Professional Pagination with Navigation and Pause Button */}
-              <div className="absolute bottom-16 right-8 z-20 flex items-center gap-4 perspective-[1200px] transform-gpu scale-80">
-                <NavigationButton 
-                  direction="prev" 
-                  onClick={() => handleSlideTransition('prev')} 
-                  aria-label={`Previous slide. Currently on slide ${currentSlide + 1} of ${heroSlides.length}`}
-                />
-
-                <div className="flex items-center gap-1 relative">
-                  {[...Array(3)].map((_, i) => {
-                    const slideIndex = getLoopedIndex(currentSlide - 1 + i, heroSlides.length);
-                    const slide = heroSlides[slideIndex];
-                    if (!slide) return null;
-                    const isActive = i === 1;
-                    const actualSlideNumber = slideIndex + 1;
-                    
-                    return (
-                      <motion.div
-                        key={`${slide.id}-${i}`}
-                        onClick={(e: React.MouseEvent) => {
-                          e.stopPropagation();
-                          handleSlideTransition(slideIndex);
-                        }}
-                        aria-label={`Go to slide ${actualSlideNumber} of ${heroSlides.length}${isActive ? '. Current slide' : ''}`}
-                        aria-current={isActive ? 'true' : undefined}
-                        initial={false}
-                        animate={{
-                          scale: isActive ? 1 : 0.9,
-                          rotateY: (i - 1) * 12,
-                          z: isActive ? 0 : -30,
-                          y: isActive ? -4 : 0
-                        }}
-                        whileHover={{ 
-                          scale: isActive ? 1.02 : 0.95,
-                          y: isActive ? -8 : -4,
-                          transition: { duration: 0.2 }
-                        }}
-                        style={{ willChange: 'transform' }}
-                        className={`relative cursor-pointer rounded-lg
-                                    transition-shadow duration-300
-                                    ${isActive ? 
-                                      'w-40 h-20 shadow-lg hover:shadow-xl z-10' : 
-                                      'w-32 h-16 shadow-md hover:shadow-lg z-0'}`}
-                      >
-                        <div className="absolute inset-0 w-full h-full overflow-hidden rounded-lg">
-                          <OptimizedImage
-                            src={slide.image}
-                            alt={slide.alt}
-                            fill
-                            priority={isActive}
-                            className="object-cover transition-all duration-500 ease-out rounded-lg"
-                            sizes="(min-width: 768px) 160px, 128px"
-                            quality={100}
-                          />
-                          <div className={`absolute inset-0 transition-all duration-500
-                                        bg-gradient-to-t from-black/30 to-transparent
-                                        ${isActive ? 'opacity-0' : 'opacity-100 hover:opacity-50'}`}
-                          />
-                          
-                          {/* Active Highlight Effects */}
-                          {isActive && (
-                            <>
-                              <motion.div
-                                initial={{ opacity: 0, scale: 1.2 }}
-                                animate={{ opacity: [0, 1, 0], scale: 1 }}
-                                transition={{ duration: 0.6, ease: "easeOut" }}
-                                className="absolute inset-0 bg-white/20 pointer-events-none"
-                              />
-                              {/* Shimmering effect */}
-                              <motion.div
-                                initial={{ x: '-100%', opacity: 0.5 }}
-                                animate={{ x: '100%', opacity: 0 }}
-                                transition={{
-                                  duration: 1.5,
-                                  repeat: Infinity,
-                                  repeatDelay: 3,
-                                  ease: "easeInOut"
-                                }}
-                                style={{ 
-                                  willChange: 'transform, opacity',
-                                  clipPath: 'polygon(5% 0, 95% 0, 85% 100%, 15% 100%)'
-                                }}
-                                className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent 
-                                           transform rotate-15 pointer-events-none blur-sm"
-                              />
-                            </>
-                          )}
-                        </div>
-                        
-                        {/* Active Indicator with Enhanced Animation */}
-                        {isActive && (
-                          <motion.div
-                            layoutId="activeThumb"
-                            className="absolute inset-0 border-2 border-white"
-                            transition={{ duration: 0.3 }}
-                          />
-                        )}
-
-                        {/* Slide number indicator - slightly reduced size */}
-                        <div className="absolute -top-2 -right-2 z-[100] bg-black/50 backdrop-blur-sm 
-                                rounded-full w-6 h-6 border border-white/10
-                                flex items-center justify-center text-white/90 
-                                text-xs font-medium shadow-lg">
-                          {actualSlideNumber}
-                        </div>
-
-                        {/* Pause/Play Button - preserved */}
-                        {isActive && (
-                          <motion.button
-                            onClick={(e: React.MouseEvent) => {
-                              e.stopPropagation();
-                              togglePause();
-                            }}
-                            className="absolute bottom-2 left-2 z-20 p-1 bg-black/60 rounded-full group"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            aria-label={state.isPaused ? "Play slideshow" : "Pause slideshow"}
-                            aria-pressed={state.isPaused}
-                          >
-                            {state.isPaused ? (
-                              <Play className="h-2.5 w-2.5 text-white" />
-                            ) : (
-                              <Pause className="h-2.5 w-2.5 text-white" />
-                            )}
-                            <span className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-xs text-white bg-black/70 rounded px-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              {state.isPaused ? "Play" : "Pause"}
-                            </span>
-                          </motion.button>
-                        )}
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                <NavigationButton 
-                  direction="next" 
-                  onClick={() => handleSlideTransition('next')} 
-                  aria-label={`Next slide. Currently on slide ${currentSlide + 1} of ${heroSlides.length}`}
-                />
-              </div>
-            </div>
-          </section>
-        </div>
+    <div className="relative h-8 flex items-center px-2 group">
+      <div className="w-32 h-2 bg-white/10 rounded-full overflow-hidden">
+        <motion.div
+          className="h-full bg-gradient-to-r from-white/40 via-white/60 to-white/80"
+          style={{ 
+            width: `${progress}%`,
+            transition: 'width 0.1s linear'
+          }}
+        />
       </div>
+      
+      <motion.button
+        className="absolute left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 
+                 transition-all duration-300 bg-white/10 backdrop-blur-md p-1.5 rounded-full
+                 border border-white/20 shadow-xl hover:bg-white/20"
+        onClick={onPauseToggle}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+      >
+        {isPaused ? (
+          <Play className="h-3 w-3 text-white" />
+        ) : (
+          <Pause className="h-3 w-3 text-white" />
+        )}
+      </motion.button>
+    </div>
 
-      {/* Navigation Buttons - Added opposite to carousel thumbnails */}
-      {currentSlide === 0 && (
-        <div className="absolute bottom-6 left-8 z-20 hidden lg:flex items-center gap-4">
-          <motion.div 
-            className="flex items-center gap-4 perspective-[1200px] transform-gpu"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <Link
-              href="/story"
-              aria-label="Read our story"
-              className="relative group inline-flex items-center justify-center px-6 py-3 
-                        bg-white/90 backdrop-blur-sm text-[#9e896c]
-                        hover:bg-[#9e896c] hover:text-white
-                        transition-all duration-300 shadow-lg shadow-black/5
-                        focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
-                        transform transition-transform duration-300 scale-100 group-hover:scale-105"
-            >
-              <span className="relative text-sm font-medium">
-                Our Story
-              </span>
-              <motion.div
-                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
-                initial={false}
-                animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
-                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              />
-            </Link>
+    <motion.button
+      onClick={() => onNavigate('next')}
+      className="p-2 transition-all duration-300"
+      whileHover={{ scale: 1.2 }}
+      whileTap={{ scale: 0.95 }}
+    >
+      <ChevronRight className="w-4 h-4 text-white/90" />
+    </motion.button>
+  </div>
+);
 
-            <Link
-              href="/collections/all-products"
-              aria-label="Browse all products"
-              className="relative group inline-flex items-center justify-center px-6 py-3
-                        bg-[#9e896c]/90 backdrop-blur-sm text-white
-                        hover:bg-[#dcd5ca] hover:text-[#9e89ā6c] 
-                        transition-all duration-300 shadow-lg shadow-black/5
-                        focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
-                        transform transition-transform duration-300 scale-100 group-hover:scale-105"
-            >
-              <span className="relative text-sm font-medium">
-                All Products
-              </span>
-              <motion.div
-                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
-                initial={false}
-                animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
-                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              />
-            </Link>
+const HeroCarousel = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const ROTATION_INTERVAL = useMemo(() => 10000, []);
 
-            <Link
-              href="/collections"
-              aria-label="Browse all collections"
-              className="relative group inline-flex items-center justify-center px-6 py-3
-                        bg-[#eaeadf] backdrop-blur-sm text-white
-                        hover:bg-[#dcd5ca] hover:text-[#9e896c] 
-                        transition-all duration-300 shadow-lg shadow-black/5
-                        focus:outline-none focus:ring-2 focus:ring-[#9e896c] focus:ring-offset-2
-                        transform transition-transform duration-300 scale-100 group-hover:scale-110"
-            >
-              <span className="relative text-sm font-medium text-[#9e896c]">
-                All Collections
-              </span>
-              <motion.div
-                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
-                initial={false}
-                animate={{ scale: [0.8, 1], opacity: [0, 0.1, 0] }}
-                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              />
-            </Link>
-          </motion.div>
-        </div>
-      )}
-    </>
+  const rotateImage = useCallback(() => {
+    setCurrentIndex((prevIndex) => 
+      prevIndex === heroImages.length - 1 ? 0 : prevIndex + 1
+    );
+    setProgress(0);
+  }, []);
+
+  useEffect(() => {
+    if (isPaused) return;
+
+    let startTime = Date.now();
+
+    // Progress bar interval
+    const progressInterval = setInterval(() => {
+      const elapsedTime = Date.now() - startTime;
+      const calculatedProgress = (elapsedTime / ROTATION_INTERVAL) * 100;
+      
+      if (calculatedProgress >= 100) {
+        setProgress(0);
+      } else {
+        setProgress(calculatedProgress);
+      }
+    }, 16);
+
+    const rotationInterval = setInterval(() => {
+      rotateImage();
+      startTime = Date.now();
+      setProgress(0);
+    }, ROTATION_INTERVAL);
+
+    return () => {
+      clearInterval(progressInterval);
+      clearInterval(rotationInterval);
+    };
+  }, [isPaused, rotateImage, ROTATION_INTERVAL]);
+
+  const handleNavigate = useCallback((direction: 'prev' | 'next') => {
+    setProgress(0);
+    setCurrentIndex(prev => {
+      if (direction === 'next') {
+        return prev === heroImages.length - 1 ? 0 : prev + 1;
+      }
+      return prev === 0 ? heroImages.length - 1 : prev - 1;
+    });
+  }, []);
+
+  const togglePause = useCallback(() => {
+    setIsPaused(prev => !prev);
+  }, []);
+
+  return (
+    <section 
+      className="relative w-full h-screen overflow-hidden"
+      role="region" 
+      aria-label="Hero image carousel"
+    >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentIndex}
+          initial={false}
+          animate={{ opacity: 1 }}
+          exit={false}
+          transition={{ duration: 0 }}
+          className="relative w-full h-full"
+        >
+          <Image
+            src={heroImages[currentIndex]?.src || ''}
+            alt={heroImages[currentIndex]?.alt || ''}
+            fill
+            priority={currentIndex === 0}
+            quality={90}
+            sizes="100vw"
+            className="object-cover"
+            loading={currentIndex === 0 ? 'eager' : 'lazy'}
+          />
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="absolute bottom-8 right-8 z-20">
+        <NavigationControl 
+          onNavigate={handleNavigate}
+          isPaused={isPaused}
+          onPauseToggle={togglePause}
+          progress={progress}
+        />
+      </div>
+    </section>
   );
 };
 
-const Hero = memo(HeroComponent);
-Hero.displayName = 'Hero';
-
-export default Hero;
+export default HeroCarousel;

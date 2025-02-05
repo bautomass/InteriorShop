@@ -1,3 +1,5 @@
+import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
+import { Footer } from '@/components/layout/site-footer';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { CurrencyProvider } from '@/providers/CurrencyProvider';
 import { QueryProvider } from '@/providers/query-provider';
@@ -10,8 +12,6 @@ import { cookies } from 'next/headers';
 import { ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import './globals.css';
-import  LargeScreenNavBar  from '@/components/layout/navbar/LargeScreenNavBar';
-import { Footer } from '@/components/layout/site-footer'; 
 const { SITE_NAME } = process.env;
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
@@ -40,16 +40,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <head>
           <link 
             rel="preload" 
-            href="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/1_4a1ed1f2-1f28-465f-960a-8f58bcb22838.png?v=1738429093"
+            href="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2_624ad208-26bc-4437-a2d2-857726a8a421.png?v=1738429094"
             as="image"
             data-fetchpriority="high"
             type="image/png"
           />
           <link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous" />
           <link rel="dns-prefetch" href="https://cdn.shopify.com" />
-          
-          <meta httpEquiv="Accept-CH" content="DPR, Viewport-Width, Width" />
-          <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
         </head>
         <body className="bg-primary-50 text-primary-900 selection:bg-accent-200">
           <ThemeProvider>
