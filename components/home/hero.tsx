@@ -10,11 +10,19 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import MobileHero from './MobileMenuHeader';
 
-// Constants moved outside component to prevent recreation
-const ANIMATION = {
-  DURATION: 500,
-  CAROUSEL_INTERVAL: 7000,
-  DEBOUNCE_DELAY: 300,
+// Constants moved to top and consolidated
+const CONSTANTS = {
+  ANIMATION: {
+    DURATION: 500,
+    CAROUSEL_INTERVAL: 7000,
+    DEBOUNCE_DELAY: 300,
+  },
+  IMAGES: {
+    width: 1920,
+    height: 1080,
+    thumbWidth: 160,
+    thumbHeight: 90
+  }
 } as const;
 
 // Pre-define image dimensions for the first slide
@@ -149,7 +157,7 @@ const useSlideNavigation = (totalSlides: number) => {
       setCurrentSlide(nextIndex);
       
       // Set new timer
-      timerRef.current = setTimeout(() => setIsAnimating(false), ANIMATION.DURATION);
+      timerRef.current = setTimeout(() => setIsAnimating(false), CONSTANTS.ANIMATION.DURATION);
       return true;
     });
   }, [totalSlides]);
@@ -218,8 +226,43 @@ const preloadCriticalImages = () => {
   };
 };
 
+// Optimized Image component with proper caching and loading strategy
+const OptimizedImage = memo(({ src, alt, fill, priority, quality, className, sizes, onLoad }: any) => {
+  const loadedRef = useRef(false);
+
+  const handleLoad = useCallback(() => {
+    if (!loadedRef.current) {
+      loadedRef.current = true;
+      onLoad?.();
+    }
+  }, [onLoad]);
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill={fill}
+      priority={priority}
+      quality={quality}
+      className={className}
+      sizes={sizes}
+      onLoad={handleLoad}
+      loading={priority ? 'eager' : 'lazy'}
+    />
+  );
+});
+
+OptimizedImage.displayName = 'OptimizedImage';
+
 // Main Hero Component
 const HeroComponent: React.FC<HeroProps> = function Hero({}: HeroProps): JSX.Element {
+  // Consolidated state management
+  const [state, setState] = useState({
+    currentSlide: 0,
+    isPaused: false,
+    isAnimating: false
+  });
+
   // Add to the HeroComponent state
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
 
@@ -231,7 +274,6 @@ const HeroComponent: React.FC<HeroProps> = function Hero({}: HeroProps): JSX.Ele
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const autoPlayRef = useRef<NodeJS.Timeout | null>();
-  const [isPaused, setIsPaused] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isMenuHovered, setIsMenuHovered] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -293,22 +335,34 @@ const HeroComponent: React.FC<HeroProps> = function Hero({}: HeroProps): JSX.Ele
     };
   }, [isNavOpen]);
 
-  // Update autoplay effect with proper cleanup
+  // Memoized slide transition handler
+  const handleSlideTransition = useCallback((direction: 'next' | 'prev' | number) => {
+    setState(prev => ({
+      ...prev,
+      isAnimating: true,
+      currentSlide: typeof direction === 'number' 
+        ? direction 
+        : (prev.currentSlide + (direction === 'next' ? 1 : -1) + heroSlides.length) % heroSlides.length
+    }));
+
+    // Reset animation flag after transition
+    setTimeout(() => {
+      setState(prev => ({ ...prev, isAnimating: false }));
+    }, CONSTANTS.ANIMATION.DURATION);
+  }, []);
+
+  // Optimized auto-advance with cleanup
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    
-    if (!isPaused && !isMenuHovered) {
+
+    if (!state.isPaused && !state.isAnimating) {
       timer = setTimeout(() => {
-        goToSlide(currentSlide + 1);
-      }, ANIMATION.CAROUSEL_INTERVAL + 4000);
+        handleSlideTransition('next');
+      }, CONSTANTS.ANIMATION.CAROUSEL_INTERVAL);
     }
-    
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-    };
-  }, [currentSlide, isMenuHovered, isPaused, goToSlide]);
+
+    return () => clearTimeout(timer);
+  }, [state.isPaused, state.isAnimating, state.currentSlide, handleSlideTransition]);
 
   const handleScroll = useCallback((e: WheelEvent) => {
   }, [currentSlide, goToSlide]);
@@ -354,7 +408,7 @@ const HeroComponent: React.FC<HeroProps> = function Hero({}: HeroProps): JSX.Ele
 
   const togglePause = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setIsPaused(prev => !prev);
+    setState(prev => ({ ...prev, isPaused: !prev.isPaused }));
   }, []);
 
   return (
@@ -462,7 +516,7 @@ const HeroComponent: React.FC<HeroProps> = function Hero({}: HeroProps): JSX.Ele
                     )}
                     
                     {/* Image component */}
-                    <Image
+                    <OptimizedImage
                       src={slide.image}
                       alt={slide.alt}
                       fill
@@ -728,7 +782,7 @@ const HeroComponent: React.FC<HeroProps> = function Hero({}: HeroProps): JSX.Ele
               <div className="absolute bottom-16 right-8 z-20 flex items-center gap-4 perspective-[1200px] transform-gpu scale-80">
                 <NavigationButton 
                   direction="prev" 
-                  onClick={() => goToSlide(currentSlide - 1)} 
+                  onClick={() => handleSlideTransition('prev')} 
                   aria-label={`Previous slide. Currently on slide ${currentSlide + 1} of ${heroSlides.length}`}
                 />
 
@@ -745,7 +799,7 @@ const HeroComponent: React.FC<HeroProps> = function Hero({}: HeroProps): JSX.Ele
                         key={`${slide.id}-${i}`}
                         onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
-                          goToSlide(slideIndex);
+                          handleSlideTransition(slideIndex);
                         }}
                         aria-label={`Go to slide ${actualSlideNumber} of ${heroSlides.length}${isActive ? '. Current slide' : ''}`}
                         aria-current={isActive ? 'true' : undefined}
@@ -769,7 +823,7 @@ const HeroComponent: React.FC<HeroProps> = function Hero({}: HeroProps): JSX.Ele
                                       'w-32 h-16 shadow-md hover:shadow-lg z-0'}`}
                       >
                         <div className="absolute inset-0 w-full h-full overflow-hidden rounded-lg">
-                          <Image
+                          <OptimizedImage
                             src={slide.image}
                             alt={slide.alt}
                             fill
@@ -840,16 +894,16 @@ const HeroComponent: React.FC<HeroProps> = function Hero({}: HeroProps): JSX.Ele
                             className="absolute bottom-2 left-2 z-20 p-1 bg-black/60 rounded-full group"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
-                            aria-pressed={isPaused}
+                            aria-label={state.isPaused ? "Play slideshow" : "Pause slideshow"}
+                            aria-pressed={state.isPaused}
                           >
-                            {isPaused ? (
+                            {state.isPaused ? (
                               <Play className="h-2.5 w-2.5 text-white" />
                             ) : (
                               <Pause className="h-2.5 w-2.5 text-white" />
                             )}
                             <span className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-xs text-white bg-black/70 rounded px-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              {isPaused ? "Play" : "Pause"}
+                              {state.isPaused ? "Play" : "Pause"}
                             </span>
                           </motion.button>
                         )}
@@ -860,7 +914,7 @@ const HeroComponent: React.FC<HeroProps> = function Hero({}: HeroProps): JSX.Ele
 
                 <NavigationButton 
                   direction="next" 
-                  onClick={() => goToSlide(currentSlide + 1)} 
+                  onClick={() => handleSlideTransition('next')} 
                   aria-label={`Next slide. Currently on slide ${currentSlide + 1} of ${heroSlides.length}`}
                 />
               </div>
