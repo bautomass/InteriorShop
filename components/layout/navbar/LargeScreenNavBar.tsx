@@ -151,24 +151,52 @@ const LoadingChair = () => (
   </motion.div>
 );
 
-// Add BurgerIcon component at the top
+// Update BurgerIcon component
 const BurgerIcon = ({ isOpen }: { isOpen: boolean }) => (
-  <div className="relative w-6 h-6">
+  <div className="relative w-7 h-6">
     <span
-      className={`absolute left-0 w-full h-0.5 bg-current transform transition-all duration-200
-                ${isOpen ? 'top-3 rotate-45' : 'top-1'}`}
+      className={`absolute left-0 h-[2px] bg-[#6B5E4C] transition-all duration-300 ease-in-out
+        ${isOpen 
+          ? 'top-3 w-7 rotate-45' 
+          : 'top-0.5 w-7 animate-burgerLine1'}`}
     />
     <span
-      className={`absolute left-0 w-full h-0.5 bg-current top-3 
-                ${isOpen ? 'opacity-0' : 'opacity-100'} 
-                transition-opacity duration-200`}
+      className={`absolute left-0 top-[11px] h-[2px] bg-[#6B5E4C] transition-all duration-300
+        ${isOpen 
+          ? 'w-0 opacity-0' 
+          : 'w-5 opacity-100 animate-burgerLine2'}`}
     />
     <span
-      className={`absolute left-0 w-full h-0.5 bg-current transform transition-all duration-200
-                ${isOpen ? 'top-3 -rotate-45' : 'top-5'}`}
+      className={`absolute left-0 h-[2px] bg-[#6B5E4C] transition-all duration-300 ease-in-out
+        ${isOpen 
+          ? 'top-3 w-7 -rotate-45' 
+          : 'top-[21px] w-7 animate-burgerLine3'}`}
     />
   </div>
 );
+
+// Add these to your existing styles (at the top of the file or in your global CSS)
+const styles = {
+  keyframes: {
+    burgerLine1: {
+      '0%, 100%': { width: '1.75rem' },
+      '50%': { width: '1.25rem' }
+    },
+    burgerLine2: {
+      '0%, 100%': { width: '1.25rem' },
+      '50%': { width: '1.5rem' }
+    },
+    burgerLine3: {
+      '0%, 100%': { width: '1.75rem' },
+      '50%': { width: '1.5rem' }
+    }
+  },
+  animation: {
+    burgerLine1: 'burgerLine1 2s ease-in-out infinite',
+    burgerLine2: 'burgerLine2 2s ease-in-out infinite',
+    burgerLine3: 'burgerLine3 2s ease-in-out infinite'
+  }
+};
 
 // New Component Definitions
 const CollectionGridItem = ({ collection, onClose }: { collection: Collection; onClose: () => void }) => (
@@ -450,36 +478,35 @@ export const DesktopHeader = () => {
             }`}
         >
           <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between p-1.5 container mx-auto">
+            <div className="flex items-center justify-between p-2 container mx-auto">
               {/* Left side with Logo and Burger */}
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setIsNavOpen(!isNavOpen)}
-                  className="flex items-center gap-2.5"
-                  aria-label={isNavOpen ? "Close menu" : "Open menu"}
-                  aria-expanded={isNavOpen}
-                >
-                  <BurgerIcon isOpen={isNavOpen} />
-                  <span 
-                    className="text-sm font-medium text-neutral-700"
-                    style={{
-                      transition: 'color 0.3s',
-                      color: isNavOpen ? '#9e896c' : ''
-                    }}
-                  >
-                    {isNavOpen ? 'Close' : 'Menu'}
-                  </span>
-                </button>
-                <Link href="/" className="flex-shrink-0 ml-6">
+              <div className="flex items-center gap-6">
+                <Link href="/" className="flex-shrink-0 ml-0">
                   <Image
                     src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/LOGO-SVG.svg?v=1738779893"
                     alt="Simple Interior Ideas"
                     width={190}
                     height={45}
-                    className="h-12 w-auto"
+                    className="h-10 w-auto"
                     priority
                   />
                 </Link>
+                <div className="h-6 w-px bg-neutral-300"></div>
+                <button
+                  onClick={() => setIsNavOpen(!isNavOpen)}
+                  className="flex items-center gap-1 group"
+                  aria-label={isNavOpen ? "Close menu" : "Open menu"}
+                  aria-expanded={isNavOpen}
+                >
+                  <BurgerIcon isOpen={isNavOpen} />
+                  {isNavOpen && (
+                    <span 
+                      className="font-serif text-sm tracking-widest transition-colors duration-300 text-[#6B5E4C]"
+                    >
+                      Close
+                    </span>
+                  )}
+                </button>
               </div>
 
               {/* Center Promos Section */}
