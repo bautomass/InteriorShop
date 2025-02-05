@@ -30,7 +30,8 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const cartId = (await cookies()).get('cartId')?.value;
+  const cookieStore = cookies();
+  const cartId = cookieStore.get('cartId')?.value;
   const cartPromise = cartId ? getCart(cartId) : Promise.resolve(undefined);
   const menu = (await getMenu('next-js-frontend-header-menu')) as Menu[];
 
