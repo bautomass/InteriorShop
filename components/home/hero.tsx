@@ -219,7 +219,7 @@ const preloadCriticalImages = () => {
 };
 
 // Main Hero Component
-const HeroComponent = function Hero({}: HeroProps): JSX.Element {
+const HeroComponent: React.FC<HeroProps> = function Hero({}: HeroProps): JSX.Element {
   // Add to the HeroComponent state
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
 

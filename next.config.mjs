@@ -9,7 +9,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    unoptimized: true,  // This will disable image optimization
+    unoptimized: true,
     formats: ['image/webp', 'image/avif'],
     remotePatterns: [
       {
@@ -25,11 +25,18 @@ const nextConfig = {
     ],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 31536000, // Cache for 1 year
+    minimumCacheTTL: 31536000,
   },
   transpilePackages: ['framer-motion'],
   poweredByHeader: false,
   reactStrictMode: true,
+  webpack: (config) => {
+    config.optimization = {
+      ...config.optimization,
+      moduleIds: 'named'
+    }
+    return config
+  },
   async headers() {
     return [
       {
