@@ -2,6 +2,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const heroImages = [
@@ -117,13 +118,22 @@ const HeroCarousel = () => {
   }, [isPaused, rotateImage, ROTATION_INTERVAL]);
 
   const handleNavigate = useCallback((direction: 'prev' | 'next') => {
+    // First pause any current animation
+    setIsPaused(true);
     setProgress(0);
+    
+    // Update the index
     setCurrentIndex(prev => {
       if (direction === 'next') {
         return prev === heroImages.length - 1 ? 0 : prev + 1;
       }
       return prev === 0 ? heroImages.length - 1 : prev - 1;
     });
+
+    // Resume after a brief delay to ensure clean reset
+    setTimeout(() => {
+      setIsPaused(false);
+    }, 0);
   }, []);
 
   const togglePause = useCallback(() => {
@@ -155,6 +165,119 @@ const HeroCarousel = () => {
             className="object-cover"
             loading={currentIndex === 0 ? 'eager' : 'lazy'}
           />
+
+          {/* Content overlay for first slide */}
+          {currentIndex === 0 && (
+            <div className="absolute right-16 top-[38%] transform -translate-y-1/2 z-20 max-w-2xl">
+              <span className="inline-block text-white/90 font-medium tracking-[0.2em] uppercase text-sm mb-4">
+                Nature's Gift
+              </span>
+
+              <h2 className="text-[4.5rem] font-thin text-white leading-none mb-6">
+                Pure Living
+                <span className="block font-light text-[3.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
+                  Art in Wood
+                </span>
+              </h2>
+
+              <p className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide mb-8">
+                Each piece brings nature's warmth to your home. Crafted by skilled artisans using real wood, our furniture purifies your air while creating spaces that feel alive and peaceful.
+              </p>
+
+              <div className="inline-flex items-center">
+                <Link 
+                  href="/collections/organic-decoration"
+                  className="group/btn relative inline-flex items-center justify-center gap-2 
+                    px-6 py-3.5
+                    bg-[#6B5E4C] text-[#eaeadf] text-sm
+                    border border-[#B5A48B]/20
+                    hover:bg-[#7B6E5C] hover:border-[#B5A48B]/40 
+                    transition-all duration-300 
+                    transform hover:-translate-y-0.5
+                    overflow-hidden"
+                >
+                  <span className="text-sm font-medium relative z-10">Discover the Collection</span>
+                  <ChevronRight 
+                    className="w-3.5 h-3.5 transform translate-x-0
+                      group-hover/btn:translate-x-1 transition-transform duration-300
+                      relative z-10" 
+                  />
+                  <div className="absolute top-0 -left-[100%] w-[120%] h-full 
+                    bg-gradient-to-r from-transparent via-white/20 to-transparent
+                    group-hover/btn:left-[100%] transition-all duration-1000 ease-in-out" />
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Content overlay for second slide */}
+          {currentIndex === 1 && (
+            <>
+              <div className="absolute right-64 top-[10%] z-20 max-w-2xl">
+                <span className="inline-block text-white/90 font-medium tracking-[0.2em] uppercase text-sm mb-4">
+                  Art & Nature
+                </span>
+
+                <h2 className="text-[3.5rem] font-thin text-white leading-none mb-8">
+                  Mindfully Made
+                  <span className="block font-light text-[2.5rem] mt-2 bg-gradient-to-r from-white via-white/95 to-white/70 bg-clip-text text-transparent">
+                    Living Pieces
+                  </span>
+                </h2>
+
+                <p className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide mb-8">
+                  Each piece is handcrafted from nature's materials,<br/>creating healthier, more beautiful spaces.
+                </p>
+              </div>
+
+              {/* Buttons positioned at bottom left */}
+              <div className="absolute left-14 bottom-24 z-20 flex flex-row gap-4">
+                <Link 
+                  href="/collections/anturam-eco-wooden-stools"
+                  className="group/btn relative inline-flex items-center justify-center gap-2 
+                    px-6 py-3.5
+                    bg-[#6B5E4C] text-[#eaeadf] text-sm
+                    border border-[#B5A48B]/20
+                    hover:bg-[#7B6E5C] hover:border-[#B5A48B]/40 
+                    transition-all duration-300 
+                    transform hover:-translate-y-0.5
+                    overflow-hidden"
+                >
+                  <span className="text-sm font-medium relative z-10">View Wood Collection</span>
+                  <ChevronRight 
+                    className="w-3.5 h-3.5 transform translate-x-0
+                      group-hover/btn:translate-x-1 transition-transform duration-300
+                      relative z-10" 
+                  />
+                  <div className="absolute top-0 -left-[100%] w-[120%] h-full 
+                    bg-gradient-to-r from-transparent via-white/20 to-transparent
+                    group-hover/btn:left-[100%] transition-all duration-1000 ease-in-out" />
+                </Link>
+
+                <Link 
+                  href="/collections/ceramic-vases"
+                  className="group/btn relative inline-flex items-center justify-center gap-2 
+                    px-6 py-3.5
+                    bg-[#6B5E4C] text-[#eaeadf] text-sm
+                    border border-[#B5A48B]/20
+                    hover:bg-[#7B6E5C] hover:border-[#B5A48B]/40 
+                    transition-all duration-300 
+                    transform hover:-translate-y-0.5
+                    overflow-hidden"
+                >
+                  <span className="text-sm font-medium relative z-10">Shop Ceramics</span>
+                  <ChevronRight 
+                    className="w-3.5 h-3.5 transform translate-x-0
+                      group-hover/btn:translate-x-1 transition-transform duration-300
+                      relative z-10" 
+                  />
+                  <div className="absolute top-0 -left-[100%] w-[120%] h-full 
+                    bg-gradient-to-r from-transparent via-white/20 to-transparent
+                    group-hover/btn:left-[100%] transition-all duration-1000 ease-in-out" />
+                </Link>
+              </div>
+            </>
+          )}
         </motion.div>
       </AnimatePresence>
 
