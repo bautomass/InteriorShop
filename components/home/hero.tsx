@@ -213,19 +213,19 @@ const HeroCarousel = () => {
           {/* Content overlay for second slide */}
           {currentIndex === 1 && (
             <>
-              <div className="absolute right-64 top-[10%] z-20 max-w-2xl">
-                <span className="inline-block text-[#7A685A]/90 font-medium tracking-[0.2em] uppercase text-sm mb-4">
+              <div className="absolute right-[23%] top-[12%] z-20 max-w-2xl">
+                <span className="inline-block text-[#564C47]/90 font-medium tracking-[0.2em] uppercase text-sm mb-4">
                   Art & Nature
                 </span>
 
-                <h2 className="text-[3.5rem] font-thin text-[#7A685A] leading-none mb-8">
+                <h2 className="text-[3.5rem] font-thin text-[#564C47] leading-none mb-8">
                   Mindfully Made
-                  <span className="block font-light text-[2.5rem] mt-2 bg-gradient-to-r from-[#7A685A] via-[#7A685A]/95 to-[#7A685A]/70 bg-clip-text text-transparent">
+                  <span className="block font-light text-[2.5rem] mt-2 bg-gradient-to-r from-[#564C47] via-[#564C47]/95 to-[#564C47]/70 bg-clip-text text-transparent">
                     Living Pieces
                   </span>
                 </h2>
 
-                <p className="text-2xl text-[#7A685A]/80 font-extralight leading-relaxed tracking-wide mb-8">
+                <p className="text-2xl text-[#564C47]/80 font-extralight leading-relaxed tracking-wide mb-8">
                   Each piece is handcrafted from nature's materials,<br/>creating healthier, more beautiful spaces.
                 </p>
               </div>
