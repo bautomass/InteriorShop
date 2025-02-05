@@ -156,47 +156,18 @@ const BurgerIcon = ({ isOpen }: { isOpen: boolean }) => (
   <div className="relative w-7 h-6">
     <span
       className={`absolute left-0 h-[2px] bg-[#6B5E4C] transition-all duration-300 ease-in-out
-        ${isOpen 
-          ? 'top-3 w-7 rotate-45' 
-          : 'top-0.5 w-7 animate-burgerLine1'}`}
+        ${isOpen ? 'top-3 w-7 rotate-45' : 'top-0.5 w-7 group-hover:w-5'}`}
     />
     <span
       className={`absolute left-0 top-[11px] h-[2px] bg-[#6B5E4C] transition-all duration-300
-        ${isOpen 
-          ? 'w-0 opacity-0' 
-          : 'w-5 opacity-100 animate-burgerLine2'}`}
+        ${isOpen ? 'w-0 opacity-0' : 'w-5 opacity-100'}`}
     />
     <span
       className={`absolute left-0 h-[2px] bg-[#6B5E4C] transition-all duration-300 ease-in-out
-        ${isOpen 
-          ? 'top-3 w-7 -rotate-45' 
-          : 'top-[21px] w-7 animate-burgerLine3'}`}
+        ${isOpen ? 'top-3 w-7 -rotate-45' : 'top-[21px] w-7 group-hover:w-6'}`}
     />
   </div>
 );
-
-// Add these to your existing styles (at the top of the file or in your global CSS)
-const styles = {
-  keyframes: {
-    burgerLine1: {
-      '0%, 100%': { width: '1.75rem' },
-      '50%': { width: '1.25rem' }
-    },
-    burgerLine2: {
-      '0%, 100%': { width: '1.25rem' },
-      '50%': { width: '1.5rem' }
-    },
-    burgerLine3: {
-      '0%, 100%': { width: '1.75rem' },
-      '50%': { width: '1.5rem' }
-    }
-  },
-  animation: {
-    burgerLine1: 'burgerLine1 2s ease-in-out infinite',
-    burgerLine2: 'burgerLine2 2s ease-in-out infinite',
-    burgerLine3: 'burgerLine3 2s ease-in-out infinite'
-  }
-};
 
 // New Component Definitions
 const CollectionGridItem = ({ collection, onClose }: { collection: Collection; onClose: () => void }) => (
