@@ -195,7 +195,7 @@ const HeroCarousel = () => {
                   src={heroImages[currentIndex]?.src || ''}
                   alt={heroImages[currentIndex]?.alt || ''}
                   fill
-                  quality={85}
+                  quality={100}
                   sizes="100vw"
                   className="object-cover"
                   loading="lazy"
