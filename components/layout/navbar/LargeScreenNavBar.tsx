@@ -472,11 +472,11 @@ export const DesktopHeader = () => {
                 </button>
                 <Link href="/" className="flex-shrink-0 ml-6">
                   <Image
-                    src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/LOGO_43705284-69a8-4fe7-8f56-c0cc57e59815.svg?v=1738779552"
+                    src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/LOGO-SVG.svg?v=1738779893"
                     alt="Simple Interior Ideas"
-                    width={180}
-                    height={40}
-                    className="h-10 w-auto"
+                    width={190}
+                    height={45}
+                    className="h-12 w-auto"
                     priority
                   />
                 </Link>
