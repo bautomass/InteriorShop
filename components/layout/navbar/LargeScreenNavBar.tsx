@@ -491,7 +491,7 @@ export const DesktopHeader = () => {
                       exit={{ opacity: 0, y: -20 }}
                       className="absolute inset-0 flex items-center justify-center"
                     >
-                      <div className="flex items-center gap-2 text-sm">
+                      <div className="flex items-center gap-2 text-sm text-[#6B5E4C]">
                         {promos[currentPromoIndex]?.icon}
                         <span>{promos[currentPromoIndex]?.text}</span>
                       </div>
@@ -501,14 +501,14 @@ export const DesktopHeader = () => {
               </div>
 
               {/* Right Icons Section */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 ml-auto">
                 {/* Search Icon/Input */}
                 <AnimatePresence mode="wait">
                   {!isSearchOpen ? (
                     <motion.button 
                       key="search-icon"
                       onClick={() => handlePanelChange('search')}
-                      className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                      className="p-2 rounded-full hover:bg-black/5 transition-colors text-[#6B5E4C]"
                       aria-label="Open search"
                       aria-expanded={isSearchOpen}
                     >
@@ -553,92 +553,10 @@ export const DesktopHeader = () => {
                   )}
                 </AnimatePresence>
 
-                {/* Currency Selector */}
-                <div className="relative currency-dropdown">
-                  <button
-                    onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
-                    disabled={isLoading}
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium 
-                               hover:bg-black/5 transition-colors disabled:opacity-50
-                               text-neutral-700"
-                  >
-                    <span className="w-4 h-4 flex items-center justify-center text-[#6B5E4C]">
-                      {CURRENCY_CONFIG[currency].symbol}
-                    </span>
-                    <span>{currency}</span>
-                    {isLoading ? (
-                      <div className="w-3 h-3 border-2 border-[#6B5E4C] border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <ChevronDown className={`h-3 w-3 transform transition-transform duration-200 
-                        ${isCurrencyOpen ? 'rotate-180' : ''} text-[#6B5E4C]`} />
-                    )}
-                  </button>
-
-                  <AnimatePresence>
-                    {isCurrencyOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 5 }}
-                        className="absolute z-50 mt-1 w-36 right-[-20px]"
-                      >
-                        {/* Triangle Arrow */}
-                        <div 
-                          className="absolute -top-2 left-1/2 -translate-x-1/2 
-                                     w-0 h-0 border-l-[8px] border-l-transparent 
-                                     border-r-[8px] border-r-transparent 
-                                     border-b-[8px] border-b-white"
-                        />
-                        
-                        {/* Dropdown Content */}
-                        <div className="relative bg-white rounded-lg shadow-lg ring-1 ring-black/5
-                                      backdrop-blur-sm overflow-hidden">
-                          <div className="p-1">
-                            {currencies.map((curr) => (
-                              <button
-                                key={curr.code}
-                                onClick={() => {
-                                  setCurrency(curr.code);
-                                  setIsCurrencyOpen(false);
-                                }}
-                                disabled={isLoading}
-                                className={`flex w-full items-center justify-between px-3 py-2 text-left 
-                                           text-sm transition-colors rounded-md
-                                           ${currency === curr.code 
-                                             ? 'bg-[#6B5E4C]/10 text-[#6B5E4C] font-medium' 
-                                             : 'text-neutral-700 hover:bg-neutral-50'
-                                           }
-                                           disabled:opacity-50`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className={currency === curr.code ? 'text-[#6B5E4C]' : 'text-neutral-500'}>
-                                    {CURRENCY_CONFIG[curr.code].symbol}
-                                  </span>
-                                  <span>{curr.code}</span>
-                                </div>
-                                {currency === curr.code && (
-                                  <Check className="h-4 w-4 text-[#6B5E4C]" />
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <Link
-                  href="/tracking"
-                  className="text-sm hover:underline"
-                >
-                  Track Order
-                </Link>
-
                 {/* Account */}
-                <div className="relative" ref={accountDropdownRef}>
+                <div className="relative text-[#6B5E4C]" ref={accountDropdownRef}>
                   <div 
-                    className="flex items-center gap-2 cursor-pointer"
+                    className="flex items-center gap-1 cursor-pointer"
                     onClick={() => {
                       if (user) {
                         setIsAccountDropdownOpen(!isAccountDropdownOpen);
@@ -736,15 +654,13 @@ export const DesktopHeader = () => {
 
                 {/* Cart with Hover Preview */}
                 <div 
-                  className="relative"
+                  className="relative text-[#6B5E4C]"
                   onMouseEnter={() => handleCartHover(true)}
                   onMouseLeave={() => handleCartHover(false)}
                 >
                   <button
                     onClick={() => {
                       if ((cart?.lines as any[])?.length > 0) {
-                        // Do nothing if there are items in the cart
-                      } else {
                         handlePanelChange('cart');
                       }
                     }}
@@ -753,7 +669,7 @@ export const DesktopHeader = () => {
                   >
                     <ShoppingCart className="w-6 h-6" />
                     {(cart?.totalQuantity ?? 0) > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#9e896c] rounded-full 
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#6B5E4C] rounded-full 
                                      flex items-center justify-center text-white text-xs">
                         {cart?.totalQuantity ?? 0}
                       </span>
@@ -869,6 +785,92 @@ export const DesktopHeader = () => {
                     )}
                   </AnimatePresence>
                 </div>
+
+                {/* Separator Line */}
+                <div className="h-6 w-px bg-neutral-300"></div>
+
+                {/* Currency Selector */}
+                <div className="relative currency-dropdown" 
+                     onMouseEnter={() => setIsCurrencyOpen(true)} 
+                     onMouseLeave={() => setIsCurrencyOpen(false)}>
+                  <button
+                    disabled={isLoading}
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium 
+                               hover:bg-black/5 transition-colors disabled:opacity-50
+                               text-[#6B5E4C]"
+                  >
+                    <span className="w-4 h-4 flex items-center justify-center text-[#6B5E4C]">
+                      {CURRENCY_CONFIG[currency].symbol}
+                    </span>
+                    <span>{currency}</span>
+                    {isLoading ? (
+                      <div className="w-3 h-3 border-2 border-[#6B5E4C] border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <ChevronDown className={`h-3 w-3 transform transition-transform duration-200 
+                        ${isCurrencyOpen ? 'rotate-180' : ''} text-[#6B5E4C]`} />
+                    )}
+                  </button>
+
+                  <AnimatePresence>
+                    {isCurrencyOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        className="absolute z-50 mt-1 w-36 right-[-20px]"
+                      >
+                        {/* Triangle Arrow */}
+                        <div 
+                          className="absolute -top-2 left-1/2 -translate-x-1/2 
+                                     w-0 h-0 border-l-[8px] border-l-transparent 
+                                     border-r-[8px] border-r-transparent 
+                                     border-b-[8px] border-b-white"
+                        />
+                        
+                        {/* Dropdown Content */}
+                        <div className="relative bg-white rounded-lg shadow-lg ring-1 ring-black/5
+                                      backdrop-blur-sm overflow-hidden">
+                          <div className="p-1">
+                            {currencies.map((curr) => (
+                              <button
+                                key={curr.code}
+                                onClick={() => {
+                                  setCurrency(curr.code);
+                                  setIsCurrencyOpen(false);
+                                }}
+                                disabled={isLoading}
+                                className={`flex w-full items-center justify-between px-3 py-2 text-left 
+                                           text-sm transition-colors rounded-md
+                                           ${currency === curr.code 
+                                             ? 'bg-[#6B5E4C]/10 text-[#6B5E4C] font-medium' 
+                                             : 'text-neutral-700 hover:bg-neutral-50'
+                                           }
+                                           disabled:opacity-50`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className={currency === curr.code ? 'text-[#6B5E4C]' : 'text-neutral-500'}>
+                                    {CURRENCY_CONFIG[curr.code].symbol}
+                                  </span>
+                                  <span>{curr.code}</span>
+                                </div>
+                                {currency === curr.code && (
+                                  <Check className="h-4 w-4 text-[#6B5E4C]" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <Link
+                  href="/tracking"
+                  className="text-sm hover:underline text-[#6B5E4C]"
+                >
+                  Track Order
+                </Link>
               </div>
             </div>
 

@@ -144,6 +144,14 @@ const HeroCarousel = () => {
     setIsPaused(prev => !prev);
   }, []);
 
+  // Preload all images on component mount
+  useEffect(() => {
+    heroImages.forEach(image => {
+      const img = new window.Image();
+      img.src = image.src;
+    });
+  }, []);
+
   return (
     <>
       {isMobile ? (
@@ -154,17 +162,20 @@ const HeroCarousel = () => {
           role="region" 
           aria-label="Hero image carousel"
         >
-          {/* Add preconnect hints */}
+          {/* Keep preconnect hints */}
           <link rel="preconnect" href="https://cdn.shopify.com" />
           <link rel="dns-prefetch" href="https://cdn.shopify.com" />
 
-          {/* Update preload tag */}
-          <link
-            rel="preload"
-            as="image"
-            href={heroImages[0]?.src || ''}
-            data-fetchpriority="high"
-          />
+          {/* Preload all images */}
+          {heroImages.map((image, index) => (
+            <link
+              key={image.id}
+              rel="preload"
+              as="image"
+              href={image.src}
+              data-fetchpriority={index === 0 ? "high" : "low"}
+            />
+          ))}
 
           <AnimatePresence initial={false} mode="wait">
             <motion.div
@@ -175,32 +186,26 @@ const HeroCarousel = () => {
               transition={{ duration: 0.1 }}
               className="relative w-full h-full"
             >
-              {currentIndex === 0 ? (
-                // Optimize first slide loading
-                <Image
-                  src={heroImages[0]?.src || ''}
-                  alt={heroImages[0]?.alt || ''}
-                  width={FIRST_SLIDE_DIMENSIONS.width}
-                  height={FIRST_SLIDE_DIMENSIONS.height}
-                  priority
-                  quality={100}
-                  fetchPriority="high"
-                  loading="eager"
-                  sizes="100vw"
-                  className="object-cover w-full h-full"
-                />
-              ) : (
-                // Other slides
-                <Image
-                  src={heroImages[currentIndex]?.src || ''}
-                  alt={heroImages[currentIndex]?.alt || ''}
-                  fill
-                  quality={100}
-                  sizes="100vw"
-                  className="object-cover"
-                  loading="lazy"
-                />
-              )}
+              <Image
+                src={heroImages[currentIndex]?.src || ''}
+                alt={heroImages[currentIndex]?.alt || ''}
+                {...(currentIndex === 0 
+                  ? {
+                      width: FIRST_SLIDE_DIMENSIONS.width,
+                      height: FIRST_SLIDE_DIMENSIONS.height,
+                      priority: true,
+                      fetchPriority: "high",
+                      loading: "eager",
+                    }
+                  : {
+                      fill: true,
+                      loading: "eager", // Changed from 'lazy' to prevent re-fetching
+                    }
+                )}
+                quality={100}
+                sizes="100vw"
+                className={`object-cover ${currentIndex === 0 ? 'w-full h-full' : ''}`}
+              />
 
               {/* First slide content with priority */}
               {currentIndex === 0 && (
