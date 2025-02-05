@@ -3,94 +3,18 @@
 import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { useInView } from 'react-intersection-observer';
 
 import { ErrorFallback } from './components/ErrorFallback';
-import { CONSTANTS, features, images } from './constants';
-import { useImagePreloader } from './hooks/useImagePreloader';
-import type { ScrollMetrics } from './types';
+import { features, heroImage } from './constants';
 
 const AboutHero = memo(function AboutHero() {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const [scrollMetrics, setScrollMetrics] = useState<ScrollMetrics>({
-    containerWidth: 0,
-    totalWidth: 0,
-    isAtStart: true,
-    isAtEnd: false
-  });
   const [isHovering, setIsHovering] = useState(false);
-
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { ref: sectionRef, inView: sectionInView } = useInView({
-    threshold: 0.1,
-    triggerOnce: true,
-    rootMargin: '50px 0px'
-  });
-
-  useImagePreloader(images.map(img => img.url));
-
-  const updateScrollMetrics = useCallback(() => {
-    if (!scrollContainerRef.current) return;
-
-    const container = scrollContainerRef.current;
-    const { clientWidth, scrollWidth } = container;
-    const isAtStart = scrollPosition <= 1;
-    const isAtEnd = Math.ceil(scrollPosition + clientWidth) >= scrollWidth - 1;
-
-    setScrollMetrics({
-      containerWidth: clientWidth,
-      totalWidth: scrollWidth,
-      isAtStart,
-      isAtEnd
-    });
-  }, [scrollPosition]);
-
-  const handleScroll = useCallback((direction: 'left' | 'right'): void => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const { containerWidth, totalWidth } = scrollMetrics;
-    const scrollAmount = containerWidth * CONSTANTS.SCROLL.MULTIPLIER;
-    
-    const newPosition = direction === 'left'
-      ? Math.max(0, scrollPosition - scrollAmount)
-      : Math.min(totalWidth - containerWidth, scrollPosition + scrollAmount);
-
-    setScrollPosition(newPosition);
-    requestAnimationFrame(() => {
-      container.scrollTo({
-        left: newPosition,
-        behavior: 'smooth'
-      });
-    });
-  }, [scrollMetrics, scrollPosition]);
-
-  useEffect(() => {
-    if (isHovering) return;
-    
-    const timeoutId = setTimeout(() => {
-      setCurrentImageIndex(prev => (prev + 1) % images.length);
-    }, CONSTANTS.TIMING.CAROUSEL_INTERVAL);
-    
-    return () => clearTimeout(timeoutId);
-  }, [isHovering, currentImageIndex]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      requestAnimationFrame(updateScrollMetrics);
-    };
-
-    window.addEventListener('resize', handleResize, { passive: true });
-    return () => window.removeEventListener('resize', handleResize);
-  }, [updateScrollMetrics]);
 
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <section 
-        ref={sectionRef}
         className="bg-[#eaeadf] relative overflow-hidden opacity-100"
         aria-label="About our store"
       >
@@ -126,64 +50,37 @@ const AboutHero = memo(function AboutHero() {
                   onMouseEnter={() => setIsHovering(true)}
                   onMouseLeave={() => setIsHovering(false)}
                 >
-                  {images.map((image, index) => (
-                    <div
-                      key={image.url}
-                      className={`absolute inset-0 transition-opacity duration-700 ease-in-out
-                        ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
-                    >
-                      <Image
-                        src={image.url}
-                        alt={image.alt}
-                        fill
-                        priority={index === 0}
-                        loading={index === 0 ? 'eager' : 'lazy'}
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        quality={100}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#6B5E4C]/95 via-[#6B5E4C]/20 to-transparent 
-                        opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out" />
-                      
-                      <div className="absolute inset-x-0 bottom-0 p-6 sm:p-12 transform translate-y-full 
-                        group-hover:translate-y-0 transition-all duration-700 ease-out">
-                        <div className="overflow-hidden">
-                          <p className="text-white text-xl sm:text-2xl font-light leading-relaxed transform 
-                            translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 
-                            transition-all duration-700 delay-100 ease-out">
-                            {image.text}
-                          </p>
-                          <p className="text-white/80 mt-2 transform translate-y-full opacity-0 
-                            group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 delay-200">
-                            {image.caption}
-                          </p>
-                        </div>
-                        
-                        <div className="w-0 group-hover:w-24 h-[1px] bg-white/60 mt-6 
-                          transition-all duration-700 delay-200 ease-out" />
+                  <div className="absolute inset-0">
+                    <Image
+                      src={heroImage.url}
+                      alt={heroImage.alt}
+                      fill
+                      priority
+                      loading="eager"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      quality={100}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#6B5E4C]/95 via-[#6B5E4C]/20 to-transparent 
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out" />
+                    
+                    <div className="absolute inset-x-0 bottom-0 p-6 sm:p-12 transform translate-y-full 
+                      group-hover:translate-y-0 transition-all duration-700 ease-out">
+                      <div className="overflow-hidden">
+                        <p className="text-white text-xl sm:text-2xl font-light leading-relaxed transform 
+                          translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 
+                          transition-all duration-700 delay-100 ease-out">
+                          {heroImage.text}
+                        </p>
+                        <p className="text-white/80 mt-2 transform translate-y-full opacity-0 
+                          group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 delay-200">
+                          {heroImage.caption}
+                        </p>
                       </div>
+                      
+                      <div className="w-0 group-hover:w-24 h-[1px] bg-white/60 mt-6 
+                        transition-all duration-700 delay-200 ease-out" />
                     </div>
-                  ))}
-                  
-                  {/* Navigation dots */}
-                  <div 
-                    className="absolute bottom-6 right-6 flex items-center gap-2 z-10"
-                    role="tablist"
-                    aria-label="Image gallery controls"
-                  >
-                    {images.map((image, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentImageIndex(index)}
-                        role="tab"
-                        aria-selected={index === currentImageIndex}
-                        aria-label={`View image ${index + 1}: ${image.alt}`}
-                        className={`w-2 h-2 rounded-full transition-all duration-300
-                          ${index === currentImageIndex 
-                            ? 'bg-white w-6' 
-                            : 'bg-white/40 hover:bg-white/60'}`}
-                      />
-                    ))}
                   </div>
                 </div>
               </div>
@@ -228,9 +125,7 @@ const AboutHero = memo(function AboutHero() {
               {/* Collections section */}
               <div className="flex items-center justify-center order-4 lg:order-5">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 items-center w-full sm:w-auto">
-                  <h2 className={`relative text-[#6B5E4C] text-3xl sm:text-2xl font-medium sm:font-light transform text-center sm:text-left
-                    ${sectionInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
-                    motion-safe:transition-all motion-safe:duration-700 motion-safe:delay-300`}>
+                  <h2 className="relative text-[#6B5E4C] text-3xl sm:text-2xl font-medium sm:font-light text-center sm:text-left">
                     <span className="relative px-4 py-2">
                       <span className="relative bg-gradient-to-r from-[#4A3F33] to-[#8B7355] bg-clip-text text-transparent text-2xl sm:text-3xl lg:text-2xl
                         before:content-[''] before:absolute before:-top-1 before:left-0 
@@ -283,63 +178,37 @@ const AboutHero = memo(function AboutHero() {
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
               >
-                {images.map((image, index) => (
-                  <div
-                    key={image.url}
-                    className={`absolute inset-0 transition-opacity duration-700 ease-in-out
-                      ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
-                  >
-                    <Image
-                      src={image.url}
-                      alt={image.alt}
-                      fill
-                      priority={index === 0}
-                      loading={index === 0 ? 'eager' : 'lazy'}
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      quality={100}
-                      />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#6B5E4C]/95 via-[#6B5E4C]/20 to-transparent 
-                      opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out" />
-                    
-                    <div className="absolute inset-x-0 bottom-0 p-12 transform translate-y-full 
-                      group-hover:translate-y-0 transition-all duration-700 ease-out">
-                      <div className="overflow-hidden">
-                        <p className="text-white text-2xl font-light leading-relaxed transform 
-                          translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 
-                          transition-all duration-700 delay-100 ease-out">
-                          {image.text}
-                        </p>
-                        <p className="text-white/80 mt-2 transform translate-y-full opacity-0 
-                          group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 delay-200">
-                          {image.caption}
-                        </p>
-                      </div>
-                      
-                      <div className="w-0 group-hover:w-24 h-[1px] bg-white/60 mt-6 
-                        transition-all duration-700 delay-200 ease-out" />
+                <div className="absolute inset-0">
+                  <Image
+                    src={heroImage.url}
+                    alt={heroImage.alt}
+                    fill
+                    priority
+                    loading="eager"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    quality={100}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#6B5E4C]/95 via-[#6B5E4C]/20 to-transparent 
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out" />
+                  
+                  <div className="absolute inset-x-0 bottom-0 p-12 transform translate-y-full 
+                    group-hover:translate-y-0 transition-all duration-700 ease-out">
+                    <div className="overflow-hidden">
+                      <p className="text-white text-2xl font-light leading-relaxed transform 
+                        translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 
+                        transition-all duration-700 delay-100 ease-out">
+                        {heroImage.text}
+                      </p>
+                      <p className="text-white/80 mt-2 transform translate-y-full opacity-0 
+                        group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 delay-200">
+                        {heroImage.caption}
+                      </p>
                     </div>
+                    
+                    <div className="w-0 group-hover:w-24 h-[1px] bg-white/60 mt-6 
+                      transition-all duration-700 delay-200 ease-out" />
                   </div>
-                ))}
-                
-                <div 
-                  className="absolute bottom-6 right-6 flex items-center gap-2 z-10"
-                  role="tablist"
-                  aria-label="Image gallery controls"
-                >
-                  {images.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      role="tab"
-                      aria-selected={index === currentImageIndex}
-                      aria-label={`View image ${index + 1}: ${image.alt}`}
-                      className={`w-2 h-2 rounded-full transition-all duration-300
-                        ${index === currentImageIndex 
-                          ? 'bg-white w-6' 
-                          : 'bg-white/40 hover:bg-white/60'}`}
-                    />
-                  ))}
                 </div>
               </div>
             </div>
