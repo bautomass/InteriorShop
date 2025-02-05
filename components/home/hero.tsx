@@ -1,10 +1,10 @@
 'use client';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { MobileHero } from './MobileMenuHeader';
 
 const heroImages = [
@@ -153,13 +153,21 @@ const HeroCarousel = () => {
           role="region" 
           aria-label="Hero image carousel"
         >
-          <AnimatePresence mode="wait">
+          {/* Preload first image */}
+          <link
+            rel="preload"
+            as="image"
+            href={heroImages[0]?.src || ''}
+            data-fetchpriority="high"
+          />
+
+          <AnimatePresence initial={false} mode="wait">
             <motion.div
               key={currentIndex}
-              initial={false}
+              initial={{ opacity: 0.8 }}
               animate={{ opacity: 1 }}
-              exit={false}
-              transition={{ duration: 0 }}
+              exit={{ opacity: 0.8 }}
+              transition={{ duration: 0.3 }}
               className="relative w-full h-full"
             >
               <Image
@@ -167,15 +175,21 @@ const HeroCarousel = () => {
                 alt={heroImages[currentIndex]?.alt || ''}
                 fill
                 priority={currentIndex === 0}
-                quality={90}
+                quality={85}
                 sizes="100vw"
                 className="object-cover"
                 loading={currentIndex === 0 ? 'eager' : 'lazy'}
+                fetchPriority={currentIndex === 0 ? 'high' : 'auto'}
               />
 
-              {/* Content overlay for first slide */}
+              {/* First slide content with priority */}
               {currentIndex === 0 && (
-                <div className="absolute right-16 top-[45%] transform -translate-y-1/2 z-20 max-w-2xl">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute right-16 top-[20%] transform -translate-y-1/2 z-20 max-w-2xl"
+                >
                   <span className="inline-block text-white/90 font-medium tracking-[0.2em] uppercase text-sm mb-4">
                     Nature's Gift
                   </span>
@@ -214,10 +228,10 @@ const HeroCarousel = () => {
                         group-hover/btn:left-[100%] transition-all duration-1000 ease-in-out" />
                     </Link>
                   </div>
-                </div>
+                </motion.div>
               )}
 
-              {/* Content overlay for second slide */}
+              {/* Second slide content */}
               {currentIndex === 1 && (
                 <>
                   <div className="absolute right-[23%] top-[12%] z-20 max-w-2xl">
