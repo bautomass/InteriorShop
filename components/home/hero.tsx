@@ -169,10 +169,10 @@ const HeroCarousel = () => {
           <AnimatePresence initial={false} mode="wait">
             <motion.div
               key={currentIndex}
-              initial={{ opacity: 0.8 }}
+              initial={{ opacity: 0.7 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0.8 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0.7 }}
+              transition={{ duration: 0.1 }}
               className="relative w-full h-full"
             >
               {currentIndex === 0 ? (
