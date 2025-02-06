@@ -7,32 +7,14 @@ import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
 import { debounce } from 'lodash';
 import {
-  Armchair,
-  ArrowUpSquare,
   Check,
   ChevronDown,
-  CircleDot,
   DollarSign,
-  Flame,
-  Flower2,
-  Frame,
-  Gift,
-  Grid,
-  Heart,
-  Image as ImageIcon,
-  Lamp,
-  Package,
-  PanelRightClose,
-  Shirt,
-  ShoppingBasket,
+  Minus,
+  Plus,
   ShoppingCart,
   Sparkles,
-  Square,
-  Star,
-  Tag,
-  Truck,
-  UtensilsCrossed,
-  Wine
+  Truck
 } from 'lucide-react';
 
 import { AccountModal } from '@/components/AccountModal';
@@ -170,25 +152,31 @@ const BurgerIcon = ({ isOpen }: { isOpen: boolean }) => (
 );
 
 // New Component Definitions
-const CollectionGridItem = ({ collection, onClose }: { collection: Collection; onClose: () => void }) => (
-  <Link
-    href={`/collections/${collection.handle}`}
-    onClick={onClose}
-    className="group flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200
-               hover:bg-neutral-50"
-  >
-    <span className="flex-shrink-0 p-2 rounded-md bg-neutral-50 text-neutral-500
-                    group-hover:bg-white group-hover:text-[#9e896c] transition-colors duration-200">
-      {getIcon(collection.handle)}
-    </span>
-    <div>
-      <h3 className="text-sm font-medium text-neutral-700 group-hover:text-[#9e896c] 
-                     transition-colors duration-200">
-        {collection.title}
-      </h3>
-    </div>
-  </Link>
-);
+const CollectionGridItem = ({ collection, onClose }: { collection: Collection; onClose: () => void }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <Link
+      href={`/collections/${collection.handle}`}
+      onClick={onClose}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="group flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200
+                 hover:bg-neutral-50"
+    >
+      <span className="flex-shrink-0 p-2 rounded-md text-neutral-500
+                      group-hover:bg-white group-hover:text-[#9e896c] transition-colors duration-200">
+        {isHovered ? <Plus className="h-5 w-5" /> : <Minus className="h-5 w-5" />}
+      </span>
+      <div>
+        <h3 className="text-sm font-medium text-neutral-700 group-hover:text-[#9e896c] 
+                       transition-colors duration-200">
+          {collection.title}
+        </h3>
+      </div>
+    </Link>
+  );
+};
 
 const SidebarLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <Link 
@@ -1226,54 +1214,6 @@ export const DesktopHeader = () => {
       />
     </div>
   );
-};
-
-// Helper function for collection icons
-const getIcon = (handle: string) => {
-  switch (handle.toLowerCase()) {
-    case 'collections':
-      return <Grid className="h-5 w-5" />;
-    case 'accessories':
-      return <Heart className="h-5 w-5" />;
-    case 'baskets-rattan':
-      return <ShoppingBasket className="h-5 w-5" />;
-    case 'best-sellers':
-      return <Star className="h-5 w-5" />;
-    case 'candles-candle-holders':
-      return <Flame className="h-5 w-5" />;
-    case 'canvas':
-      return <ImageIcon className="h-5 w-5" />;
-    case 'carpet-collection':
-      return <Square className="h-5 w-5" />;
-    case 'blinds-shades-collection':
-      return <PanelRightClose className="h-5 w-5" />;
-    case 'dried-flowers':
-      return <Flower2 className="h-5 w-5" />;
-    case 'kitchen-accessories':
-      return <UtensilsCrossed className="h-5 w-5" />;
-    case 'organic-decoration':
-      return <Armchair className="h-5 w-5" />;
-    case 'gift-boxes-1':
-      return <Gift className="h-5 w-5" />;
-    case 'gifts':
-      return <Package className="h-5 w-5" />;
-    case 'lamps':
-      return <Lamp className="h-5 w-5" />;
-    case 'decorative-lantern-collection':
-      return <Flame className="h-5 w-5" />;
-    case 'sale':
-      return <Tag className="h-5 w-5" />;
-    case 'textiles-collection':
-      return <Shirt className="h-5 w-5" />;
-    case 'ceramic-vases':
-      return <Wine className="h-5 w-5" />;
-    case 'wall-decor-collection':
-      return <Frame className="h-5 w-5" />;
-    case 'anturam-eco-wooden-stools':
-      return <ArrowUpSquare className="h-5 w-5" />;
-    default:
-      return <CircleDot className="h-5 w-5" />;
-  }
 };
 
 export default DesktopHeader;
