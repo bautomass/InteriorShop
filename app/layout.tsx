@@ -1,3 +1,4 @@
+//app/layout.tsx
 import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { Footer } from '@/components/layout/site-footer';
 import { AuthProvider } from '@/providers/AuthProvider';
@@ -13,7 +14,7 @@ import { ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import './globals.css';
 
-const { SITE_NAME } = process.env;
+const SITE_NAME = process.env.SITE_NAME || 'Simple Interior Ideas';
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
   : 'http://localhost:3000';
@@ -21,7 +22,7 @@ const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
 export const metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: SITE_NAME!,
+    default: SITE_NAME,
     template: `%s | ${SITE_NAME}`
   },
   icons: {

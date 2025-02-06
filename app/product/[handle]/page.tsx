@@ -30,7 +30,7 @@ export async function generateMetadata(props: {
   const metaDescription = `${product.seo.description || product.description} - Shop ${product.title} at Modern Living. Free Shipping Available. Sustainable Design.`;
 
   return {
-    title: `${product.seo.title || product.title} | Modern Living`,
+    title: `${product.seo.title || product.title}`,
     description: metaDescription,
     keywords: `${product.title}, ${product.tags.join(', ')}, modern furniture, sustainable design, home decor`,
     robots: {
