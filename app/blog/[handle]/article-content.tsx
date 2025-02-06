@@ -30,7 +30,7 @@ function ArticleNavigationCard({ article, type }: { article: Article; type: 'pre
     return (
       <Link
         href={`/blog/${article.handle}`}
-        className="group relative flex flex-1 items-center gap-6 rounded-2xl bg-primary-100/50 p-6 mt-6 transition-all hover:bg-primary-200/50 dark:bg-primary-800/50 dark:hover:bg-primary-700/50"
+        className="group relative flex flex-1 items-center gap-6 rounded-2xl bg-primary-100/50 p-6 transition-all hover:bg-primary-200/50 dark:bg-primary-800/50 dark:hover:bg-primary-700/50"
       >
         {/* Thumbnail Image + Direction Icon */}
         <div className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-xl bg-primary-200 dark:bg-primary-700">
@@ -86,19 +86,22 @@ export function ArticleContent({ article, prevArticle, nextArticle }: ArticleCon
 
   return (
     <main className="relative min-h-screen bg-gradient-to-b from-primary-50 to-white dark:from-primary-950 dark:to-primary-900">
-      <article className="relative mx-auto max-w-4xl px-4 pb-24 pt-12 sm:px-6 lg:px-8">
+      <article className="relative mx-auto max-w-5xl px-4 pb-24 pt-24 sm:px-6 lg:px-8">
         {/* Hero Image */}
         {article.image && (
-          <div className="relative mb-12 aspect-[21/9] overflow-hidden rounded-2xl bg-primary-100 dark:bg-primary-800">
-            <Image
-              src={article.image.url}
-              alt={article.image.altText || article.title}
-              width={article.image.width || 2100}
-              height={article.image.height || 900}
-              className="h-full w-full object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+          <div className="relative mb-16 overflow-hidden rounded-3xl bg-primary-100 shadow-xl ring-1 ring-primary-900/5 dark:bg-primary-800">
+            <div className="aspect-[21/9]">
+              <Image
+                src={article.image.url}
+                alt={article.image.altText || article.title}
+                fill
+                className="object-cover"
+                priority
+                quality={100}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
           </div>
         )}
 
@@ -129,7 +132,24 @@ export function ArticleContent({ article, prevArticle, nextArticle }: ArticleCon
         {/* Article Content */}
         <div className="relative mb-16">
           <div
-            className="prose prose-lg mx-auto prose-headings:text-primary-900 prose-p:text-primary-700 prose-a:text-accent-600 prose-strong:text-primary-900 dark:prose-invert dark:prose-headings:text-primary-50 dark:prose-p:text-primary-300 dark:prose-strong:text-primary-50"
+            className="prose prose-lg mx-auto max-w-none
+              prose-p:mb-6 prose-p:mt-2
+              prose-headings:mb-4 prose-headings:mt-8
+              prose-headings:font-bold prose-headings:text-primary-900 
+              prose-p:text-primary-700 prose-p:leading-relaxed 
+              prose-a:text-accent-600 prose-a:no-underline hover:prose-a:underline
+              prose-strong:text-primary-900 
+              prose-ul:my-6 prose-ul:list-disc prose-ul:pl-6
+              prose-ol:my-6 prose-ol:list-decimal prose-ol:pl-6
+              prose-li:my-2
+              prose-blockquote:my-6 prose-blockquote:border-l-4 prose-blockquote:border-primary-200 prose-blockquote:pl-4 prose-blockquote:italic
+              prose-img:my-8 prose-img:rounded-xl prose-img:shadow-lg
+              prose-hr:my-8
+              dark:prose-invert 
+              dark:prose-headings:text-primary-50 
+              dark:prose-p:text-primary-300 
+              dark:prose-strong:text-primary-50
+              dark:prose-blockquote:border-primary-700"
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
         </div>
