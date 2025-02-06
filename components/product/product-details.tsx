@@ -11,7 +11,6 @@ import { useProduct } from 'components/product/product-context';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ChevronRight,
-  ChevronDown,
   Cog,
   Home,
   Info,
@@ -25,7 +24,7 @@ import {
   X
 } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { TagProductsModal } from './tag-products-modal';
 
@@ -49,6 +48,10 @@ export function ProductDetails({ product }: { product: Product }) {
   const [isLoadingTagProducts, setIsLoadingTagProducts] = useState(false);
   const [lastCheckedHours, setLastCheckedHours] = useState<number | null>(null);
   const [ratingData, setRatingData] = useState<{ rating: string; reviewCount: number } | null>(null);
+  const addToCartButtonRef = useRef(null);
+  const { ref: addToCartInView, inView: isAddToCartVisible } = useInView({
+    threshold: 0,
+  });
 
   const selectedVariant = useMemo(() => {
     if (!Object.keys(state).length) return null;
@@ -71,21 +74,34 @@ export function ProductDetails({ product }: { product: Product }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    const handleResize = () => {
+      // Reset sticky bar state on resize
+      setShowStickyBar(false);
+    };
+
     const handleScroll = () => {
       if (stickyBarClosed) return;
 
-      const scrollPosition = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
+      const isMobile = window.innerWidth < 640;
 
-      // Show sticky bar when user has scrolled 80% of the page
-      const scrollPercentage = (scrollPosition + windowHeight) / documentHeight;
-      setShowStickyBar(scrollPercentage > 0.8);
+      if (isMobile) {
+        // Show sticky bar when main add to cart is not visible on mobile
+        setShowStickyBar(!isAddToCartVisible);
+      } else {
+        // Desktop behavior - show after 80% scroll
+        const scrollPercentage = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight;
+        setShowStickyBar(scrollPercentage > 0.8);
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [stickyBarClosed]);
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [stickyBarClosed, isAddToCartVisible]);
 
   useEffect(() => {
     // Check if there's a stored value in local storage
@@ -470,6 +486,7 @@ export function ProductDetails({ product }: { product: Product }) {
 
             <div className="flex-1">
               <motion.button
+                ref={addToCartInView}
                 onClick={handleAddToCart}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -719,137 +736,99 @@ export function ProductDetails({ product }: { product: Product }) {
         </div>
       </div>
 
-      {/* Sticky Add to Cart Bar - Mobile Optimized */}
+      {/* Sticky Add to Cart Bar */}
       <motion.div
         initial={{ y: 100 }}
         animate={{ y: showStickyBar ? 0 : 100 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200, duration: 0.2 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className="fixed bottom-0 left-0 right-0 z-50 transform border-t border-[#B5A48B]/20 bg-white/80 backdrop-blur-lg"
       >
-        <div className="mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 p-3 sm:p-4">
-          {/* Product Info with Close Button */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleCloseStickyBar}
-              className="p-2 text-[#6B5E4C] transition-colors duration-200 hover:matext-[#8C7E6A]"
-              aria-label="Close sticky cart"
-            >
-              <X className="h-5 w-5" />
-            </button>
+        <div className="mx-auto w-full px-4 py-3">
+          {/* Desktop Version */}
+          <div className="hidden sm:flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleCloseStickyBar}
+                className="p-2 text-[#6B5E4C] transition-colors duration-200 hover:text-[#8C7E6A]"
+              >
+                <X className="h-5 w-5" />
+              </button>
 
-            {product.featuredImage && (
-              <div className="relative hidden h-12 w-12 overflow-hidden rounded-md sm:block">
-                <Image
-                  src={product.featuredImage.url}
-                  alt={product.title}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            )}
-            <div>
-              <h3 className="line-clamp-1 text-sm font-medium text-[#6B5E4C]">{product.title}</h3>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  {selectedVariant?.compareAtPrice &&
-                    parseFloat(selectedVariant.compareAtPrice.amount) >
-                      parseFloat(selectedVariant.price.amount) && (
-                      <motion.div
-                        initial={{ scale: 0.8, opacity: 0, rotate: -12 }}
-                        animate={{
-                          scale: [0.8, 1.1, 1],
-                          opacity: 1,
-                          rotate: [-12, -15, -12]
-                        }}
-                        whileHover={{
-                          scale: 1.05,
-                          rotate: -15,
-                          transition: { duration: 0.2 }
-                        }}
-                        transition={{
-                          duration: 0.5,
-                          ease: 'easeOut'
-                        }}
-                        className="absolute -left-2 -top-3 cursor-default rounded-full bg-gradient-to-r from-[#FF6B6B] to-[#FF8B8B] px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm"
-                      >
-                        Sale
-                      </motion.div>
-                    )}
+              {product.featuredImage && (
+                <div className="relative h-12 w-12 overflow-hidden rounded-md">
+                  <Image
+                    src={product.featuredImage.url}
+                    alt={product.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+              <div>
+                <h3 className="line-clamp-1 text-sm font-medium text-[#6B5E4C]">{product.title}</h3>
+                <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-[#6B5E4C]">
                     {formatPrice(parseFloat(selectedVariant?.price.amount || product.priceRange.minVariantPrice.amount))}
                   </span>
-                </div>
-                {selectedVariant?.compareAtPrice &&
-                  parseFloat(selectedVariant.compareAtPrice.amount) >
-                    parseFloat(selectedVariant.price.amount) && (
-                    <>
-                      <span className="text-xs text-[#8C7E6A] line-through decoration-[#FF6B6B]/40">
-                        {formatPrice(parseFloat(selectedVariant.compareAtPrice.amount))}
-                      </span>
-                      <motion.span
-                        initial={{ x: -5, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        className="rounded-full border border-[#FF6B6B]/20 bg-gradient-to-r from-[#FF6B6B]/10 to-[#FF8B8B]/10 px-2 py-0.5 text-xs font-medium text-[#FF6B6B]"
-                      >
-                        Save{' '}
-                        {Math.round(
-                          ((parseFloat(selectedVariant.compareAtPrice.amount) -
-                            parseFloat(selectedVariant.price.amount)) /
-                            parseFloat(selectedVariant.compareAtPrice.amount)) *
-                            100
-                        )}
-                        %
-                      </motion.span>
-                    </>
+                  {selectedVariant?.compareAtPrice && (
+                    <span className="text-xs text-[#8C7E6A] line-through">
+                      {formatPrice(parseFloat(selectedVariant.compareAtPrice.amount))}
+                    </span>
                   )}
+                </div>
               </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 items-center rounded-md border border-[#6B5E4C]/20">
+                <button onClick={decrementQuantity} className="px-3 text-[#6B5E4C] hover:bg-[#6B5E4C]/5">
+                  <Minus className="h-3 w-3" />
+                </button>
+                <div className="w-8 text-center text-sm font-medium text-[#6B5E4C]">{quantity}</div>
+                <button onClick={incrementQuantity} className="px-3 text-[#6B5E4C] hover:bg-[#6B5E4C]/5">
+                  <Plus className="h-3 w-3" />
+                </button>
+              </div>
+              <motion.button
+                onClick={handleAddToCart}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={!selectedVariant || !product.availableForSale || isPending}
+                className={`group relative flex items-center justify-center gap-2 rounded-md px-6 py-2.5 text-sm font-medium text-white shadow-md ${
+                  !selectedVariant || !product.availableForSale || isPending
+                    ? 'bg-gray-400'
+                    : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
+                }`}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                <span>{isPending ? 'Adding...' : 'Add to Cart'}</span>
+              </motion.button>
             </div>
           </div>
 
-          {/* Quantity and Add to Cart - Mobile Optimized */}
-          <div className="flex w-full sm:w-auto items-center gap-2 sm:gap-3">
-            <div className="flex h-8 sm:h-10 items-center rounded-md border border-[#6B5E4C]/20">
-              <button
-                onClick={decrementQuantity}
-                className="flex h-full items-center justify-center px-1.5 sm:px-2 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
-                aria-label="Decrease quantity"
-              >
-                <Minus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+          {/* Mobile Version - Simplified */}
+          <div className="flex sm:hidden items-center justify-between gap-2">
+            <div className="flex h-10 items-center rounded-md border border-[#6B5E4C]/20">
+              <button onClick={decrementQuantity} className="px-3 text-[#6B5E4C] hover:bg-[#6B5E4C]/5">
+                <Minus className="h-3 w-3" />
               </button>
-              <div className="w-6 sm:w-8 text-center text-xs sm:text-sm font-medium text-[#6B5E4C]">
-                {quantity}
-              </div>
-              <button
-                onClick={incrementQuantity}
-                className="flex h-full items-center justify-center px-1.5 sm:px-2 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
-                aria-label="Increase quantity"
-              >
-                <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+              <div className="w-8 text-center text-sm font-medium text-[#6B5E4C]">{quantity}</div>
+              <button onClick={incrementQuantity} className="px-3 text-[#6B5E4C] hover:bg-[#6B5E4C]/5">
+                <Plus className="h-3 w-3" />
               </button>
             </div>
-
             <motion.button
               onClick={handleAddToCart}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               disabled={!selectedVariant || !product.availableForSale || isPending}
-              className={`group relative flex items-center justify-center gap-1.5 sm:gap-2 overflow-hidden rounded-md px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white shadow-md transition-all duration-300 hover:shadow-lg ${
+              className={`group flex-1 relative flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium text-white shadow-md ${
                 !selectedVariant || !product.availableForSale || isPending
-                  ? 'cursor-not-allowed bg-gray-400'
+                  ? 'bg-gray-400'
                   : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
               }`}
             >
-              <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="relative z-10">
-                {isPending
-                  ? 'Adding...'
-                  : !selectedVariant
-                    ? 'Select options'
-                    : !product.availableForSale
-                      ? 'Out of Stock'
-                      : 'Add to Cart'}
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <ShoppingCart className="h-4 w-4" />
+              <span>{isPending ? 'Adding...' : 'Add to Cart'}</span>
             </motion.button>
           </div>
         </div>
