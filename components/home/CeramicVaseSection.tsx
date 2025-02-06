@@ -365,11 +365,15 @@ const FeaturedProduct = () => {
                 <button
                   key={value}
                   onClick={() => handleOptionChange(option.name, value)}
-                  className={`px-3 py-1.5 text-xs sm:text-sm border rounded-md transition-all duration-200
+                  className={`px-3 py-1 text-xs transition-all duration-200 relative
+                    border rounded-md group
                     ${isSelected 
-                      ? 'border-[#6B5E4C] bg-[#6B5E4C] text-white' 
-                      : 'border-[#B5A48B]/20 text-[#6B5E4C] hover:border-[#6B5E4C]'}`}
+                      ? 'border-[#6B5E4C] text-[#6B5E4C]' 
+                      : 'border-[#B5A48B]/30 text-[#8C7E6A] hover:border-[#6B5E4C] hover:text-[#6B5E4C]'}`}
                 >
+                  <span className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-lg transition-all duration-200
+                    ${isSelected ? 'bg-[#6B5E4C] scale-100' : 'bg-[#6B5E4C] scale-0 group-hover:scale-75'}`}
+                  />
                   {value}
                 </button>
               );
