@@ -8,8 +8,10 @@ import * as Tooltip from '@radix-ui/react-tooltip';
 import { addItem } from 'components/cart/actions';
 import { useCart } from 'components/cart/cart-context';
 import { useProduct } from 'components/product/product-context';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
+  ChevronRight,
+  ChevronDown,
   Cog,
   Home,
   Info,
@@ -20,8 +22,7 @@ import {
   ShoppingCart,
   Star,
   Truck,
-  X,
-  ChevronRight
+  X
 } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
@@ -443,225 +444,214 @@ export function ProductDetails({ product }: { product: Product }) {
           {/* Product Options - Moved here */}
           {renderProductOptions()}
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
-            transition={{ delay: 0.4 }}
-            className="space-y-4"
-          >
-            <h3 className="text-base font-medium text-[#6B5E4C]">Product Description</h3>
-            <div
-              className="prose prose-neutral max-w-none text-sm"
-              dangerouslySetInnerHTML={{
-                __html: isDescriptionExpanded
-                  ? product.descriptionHtml
-                  : product.descriptionHtml.slice(0, 215) + '...'
-              }}
-            />
-
-            <button
-              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-              className="mt-2.5 flex items-center gap-1.5 text-sm text-[#6B5E4C] transition-colors duration-200 hover:text-[#8C7E6A]"
-            >
-              {isDescriptionExpanded ? (
-                <>
-                  <span>Show less</span>
-                  <motion.span
-                    initial={{ rotate: 0 }}
-                    animate={{ rotate: 180 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    ↑
-                  </motion.span>
-                </>
-              ) : (
-                <>
-                  <span>Read full description</span>
-                  <motion.span
-                    initial={{ rotate: 180 }}
-                    animate={{ rotate: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    ↓
-                  </motion.span>
-                </>
-              )}
-            </button>
-          </motion.div>
-
           {/* Add to Cart Button */}
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <div className="flex h-10 w-full sm:w-auto items-center rounded-md border border-[#6B5E4C]/20">
-              <button
-                onClick={decrementQuantity}
-                className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
-                aria-label="Decrease quantity"
-              >
-                <Minus className="h-3 w-3" />
-              </button>
-              <div className="w-12 text-center text-sm font-medium text-[#6B5E4C]">
-                {quantity}
+          <div className="flex w-full items-center gap-4 mt-2">
+            <div className="flex-shrink-0 h-10 items-center rounded-md border border-[#6B5E4C]/20">
+              <div className="flex h-10 w-full sm:w-auto items-center rounded-md border border-[#6B5E4C]/20">
+                <button
+                  onClick={decrementQuantity}
+                  className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="h-3 w-3" />
+                </button>
+                <div className="w-12 text-center text-sm font-medium text-[#6B5E4C]">
+                  {quantity}
+                </div>
+                <button
+                  onClick={incrementQuantity}
+                  className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="h-3 w-3" />
+                </button>
               </div>
-              <button
-                onClick={incrementQuantity}
-                className="flex h-full items-center justify-center px-3 text-[#6B5E4C] transition-colors duration-200 hover:bg-[#6B5E4C]/5"
-                aria-label="Increase quantity"
-              >
-                <Plus className="h-3 w-3" />
-              </button>
             </div>
 
+            <div className="flex-1">
+              <motion.button
+                onClick={handleAddToCart}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={!selectedVariant || !product.availableForSale || isPending}
+                className={`group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-md px-6 py-2.5 text-sm font-medium text-white shadow-md transition-all duration-300 hover:shadow-lg ${
+                  !selectedVariant || !product.availableForSale || isPending
+                    ? 'cursor-not-allowed bg-gray-400'
+                    : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
+                }`}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                <span className="relative z-10">
+                  {isPending
+                    ? 'Adding...'
+                    : !selectedVariant
+                      ? 'Select options'
+                      : !product.availableForSale
+                        ? 'Out of Stock'
+                        : 'Add to Cart'}
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              </motion.button>
+            </div>
+          </div>
+
+          {/* Shipping and guarantees info - Moved here */}
+          <div className="mt-4">
+            <div className="block sm:hidden">
+              <div className="flex overflow-x-auto gap-3 pb-2 px-2 no-scrollbar">
+                {[
+                  { icon: Truck, text: "Free Worldwide Shipping", tooltip: "Enjoy complimentary worldwide shipping on all orders. Standard delivery takes 25-40 business days. Express shipping options available at checkout." },
+                  { icon: RefreshCcw, text: "45 Day Money Back", tooltip: "Not completely satisfied? Return your purchase within 45 days for a full refund. Items must be unused and in original packaging. Return shipping is on us!" },
+                  { icon: Shield, text: "Secure Checkout", tooltip: "Shop with confidence using our SSL-encrypted checkout. We support all major credit cards and secure payment methods. Your personal data is always protected." }
+                ].map((Item, i) => (
+                  <div key={i} className="flex-shrink-0 bg-[#F5F3F0] p-3 rounded-md flex items-center gap-2 min-w-[200px] justify-center">
+                    <Item.icon className="h-4 w-4 text-[#8C7E6A]" />
+                    <div className="flex items-center gap-1.5">
+                      <Tooltip.Provider delayDuration={0}>
+                        <Tooltip.Root>
+                          <Tooltip.Trigger asChild>
+                            <span className="cursor-help text-xs text-[#6B5E4C]">{Item.text}</span>
+                          </Tooltip.Trigger>
+                          <Tooltip.Portal>
+                            <Tooltip.Content className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg">
+                              <p className="text-xs text-[#6B5E4C]">{Item.tooltip}</p>
+                              <Tooltip.Arrow className="fill-white" />
+                            </Tooltip.Content>
+                          </Tooltip.Portal>
+                        </Tooltip.Root>
+                      </Tooltip.Provider>
+                      <button className="relative -top-1 inline-flex" aria-label="More info">
+                        <Info className="h-3 w-3 text-[#8C7E6A]" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Desktop Version - Same as original */}
+            <div className="hidden sm:flex items-center justify-between px-4">
+              <div className="group relative flex items-center gap-2">
+                <Truck className="h-4 w-4 text-[#8C7E6A]" />
+                <Tooltip.Provider delayDuration={0}>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <span className="cursor-help text-sm text-[#6B5E4C]">
+                        Free Worldwide Shipping
+                        <button className="relative -top-1 ml-1 inline-flex">
+                          <Info className="h-3 w-3 text-[#8C7E6A]" />
+                        </button>
+                      </span>
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
+                        sideOffset={5}
+                      >
+                        <p className="text-xs text-[#6B5E4C]">
+                          Enjoy complimentary worldwide shipping on all orders. Standard delivery
+                          takes 25-40 business days. Express shipping options available at checkout.
+                        </p>
+                        <Tooltip.Arrow className="fill-white" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
+              </div>
+
+              <div className="group relative flex items-center gap-2">
+                <RefreshCcw className="h-4 w-4 text-[#8C7E6A]" />
+                <Tooltip.Provider delayDuration={0}>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <span className="cursor-help text-sm text-[#6B5E4C]">
+                        45 Day Money Back
+                        <button className="relative -top-1 ml-1 inline-flex">
+                          <Info className="h-3 w-3 text-[#8C7E6A]" />
+                        </button>
+                      </span>
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
+                        sideOffset={5}
+                      >
+                        <p className="text-xs text-[#6B5E4C]">
+                          Not completely satisfied? Return your purchase within 45 days for a full
+                          refund. Items must be unused and in original packaging. Return shipping is
+                          on us!
+                        </p>
+                        <Tooltip.Arrow className="fill-white" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
+              </div>
+
+              <div className="group relative flex items-center gap-2">
+                <Shield className="h-4 w-4 text-[#8C7E6A]" />
+                <Tooltip.Provider delayDuration={0}>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <span className="cursor-help text-sm text-[#6B5E4C]">
+                        Secure Checkout
+                        <button className="relative -top-1 ml-1 inline-flex">
+                          <Info className="h-3 w-3 text-[#8C7E6A]" />
+                        </button>
+                      </span>
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
+                        sideOffset={5}
+                      >
+                        <p className="text-xs text-[#6B5E4C]">
+                          Shop with confidence using our SSL-encrypted checkout. We support all major
+                          credit cards and secure payment methods. Your personal data is always
+                          protected.
+                        </p>
+                        <Tooltip.Arrow className="fill-white" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
+              </div>
+            </div>
+          </div>
+          {/* Product Description */}
+          <motion.div className="border rounded-lg overflow-hidden">
             <motion.button
-              onClick={handleAddToCart}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              disabled={!selectedVariant || !product.availableForSale || isPending}
-              className={`group relative flex w-full sm:w-auto items-center justify-center gap-2 overflow-hidden rounded-md px-6 py-2.5 text-sm font-medium text-white shadow-md transition-all duration-300 hover:shadow-lg ${
-                !selectedVariant || !product.availableForSale || isPending
-                  ? 'cursor-not-allowed bg-gray-400'
-                  : 'bg-[#6B5E4C] hover:bg-[#5A4D3B]'
+              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+              className={`w-full flex items-center gap-3 p-4 transition-all duration-300 ${
+                isDescriptionExpanded ? 'bg-[#6B5E4C] text-white' : 'bg-[#F5F3F0] text-[#6B5E4C] hover:bg-[#F0EDE8]'
               }`}
             >
-              <ShoppingCart className="h-4 w-4" />
-              <span className="relative z-10">
-                {isPending
-                  ? 'Adding...'
-                  : !selectedVariant
-                    ? 'Select options'
-                    : !product.availableForSale
-                      ? 'Out of Stock'
-                      : 'Add to Cart'}
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <motion.div
+                animate={{ rotate: isDescriptionExpanded ? 90 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </motion.div>
+              <h3 className="text-base font-medium">Product Description</h3>
             </motion.button>
-          </div>
-        {/* Shipping and guarantees info */}
-        <div className="mt-4">
-          {/* Mobile Version - Horizontal Scroll */}
-          <div className="block sm:hidden">
-            <div className="flex overflow-x-auto gap-3 pb-2 px-2 no-scrollbar">
-              {[
-                { icon: Truck, text: "Free Worldwide Shipping", tooltip: "Enjoy complimentary worldwide shipping on all orders. Standard delivery takes 25-40 business days. Express shipping options available at checkout." },
-                { icon: RefreshCcw, text: "45 Day Money Back", tooltip: "Not completely satisfied? Return your purchase within 45 days for a full refund. Items must be unused and in original packaging. Return shipping is on us!" },
-                { icon: Shield, text: "Secure Checkout", tooltip: "Shop with confidence using our SSL-encrypted checkout. We support all major credit cards and secure payment methods. Your personal data is always protected." }
-              ].map((Item, i) => (
-                <div key={i} className="flex-shrink-0 bg-[#F5F3F0] p-3 rounded-md flex items-center gap-2 min-w-[200px] justify-center">
-                  <Item.icon className="h-4 w-4 text-[#8C7E6A]" />
-                  <div className="flex items-center gap-1.5">
-                    <Tooltip.Provider delayDuration={0}>
-                      <Tooltip.Root>
-                        <Tooltip.Trigger asChild>
-                          <span className="cursor-help text-xs text-[#6B5E4C]">{Item.text}</span>
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal>
-                          <Tooltip.Content className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg">
-                            <p className="text-xs text-[#6B5E4C]">{Item.tooltip}</p>
-                            <Tooltip.Arrow className="fill-white" />
-                          </Tooltip.Content>
-                        </Tooltip.Portal>
-                      </Tooltip.Root>
-                    </Tooltip.Provider>
-                    <button className="relative -top-1 inline-flex" aria-label="More info">
-                      <Info className="h-3 w-3 text-[#8C7E6A]" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Desktop Version - Same as original */}
-          <div className="hidden sm:flex items-center justify-between px-4">
-            <div className="group relative flex items-center gap-2">
-              <Truck className="h-4 w-4 text-[#8C7E6A]" />
-              <Tooltip.Provider delayDuration={0}>
-                <Tooltip.Root>
-                  <Tooltip.Trigger asChild>
-                    <span className="cursor-help text-sm text-[#6B5E4C]">
-                      Free Worldwide Shipping
-                      <button className="relative -top-1 ml-1 inline-flex">
-                        <Info className="h-3 w-3 text-[#8C7E6A]" />
-                      </button>
-                    </span>
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content
-                      className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
-                      sideOffset={5}
-                    >
-                      <p className="text-xs text-[#6B5E4C]">
-                        Enjoy complimentary worldwide shipping on all orders. Standard delivery
-                        takes 25-40 business days. Express shipping options available at checkout.
-                      </p>
-                      <Tooltip.Arrow className="fill-white" />
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
-              </Tooltip.Provider>
-            </div>
-
-            <div className="group relative flex items-center gap-2">
-              <RefreshCcw className="h-4 w-4 text-[#8C7E6A]" />
-              <Tooltip.Provider delayDuration={0}>
-                <Tooltip.Root>
-                  <Tooltip.Trigger asChild>
-                    <span className="cursor-help text-sm text-[#6B5E4C]">
-                      45 Day Money Back
-                      <button className="relative -top-1 ml-1 inline-flex">
-                        <Info className="h-3 w-3 text-[#8C7E6A]" />
-                      </button>
-                    </span>
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content
-                      className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
-                      sideOffset={5}
-                    >
-                      <p className="text-xs text-[#6B5E4C]">
-                        Not completely satisfied? Return your purchase within 45 days for a full
-                        refund. Items must be unused and in original packaging. Return shipping is
-                        on us!
-                      </p>
-                      <Tooltip.Arrow className="fill-white" />
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
-              </Tooltip.Provider>
-            </div>
-
-            <div className="group relative flex items-center gap-2">
-              <Shield className="h-4 w-4 text-[#8C7E6A]" />
-              <Tooltip.Provider delayDuration={0}>
-                <Tooltip.Root>
-                  <Tooltip.Trigger asChild>
-                    <span className="cursor-help text-sm text-[#6B5E4C]">
-                      Secure Checkout
-                      <button className="relative -top-1 ml-1 inline-flex">
-                        <Info className="h-3 w-3 text-[#8C7E6A]" />
-                      </button>
-                    </span>
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content
-                      className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
-                      sideOffset={5}
-                    >
-                      <p className="text-xs text-[#6B5E4C]">
-                        Shop with confidence using our SSL-encrypted checkout. We support all major
-                        credit cards and secure payment methods. Your personal data is always
-                        protected.
-                      </p>
-                      <Tooltip.Arrow className="fill-white" />
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
-              </Tooltip.Provider>
-            </div>
-          </div>
-        </div>
-
-
-          {/* After cart button and shipping info */}
+            <AnimatePresence>
+              {isDescriptionExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="border-t"
+                >
+                  <div className="p-4 prose prose-neutral max-w-none text-sm" 
+                    dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} 
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+          {/* Journey steps - Moved here */}
           <div className="mt-6">
             <div className="relative flex flex-col rounded-lg border border-[#B5A48B]/20 bg-[#F5F3F0]/60 p-4">
               {/* Journey steps container */}
@@ -691,7 +681,7 @@ export function ProductDetails({ product }: { product: Product }) {
             </div>
           </div>
 
-          {/* Tags */}
+          {/* Tags - Moved here */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
@@ -741,7 +731,7 @@ export function ProductDetails({ product }: { product: Product }) {
           <div className="flex items-center gap-4">
             <button
               onClick={handleCloseStickyBar}
-              className="p-2 text-[#6B5E4C] transition-colors duration-200 hover:text-[#8C7E6A]"
+              className="p-2 text-[#6B5E4C] transition-colors duration-200 hover:matext-[#8C7E6A]"
               aria-label="Close sticky cart"
             >
               <X className="h-5 w-5" />
