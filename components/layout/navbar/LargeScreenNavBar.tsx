@@ -904,8 +904,8 @@ export const DesktopHeader = () => {
                       </div>
 
                       {/* Center - Special Products */}
-                      <div className="flex-1 min-w-[500px] max-w-[800px] border-l border-r border-neutral-100 px-8 mx-8 relative">
-                        <div className="w-[500px] mx-auto">
+                      <div className="flex-1 px-8 mx-8 border-l border-r border-neutral-100 min-w-0">
+                        <div className="max-w-[500px] w-full mx-auto">
                           <div className="space-y-6">
                             <div className="featured-container">
                               <h2 className="text-lg text-neutral-900 mb-1">Featured</h2>
@@ -914,20 +914,23 @@ export const DesktopHeader = () => {
                             <Link
                               href="/collections/new-arrivals"
                               onClick={() => setIsNavOpen(false)}
-                              className="block group relative overflow-hidden rounded-lg bg-neutral-50 aspect-[3/2]"
+                              className="block group relative overflow-hidden rounded-lg bg-neutral-50 aspect-[3/2] w-full"
                             >
-                              <Image
-                                src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/menu-image-2.jpg?v=1737895114"
-                                alt="New Arrivals"
-                                fill
-                                className="object-cover"
-                              />
-                              <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col justify-end bg-gradient-to-t from-black/70 to-transparent h-32">
-                                <span className="px-2 py-1 bg-[#9e896c] text-white text-xs rounded-full w-fit mb-2">
-                                  New In
-                                </span>
-                                <h3 className="text-base font-medium text-white">New Arrivals</h3>
-                                <p className="text-xs text-white/90 mt-1">Spring Collection 2024</p>
+                              <div className="relative w-full h-full">
+                                <Image
+                                  src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/menu-image-2.jpg?v=1737895114"
+                                  alt="New Arrivals"
+                                  fill
+                                  className="object-cover"
+                                  sizes="(max-width: 500px) 100vw, 500px"
+                                />
+                                <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col justify-end bg-gradient-to-t from-black/70 to-transparent h-32">
+                                  <span className="px-2 py-1 bg-[#9e896c] text-white text-xs rounded-full w-fit mb-2">
+                                    New In
+                                  </span>
+                                  <h3 className="text-base font-medium text-white">New Arrivals</h3>
+                                  <p className="text-xs text-white/90 mt-1">Spring Collection 2024</p>
+                                </div>
                               </div>
                             </Link>
 
@@ -935,20 +938,23 @@ export const DesktopHeader = () => {
                             <Link
                               href="/collections/sale"
                               onClick={() => setIsNavOpen(false)}
-                              className="block group relative overflow-hidden rounded-lg bg-neutral-50 aspect-[3/2]"
+                              className="block group relative overflow-hidden rounded-lg bg-neutral-50 aspect-[3/2] w-full"
                             >
-                              <Image
-                                src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/menu-image.jpg?v=1737895114"
-                                alt="Special Offers"
-                                fill
-                                className="object-cover"
-                              />
-                              <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col justify-end bg-gradient-to-t from-black/70 to-transparent h-32">
-                                <span className="px-2 py-1 bg-red-500 text-white text-xs rounded-full w-fit mb-2">
-                                  Sale
-                                </span>
-                                <h3 className="text-base font-medium text-white">Special Offers</h3>
-                                <p className="text-xs text-white/90 mt-1">Up to 50% off</p>
+                              <div className="relative w-full h-full">
+                                <Image
+                                  src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/menu-image.jpg?v=1737895114"
+                                  alt="Special Offers"
+                                  fill
+                                  className="object-cover"
+                                  sizes="(max-width: 500px) 100vw, 500px"
+                                />
+                                <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col justify-end bg-gradient-to-t from-black/70 to-transparent h-32">
+                                  <span className="px-2 py-1 bg-red-500 text-white text-xs rounded-full w-fit mb-2">
+                                    Sale
+                                  </span>
+                                  <h3 className="text-base font-medium text-white">Special Offers</h3>
+                                  <p className="text-xs text-white/90 mt-1">Up to 50% off</p>
+                                </div>
                               </div>
                             </Link>
                           </div>
