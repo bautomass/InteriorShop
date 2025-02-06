@@ -449,7 +449,7 @@ export const DesktopHeader = () => {
             }`}
         >
           <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between p-2 container mx-auto">
+            <div className="flex items-center justify-between py-2 container mx-auto">
               {/* Left side with Logo and Burger */}
               <div className="flex items-center gap-6">
                 <Link href="/" className="flex-shrink-0 ml-0">
@@ -866,7 +866,7 @@ export const DesktopHeader = () => {
                 </div>
 
                 <Link
-                  href="/tracking"
+                  href="/track-order"
                   className="text-sm hover:underline text-[#6B5E4C]"
                 >
                   Track Order

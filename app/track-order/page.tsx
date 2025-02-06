@@ -1,159 +1,134 @@
-import { Box, CheckCircle2, Package, Truck } from 'lucide-react';
-import type { Metadata } from 'next';
+// app/track-order/page.tsx
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Track Your Order | Simple Interior Ideas',
-  description: 'Track the status and location of your Simple Interior Ideas order with our real-time tracking system.',
-  openGraph: {
-    title: 'Track Your Order | Simple Interior Ideas',
-    description: 'Stay updated on your order status with our easy-to-use tracking system.',
-    type: 'website',
-    url: 'https://simpleinteriorideas.com/track-order',
-    siteName: 'Simple Interior Ideas',
-    images: [{
-      url: 'https://simpleinteriorideas.com/og-image.jpg',
-    }],
-  }
-};
+import { Globe } from '@/components/tracking/Globe';
+import { TrackingResults } from '@/components/tracking/TrackingResults';
+import { useState } from 'react';
+
+interface TrackingEvent {
+  status: string;
+  timestamp: string;
+  location?: string;
+  description?: string;
+}
+
+interface TrackingResult {
+  trackingNumber: string;
+  status: string;
+  events: TrackingEvent[];
+  estimatedDeliveryDate?: string;
+  carrier?: string;
+}
 
 export default function TrackOrderPage() {
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [trackingResult, setTrackingResult] = useState<TrackingResult | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    if (!trackingNumber.trim()) {
+      setError('Please enter a tracking number');
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      console.log('Submitting tracking number:', trackingNumber);
+      
+      const response = await fetch('/api/tracking', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ trackingNumber: trackingNumber.trim() }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('Error response:', data);
+        throw new Error(data.error || 'Failed to fetch tracking information');
+      }
+
+      console.log('Tracking response:', data);
+      setTrackingResult(data);
+    } catch (err) {
+      console.error('Tracking error:', err);
+      setError(err instanceof Error ? err.message : 'Unable to fetch tracking information. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <>  
-      <main className="min-h-screen bg-[#FAF9F6]">
-        <div className="w-full bg-[#EDE8E3] py-24">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-4xl font-bold text-[#6B5E4C] text-center">
-              Track Your Order
-            </h1>
-            <p className="mt-4 text-center text-[#8C7E6A]">
-              Enter your order number to see real-time status and delivery updates
-            </p>
-          </div>
+    <main className="min-h-screen bg-[#FAF9F6]">
+      <div className="w-full bg-[#EDE8E3] py-24">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-4xl font-bold text-[#6B5E4C] text-center">
+            Track Your Order
+          </h1>
+          <p className="mt-4 text-center text-[#8C7E6A]">
+            Enter your tracking number to see real-time status and delivery updates
+          </p>
         </div>
+      </div>
 
-        <div className="max-w-[600px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          {/* Tracking Form */}
-          <form className="bg-white p-8 rounded-lg shadow-sm mb-12">
-            <div className="mb-6">
-              <label htmlFor="orderNumber" 
-                     className="block text-[#6B5E4C] font-medium mb-2">
-                Order Number
-              </label>
-              <input
-                type="text"
-                id="orderNumber"
-                placeholder="Enter your order number (e.g., SII-12345)"
-                className="w-full px-4 py-3 rounded-md border border-[#B5A48B]/20 
-                         focus:outline-none focus:border-[#6B5E4C] 
-                         bg-white/50 text-[#6B5E4C] placeholder-[#8C7E6A]/50"
-              />
-            </div>
-            <div className="mb-6">
-              <label htmlFor="email" 
-                     className="block text-[#6B5E4C] font-medium mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                placeholder="Enter the email used for order"
-                className="w-full px-4 py-3 rounded-md border border-[#B5A48B]/20 
-                         focus:outline-none focus:border-[#6B5E4C] 
-                         bg-white/50 text-[#6B5E4C] placeholder-[#8C7E6A]/50"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-[#6B5E4C] text-white py-3 rounded-md 
-                       hover:bg-[#5A4D3B] transition-colors duration-200"
-            >
-              Track Order
-            </button>
-          </form>
-
-          {/* Example Tracking Status (to be replaced with API data) */}
-          <div className="bg-white p-8 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-[#6B5E4C]">
-                Order Status
-              </h2>
-              <span className="text-sm text-[#8C7E6A]">
-                Order #: SII-12345
-              </span>
-            </div>
-
-            {/* Status Timeline */}
-            <div className="relative">
-              <div className="absolute left-[17px] top-0 h-full w-[2px] bg-[#B5A48B]/20" />
-              
-              {/* Completed Steps */}
-              <div className="relative flex items-start mb-8">
-                <div className="absolute left-0 w-9 h-9 rounded-full bg-[#6B5E4C] flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-white" />
-                </div>
-                <div className="ml-16">
-                  <h3 className="text-[#6B5E4C] font-medium">Order Confirmed</h3>
-                  <p className="text-sm text-[#8C7E6A]">March 15, 2024 - 10:30 AM</p>
-                  <p className="text-sm text-[#8C7E6A] mt-1">
-                    Your order has been received and confirmed
-                  </p>
-                </div>
-              </div>
-
-              <div className="relative flex items-start mb-8">
-                <div className="absolute left-0 w-9 h-9 rounded-full bg-[#6B5E4C] flex items-center justify-center">
-                  <Box className="w-5 h-5 text-white" />
-                </div>
-                <div className="ml-16">
-                  <h3 className="text-[#6B5E4C] font-medium">Processing</h3>
-                  <p className="text-sm text-[#8C7E6A]">March 16, 2024 - 2:45 PM</p>
-                  <p className="text-sm text-[#8C7E6A] mt-1">
-                    Your order is being prepared for shipping
-                  </p>
-                </div>
-              </div>
-
-              {/* Current Step */}
-              <div className="relative flex items-start mb-8">
-                <div className="absolute left-0 w-9 h-9 rounded-full bg-[#B5A48B] flex items-center justify-center">
-                  <Package className="w-5 h-5 text-white" />
-                </div>
-                <div className="ml-16">
-                  <h3 className="text-[#6B5E4C] font-medium">Shipping</h3>
-                  <p className="text-sm text-[#8C7E6A]">Expected: March 18, 2024</p>
-                  <p className="text-sm text-[#8C7E6A] mt-1">
-                    Your order is on its way
-                  </p>
-                </div>
-              </div>
-
-              {/* Pending Steps */}
-              <div className="relative flex items-start">
-                <div className="absolute left-0 w-9 h-9 rounded-full bg-[#EDE8E3] flex items-center justify-center">
-                  <Truck className="w-5 h-5 text-[#B5A48B]" />
-                </div>
-                <div className="ml-16">
-                  <h3 className="text-[#8C7E6A] font-medium">Delivery</h3>
-                  <p className="text-sm text-[#8C7E6A]">Expected: March 20, 2024</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Delivery Details */}
-            <div className="mt-12 pt-8 border-t border-[#B5A48B]/20">
-              <h3 className="text-[#6B5E4C] font-medium mb-4">
-                Delivery Information
-              </h3>
-              <div className="space-y-2 text-sm text-[#8C7E6A]">
-                <p>Carrier: Premium Logistics</p>
-                <p>Tracking Number: PL123456789</p>
-                <p>Estimated Delivery: March 20, 2024</p>
-                <p>Shipping Address: 123 Example St, City, Country</p>
-              </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid lg:grid-cols-2 gap-12">
+          {/* Left Column - Animation */}
+          <div className="hidden lg:block relative min-h-[400px]">
+            <div className="sticky top-8">
+              <Globe isLoading={loading} />
             </div>
           </div>
+
+          {/* Right Column - Form and Results */}
+          <div>
+            {/* Tracking Form */}
+            <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-sm">
+              <div className="mb-6">
+                <label htmlFor="trackingNumber" 
+                       className="block text-[#6B5E4C] font-medium mb-2">
+                  Tracking Number
+                </label>
+                <input
+                  type="text"
+                  id="trackingNumber"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  placeholder="Enter your tracking number"
+                  className="w-full px-4 py-4 rounded-md border border-[#B5A48B]/20 
+                           focus:outline-none focus:border-[#6B5E4C] 
+                           bg-white/50 text-[#6B5E4C] placeholder-[#8C7E6A]/50
+                           text-lg"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#6B5E4C] text-white py-4 rounded-md 
+                         hover:bg-[#5A4D3B] transition-colors duration-200
+                         disabled:opacity-50 disabled:cursor-not-allowed
+                         text-lg font-medium"
+              >
+                {loading ? 'Tracking...' : 'Track Order'}
+              </button>
+              {error && (
+                <p className="mt-4 text-red-500 text-sm text-center">{error}</p>
+              )}
+            </form>
+
+            {/* Tracking Results */}
+            {trackingResult && <TrackingResults data={trackingResult} />}
+          </div>
         </div>
-      </main>
-    </>
+      </div>
+    </main>
   );
-} 
+}
