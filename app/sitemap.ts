@@ -5,6 +5,8 @@ import { MetadataRoute } from 'next';
 type Route = {
   url: string;
   lastModified: string;
+  changeFrequency?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
+  priority?: number;
 };
 
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
@@ -16,29 +18,46 @@ export const dynamic = 'force-dynamic';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   validateEnvironmentVariables();
 
-  const routesMap = [''].map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date().toISOString()
-  }));
+  // Static routes with priorities
+  const routesMap: Route[] = [
+    {
+      url: `${baseUrl}`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'daily' as const,
+      priority: 1
+    },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8
+    }
+  ];
 
   const collectionsPromise = getCollections().then((collections) =>
     collections.map((collection) => ({
       url: `${baseUrl}${collection.path}`,
-      lastModified: collection.updatedAt
+      lastModified: collection.updatedAt,
+      changeFrequency: 'daily' as const,
+      priority: 0.9
     }))
   );
 
   const productsPromise = getProducts({}).then((products) =>
     products.map((product) => ({
       url: `${baseUrl}/product/${product.handle}`,
-      lastModified: product.updatedAt
+      lastModified: product.updatedAt,
+      changeFrequency: 'daily' as const,
+      priority: 0.8
     }))
   );
 
   const pagesPromise = getPages().then((pages) =>
     pages.map((page) => ({
       url: `${baseUrl}/${page.handle}`,
-      lastModified: page.updatedAt
+      lastModified: page.updatedAt,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7
     }))
   );
 
