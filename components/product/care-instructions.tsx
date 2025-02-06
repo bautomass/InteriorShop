@@ -2,7 +2,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useMemo, useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 type InstructionType = 'daily' | 'maintenance' | 'warnings';
 
@@ -553,74 +553,58 @@ export function CareInstructions() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-12">
-      {/* Category Selection */}
-      <motion.div 
-        className="flex flex-wrap gap-2"
-        variants={containerAnimation}
-        initial="hidden"
-        animate="show"
-      >
-        {sortedCategories.map((category) => (
-          <motion.button
-            key={category.id}
-            onClick={() => handleCategorySelect(category.id)}
-            className={`px-4 py-2 rounded text-sm transition-all
-                      ${selectedCategory === normalizeId(category.id)
-                        ? 'bg-[#6B5E4C] text-white shadow-sm' 
-                        : 'bg-[#F5F3F0] text-[#6B5E4C] hover:bg-[#E8E4DE]'}`}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            variants={itemAnimation}
-          >
-            {category.title}
-          </motion.button>
-        ))}
-      </motion.div>
-
-      {/* Instructions Display */}
-      <motion.div
-        layout
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        className="space-y-6"
-      >
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {sections.map((section, idx) => (
-            <motion.div
-              key={section.key}
-              layout
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: idx * 0.1 }}
-              className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all"
+    <div className="max-w-7xl mx-auto px-2 py-4 space-y-8">
+      {/* Categories - Horizontal scroll on mobile */}
+      <motion.div className="relative">
+        <div className="flex overflow-x-auto pb-2 gap-2 no-scrollbar min-[865px]:flex-wrap">
+          {sortedCategories.map((category) => (
+            <motion.button
+              key={category.id}
+              onClick={() => handleCategorySelect(category.id)}
+              className={`flex-shrink-0 whitespace-nowrap px-2 py-2 rounded text-sm transition-all
+                ${selectedCategory === normalizeId(category.id)
+                  ? 'bg-[#6B5E4C] text-white shadow-sm' 
+                  : 'bg-[#F5F3F0] text-[#6B5E4C] hover:bg-[#E8E4DE]'}`}
             >
-              <h4 className="text-[#6B5E4C] font-medium mb-4 flex items-center gap-2">
-                {section.title}
-              </h4>
-              <ul className="space-y-3">
-                {selectedCategoryData.instructions[section.key].map((instruction, index) => (
-                  <motion.li
-                    key={index}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 + (index * 0.1) }}
-                    className="text-sm text-[#8C7E6A] flex items-start gap-3 group"
-                  >
-                    <span className="text-[#4A8B4A] mt-1 opacity-75 group-hover:opacity-100 transition-opacity">
-                      ●
-                    </span>
-                    <span className="group-hover:text-[#6B5E4C] transition-colors leading-relaxed">
-                      {instruction}
-                    </span>
-                  </motion.li>
-                ))}
-              </ul>
-            </motion.div>
+              {category.title}
+            </motion.button>
           ))}
         </div>
+        <div className="absolute right-0 top-0 bottom-4 w-8 bg-gradient-to-l from-white pointer-events-none min-[865px]:hidden" />
       </motion.div>
+
+      {/* Instructions - Stacked on mobile, grid on desktop */}
+      <div className="grid grid-cols-1 min-[865px]:grid-cols-2 lg:grid-cols-3 gap-6">
+        {sections.map((section, idx) => (
+          <motion.div
+            key={section.key}
+            layout
+            className="bg-white rounded-xl p-6"
+          >
+            <h4 className="text-[#6B5E4C] font-medium mb-4 flex items-center gap-2">
+              {section.title}
+            </h4>
+            <ul className="space-y-3">
+              {selectedCategoryData.instructions[section.key].map((instruction, index) => (
+                <motion.li
+                  key={index}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 + (index * 0.1) }}
+                  className="text-sm text-[#8C7E6A] flex items-start gap-3 group"
+                >
+                  <span className="text-[#4A8B4A] mt-1 opacity-75 group-hover:opacity-100 transition-opacity">
+                    ●
+                  </span>
+                  <span className="group-hover:text-[#6B5E4C] transition-colors leading-relaxed">
+                    {instruction}
+                  </span>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }
