@@ -7,6 +7,7 @@ import {
   Award,
   Check,
   CheckCircle,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -676,6 +677,7 @@ export function ProductTabs() {
     canScrollLeft: false,
     canScrollRight: true
   });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const checkScrollability = useCallback(() => {
     const element = reviewsRef.current;
@@ -776,27 +778,78 @@ export function ProductTabs() {
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
       transition={{ duration: 0.5 }}
-      className="relative z-10 mx-auto mt-12 w-full max-w-[1400px] px-4 sm:px-6 lg:px-8"
+      className="relative z-10 mx-auto mt-12 w-full max-w-[1400px] px-0 min-[865px]:px-0 lg:px-8"
     >
-      {/* Tabs Navigation */}
-      <div className="grid grid-cols-2 gap-2 sm:hidden md:flex md:flex-wrap md:justify-center md:gap-4">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <TabButton
-              key={tab.id}
-              tab={tab}
-              isActive={isActive}
-              onClick={() => setActiveTab(tab.id)}
-            />
-          );
-        })}
+      {/* Desktop */}
+      <div className="hidden min-[865px]:flex min-[865px]:flex-wrap min-[865px]:justify-center min-[865px]:gap-4">
+        {tabs.map((tab) => (
+          <TabButton
+            key={tab.id}
+            tab={tab}
+            isActive={activeTab === tab.id}
+            onClick={() => {
+              setActiveTab(tab.id);
+              setIsMenuOpen(false);
+            }}
+          />
+        ))}
       </div>
 
-      {/* Tab Content */}
-      <div className="-mt-[1px] rounded-lg rounded-tl-none border border-[#B5A48B]/20 bg-white p-6 sm:p-8">
-        {renderTabContent(activeTab)}
+      {/* Mobile */}
+      <div className="min-[865px]:hidden">
+        <button
+          onClick={() => {
+            setIsMenuOpen(!isMenuOpen);
+            if (isMenuOpen) setActiveTab('shipping');
+          }}
+          className="w-full flex items-center justify-between p-4 bg-white rounded-t-lg border border-[#B5A48B]/20"
+        >
+          <div className="flex items-center gap-3">
+            {tabs.find(t => t.id === activeTab)?.icon && (
+              <React.Fragment>
+                {React.createElement(tabs.find(t => t.id === activeTab)!.icon, { className: "h-5 w-5 text-[#6B5E4C]" })}
+              </React.Fragment>
+            )}
+            <span className="font-medium text-[#6B5E4C]">
+              {tabs.find(t => t.id === activeTab)?.label}
+            </span>
+          </div>
+          <ChevronDown 
+            className={`h-5 w-5 text-[#6B5E4C] transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} 
+          />
+        </button>
+        
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mt-2 mb-4 flex flex-col overflow-hidden bg-white rounded-lg border border-[#B5A48B]/20 shadow-lg"
+            >
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setIsMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-3 p-4 transition-colors
+                    ${activeTab === tab.id 
+                      ? 'bg-[#6B5E4C]/10 text-[#6B5E4C]' 
+                      : 'hover:bg-[#6B5E4C]/5 text-[#8C7E6A]'}`}
+                >
+                  <tab.icon className="h-5 w-5" />
+                  <span className="font-medium">{tab.label}</span>
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="-mt-[1px] rounded-none border border-[#B5A48B]/20 bg-white p-6 min-[865px]:p-8">
+        {activeTab && renderTabContent(activeTab)}
       </div>
     </motion.div>
   );
