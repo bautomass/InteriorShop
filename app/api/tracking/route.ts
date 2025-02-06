@@ -1,28 +1,48 @@
 // app/api/tracking/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-interface TrackingEvent {
-  status: string;
-  timestamp: string;
-  location?: string;
-  description?: string;
-}
+const CARRIER_CODES = {
+  'nl-post': {
+    name: 'PostNL',
+    country: 'Netherlands',
+    estimatedDays: { min: 3, max: 7 }
+  },
+  'cn-post': {
+    name: 'China Post',
+    country: 'China',
+    estimatedDays: { min: 14, max: 30 }
+  },
+  'usps': {
+    name: 'USPS',
+    country: 'United States',
+    estimatedDays: { min: 2, max: 5 }
+  }
+};
 
-interface TrackingResponse {
-  trackingNumber: string;
-  status: string;
-  statusDetails: string;
-  events: TrackingEvent[];
-  estimatedDeliveryDate?: string;
-  carrier?: string;
-  originCountry?: string;
-  destinationCountry?: string;
-}
+const calculateEstimatedDelivery = (
+  timestamp: string,
+  courierCode: string
+) => {
+  const carrierInfo = CARRIER_CODES[courierCode as keyof typeof CARRIER_CODES];
+  if (!carrierInfo) return null;
+
+  const startDate = new Date(timestamp);
+  const minDate = new Date(startDate);
+  const maxDate = new Date(startDate);
+
+  minDate.setDate(startDate.getDate() + carrierInfo.estimatedDays.min);
+  maxDate.setDate(startDate.getDate() + carrierInfo.estimatedDays.max);
+
+  return {
+    min: minDate.toISOString(),
+    max: maxDate.toISOString()
+  };
+};
 
 export async function POST(request: NextRequest) {
   try {
     const { trackingNumber } = await request.json();
-    console.log('Received tracking number:', trackingNumber);
+    console.log('Processing tracking request for:', trackingNumber);
 
     if (!trackingNumber) {
       return NextResponse.json(
@@ -33,58 +53,39 @@ export async function POST(request: NextRequest) {
 
     const apiKey = process.env.SHIP24_TRACKING_ACCESS_TOKEN;
     if (!apiKey) {
-      console.error('API key is missing from environment variables');
+      console.error('API key missing from environment variables');
       return NextResponse.json(
-        { error: 'API configuration is missing' },
+        { error: 'Service configuration error' },
         { status: 500 }
       );
     }
 
-    // Create tracker
-    console.log('Creating tracker...');
-    const createTrackerResponse = await fetch('https://api.ship24.com/public/v1/trackers', {
+    // Step 1: Create tracking request
+    console.log('Initializing tracking request...');
+    const createResponse = await fetch('https://api.ship24.com/public/v1/trackers', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
       },
-      body: JSON.stringify({
-        trackingNumber: trackingNumber
-      })
+      body: JSON.stringify({ trackingNumber })
     });
 
-    const createTrackerData = await createTrackerResponse.json();
-    console.log('Create tracker response:', createTrackerData);
-
-    if (!createTrackerResponse.ok) {
-      console.error('Failed to create tracker:', createTrackerData);
+    const createData = await createResponse.json();
+    
+    if (!createResponse.ok) {
+      console.error('Tracking creation failed:', createData);
       return NextResponse.json(
-        { 
-          error: 'Failed to create tracker',
-          details: createTrackerData.message || 'Unknown error'
-        },
-        { status: createTrackerResponse.status }
+        { error: createData.message || 'Failed to initialize tracking' },
+        { status: createResponse.status }
       );
     }
 
-    const trackerId = createTrackerData.data?.tracker?.trackerId;
-    console.log('Tracker ID:', trackerId);
-
-    if (!trackerId) {
-      console.error('No tracker ID in response:', createTrackerData);
-      return NextResponse.json(
-        { error: 'Invalid tracker response' },
-        { status: 500 }
-      );
-    }
-
-    // Wait a moment for initial tracking data
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Get tracking results
-    console.log('Fetching tracking results...');
-    const trackingResponse = await fetch(`https://api.ship24.com/public/v1/trackers/${trackerId}/results`, {
+    // Step 2: Fetch tracking results
+    console.log('Retrieving tracking information...');
+    const trackingUrl = `https://api.ship24.com/public/v1/trackers/search/${encodeURIComponent(trackingNumber)}/results`;
+    
+    const trackingResponse = await fetch(trackingUrl, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -93,57 +94,90 @@ export async function POST(request: NextRequest) {
     });
 
     const trackingData = await trackingResponse.json();
-    console.log('Tracking results:', JSON.stringify(trackingData, null, 2));
 
     if (!trackingResponse.ok) {
-      console.error('Failed to fetch tracking details:', trackingData);
+      console.error('Tracking retrieval failed:', trackingData);
       return NextResponse.json(
-        { error: trackingData.message || 'Failed to fetch tracking details' },
+        { error: 'Unable to retrieve tracking information' },
         { status: trackingResponse.status }
       );
     }
 
     const tracking = trackingData.data?.trackings?.[0];
+    
     if (!tracking) {
       return NextResponse.json(
-        { error: 'No tracking information found' },
+        { error: 'No tracking information available' },
         { status: 404 }
       );
     }
 
-    // Get a more descriptive status
-    let statusDetails = 'Tracking number registered';
-    if (tracking.shipment?.statusMilestone === 'pending') {
-      statusDetails = 'Tracking information pending - please check back in a few minutes';
-    } else if (tracking.events && tracking.events.length > 0) {
-      statusDetails = tracking.events[0].status;
-    }
+    // Process event data
+    const events = tracking.events || [];
+    const latestEvent = events[0];
+    const firstEvent = events[events.length - 1];
+    const courierCode = latestEvent?.courierCode;
+
+    // Calculate estimated delivery if not provided
+    const estimatedDelivery = tracking.shipment?.delivery?.estimatedDeliveryDate ||
+      (firstEvent && courierCode ? 
+        calculateEstimatedDelivery(firstEvent.occurrenceDatetime, courierCode) : 
+        null);
 
     // Format the response
-    const formattedResponse: TrackingResponse = {
-      trackingNumber: tracking.tracker.trackingNumber,
-      status: tracking.shipment?.statusMilestone || 'unknown',
-      statusDetails: statusDetails,
-      events: (tracking.events || []).map((event: any) => ({
+    const formattedResponse = {
+      trackingNumber,
+      status: tracking.shipment?.statusCode || 'pending',
+      statusDetails: latestEvent?.status || 'Tracking initiated',
+      currentMilestone: tracking.shipment?.statusMilestone || 'pending',
+      events: events.map((event: { eventId: string; status: string; occurrenceDatetime: string; location: string; statusDetails?: string; statusMilestone?: string; sourceCode?: string; courierCode: string }) => ({
+        eventId: event.eventId,
         status: event.status,
         timestamp: event.occurrenceDatetime,
         location: event.location,
-        description: event.status
+        description: event.statusDetails || event.status,
+        courier: {
+          name: CARRIER_CODES[event.courierCode as keyof typeof CARRIER_CODES]?.name || event.courierCode,
+          code: event.courierCode
+        },
+        milestone: event.statusMilestone || 'pending',
+        sourceCode: event.sourceCode
       })),
-      estimatedDeliveryDate: tracking.shipment?.delivery?.estimatedDeliveryDate,
-      carrier: tracking.shipment?.courier?.name,
-      originCountry: tracking.shipment?.originCountryCode,
-      destinationCountry: tracking.shipment?.destinationCountryCode
+      estimatedDelivery,
+      carrier: {
+        name: CARRIER_CODES[courierCode as keyof typeof CARRIER_CODES]?.name || courierCode,
+        code: courierCode
+      },
+      origin: {
+        country: tracking.shipment?.originCountryCode,
+        postcode: tracking.shipment?.recipient?.postCode,
+        city: tracking.shipment?.recipient?.city
+      },
+      destination: {
+        country: tracking.shipment?.destinationCountryCode,
+        postcode: tracking.shipment?.recipient?.postCode,
+        city: tracking.shipment?.recipient?.city
+      },
+      timestamps: tracking.statistics?.timestamps || {
+        infoReceived: firstEvent?.occurrenceDatetime,
+        inTransit: events.find((e: { statusMilestone: string }) => e.statusMilestone === 'in_transit')?.occurrenceDatetime,
+        outForDelivery: events.find((e: { statusMilestone: string }) => e.statusMilestone === 'out_for_delivery')?.occurrenceDatetime,
+        delivered: events.find((e: { statusMilestone: string }) => e.statusMilestone === 'delivered')?.occurrenceDatetime
+      },
+      transitTime: firstEvent ? {
+        started: firstEvent.occurrenceDatetime,
+        elapsed: Math.floor((Date.now() - new Date(firstEvent.occurrenceDatetime).getTime()) / (1000 * 60 * 60 * 24))
+      } : null
     };
 
-    console.log('Formatted response:', JSON.stringify(formattedResponse, null, 2));
+    console.log('Tracking information processed successfully');
     return NextResponse.json(formattedResponse);
 
   } catch (error) {
-    console.error('Error processing tracking request:', error);
+    console.error('Tracking process failed:', error);
     return NextResponse.json(
       { 
-        error: 'Failed to process tracking request',
+        error: 'Unable to process tracking request',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
