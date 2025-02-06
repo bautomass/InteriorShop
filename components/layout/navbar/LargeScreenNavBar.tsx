@@ -680,11 +680,20 @@ export const DesktopHeader = () => {
                   <AnimatePresence>
                     {isCartHovered && (
                       <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="absolute right-0 top-full mt-2 w-[400px] bg-white rounded-lg shadow-xl z-50"
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute -right-[200px] top-full mt-1 w-[400px] bg-white rounded-lg shadow-xl z-50"
                       >
+                        {/* Triangle Arrow */}
+                        <div 
+                          className="absolute -top-2 right-[215px]
+                                     w-0 h-0 border-l-[8px] border-l-transparent 
+                                     border-r-[8px] border-r-transparent 
+                                     border-b-[8px] border-b-white
+                                     z-10"
+                        />
                         {cart?.lines && (cart.lines as any[]).length > 0 ? (
                           <div className="p-4">
                             <div className="flex justify-between items-center mb-4">
