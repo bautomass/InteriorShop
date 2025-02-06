@@ -77,62 +77,6 @@ const promos: PromoItem[] = [
   }
 ];
 
-// Loading Component
-const LoadingChair = () => (
-  <motion.div 
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    className="flex flex-col items-center justify-center py-12"
-  >
-    <motion.svg
-      width="120"
-      height="120"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="text-[#9e896c]"
-      animate={{
-        rotateY: [0, 360],
-        scale: [1, 1.1, 1],
-      }}
-      transition={{
-        duration: 3,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }}
-    >
-      <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16M3 21h18M7 10h10M7 14h10" />
-      <path d="M5 21V8a2 2 0 012-2h10a2 2 0 012 2v13" />
-    </motion.svg>
-    <motion.p
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="mt-4 text-sm text-[#9e896c] font-medium"
-    >
-      Loading Collections...
-    </motion.p>
-    <motion.div
-      className="mt-3 h-0.5 w-16 bg-[#9e896c]/20 rounded-full overflow-hidden"
-    >
-      <motion.div
-        className="h-full w-full bg-[#9e896c]"
-        animate={{
-          x: ["-100%", "100%"],
-        }}
-        transition={{
-          repeat: Infinity,
-          duration: 1.5,
-          ease: "easeInOut",
-        }}
-      />
-    </motion.div>
-  </motion.div>
-);
-
 // Update BurgerIcon component
 const BurgerIcon = ({ isOpen }: { isOpen: boolean }) => (
   <div className="relative w-7 h-6">
@@ -982,7 +926,7 @@ export const DesktopHeader = () => {
                               <SidebarLink href="/faqs">FAQs</SidebarLink>
                               <SidebarLink href="/shipping">Shipping Info</SidebarLink>
                               <SidebarLink href="/returns">Returns & Exchanges</SidebarLink>
-                              <SidebarLink href="/tracking">Track Order</SidebarLink>
+                              <SidebarLink href="/track-order">Track Order</SidebarLink>
                             </div>
                           </div>
 
