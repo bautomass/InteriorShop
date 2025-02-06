@@ -66,11 +66,11 @@ export function Footer() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm text-[#8C7E6A]">
                 <MapPin className="w-4 h-4 text-[#B5A48B]" />
-                <span>Brivibas Street 432, Riga, LV-1040</span>
+                <span>Brivibas Street 432, Riga, LV-1024</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-[#8C7E6A]">
                 <Mail className="w-4 h-4 text-[#B5A48B]" />
-                <span>info@simpleinteriors.com</span>
+                <span>info@simpleinteriorideas.com</span>
               </div>
             </div>
           </motion.div>

@@ -1,11 +1,12 @@
-// /components/blog/blog-grid.tsx
+'use client';
+
 import { Article } from '@/lib/shopify/types';
 import { formatDate } from '@/lib/utils';
-import { Calendar, Clock, Tag, User } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 
-// Extend the Article type to include tags
 interface ExtendedArticle extends Article {
   tags?: string[];
 }
@@ -15,139 +16,110 @@ interface BlogGridProps {
 }
 
 export function BlogGrid({ articles }: BlogGridProps) {
-  // Get featured article (first one)
-  const featuredArticle = articles[0];
-  const regularArticles = articles.slice(1);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <div className="space-y-8">
-      {/* Featured Article - Now with reduced size and new design */}
-      {featuredArticle && (
-        <div className="group relative overflow-hidden rounded-3xl bg-white shadow-xl transition-all hover:shadow-2xl dark:bg-primary-800">
-          <div className="grid max-w-5xl gap-6 md:grid-cols-5">
-            <div className="relative aspect-[16/9] overflow-hidden md:col-span-2">
-              {featuredArticle.image ? (
-                <Image
-                  src={featuredArticle.image.url}
-                  alt={featuredArticle.image.altText || featuredArticle.title}
-                  width={600}
-                  height={400}
-                  className="h-full w-full object-cover transition-all duration-500 group-hover:rotate-1 group-hover:scale-105"
-                  priority
-                />
-              ) : (
-                <div className="h-full w-full bg-primary-100 dark:bg-primary-700" />
-              )}
-              <div className="absolute left-4 top-4 rotate-2 transition-transform group-hover:-rotate-2">
-                <span className="rounded-full bg-accent-500 px-3 py-1 text-sm font-medium text-white shadow-lg">
-                  Featured
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-col justify-center p-6 md:col-span-3">
-              <Link
-                href={`/blog/${featuredArticle.handle}`}
-                className="group-hover:text-accent-500"
-              >
-                <h2 className="mb-3 text-2xl font-bold tracking-tight text-primary-900 transition-all group-hover:text-accent-500 dark:text-primary-50">
-                  {featuredArticle.title}
-                </h2>
-              </Link>
-              {featuredArticle.excerpt && (
-                <p className="mb-4 line-clamp-2 text-base text-primary-600 dark:text-primary-300">
-                  {featuredArticle.excerpt}
-                </p>
-              )}
-              <div className="mt-auto flex flex-wrap items-center gap-4">
-                <div className="flex flex-wrap items-center gap-4 text-sm text-primary-500 dark:text-primary-400">
-                  {featuredArticle.author && (
-                    <div className="flex items-center gap-1">
-                      <User size={16} />
-                      <span>{featuredArticle.author.name}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1">
-                    <Calendar size={16} />
-                    <time dateTime={featuredArticle.publishedAt}>
-                      {formatDate(featuredArticle.publishedAt)}
-                    </time>
-                  </div>
-                  {featuredArticle.tags && featuredArticle.tags.length > 0 && (
-                    <div className="flex items-center gap-1">
-                      <Tag size={16} />
-                      <span>{featuredArticle.tags[0]}</span>
-                    </div>
-                  )}
-                </div>
-                <Link
-                  href={`/blog/${featuredArticle.handle}`}
-                  className="inline-flex items-center text-sm font-medium text-accent-500 transition-colors hover:text-accent-600"
-                >
-                  Read More
-                  <span className="ml-2">→</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
+      {articles.map((article, index) => {
+        const isHovered = hoveredIndex === index;
+        const isAdjacent = hoveredIndex !== null && 
+          Math.abs((hoveredIndex % 4) - (index % 4)) <= 1 && 
+          Math.abs(Math.floor(hoveredIndex / 4) - Math.floor(index / 4)) <= 1;
 
-      {/* Regular Articles Grid - Now with enhanced animations and layout */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {regularArticles.map((article, index) => (
+        return (
           <Link
             key={article.handle}
             href={`/blog/${article.handle}`}
-            className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition-all hover:-translate-y-1 hover:shadow-xl dark:bg-primary-800"
-            style={{
-              animationDelay: `${index * 100}ms`
-            }}
+            className="group relative aspect-square cursor-pointer overflow-hidden"
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
           >
-            <div className="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-accent-500/10 to-primary-500/10">
+            {/* Image Container with Parallax */}
+            <div className="relative h-full w-full transform-gpu transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.02]">
               {article.image ? (
                 <Image
                   src={article.image.url}
                   alt={article.image.altText || article.title}
                   width={600}
-                  height={400}
-                  className="h-full w-full object-cover transition-all duration-500 group-hover:rotate-1 group-hover:scale-105"
+                  height={600}
+                  className={`h-full w-full object-cover transition-all duration-700 ease-out
+                    ${isHovered ? 'scale-105 blur-[2px]' : 'scale-100'}
+                    ${isAdjacent ? 'scale-[0.98] brightness-[0.7]' : ''}
+                  `}
+                  priority={index < 4}
                 />
               ) : (
-                <div className="h-full w-full bg-primary-100 dark:bg-primary-700" />
+                <div className="h-full w-full bg-primary-100 dark:bg-primary-800" />
               )}
-              {article.tags && article.tags.length > 0 && (
-                <div className="absolute left-4 top-4 rotate-1 transition-transform group-hover:-rotate-2">
-                  <span className="rounded-full bg-primary-900/70 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm dark:bg-primary-700/70">
+
+              {/* Gradient Overlay with Enhanced Animation */}
+              <div 
+                className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent transition-all duration-700 ease-out
+                  ${isHovered ? 'opacity-90' : 'opacity-0'}
+                `}
+              />
+
+              {/* Premium Border Effect */}
+              <div 
+                className={`absolute inset-0 border-2 transition-all duration-700 ease-out
+                  ${isHovered ? 'border-white/20 scale-95' : 'border-transparent scale-100'}
+                `}
+              />
+
+              {/* Content with Staggered Animation */}
+              <div 
+                className={`absolute inset-x-0 bottom-0 p-6 transition-all duration-500 ease-out
+                  ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}
+                `}
+              >
+                {/* Tag with Glow Effect */}
+                {article.tags && article.tags.length > 0 && (
+                  <span 
+                    className="mb-3 inline-block text-sm font-medium text-white/90 transition-colors duration-300"
+                    style={{
+                      textShadow: isHovered ? '0 0 20px rgba(255,255,255,0.3)' : 'none'
+                    }}
+                  >
                     {article.tags[0]}
                   </span>
-                </div>
-              )}
-            </div>
-            <div className="flex flex-1 flex-col p-6">
-              <h2 className="mb-2 text-xl font-bold text-primary-900 transition-colors group-hover:text-accent-500 dark:text-primary-50">
-                {article.title}
-              </h2>
-              {article.excerpt && (
-                <p className="mb-4 line-clamp-2 flex-1 text-sm text-primary-600 dark:text-primary-300">
-                  {article.excerpt}
-                </p>
-              )}
-              <div className="mt-auto flex flex-wrap items-center gap-4 text-xs text-primary-500 dark:text-primary-400">
-                {article.author && (
-                  <div className="flex items-center gap-1">
-                    <User size={14} />
-                    <span>{article.author.name}</span>
-                  </div>
                 )}
-                <div className="flex items-center gap-1">
-                  <Clock size={14} />
-                  <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
+                
+                {/* Title with Staggered Reveal */}
+                <h2 className="mb-2 text-lg font-bold text-white transition-transform delay-75 duration-500">
+                  {article.title}
+                </h2>
+
+                {/* Excerpt with Fade Effect */}
+                {article.excerpt && (
+                  <p className="mb-4 line-clamp-2 text-sm text-white/80 transition-opacity delay-100 duration-500">
+                    {article.excerpt}
+                  </p>
+                )}
+
+                {/* Footer with Slide-up Animation */}
+                <div className="flex items-center justify-between border-t border-white/10 pt-4">
+                  <time 
+                    dateTime={article.publishedAt}
+                    className="text-xs text-white/70"
+                  >
+                    {formatDate(article.publishedAt)}
+                  </time>
+                  <div className="group/arrow relative overflow-hidden rounded-full border border-white/20 p-2">
+                    <ArrowUpRight 
+                      size={20} 
+                      className="text-white transition-all duration-500 group-hover:-translate-y-[150%]" 
+                    />
+                    <ArrowUpRight 
+                      size={20} 
+                      className="absolute left-2 top-2 text-white transition-all duration-500 translate-y-[150%] group-hover:translate-y-0" 
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </Link>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }

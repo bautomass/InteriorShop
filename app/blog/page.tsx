@@ -130,7 +130,6 @@ export default async function BlogPage({ searchParams }: PageProps) {
       <div className="relative mx-auto max-w-[90rem] px-4 pb-12 pt-24 sm:px-6 sm:pt-28 lg:px-8 lg:pt-32">
         <Suspense>
           <BlogHero />
-          <h2 className="mt-12">Stories & Insights</h2>
         </Suspense>
 
         <Suspense>
