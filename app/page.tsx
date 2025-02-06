@@ -28,22 +28,28 @@ const LoadingSpinner = () => (
 );
 
 export const metadata: Metadata = {
-  title: 'Modern Interior Design & Home Decor',
-  description:
-    'Discover our curated collection of Japandi and Wabi-Sabi inspired furniture and home decor.',
+  title: 'Modern Living | Timeless Interior Design & Contemporary Home Decor',
+  description: 'Transform your space with our curated collection of minimalist, sustainable, and artisanal home furnishings. Discover pieces that blend modern aesthetics with mindful living.',
+  keywords: 'modern interior design, sustainable furniture, minimalist home decor, contemporary living, artisanal furnishings, luxury home accessories, eco-friendly decor, scandinavian design, zen interior, natural materials, premium home furnishings, mindful living spaces',
   openGraph: {
     type: 'website',
-    title: 'Modern Interior Design & Home Decor',
-    description:
-      'Discover our curated collection of Japandi and Wabi-Sabi inspired furniture and home decor.',
+    title: 'Modern Living | Timeless Interior Design & Contemporary Home Decor',
+    description: 'Transform your space with our curated collection of minimalist, sustainable, and artisanal home furnishings. Discover pieces that blend modern aesthetics with mindful living.',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Modern Interior Design'
+        alt: 'Modern Living - Contemporary Interior Design'
       }
     ]
+  },
+  robots: {
+    index: true,
+    follow: true,
+    'max-snippet': 155,
+    'max-image-preview': 'large',
+    'max-video-preview': -1
   }
 };
 export default function HomePage() {
