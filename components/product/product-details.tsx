@@ -40,13 +40,12 @@ export function ProductDetails({ product }: { product: Product }) {
   const { addCartItem } = useCart();
   const [isPending, startTransition] = useTransition();
   const [message, formAction] = useActionState(addItem, null);
-  const [shareCount, setShareCount] = useState(67);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [stickyBarClosed, setStickyBarClosed] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [tagProducts, setTagProducts] = useState<Product[]>([]);
   const [isLoadingTagProducts, setIsLoadingTagProducts] = useState(false);
-  const [shareUrl, setShareUrl] = useState('');
+  const [lastCheckedHours, setLastCheckedHours] = useState<number | null>(null);
 
   const selectedVariant = useMemo(() => {
     if (!Object.keys(state).length) return null;
@@ -65,46 +64,6 @@ export function ProductDetails({ product }: { product: Product }) {
       setExpandedOptions(initialExpandedState);
     }
   }, [product]);
-
-  useEffect(() => {
-    const getStoredShareCount = () => {
-      if (typeof window === 'undefined') return 67;
-
-      const stored = localStorage.getItem('productShareCount');
-      if (!stored) {
-        const initialCount = 67;
-        localStorage.setItem(
-          'productShareCount',
-          JSON.stringify({
-            count: initialCount,
-            lastUpdated: new Date().toISOString()
-          })
-        );
-        return initialCount;
-      }
-
-      const { count, lastUpdated } = JSON.parse(stored);
-      const lastUpdate = new Date(lastUpdated);
-      const today = new Date();
-
-      if (lastUpdate.toDateString() !== today.toDateString()) {
-        const increment = Math.floor(Math.random() * 3) + 1;
-        const newCount = count + increment;
-        localStorage.setItem(
-          'productShareCount',
-          JSON.stringify({
-            count: newCount,
-            lastUpdated: today.toISOString()
-          })
-        );
-        return newCount;
-      }
-
-      return count;
-    };
-
-    setShareCount(getStoredShareCount());
-  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -126,10 +85,27 @@ export function ProductDetails({ product }: { product: Product }) {
   }, [stickyBarClosed]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setShareUrl(`${window.location.origin}/products/${product.handle}`);
+    // Check if there's a stored value in local storage
+    const storedHours = localStorage.getItem(`lastCheckedHours_${product.id}`);
+    if (storedHours) {
+      setLastCheckedHours(Number(storedHours));
+    } else {
+      // Generate random hours if no stored value exists
+      const randomHours = Math.floor(Math.random() * 21) + 3;
+      setLastCheckedHours(randomHours);
+      localStorage.setItem(`lastCheckedHours_${product.id}`, String(randomHours));
     }
-  }, [product.handle]);
+
+    // Track how long the user is on the page
+    const handleBeforeUnload = () => {
+      localStorage.setItem(`lastCheckedHours_${product.id}`, String(lastCheckedHours));
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [product.id, lastCheckedHours]);
 
   const handleOptionChange = (optionName: string, value: string) => {
     updateOption(optionName, value);
@@ -332,56 +308,6 @@ export function ProductDetails({ product }: { product: Product }) {
 
   const availableVariants = product.variants.filter((variant) => variant.availableForSale).length;
 
-  const handleShare = async (platform: string) => {
-    if (typeof window === 'undefined') return;
-    
-    const shareTitle = `Check out this ${product.title}`;
-    const shareText = product.description;
-
-    const newCount = shareCount + 1;
-    setShareCount(newCount);
-
-    localStorage.setItem(
-      'productShareCount',
-      JSON.stringify({
-        count: newCount,
-        lastUpdated: new Date().toISOString()
-      })
-    );
-
-    switch (platform) {
-      case 'facebook':
-        window.open(
-          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-          '_blank'
-        );
-        break;
-      case 'twitter':
-        window.open(
-          `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-          '_blank'
-        );
-        break;
-      case 'pinterest':
-        window.open(
-          `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&description=${encodeURIComponent(shareText)}`,
-          '_blank'
-        );
-        break;
-      case 'email':
-        window.location.href = `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`;
-        break;
-      case 'copy':
-        try {
-          await navigator.clipboard.writeText(shareUrl);
-          alert('Link copied to clipboard!');
-        } catch (err) {
-          console.error('Failed to copy link:', err);
-        }
-        break;
-    }
-  };
-
   const handleCloseStickyBar = () => {
     setShowStickyBar(false);
     setStickyBarClosed(true);
@@ -432,6 +358,10 @@ export function ProductDetails({ product }: { product: Product }) {
                 Out of Stock
               </span>
             )}
+            {/* Informational text about stock check */}
+            <span className="text-xs text-blue-900 ml-2">
+              Stock status checked: {lastCheckedHours} hour{lastCheckedHours === 1 ? '' : 's'} ago
+            </span>
           </motion.div>
 
           {/* Product Title - Mobile Optimized */}

@@ -13,5 +13,5 @@ export function RecentlyViewedTracker({ product }: { product: Product }) {
     }
   }, [product]);
 
-  return null; // This component only tracks, doesn't render anything
+  return null;
 } 

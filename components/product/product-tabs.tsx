@@ -779,7 +779,7 @@ export function ProductTabs() {
       className="relative z-10 mx-auto mt-12 w-full max-w-[1400px] px-4 sm:px-6 lg:px-8"
     >
       {/* Tabs Navigation */}
-      <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 gap-2 sm:hidden md:flex md:flex-wrap md:justify-center md:gap-4">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

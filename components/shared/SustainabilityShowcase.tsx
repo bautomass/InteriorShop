@@ -30,7 +30,7 @@ export function SustainabilityShowcase() {
 
   return (
     <section 
-      className="w-full bg-[#FAF7F2] py-16 md:py-24"
+      className="w-full bg-[#FAF7F2] py-8 md:py-12"
       aria-label="Sustainability Commitment"
     >
       <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -88,7 +88,7 @@ export function SustainabilityShowcase() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="relative rounded-2xl overflow-hidden aspect-[4/5] md:aspect-[3/4] lg:aspect-auto lg:h-auto"
+            className="relative rounded-2xl overflow-hidden aspect-[4/5] md:aspect-[3/4] lg:aspect-auto lg:h-auto hidden lg:block"
           >
             <Image
               src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/eco-friendly-manufacturing.jpg?v=1734706093"
