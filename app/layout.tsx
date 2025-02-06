@@ -25,7 +25,7 @@ export const metadata = {
     template: `%s | ${SITE_NAME}`
   },
   icons: {
-    icon: '/images/favicon.png',
+    icon: '/images/favicon.svg',
   },
   description: 'Transform your space with our curated collection of minimalist, sustainable, and artisanal home furnishings. Discover pieces that blend modern aesthetics with mindful living.',
   keywords: 'modern interior design, sustainable furniture, minimalist home decor, contemporary living, artisanal furnishings, luxury home accessories, eco-friendly decor, scandinavian design, natural materials, premium home furnishings',
