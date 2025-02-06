@@ -1,10 +1,10 @@
 'use client';
 
+import { addItem } from '@/components/cart/actions';
+import { useCart } from '@/components/cart/cart-context';
 import { useActionState } from '@/hooks/useActionState';
 import type { Product } from '@/lib/shopify/types';
 import { useCurrency } from '@/providers/CurrencyProvider';
-import { addItem } from '@/components/cart/actions';
-import { useCart } from '@/components/cart/cart-context';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { memo, useCallback, useEffect, useState, useTransition } from 'react';
@@ -31,10 +31,10 @@ import { ShareButtons } from './components/ShareButtons';
 import { Star } from 'lucide-react';
 import Image from 'next/image';
 import { HIGHLIGHTS, PRODUCT_CONSTANTS } from './constants';
+import { useProductGallery } from './hooks/useProductGallery';
 import { useProductVariant } from './hooks/useProductVariant';
 import { useShare } from './hooks/useShare';
 import { getProductPrices } from './utils';
-import { useProductGallery } from './hooks/useProductGallery';
 
 const FeaturedProduct = () => {
   // Core state management
