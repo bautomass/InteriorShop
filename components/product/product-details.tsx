@@ -455,7 +455,7 @@ export function ProductDetails({ product }: { product: Product }) {
               dangerouslySetInnerHTML={{
                 __html: isDescriptionExpanded
                   ? product.descriptionHtml
-                  : product.descriptionHtml.slice(0, 185) + '...'
+                  : product.descriptionHtml.slice(0, 215) + '...'
               }}
             />
 
@@ -692,28 +692,6 @@ export function ProductDetails({ product }: { product: Product }) {
           </div>
 
           {/* Tags */}
-          {/* <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
-            transition={{ delay: 1.0 }}
-            className="flex items-center gap-2"
-          >
-            <span className="text-xs font-medium text-[#6B5E4C]">
-              {product.tags.length > 1 ? 'Product Tags:' : 'Product Tag:'}
-            </span>
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-              {product.tags.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => handleTagClick(tag)}
-                  className="cursor-pointer border-b border-dashed border-[#B5A48B]/40 px-2 py-0.5 text-[10px] text-[#8C7E6A] transition-colors duration-200 hover:border-[#6B5E4C]"
-                >
-                  #{tag.toLowerCase()}
-                </button>
-              ))}
-            </div>
-          </motion.div> */}
-
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
@@ -748,7 +726,6 @@ export function ProductDetails({ product }: { product: Product }) {
               </button>
             </div>
           </motion.div>
-
         </div>
       </div>
 
