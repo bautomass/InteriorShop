@@ -227,7 +227,7 @@ const HeroCarousel = () => {
                   </h2>
 
                   <p className="text-2xl text-white/80 font-extralight leading-relaxed tracking-wide mb-8">
-                    Each piece brings nature's warmth to your home. Crafted by skilled artisans using real wood, our furniture purifies your air while creating spaces that feel alive and peaceful.
+                    Each piece brings nature's warmth to your home. Crafted by skilled artisans using real wood, our furniture purifies your air while creating spaces that feel alive and peaceful
                   </p>
 
                   <div className="inline-flex items-center">
@@ -272,7 +272,7 @@ const HeroCarousel = () => {
                     </h2>
 
                     <p className="text-2xl text-[#564C47]/80 font-extralight leading-relaxed tracking-wide mb-8">
-                      Each piece is handcrafted from nature's materials,<br/>creating healthier, more beautiful spaces.
+                      Each piece is handcrafted from nature's materials,<br/>creating healthier, more beautiful spaces
                     </p>
                   </div>
 
