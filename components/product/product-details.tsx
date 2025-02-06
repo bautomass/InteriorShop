@@ -46,6 +46,7 @@ export function ProductDetails({ product }: { product: Product }) {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [tagProducts, setTagProducts] = useState<Product[]>([]);
   const [isLoadingTagProducts, setIsLoadingTagProducts] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
 
   const selectedVariant = useMemo(() => {
     if (!Object.keys(state).length) return null;
@@ -114,6 +115,8 @@ export function ProductDetails({ product }: { product: Product }) {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const handleScroll = () => {
       if (stickyBarClosed) return;
 
@@ -129,6 +132,12 @@ export function ProductDetails({ product }: { product: Product }) {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [stickyBarClosed]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setShareUrl(`${window.location.origin}/products/${product.handle}`);
+    }
+  }, [product.handle]);
 
   const handleOptionChange = (optionName: string, value: string) => {
     updateOption(optionName, value);
@@ -333,10 +342,9 @@ export function ProductDetails({ product }: { product: Product }) {
 
   const availableVariants = product.variants.filter((variant) => variant.availableForSale).length;
 
-  const shareUrl = `${window.location.origin}/products/${product.handle}`;
-
   const handleShare = async (platform: string) => {
-    const shareUrl = `${window.location.origin}/products/${product.handle}`;
+    if (typeof window === 'undefined') return;
+    
     const shareTitle = `Check out this ${product.title}`;
     const shareText = product.description;
 

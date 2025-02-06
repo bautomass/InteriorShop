@@ -15,6 +15,12 @@ const SustainabilityShowcase = lazy(() => import('@/components/shared/Sustainabi
 const RelatedProductsClient = lazy(() => import('@/components/product/related-products').then(mod => ({ default: mod.RelatedProductsClient })));
 const ProductTabs = lazy(() => import('@/components/product/product-tabs').then(mod => ({ default: mod.ProductTabs })));
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1
+};
+
 export async function generateMetadata(props: {
   params: Promise<{ handle: string }>;
 }): Promise<Metadata> {

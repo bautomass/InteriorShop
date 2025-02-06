@@ -10,14 +10,3 @@ export default async function Image({ params }: { params: { page: string } }) {
 
   return await OpengraphImage({ title });
 }
-
-
-
-
-// import OpengraphImage from 'components/opengraph-image';
-
-// export const runtime = 'edge';
-
-// export default async function Image() {
-//   return await OpengraphImage();
-// }
