@@ -46,6 +46,7 @@ export function ProductDetails({ product }: { product: Product }) {
   const [tagProducts, setTagProducts] = useState<Product[]>([]);
   const [isLoadingTagProducts, setIsLoadingTagProducts] = useState(false);
   const [lastCheckedHours, setLastCheckedHours] = useState<number | null>(null);
+  const [ratingData, setRatingData] = useState<{ rating: string; reviewCount: number } | null>(null);
 
   const selectedVariant = useMemo(() => {
     if (!Object.keys(state).length) return null;
@@ -106,6 +107,23 @@ export function ProductDetails({ product }: { product: Product }) {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [product.id, lastCheckedHours]);
+
+  useEffect(() => {
+    // Check if there's a stored value in local storage
+    const storedRating = localStorage.getItem(`rating_${product.id}`);
+    const storedReviewCount = localStorage.getItem(`reviewCount_${product.id}`);
+
+    if (storedRating && storedReviewCount) {
+      setRatingData({ rating: storedRating, reviewCount: Number(storedReviewCount) });
+    } else {
+      const newRatingData = generateRating();
+      setRatingData(newRatingData);
+      if (newRatingData) {
+        localStorage.setItem(`rating_${product.id}`, newRatingData.rating);
+        localStorage.setItem(`reviewCount_${product.id}`, String(newRatingData.reviewCount));
+      }
+    }
+  }, [product.id]);
 
   const handleOptionChange = (optionName: string, value: string) => {
     updateOption(optionName, value);
@@ -338,6 +356,18 @@ export function ProductDetails({ product }: { product: Product }) {
     }
   };
 
+  const generateRating = () => {
+    // Randomly decide if the product has a rating (20% chance of no rating)
+    if (Math.random() < 0.2) return null;
+
+    // Generate a random rating between 4.7 and 5.0
+    const rating = (Math.random() * (5.0 - 4.7) + 4.7).toFixed(1);
+    // Generate a random review count between 1 and 37
+    const reviewCount = Math.floor(Math.random() * 37) + 1;
+
+    return { rating, reviewCount };
+  };
+
   return (
     <>
       <div ref={ref} className="flex flex-col space-y-4 sm:space-y-6 md:space-y-8">
@@ -359,10 +389,27 @@ export function ProductDetails({ product }: { product: Product }) {
               </span>
             )}
             {/* Informational text about stock check */}
-            <span className="text-xs text-blue-900 ml-2">
+            <span className="text-xs text-blue-600 ml-2">
               Stock status checked: {lastCheckedHours} hour{lastCheckedHours === 1 ? '' : 's'} ago
             </span>
           </motion.div>
+
+          {/* Rating Section - Moved here */}
+          {ratingData && (
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+              transition={{ delay: 0.35 }}
+              className="flex items-center gap-2"
+            >
+              <div className="flex items-center">
+                {[...Array(5)].map((_, index) => (
+                  <Star key={index} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <span className="text-sm text-[#6B5E4C]">{ratingData.rating} ({ratingData.reviewCount} reviews)</span>
+            </motion.div>
+          )}
 
           {/* Product Title - Mobile Optimized */}
           <motion.h1
@@ -391,21 +438,6 @@ export function ProductDetails({ product }: { product: Product }) {
 
           {/* Price - Moved here */}
           {renderPrice()}
-
-          {/* Rating Stars */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
-            transition={{ delay: 0.35 }}
-            className="flex items-center gap-2"
-          >
-            <div className="flex items-center">
-              {[...Array(5)].map((_, index) => (
-                <Star key={index} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-            <span className="text-sm text-[#6B5E4C]">5.0 (24 reviews)</span>
-          </motion.div>
 
           {/* Product Options - Moved here */}
           {renderProductOptions()}
