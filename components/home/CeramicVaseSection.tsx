@@ -477,7 +477,7 @@ const FeaturedProduct = () => {
   }
 
   return (
-    <section ref={ref} className="w-full py-8 sm:py-16 bg-[#F9F7F4] overflow-hidden relative">
+    <section ref={ref} className="w-full py-0 sm:py-2 bg-[#F9F7F4] overflow-hidden relative">
       <div className="absolute top-0 left-0 w-[80%] h-[80%] bg-[#eaeadf] opacity-90 blur-[150px] pointer-events-none" />
       
       <div className="container mx-auto px-2 sm:px-4 max-w-7xl relative">

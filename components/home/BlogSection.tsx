@@ -80,7 +80,7 @@ const BlogSection = () => {
   }
 
   return (
-    <section className="relative overflow-hidden bg-[#f8f7f4] py-6 md:py-12">
+    <section className="relative overflow-hidden bg-[#f8f7f4] py-6 md:py-8">
       <div className="absolute top-0 right-0 w-[80%] h-[80%] bg-[#eaeadf] opacity-90 blur-[150px] pointer-events-none" />
       <div className="relative px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto">
         <div className="flex flex-col lg:flex-row justify-between items-start gap-6 md:gap-8 lg:gap-12">
@@ -90,7 +90,7 @@ const BlogSection = () => {
             animate={{ opacity: 1, y: 0 }}
             className="w-full lg:w-1/3 lg:sticky lg:top-24"
           >
-            <div className="relative mb-8 lg:mb-0">
+            <div className="relative mb-4 lg:mb-0">
               {/* Decorative line */}
               <div className="absolute top-0 left-0 w-12 md:w-16 h-0.5 bg-[#8B7355]" />
               
