@@ -57,14 +57,6 @@ export function ProductDetails({ product }: { product: Product }) {
   }, [state, product.variants]);
 
   useEffect(() => {
-    console.log('ProductDetails - Selected variant:', {
-      variantId: selectedVariant?.id,
-      state,
-      productOptions: product.options
-    });
-  }, [selectedVariant, state, product.options]);
-
-  useEffect(() => {
     if (product) {
       const initialExpandedState: { [key: string]: boolean } = {};
       product.options.forEach((option) => {
@@ -332,11 +324,9 @@ export function ProductDetails({ product }: { product: Product }) {
               product,
               quantity
             });
-          } else {
-            console.error('Add to cart failed:', result);
           }
         })
-        .catch((error) => console.error('Add to cart error:', error));
+        .catch(() => {});
     });
   }, [selectedVariant, product, quantity, formAction, addCartItem]);
 
@@ -398,33 +388,24 @@ export function ProductDetails({ product }: { product: Product }) {
   };
 
   const handleTagClick = async (tag: string) => {
-    console.log('Component - Tag clicked:', tag);
     setSelectedTag(tag);
     setIsLoadingTagProducts(true);
     setTagProducts([]);
 
     try {
       const url = `/api/products/by-tag?tag=${encodeURIComponent(tag)}`;
-      console.log('Component - Fetching from:', url);
-      
       const response = await fetch(url);
-      console.log('Component - Response status:', response.status);
-      
       const data = await response.json();
-      console.log('Component - Full response data:', data);
 
       // Add a small delay to show loading state
       await new Promise(resolve => setTimeout(resolve, 300));
       
       if (data.products && Array.isArray(data.products)) {
-        console.log('Component - Setting products array of length:', data.products.length);
         setTagProducts(data.products);
       } else {
-        console.log('Component - Invalid products data:', data);
         setTagProducts([]);
       }
     } catch (error) {
-      console.error('Component - Error in handleTagClick:', error);
       setTagProducts([]);
     } finally {
       setIsLoadingTagProducts(false);
