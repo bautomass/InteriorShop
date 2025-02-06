@@ -2,7 +2,7 @@
 'use client';
 
 import { TrackingResults } from '@/components/tracking/TrackingResults';
-import { Loader2, Search } from 'lucide-react';
+import { AlertCircle, Clock, Loader2, Package, Search } from 'lucide-react';
 import { useState } from 'react';
 import { TrackingData } from '../../components/tracking/types/trackingTypes';
 
@@ -62,12 +62,12 @@ export default function TrackOrderPage() {
         
         <div className="relative w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-center ${!trackingResult ? 'py-8' : ''}">
-            <div className="mb-8 text-center">
+            <div className="mb-8 mt-12 text-center">
               <h1 className="text-4xl md:text-5xl font-bold text-[#6B5E4C] mb-4 tracking-tight">
                 Track Your Order
               </h1>
               <p className="text-[#8C7E6A] text-lg max-w-2xl mx-auto">
-                Enter your tracking number to receive instant updates on your shipment's journey
+                Enter your tracking number to receive instant updates on your shipment
               </p>
             </div>
 
@@ -136,7 +136,70 @@ export default function TrackOrderPage() {
                 )}
               </form>
             </div>
+            {/* Help Cards - Only show when no results */}
+            {!trackingResult && (
+              <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto px-4">
+                {/* Processing Time Card */}
+                <div className="group bg-white/80 backdrop-blur-lg rounded-2xl p-6 
+                            border border-[#B5A48B]/20 shadow-sm
+                            transition-all duration-300 hover:shadow-md
+                            hover:border-[#B5A48B]/40">
+                  <div className="flex items-center justify-center w-12 h-12 
+                              rounded-full bg-[#EDE8E3] mb-4
+                              group-hover:scale-110 transition-transform duration-300">
+                    <Clock className="w-6 h-6 text-[#6B5E4C]" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-[#6B5E4C] mb-2">
+                    Processing Time
+                  </h3>
+                  <p className="text-[#8C7E6A]">
+                    Tracking information may take 24-72 hours to appear after your order is shipped. 
+                    Check back soon!
+                  </p>
+                </div>
+
+                {/* Verification Card */}
+                <div className="group bg-white/80 backdrop-blur-lg rounded-2xl p-6 
+                            border border-[#B5A48B]/20 shadow-sm
+                            transition-all duration-300 hover:shadow-md
+                            hover:border-[#B5A48B]/40">
+                  <div className="flex items-center justify-center w-12 h-12 
+                              rounded-full bg-[#EDE8E3] mb-4
+                              group-hover:scale-110 transition-transform duration-300">
+                    <Package className="w-6 h-6 text-[#6B5E4C]" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-[#6B5E4C] mb-2">
+                    Double Check Details
+                  </h3>
+                  <p className="text-[#8C7E6A]">
+                    Verify your tracking number is entered correctly, including any special characters 
+                    or spaces.
+                  </p>
+                </div>
+
+                {/* Contact Support Card */}
+                <div className="group bg-white/80 backdrop-blur-lg rounded-2xl p-6 
+                            border border-[#B5A48B]/20 shadow-sm
+                            transition-all duration-300 hover:shadow-md
+                            hover:border-[#B5A48B]/40">
+                  <div className="flex items-center justify-center w-12 h-12 
+                              rounded-full bg-[#EDE8E3] mb-4
+                              group-hover:scale-110 transition-transform duration-300">
+                    <AlertCircle className="w-6 h-6 text-[#6B5E4C]" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-[#6B5E4C] mb-2">
+                    Need Help?
+                  </h3>
+                  <p className="text-[#8C7E6A]">
+                    If you continue to experience issues, our support team is here to help track down 
+                    your package.
+                  </p>
+                </div>
+              </div>
+            )}
+            {/* End of Help Cards */}
           </div>
+          
         </div>
       </div>
 
