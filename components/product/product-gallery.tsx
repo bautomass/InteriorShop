@@ -168,7 +168,8 @@ export function ProductGallery({ images, product }: { images: any[], product: an
         <div 
           ref={thumbnailsRef}
           className="flex gap-2 px-1 py-2 sm:py-4 overflow-x-auto scroll-smooth 
-                     [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                     [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] 
+                     justify-center items-center"
         >
           {images.map((image, index) => (
             <motion.div

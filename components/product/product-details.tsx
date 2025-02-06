@@ -20,7 +20,8 @@ import {
   ShoppingCart,
   Star,
   Truck,
-  X
+  X,
+  ChevronRight
 } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
@@ -534,9 +535,43 @@ export function ProductDetails({ product }: { product: Product }) {
               <div className="absolute inset-0 bg-gradient-to-r from-[#8C7E6A] to-[#6B5E4C] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             </motion.button>
           </div>
+        {/* Shipping and guarantees info */}
+        <div className="mt-4">
+          {/* Mobile Version - Horizontal Scroll */}
+          <div className="block sm:hidden">
+            <div className="flex overflow-x-auto gap-3 pb-2 px-2 no-scrollbar">
+              {[
+                { icon: Truck, text: "Free Worldwide Shipping", tooltip: "Enjoy complimentary worldwide shipping on all orders. Standard delivery takes 25-40 business days. Express shipping options available at checkout." },
+                { icon: RefreshCcw, text: "45 Day Money Back", tooltip: "Not completely satisfied? Return your purchase within 45 days for a full refund. Items must be unused and in original packaging. Return shipping is on us!" },
+                { icon: Shield, text: "Secure Checkout", tooltip: "Shop with confidence using our SSL-encrypted checkout. We support all major credit cards and secure payment methods. Your personal data is always protected." }
+              ].map((Item, i) => (
+                <div key={i} className="flex-shrink-0 bg-[#F5F3F0] p-3 rounded-md flex items-center gap-2 min-w-[200px] justify-center">
+                  <Item.icon className="h-4 w-4 text-[#8C7E6A]" />
+                  <div className="flex items-center gap-1.5">
+                    <Tooltip.Provider delayDuration={0}>
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <span className="cursor-help text-xs text-[#6B5E4C]">{Item.text}</span>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg">
+                            <p className="text-xs text-[#6B5E4C]">{Item.tooltip}</p>
+                            <Tooltip.Arrow className="fill-white" />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
+                    </Tooltip.Provider>
+                    <button className="relative -top-1 inline-flex" aria-label="More info">
+                      <Info className="h-3 w-3 text-[#8C7E6A]" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-          {/* Shipping and guarantees info */}
-          <div className="mt-4 flex items-center justify-between px-2">
+          {/* Desktop Version - Same as original */}
+          <div className="hidden sm:flex items-center justify-between px-4">
             <div className="group relative flex items-center gap-2">
               <Truck className="h-4 w-4 text-[#8C7E6A]" />
               <Tooltip.Provider delayDuration={0}>
@@ -551,7 +586,7 @@ export function ProductDetails({ product }: { product: Product }) {
                   </Tooltip.Trigger>
                   <Tooltip.Portal>
                     <Tooltip.Content
-                      className="data-[state=delayed-open]:data-[side=top]:animate-slideDownAndFade data-[state=delayed-open]:data-[side=bottom]:animate-slideUpAndFade z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
+                      className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
                       sideOffset={5}
                     >
                       <p className="text-xs text-[#6B5E4C]">
@@ -579,7 +614,7 @@ export function ProductDetails({ product }: { product: Product }) {
                   </Tooltip.Trigger>
                   <Tooltip.Portal>
                     <Tooltip.Content
-                      className="data-[state=delayed-open]:data-[side=top]:animate-slideDownAndFade data-[state=delayed-open]:data-[side=bottom]:animate-slideUpAndFade z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
+                      className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
                       sideOffset={5}
                     >
                       <p className="text-xs text-[#6B5E4C]">
@@ -608,7 +643,7 @@ export function ProductDetails({ product }: { product: Product }) {
                   </Tooltip.Trigger>
                   <Tooltip.Portal>
                     <Tooltip.Content
-                      className="data-[state=delayed-open]:data-[side=top]:animate-slideDownAndFade data-[state=delayed-open]:data-[side=bottom]:animate-slideUpAndFade z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
+                      className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
                       sideOffset={5}
                     >
                       <p className="text-xs text-[#6B5E4C]">
@@ -623,6 +658,8 @@ export function ProductDetails({ product }: { product: Product }) {
               </Tooltip.Provider>
             </div>
           </div>
+        </div>
+
 
           {/* After cart button and shipping info */}
           <div className="mt-6">
@@ -655,7 +692,7 @@ export function ProductDetails({ product }: { product: Product }) {
           </div>
 
           {/* Tags */}
-          <motion.div
+          {/* <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
             transition={{ delay: 1.0 }}
@@ -675,7 +712,43 @@ export function ProductDetails({ product }: { product: Product }) {
                 </button>
               ))}
             </div>
+          </motion.div> */}
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+            transition={{ delay: 1.0 }}
+            className="flex items-center gap-2 relative max-w-full"
+          >
+            <span className="text-xs font-medium text-[#6B5E4C] whitespace-nowrap flex-shrink-0">
+              {product.tags.length > 1 ? 'Product Tags:' : 'Product Tag:'}
+            </span>
+            <div className="relative flex-1 overflow-hidden">
+              <div className="flex overflow-x-auto gap-1.5 sm:gap-2 pb-1 sm:pb-0 no-scrollbar">
+                {product.tags.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => handleTagClick(tag)}
+                    className="flex-shrink-0 cursor-pointer border-b border-dashed border-[#B5A48B]/40 px-2 py-0.5 text-[10px] text-[#8C7E6A] transition-colors duration-200 hover:border-[#6B5E4C] whitespace-nowrap"
+                  >
+                    #{tag.toLowerCase()}
+                  </button>
+                ))}
+              </div>
+              <button 
+                onClick={() => {
+                  const container = document.querySelector('#tags-container');
+                  if (container) {
+                    container.scrollLeft += 200;
+                  }
+                }}
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-full bg-gradient-to-l from-white flex items-center justify-end"
+              >
+                <ChevronRight className="h-4 w-4 text-[#6B5E4C]" />
+              </button>
+            </div>
           </motion.div>
+
         </div>
       </div>
 
