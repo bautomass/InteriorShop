@@ -345,15 +345,15 @@ const MobileHeader = memo(({ className }: MobileHeaderProps) => {
     <div className={`fixed top-0 left-0 right-0 z-[9999] ${className}`}>
       <div 
         className={`w-full backdrop-blur-sm shadow-lg 
-          relative border-r-[3px] border-white
+          relative border-r-[2px] border-white
           before:absolute before:inset-0 before:-z-10 
           before:bg-[#eaeadf]
-          before:border-r-[3px] 
+          before:border-r-[2px] 
           before:border-black/10
           transition-[background,shadow,transform] duration-500
           ${state.isScrolled 
-            ? 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]' 
-            : 'border-b-[3px] rounded-br-[24px] before:border-b-[3px] before:rounded-br-[24px]'
+            ? 'border-b-[2px] rounded-br-[10px] before:border-b-[2px] before:rounded-br-[10px]' 
+            : 'border-b-[2px] rounded-br-[10px] before:border-b-[2px] before:rounded-br-[10px]'
           }
           ${(state.isNavOpen || (state.isSearchOpen && state.searchQuery) || state.isAccountOpen || state.isCartOpen) 
             ? 'h-screen' 
@@ -361,7 +361,7 @@ const MobileHeader = memo(({ className }: MobileHeaderProps) => {
           }`}
       >
         {/* Header Section */}
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-3">
           <button
             onClick={() => setState(prev => ({ ...prev, isNavOpen: !prev.isNavOpen }))}
             className="flex items-center gap-2.5"
@@ -372,7 +372,7 @@ const MobileHeader = memo(({ className }: MobileHeaderProps) => {
           </button>
 
           {/* Icons Section */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {/* Search Icon/Input */}
             <AnimatePresence mode="wait">
               {!state.isSearchOpen ? (
