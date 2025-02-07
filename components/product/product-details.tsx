@@ -9,7 +9,6 @@ import { addItem } from 'components/cart/actions';
 import { useCart } from 'components/cart/cart-context';
 import { useProduct } from 'components/product/product-context';
 import { AnimatePresence, motion } from 'framer-motion';
-import _ from 'lodash'; // Import lodash for debounce
 import {
   ChevronRight,
   Cog,
@@ -25,60 +24,9 @@ import {
   X
 } from 'lucide-react';
 import Image from 'next/image';
-import { memo, useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { TagProductsModal } from './tag-products-modal';
-
-const InfoTooltip = memo(({ text }: { text: string }) => (
-  <Tooltip.Provider delayDuration={0}>
-    <Tooltip.Root>
-      <Tooltip.Trigger asChild>
-        <button className="relative -top-1 ml-1 inline-flex" aria-label="More info">
-          <Info className="h-3 w-3 text-[#8C7E6A]" />
-        </button>
-      </Tooltip.Trigger>
-      <Tooltip.Portal>
-        <Tooltip.Content className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg">
-          <p className="text-xs text-[#6B5E4C]">{text}</p>
-          <Tooltip.Arrow className="fill-white" />
-        </Tooltip.Content>
-      </Tooltip.Portal>
-    </Tooltip.Root>
-  </Tooltip.Provider>
-));
-
-const QuantitySelector = memo(({ quantity, onIncrement, onDecrement }: {
-  quantity: number;
-  onIncrement: () => void;
-  onDecrement: () => void;
-}) => (
-  <div className="flex h-10 items-center rounded-md border border-[#6B5E4C]/20">
-    <button
-      onClick={onDecrement}
-      className="px-3 text-[#6B5E4C] hover:bg-[#6B5E4C]/5"
-      aria-label="Decrease quantity"
-    >
-      <Minus className="h-3 w-3" />
-    </button>
-    <div className="w-12 text-center text-sm font-medium text-[#6B5E4C]">{quantity}</div>
-    <button
-      onClick={onIncrement}
-      className="px-3 text-[#6B5E4C] hover:bg-[#6B5E4C]/5"
-      aria-label="Increase quantity"
-    >
-      <Plus className="h-3 w-3" />
-    </button>
-  </div>
-));
-
-// Define prop types for ProductOptions
-interface ProductOptionsProps {
-  options: Array<{ name: string; values: string[] }>;
-  state: { [key: string]: string };
-  handleOptionChange: (optionName: string, value: string) => void;
-  toggleOptionExpansion: (optionName: string) => void;
-  expandedOptions: { [key: string]: boolean };
-}
 
 export function ProductDetails({ product }: { product: Product }) {
   const { state, updateOption } = useProduct();
@@ -117,23 +65,34 @@ export function ProductDetails({ product }: { product: Product }) {
     );
   }, [state, memoizedVariants]);
 
-  // Scroll and resize handler with debounce
+  // Optimize scroll and resize handlers
   useEffect(() => {
-    if (typeof window === 'undefined' || stickyBarClosed) return;
+    if (typeof window === 'undefined') return;
 
-    const handleScroll = _.debounce(() => {
-      const isMobile = window.innerWidth < 640;
-      if (isMobile) {
-        setShowStickyBar(!isAddToCartVisible);
-      } else {
-        const scrollPercentage = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight;
-        setShowStickyBar(scrollPercentage > 0.8);
-      }
-    }, 100);
+    let scrollTimeout: NodeJS.Timeout;
+    const handleScroll = () => {
+      if (stickyBarClosed) return;
 
-    const handleResize = _.debounce(() => {
-      setShowStickyBar(false);
-    }, 100);
+      // Debounce scroll handler
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const isMobile = window.innerWidth < 640;
+        if (isMobile) {
+          setShowStickyBar(!isAddToCartVisible);
+        } else {
+          const scrollPercentage = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight;
+          setShowStickyBar(scrollPercentage > 0.8);
+        }
+      }, 100);
+    };
+
+    let resizeTimeout: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        setShowStickyBar(false);
+      }, 100);
+    };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize, { passive: true });
@@ -141,8 +100,8 @@ export function ProductDetails({ product }: { product: Product }) {
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
-      handleScroll.cancel();
-      handleResize.cancel();
+      clearTimeout(scrollTimeout);
+      clearTimeout(resizeTimeout);
     };
   }, [stickyBarClosed, isAddToCartVisible]);
 
@@ -281,15 +240,35 @@ export function ProductDetails({ product }: { product: Product }) {
         : null;
   
     return (
-      <div className="flex flex-wrap items-center gap-3">
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+        transition={{ delay: 0.5 }}
+        className="flex flex-wrap items-center gap-3"
+      >
         <div className="flex items-center gap-3">
           <div className="relative">
             {discountPercentage && (
-              <div
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0, rotate: -12 }}
+                animate={{
+                  scale: [0.8, 1.1, 1],
+                  opacity: 1,
+                  rotate: [-12, -15, -12]
+                }}
+                whileHover={{
+                  scale: 1.05,
+                  rotate: -15,
+                  transition: { duration: 0.2 }
+                }}
+                transition={{
+                  duration: 0.5,
+                  ease: 'easeOut'
+                }}
                 className="absolute -left-2 -top-4 cursor-default rounded-full bg-gradient-to-r from-[#FF6B6B] to-[#FF8B8B] px-2 py-0.5 text-[11px] font-medium text-white shadow-sm"
               >
                 Sale
-              </div>
+              </motion.div>
             )}
             <span className="text-3xl font-medium text-[#6B5E4C]">
               {formatPrice(parseFloat(currentPrice))}
@@ -302,16 +281,25 @@ export function ProductDetails({ product }: { product: Product }) {
           )}
         </div>
         {discountPercentage && (
-          <div className="rounded-full border border-[#FF6B6B]/20 bg-gradient-to-r from-[#FF6B6B]/10 to-[#FF8B8B]/10 px-3 py-1 text-sm font-medium text-[#FF6B6B]">
+          <motion.span
+            initial={{ x: -10, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            className="rounded-full border border-[#FF6B6B]/20 bg-gradient-to-r from-[#FF6B6B]/10 to-[#FF8B8B]/10 px-3 py-1 text-sm font-medium text-[#FF6B6B]"
+          >
             Save {discountPercentage}%
-          </div>
+          </motion.span>
         )}
-      </div>
+      </motion.div>
     );
   };
 
   const renderProductOptions = () => (
-    <div className="space-y-3">
+    <motion.div
+      initial={{ y: 20, opacity: 0 }}
+      animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+      transition={{ delay: 0.6 }}
+      className="space-y-3"
+    >
       {product.options.map((option) => (
         <div key={option.name} className="space-y-1.5">
           <div className="flex items-center gap-2">
@@ -325,17 +313,16 @@ export function ProductDetails({ product }: { product: Product }) {
           {renderOptionValues(option)}
         </div>
       ))}
-    </div>
+    </motion.div>
   );
 
-  // Memoize event handlers
-  const incrementQuantity = useCallback(() => {
+  const incrementQuantity = () => {
     setQuantity((prev) => prev + 1);
-  }, []);
+  };
 
-  const decrementQuantity = useCallback(() => {
+  const decrementQuantity = () => {
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
-  }, []);
+  };
 
   const handleAddToCart = useCallback(() => {
     if (!selectedVariant || !product.availableForSale) return;
@@ -404,61 +391,17 @@ export function ProductDetails({ product }: { product: Product }) {
     return { rating, reviewCount };
   };
 
-  // Split components
-  const ProductOptions = memo(({ options, state, handleOptionChange, toggleOptionExpansion, expandedOptions }: ProductOptionsProps) => (
-    <div className="space-y-3">
-      {options.map((option) => (
-        <div key={option.name} className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <label className="block text-xs font-medium text-[#6B5E4C]">
-              {option.name}
-              {option.values.length > 1 && (
-                <span className="ml-1 text-[#8C7E6A]">({option.values.length} options)</span>
-              )}
-            </label>
-          </div>
-          {renderOptionValues(option)}
-        </div>
-      ))}
-    </div>
-  ));
-
-  // Use React.memo for components
-  const PriceDisplay = memo(({ currentPrice, compareAtPrice, discountPercentage, formatPrice }: { currentPrice: string; compareAtPrice: string; discountPercentage: number; formatPrice: (price: number) => string }) => (
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center gap-3">
-        <div className="relative">
-          {discountPercentage && (
-            <div
-              className="absolute -left-2 -top-4 cursor-default rounded-full bg-gradient-to-r from-[#FF6B6B] to-[#FF8B8B] px-2 py-0.5 text-[11px] font-medium text-white shadow-sm"
-            >
-              Sale
-            </div>
-          )}
-          <span className="text-3xl font-medium text-[#6B5E4C]">
-            {formatPrice(parseFloat(currentPrice))}
-          </span>
-        </div>
-        {compareAtPrice && parseFloat(compareAtPrice) > parseFloat(currentPrice) && (
-          <span className="text-xl text-[#8C7E6A] line-through decoration-[#FF6B6B]/40 decoration-2">
-            {formatPrice(parseFloat(compareAtPrice))}
-          </span>
-        )}
-      </div>
-      {discountPercentage && (
-        <div className="rounded-full border border-[#FF6B6B]/20 bg-gradient-to-r from-[#FF6B6B]/10 to-[#FF8B8B]/10 px-3 py-1 text-sm font-medium text-[#FF6B6B]">
-          Save {discountPercentage}%
-        </div>
-      )}
-    </div>
-  ));
-
   return (
     <>
       <div ref={ref} className="flex flex-col space-y-4 sm:space-y-6 md:space-y-8">
         <div className="space-y-3 sm:space-y-4">
           {/* Stock Status - Mobile Optimized */}
-          <div className="flex flex-wrap items-center gap-2">
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-wrap items-center gap-2"
+          >
             {product.availableForSale ? (
               <span className="rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-600">
                 In Stock
@@ -468,37 +411,53 @@ export function ProductDetails({ product }: { product: Product }) {
                 Out of Stock
               </span>
             )}
+            {/* Informational text about stock check */}
             <span className="text-xs text-blue-600 ml-2">
               Stock status checked: {lastCheckedHours} hour{lastCheckedHours === 1 ? '' : 's'} ago
             </span>
-          </div>
+          </motion.div>
 
           {/* Rating Section - Moved here */}
           {ratingData && (
-            <div className="flex items-center gap-2">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+              transition={{ delay: 0.35 }}
+              className="flex items-center gap-2"
+            >
               <div className="flex items-center">
                 {[...Array(5)].map((_, index) => (
                   <Star key={index} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
               <span className="text-sm text-[#6B5E4C]">{ratingData.rating} ({ratingData.reviewCount} reviews)</span>
-            </div>
+            </motion.div>
           )}
 
           {/* Product Title - Mobile Optimized */}
-          <h1 className="text-lg font-light text-[#6B5E4C] sm:text-xl md:text-2xl lg:text-3xl">
+          <motion.h1
+            initial={{ y: 20, opacity: 0 }}
+            animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-lg font-light text-[#6B5E4C] sm:text-xl md:text-2xl lg:text-3xl"
+          >
             {product.title}
-          </h1>
+          </motion.h1>
 
           {/* Product ID and SKU display */}
-          <p className="text-[10px] text-[#8C7E6A]/60">
+          <motion.p
+            initial={{ y: 20, opacity: 0 }}
+            animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+            transition={{ delay: 0.32 }}
+            className="text-[10px] text-[#8C7E6A]/60"
+          >
             Product ID:{' '}
             {selectedVariant?.id.split('/').pop() ||
               product.variants[0]?.id.split('/').pop() ||
               'N/A'}
             <span className="mx-2">·</span>
             SKU: {selectedVariant?.sku || product.variants[0]?.sku || 'N/A'}
-          </p>
+          </motion.p>
 
           {/* Price - Moved here */}
           {renderPrice()}
@@ -570,7 +529,22 @@ export function ProductDetails({ product }: { product: Product }) {
                   <div key={i} className="flex-shrink-0 bg-[#F5F3F0] p-3 rounded-md flex items-center gap-2 min-w-[200px] justify-center">
                     <Item.icon className="h-4 w-4 text-[#8C7E6A]" />
                     <div className="flex items-center gap-1.5">
-                      <InfoTooltip text={Item.text} />
+                      <Tooltip.Provider delayDuration={0}>
+                        <Tooltip.Root>
+                          <Tooltip.Trigger asChild>
+                            <span className="cursor-help text-xs text-[#6B5E4C]">{Item.text}</span>
+                          </Tooltip.Trigger>
+                          <Tooltip.Portal>
+                            <Tooltip.Content className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg">
+                              <p className="text-xs text-[#6B5E4C]">{Item.tooltip}</p>
+                              <Tooltip.Arrow className="fill-white" />
+                            </Tooltip.Content>
+                          </Tooltip.Portal>
+                        </Tooltip.Root>
+                      </Tooltip.Provider>
+                      <button className="relative -top-1 inline-flex" aria-label="More info">
+                        <Info className="h-3 w-3 text-[#8C7E6A]" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -581,47 +555,124 @@ export function ProductDetails({ product }: { product: Product }) {
             <div className="hidden sm:flex items-center justify-between px-4">
               <div className="group relative flex items-center gap-2">
                 <Truck className="h-4 w-4 text-[#8C7E6A]" />
-                <InfoTooltip text="Free Worldwide Shipping" />
+                <Tooltip.Provider delayDuration={0}>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <span className="cursor-help text-sm text-[#6B5E4C]">
+                        Free Worldwide Shipping
+                        <button className="relative -top-1 ml-1 inline-flex">
+                          <Info className="h-3 w-3 text-[#8C7E6A]" />
+                        </button>
+                      </span>
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
+                        sideOffset={5}
+                      >
+                        <p className="text-xs text-[#6B5E4C]">
+                          Enjoy complimentary worldwide shipping on all orders. Standard delivery
+                          takes 25-40 business days. Express shipping options available at checkout.
+                        </p>
+                        <Tooltip.Arrow className="fill-white" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
               </div>
 
               <div className="group relative flex items-center gap-2">
                 <RefreshCcw className="h-4 w-4 text-[#8C7E6A]" />
-                <InfoTooltip text="45 Day Money Back" />
+                <Tooltip.Provider delayDuration={0}>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <span className="cursor-help text-sm text-[#6B5E4C]">
+                        45 Day Money Back
+                        <button className="relative -top-1 ml-1 inline-flex">
+                          <Info className="h-3 w-3 text-[#8C7E6A]" />
+                        </button>
+                      </span>
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
+                        sideOffset={5}
+                      >
+                        <p className="text-xs text-[#6B5E4C]">
+                          Not completely satisfied? Return your purchase within 45 days for a full
+                          refund. Items must be unused and in original packaging. Return shipping is
+                          on us!
+                        </p>
+                        <Tooltip.Arrow className="fill-white" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
               </div>
 
               <div className="group relative flex items-center gap-2">
                 <Shield className="h-4 w-4 text-[#8C7E6A]" />
-                <InfoTooltip text="Secure Checkout" />
+                <Tooltip.Provider delayDuration={0}>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <span className="cursor-help text-sm text-[#6B5E4C]">
+                        Secure Checkout
+                        <button className="relative -top-1 ml-1 inline-flex">
+                          <Info className="h-3 w-3 text-[#8C7E6A]" />
+                        </button>
+                      </span>
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        className="z-50 max-w-[300px] rounded-md border border-[#B5A48B]/20 bg-white p-3 shadow-lg"
+                        sideOffset={5}
+                      >
+                        <p className="text-xs text-[#6B5E4C]">
+                          Shop with confidence using our SSL-encrypted checkout. We support all major
+                          credit cards and secure payment methods. Your personal data is always
+                          protected.
+                        </p>
+                        <Tooltip.Arrow className="fill-white" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
               </div>
             </div>
           </div>
           {/* Product Description */}
-          <div className="border rounded-lg overflow-hidden">
-            <button
+          <motion.div className="border rounded-lg overflow-hidden">
+            <motion.button
               onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
               className={`w-full flex items-center gap-3 p-4 transition-all duration-300 ${
                 isDescriptionExpanded ? 'bg-[#6B5E4C] text-white' : 'bg-[#F5F3F0] text-[#6B5E4C] hover:bg-[#F0EDE8]'
               }`}
             >
-              <div
-                className={`transition-transform duration-300 ${
-                  isDescriptionExpanded ? 'rotate-90' : 'rotate-0'
-                }`}
+              <motion.div
+                animate={{ rotate: isDescriptionExpanded ? 90 : 0 }}
+                transition={{ duration: 0.3 }}
               >
                 <ChevronRight className="h-4 w-4" />
-              </div>
+              </motion.div>
               <h3 className="text-base font-medium">Product Description</h3>
-            </button>
+            </motion.button>
 
             <AnimatePresence>
               {isDescriptionExpanded && (
-                <div
-                  className="border-t p-4 prose prose-neutral max-w-none text-sm" 
-                  dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} 
-                />
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="border-t"
+                >
+                  <div className="p-4 prose prose-neutral max-w-none text-sm" 
+                    dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} 
+                  />
+                </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
           {/* Journey steps - Moved here */}
           <div className="mt-6">
             <div className="relative flex flex-col rounded-lg border border-[#B5A48B]/20 bg-[#F5F3F0]/60 p-4">
@@ -653,7 +704,12 @@ export function ProductDetails({ product }: { product: Product }) {
           </div>
 
           {/* Tags - Moved here */}
-          <div className="flex items-center gap-2 relative max-w-full">
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={inView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
+            transition={{ delay: 1.0 }}
+            className="flex items-center gap-2 relative max-w-full"
+          >
             <span className="text-xs font-medium text-[#6B5E4C] whitespace-nowrap flex-shrink-0">
               {product.tags.length > 1 ? 'Product Tags:' : 'Product Tag:'}
             </span>
@@ -681,7 +737,7 @@ export function ProductDetails({ product }: { product: Product }) {
                 <ChevronRight className="h-4 w-4 text-[#6B5E4C]" />
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 
@@ -690,8 +746,7 @@ export function ProductDetails({ product }: { product: Product }) {
         initial={{ y: 100 }}
         animate={{ y: showStickyBar ? 0 : 100 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="fixed left-0 right-0 z-50 transform border-t border-[#B5A48B]/20 bg-white/80 backdrop-blur-lg"
-        style={{ bottom: '0' }}
+        className="fixed bottom-0 left-0 right-0 z-50 transform border-t border-[#B5A48B]/20 bg-white/80 backdrop-blur-lg"
       >
         <div className="mx-auto w-full px-4 py-3">
           {/* Desktop Version */}
@@ -729,7 +784,15 @@ export function ProductDetails({ product }: { product: Product }) {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <QuantitySelector quantity={quantity} onIncrement={incrementQuantity} onDecrement={decrementQuantity} />
+              <div className="flex h-10 items-center rounded-md border border-[#6B5E4C]/20">
+                <button onClick={decrementQuantity} className="px-3 text-[#6B5E4C] hover:bg-[#6B5E4C]/5">
+                  <Minus className="h-3 w-3" />
+                </button>
+                <div className="w-8 text-center text-sm font-medium text-[#6B5E4C]">{quantity}</div>
+                <button onClick={incrementQuantity} className="px-3 text-[#6B5E4C] hover:bg-[#6B5E4C]/5">
+                  <Plus className="h-3 w-3" />
+                </button>
+              </div>
               <motion.button
                 onClick={handleAddToCart}
                 whileHover={{ scale: 1.02 }}
@@ -748,7 +811,7 @@ export function ProductDetails({ product }: { product: Product }) {
           </div>
 
           {/* Mobile Version - Simplified */}
-          <div className="flex sm:hidden items-center justify-between gap-2" style={{ bottom: '4px' }}>
+          <div className="flex sm:hidden items-center justify-between gap-2">
             <div className="flex h-10 items-center rounded-md border border-[#6B5E4C]/20">
               <button onClick={decrementQuantity} className="px-3 text-[#6B5E4C] hover:bg-[#6B5E4C]/5">
                 <Minus className="h-3 w-3" />
