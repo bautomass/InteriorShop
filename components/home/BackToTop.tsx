@@ -11,7 +11,7 @@ const BackToTop = () => {
   useEffect(() => {
     const toggleVisibility = () => {
       // Show button when page is scrolled more than 400px
-      if (window.scrollY > 400) {
+      if (window.scrollY > 3000) {
         setIsVisible(true);
       } else {
         setIsVisible(false);
@@ -40,7 +40,7 @@ const BackToTop = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.2 }}
-          className="fixed bottom-8 right-8 z-50"
+          className="fixed bottom-6 right-8 z-50"
         >
           <button
             onClick={scrollToTop}
