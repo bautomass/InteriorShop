@@ -1,20 +1,19 @@
 //MobileHeader
 'use client';
-import { useHeaderState } from '@/hooks/useHeaderState';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Collection } from '@/lib/shopify/types';
 import { useCart } from 'components/cart/cart-context';
 import { AnimatePresence, motion } from 'framer-motion';
 import { debounce } from 'lodash';
 import {
-    ArrowRight,
-    Clock,
-    DollarSign,
-    Mail,
-    Minus,
-    ShoppingCart,
-    Sparkles,
-    Truck
+  ArrowRight,
+  Clock,
+  DollarSign,
+  Mail,
+  Minus,
+  ShoppingCart,
+  Sparkles,
+  Truck
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -32,7 +31,6 @@ const EXCLUDED_HANDLES: readonly string[] = [
 
 const PROMO_INTERVAL = 5000;
 const SCROLL_THROTTLE_MS = 16;
-const INTERSECTION_THRESHOLD = 0.1;
 const CACHE_TIMEOUT = 5 * 60 * 1000;
 
 const promos = [
@@ -208,7 +206,6 @@ const MobileHeader = memo(({ className }: MobileHeaderProps) => {
   // Move all hooks to the top
   const isMobile = useMediaQuery('(max-width: 1023px)');
   const { cart } = useCart();
-  const { updateState: updateHeaderState } = useHeaderState();
   const [state, setState] = useState<HeaderState>({
     isSearchOpen: false,
     isCartOpen: false,
