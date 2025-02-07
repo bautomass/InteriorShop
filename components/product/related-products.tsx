@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-
 interface RelatedProductsProps {
   products: Product[];
 }
@@ -25,7 +24,7 @@ export function RelatedProductsClient({ products }: RelatedProductsProps) {
     const updateVisibleProducts = () => {
       if (scrollContainerRef.current) {
         const containerWidth = scrollContainerRef.current.clientWidth;
-        const productWidth = 300 + 24; // card width + gap
+        const productWidth = 300 + 24;
         const visible = Math.floor(containerWidth / productWidth);
         setVisibleProducts(visible);
       }
