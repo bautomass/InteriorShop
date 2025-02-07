@@ -25,7 +25,7 @@ export function CollectionsShowcase({ className = '' }: CollectionsShowcaseProps
         const data = await response.json();
         
         const filteredCollections = data.collections.filter((collection: Collection) => 
-          !['freshfreshfresh, new-arrivals,top-products,home-collection, sale, all, best sellers'].includes(collection.handle)
+          !['freshfreshfresh, new-arrivals,top-products,home-collection, sale, collections, best sellers'].includes(collection.handle)
         );
         const shuffled = filteredCollections.sort(() => 0.5 - Math.random());
         setCollections(shuffled.slice(0, 4));

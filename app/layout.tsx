@@ -1,4 +1,5 @@
 import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
+import MobileHeader from '@/components/home/mobile-header-hero/MobileHeader';
 import { Footer } from '@/components/layout/site-footer';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { CurrencyProvider } from '@/providers/CurrencyProvider';
@@ -89,6 +90,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               <CurrencyProvider>
                 <CartProvider cartPromise={cartPromise}>
                   <LargeScreenNavBar />
+                  <MobileHeader/>
                   <main>{children}</main>
                   <Footer />
                   <Toaster closeButton />

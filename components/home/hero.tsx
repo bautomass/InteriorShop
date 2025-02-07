@@ -1,11 +1,11 @@
 'use client';
+import MobileHero from '@/components/home/mobile-header-hero/MobileHero';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { MobileHero } from './MobileMenuHeader';
 const FIRST_SLIDE_DIMENSIONS = {
   width: 1920,
   height: 1080

@@ -2,7 +2,6 @@
 import PaginatedProductGrid from '@/components/collections/PaginatedProductGrid';
 import { SortOptions } from '@/components/collections/sort-options';
 import { ScrollHandler } from '@/components/ScrollHandler'; 
-import { Footer } from '@/components/layout/site-footer';
 import { defaultSort, sorting } from 'lib/constants';
 import { getCollectionProductsQuery, getCollectionQuery } from 'lib/shopify/queries/collection';
 import { shopifyFetch } from 'lib/utils';
@@ -274,7 +273,6 @@ export default async function CollectionPage({ params, searchParams }: Collectio
             </div>
           </div>
         </main>
-        <Footer />
       </>
     );
   } catch (error) {
