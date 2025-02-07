@@ -1,6 +1,5 @@
 // components/layout/navbar/LargeScreenNavBar.tsx
 'use client';
-
 import { useHeaderState } from '@/hooks/useHeaderState';
 import { Collection } from '@/lib/shopify/types';
 import { useCart } from 'components/cart/cart-context';
@@ -48,7 +47,6 @@ interface Currency {
   code: string;
   symbol: string;
 }
-
 // Constants
 const currencies: { code: CurrencyCode }[] = [
   { code: 'EUR' },

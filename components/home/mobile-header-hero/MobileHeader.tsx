@@ -1,5 +1,5 @@
+//MobileHeader
 'use client';
-
 import { useHeaderState } from '@/hooks/useHeaderState';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Collection } from '@/lib/shopify/types';
