@@ -239,6 +239,134 @@ const useProductsFetch = () => {
   return state;
 };
 
+// Memoized Section Title component
+const SectionTitle = memo(() => {
+  const { ref, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: true
+  });
+
+  return (
+    <motion.div 
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+      className="flex flex-col gap-6 mb-16"
+    >
+      <div className="relative">
+        <h2 className="text-3xl md:text-4xl font-bold text-primary-900 dark:text-primary-100">
+          Wooden Stools
+        </h2>
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-primary-900/20 via-primary-900/40 to-primary-900/20 dark:from-primary-100/20 dark:via-primary-100/40 dark:to-primary-100/20 mt-4" />
+      </div>
+    </motion.div>
+  );
+});
+
+SectionTitle.displayName = 'SectionTitle';
+
+// Memoized ContentGrid component
+const ContentGrid = memo(() => {
+  const { ref, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: true
+  });
+
+  return (
+    <div ref={ref} className="relative grid md:grid-cols-2 gap-12 mb-16">
+      {/* Left Content with slide animation */}
+      <motion.div 
+        className="flex flex-col justify-center relative"
+        initial={{ opacity: 0, x: -50 }}
+        animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
+        transition={{ 
+          duration: 0.8,
+          ease: [0.22, 1, 0.36, 1]
+        }}
+      >
+        <div className="absolute -top-8 -left-8 w-24 h-24 bg-primary-100 rounded-full opacity-20 blur-2xl" />
+        <div className="relative">
+          <motion.div 
+            className="w-12 h-1 bg-primary-900/20 dark:bg-primary-100/20 mb-6"
+            initial={{ scaleX: 0, originX: 0 }}
+            animate={inView ? { scaleX: 1 } : { scaleX: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          />
+          
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold text-primary-900 dark:text-primary-100 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            Consciously Crafted
+          </motion.h2>
+          
+          <motion.p 
+            className="text-lg text-primary-800/80 dark:text-primary-100/80 leading-relaxed max-w-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            Each piece from Simple Interior Ideas is handcrafted and custom-made, making it truly unique. 
+            Drawing inspiration from the clean lines, warm ambiance, and neutral tones of modern minimalist design, 
+            we pour years of passion and craftsmanship into every creation, ensuring it embodies both quality and individuality.
+          </motion.p>
+        </div>
+      </motion.div>
+
+      {/* Right Image with slide animation */}
+      <motion.div 
+        className="relative"
+        initial={{ opacity: 0, x: 50 }}
+        animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
+        transition={{ 
+          duration: 0.8,
+          ease: [0.22, 1, 0.36, 1]
+        }}
+      >
+        <motion.div 
+          className="absolute inset-0 -right-8 -bottom-8 bg-primary-100/10 rounded-lg"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        />
+        
+        <div className="relative aspect-[1/1] overflow-hidden rounded-lg">
+          <Image
+            src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/round_table_c6175d54-23bc-45ad-953e-f3742b0db969.png?v=1739395060"
+            alt="Anturam stool craftsmanship detail"
+            fill
+            className="object-cover transform transition-transform duration-700 hover:scale-105"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            quality={100}
+            priority
+          />
+          
+          <motion.div 
+            className="absolute inset-0 border border-primary-900/10 dark:border-primary-100/10 rounded-lg"
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.3, delay: 0.5 }}
+          />
+        </div>
+      </motion.div>
+    </div>
+  );
+});
+
+ContentGrid.displayName = 'ContentGrid';
+
+// Replace SimpleContentGrid with:
+const SimpleContentGrid = () => {
+  return (
+    <>
+      <SectionTitle />
+      <ContentGrid />
+    </>
+  );
+};
+
 export default function AnturamStoolsCollection() {
   const quickView = useQuickView()
   const { products: fetchedProducts, loading, error } = useProductsFetch()
@@ -322,246 +450,7 @@ export default function AnturamStoolsCollection() {
         aria-label="Anturam Eco Wooden Stools Collection"
       >
         <div className="container mx-auto px-4 relative">
-          {/* Moved Collection Title Section to top */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col gap-6 mb-16"
-          >
-            <div className="relative">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary-900 dark:text-primary-100">
-                Anturam Eco Wooden Stools
-              </h2>
-              <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-primary-900/20 via-primary-900/40 to-primary-900/20 dark:from-primary-100/20 dark:via-primary-100/40 dark:to-primary-100/20 mt-4" />
-            </div>
-          </motion.div>
-
-          {/* Banner Images */}
-          <div className="relative w-screen left-1/2 right-1/2 -mx-[50vw] px-4 md:px-8">
-            <div className="max-w-[2000px] mx-auto">
-              {/* Desktop: 3-column grid, Mobile: Staggered mosaic */}
-              <div className="mb-12 md:grid md:grid-cols-3 md:gap-6">
-                {/* Mobile: Custom flex layout */}
-                <div className="relative [@media(max-width:768px)]:flex [@media(max-width:768px)]:flex-col md:contents">
-                  {/* First banner - Text Container */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="relative overflow-hidden rounded-md group aspect-[4/5] md:aspect-[4/5]
-                               [@media(max-width:768px)]:w-[85%] [@media(max-width:768px)]:mr-auto"
-                  >
-                    {/* Initial State - Vertical Text */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary-900/95 to-primary-800/95
-                                    group-hover:scale-110 transition-all duration-700 ease-out">
-                      <div className="absolute inset-0 opacity-0 group-hover:opacity-20
-                                      bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.4),transparent_70%)]
-                                      transition-opacity duration-700" />
-                      
-                      {/* Initial Text State */}
-                      <div className="absolute inset-0 p-12 flex flex-col items-center justify-center
-                                      group-hover:opacity-0 transition-all duration-500 ease-out">
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                          className="text-center space-y-2"
-                        >
-                          <div className="overflow-hidden">
-                            <motion.span 
-                              initial={{ y: 40 }}
-                              animate={{ y: 0 }}
-                              transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
-                              className="block text-4xl font-bold text-white/90 tracking-wide"
-                            >
-                              Wooden
-                            </motion.span>
-                          </div>
-                          <div className="overflow-hidden">
-                            <motion.span 
-                              initial={{ y: 40 }}
-                              animate={{ y: 0 }}
-                              transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
-                              className="block text-4xl font-bold text-white/90 tracking-wide"
-                            >
-                              Stools
-                            </motion.span>
-                          </div>
-                          <motion.div 
-                            initial={{ scaleX: 0 }}
-                            animate={{ scaleX: 1 }}
-                            transition={{ delay: 0.6, duration: 0.8 }}
-                            className="w-12 h-0.5 mx-auto bg-accent-300/60 origin-left"
-                          />
-                        </motion.div>
-                      </div>
-                    </div>
-
-                    {/* Hover State Content */}
-                    <div className="absolute inset-0 translate-y-full group-hover:translate-y-0 
-                                    transition-transform duration-700 ease-out">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary-900/95 to-primary-800/95">
-                        {/* Animated Background Elements */}
-                        <div className="absolute inset-0 overflow-hidden">
-                          {[...Array(5)].map((_, i) => (
-                            <motion.div
-                              key={i}
-                              initial={{ opacity: 0, scale: 0 }}
-                              animate={{ opacity: 0.1, scale: 1 }}
-                              transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                repeatType: "reverse",
-                                delay: i * 0.4
-                              }}
-                              className="absolute w-32 h-32 rounded-full bg-accent-300/30 blur-xl"
-                              style={{
-                                left: `${20 + i * 15}%`,
-                                top: `${10 + i * 20}%`
-                              }}
-                            />
-                          ))}
-                        </div>
-
-                        {/* Content Grid */}
-                        <div className="relative h-full p-6 flex flex-col justify-end z-10">
-                          <div className="space-y-6">
-                            {/* Decorative Line */}
-                            <motion.div
-                              initial={{ scaleX: 0 }}
-                              animate={{ scaleX: 1 }}
-                              transition={{ duration: 0.8 }}
-                              className="w-12 h-0.5 bg-accent-300/60 origin-left"
-                            />
-
-                            {/* Main Content Grid */}
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-4">
-                                <motion.div
-                                  initial={{ opacity: 0, x: -20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ duration: 0.5 }}
-                                  className="space-y-2"
-                                >
-                                  <h4 className="text-accent-200 text-sm font-medium">Sustainable Design</h4>
-                                  <p className="text-white/80 text-xs leading-relaxed">
-                                    Each piece embodies our commitment to environmental stewardship
-                                  </p>
-                                </motion.div>
-
-                                <motion.div
-                                  initial={{ opacity: 0, x: -20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ duration: 0.5, delay: 0.2 }}
-                                  className="space-y-2"
-                                >
-                                  <h4 className="text-accent-200 text-sm font-medium">Natural Beauty</h4>
-                                  <p className="text-white/80 text-xs leading-relaxed">
-                                    Unique grain patterns tell a story of nature's artistry
-                                  </p>
-                                </motion.div>
-                              </div>
-
-                              <div className="space-y-4">
-                                <motion.div
-                                  initial={{ opacity: 0, x: 20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ duration: 0.5, delay: 0.1 }}
-                                  className="space-y-2"
-                                >
-                                  <h4 className="text-accent-200 text-sm font-medium">Artisan Craft</h4>
-                                  <p className="text-white/80 text-xs leading-relaxed">
-                                    Handcrafted with precision and generations of expertise
-                                  </p>
-                                </motion.div>
-
-                                <motion.div
-                                  initial={{ opacity: 0, x: 20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ duration: 0.5, delay: 0.3 }}
-                                  className="space-y-2"
-                                >
-                                  <h4 className="text-accent-200 text-sm font-medium">Timeless Appeal</h4>
-                                  <p className="text-white/80 text-xs leading-relaxed">
-                                    Classic designs that transcend passing trends
-                                  </p>
-                                </motion.div>
-                              </div>
-                            </div>
-
-                            {/* Interactive Button */}
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="relative mt-4 px-6 py-2 w-full group/btn
-                                       bg-accent-300/20 hover:bg-accent-300/30 
-                                       border border-accent-300/40 rounded-md
-                                       overflow-hidden"
-                            >
-                              <span className="relative z-10 text-white text-sm font-medium">
-                                Explore Collection
-                              </span>
-                              <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-0
-                                            bg-gradient-to-r from-accent-300/0 via-accent-300/20 to-accent-300/0
-                                            transition-transform duration-700" />
-                            </motion.button>
-                          </div>
-
-                          {/* Decorative Corners */}
-                          <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-accent-300/40" />
-                          <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-accent-300/40" />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Second banner - Modern Living Image */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="relative overflow-hidden rounded-md 
-                               [@media(max-width:768px)]:-mt-[30%] [@media(max-width:768px)]:w-[65%] 
-                               [@media(max-width:768px)]:ml-auto [@media(max-width:768px)]:mb-3
-                               [@media(max-width:768px)]:aspect-[1.2/1] md:aspect-[4/5]"
-                  >
-                    <Image
-                      src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/stool-img-second.jpg?v=1731249736"
-                      alt="Anturam stool in modern setting"
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 65vw, 33vw"
-                    />
-                    <div className="absolute inset-0" />
-                    <div className="absolute inset-4 border border-white/20 rounded-sm" />
-                  </motion.div>
-
-                  {/* Third banner - Artisan Quality Image */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="relative overflow-hidden rounded-md
-                               [@media(max-width:768px)]:w-[75%] [@media(max-width:768px)]:ml-[12.5%]
-                               [@media(max-width:768px)]:aspect-[1.6/1] md:aspect-[4/5]"
-                  >
-                    <Image
-                      src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/stool-img_8b6ee7e3-78bc-49c6-a261-ddadeab7bf28.jpg?v=1731249849"
-                      alt="Anturam stool craftsmanship detail"
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 75vw, 33vw"
-                    />
-                    <div className="absolute inset-0" />
-                    <div className="absolute inset-4 border border-white/20 rounded-sm" />
-                    
-                    {/* Decorative element */}
-                    <div className="absolute -bottom-6 -right-6 w-12 h-12 rounded-full 
-                                   bg-accent-300/20 backdrop-blur-sm hidden [@media(max-width:768px)]:block" />
-                  </motion.div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <SimpleContentGrid />
 
           {/* Products Section */}
           <div className="relative w-screen left-1/2 right-1/2 -mx-[50vw] px-10 [@media(max-width:700px)]:px-4">
