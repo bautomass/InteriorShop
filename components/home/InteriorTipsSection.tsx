@@ -1,4 +1,5 @@
 'use client';
+import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import {
   Bookmark,
@@ -10,7 +11,6 @@ import {
   Compass,
   Feather,
   Heart,
-  Home,
   Lightbulb,
   Maximize,
   Palette,
@@ -1009,96 +1009,114 @@ const interiorTips: InteriorTipsData = {
     { id: CategoryId.Atmosphere, name: 'Atmosphere', icon: Feather },
   ];
 
+// First, let's define our color and style system
+const styleSystem = {
+  colors: {
+    bg: "bg-zinc-50",
+    card: "bg-white",
+    text: {
+      primary: "text-zinc-900",
+      secondary: "text-zinc-600",
+      tertiary: "text-zinc-400"
+    },
+    border: "border-zinc-200",
+    hover: "hover:bg-zinc-100",
+    accent: "bg-zinc-900",
+    // New button states
+    button: {
+      active: "bg-zinc-900 text-white",
+      inactive: "bg-white text-zinc-600 hover:bg-zinc-100"
+    }
+  },
+  shadows: {
+    sm: "shadow-sm",
+    md: "shadow-md",
+    hover: "hover:shadow-lg hover:shadow-zinc-200/50"
+  },
+  transitions: "transition-all duration-300"
+} as const;
+
 const TipCard = memo(function TipCard({ tip, onSave, isSaved, onShare }: TipCardProps) {
   return (
-    <div className="bg-[#FAF7F2] rounded-lg overflow-hidden
-                 border border-[#B5A48B]/20
-                 hover:shadow-lg transition-all duration-500
-                 group"
-    >
-      <div className="p-6">
-        {/* Header with actions */}
-        <div className="flex justify-between items-start mb-4">
-          <h3 className="text-xl font-serif text-[#6B5E4C]">{tip.title}</h3>
-          <div className="flex gap-2">
-            <button
-              onClick={() => onShare(tip)}
-              className="p-2 rounded-full bg-white hover:bg-[#EBE7E0] transition-colors"
-            >
-              <Share2 className="w-4 h-4 text-[#8C7E6A]" />
-            </button>
-            <button
-              onClick={() => onSave(tip.id)}
-              className="p-2 rounded-full bg-white hover:bg-[#EBE7E0] transition-colors"
-            >
-              {isSaved ? (
-                <BookmarkPlus className="w-4 h-4 text-[#9C826B]" />
-              ) : (
-                <Bookmark className="w-4 h-4 text-[#8C7E6A]" />
-              )}
-            </button>
+    <div className={cn(
+      "relative p-6 rounded-lg", 
+      styleSystem.colors.card,
+      styleSystem.colors.border,
+      styleSystem.transitions,
+      styleSystem.shadows.hover
+    )}>
+      {/* Header */}
+      <div className="flex justify-between items-start gap-4 mb-6">
+        <h3 className={cn("text-lg font-medium", styleSystem.colors.text.primary)}>{tip.title}</h3>
+        <div className="flex gap-2">
+          <IconButton onClick={() => onShare(tip)} icon={Share2} active={false} />
+          <IconButton 
+            onClick={() => onSave(tip.id)} 
+            icon={isSaved ? BookmarkPlus : Bookmark}
+            active={isSaved} 
+          />
+        </div>
+      </div>
+
+      {/* Tags */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <Tag icon={Clock}>{tip.readTime}</Tag>
+        <Tag icon={Target}>{tip.difficulty}</Tag>
+      </div>
+
+      {/* Description */}
+      <p className="text-sm text-zinc-600 mb-6 line-clamp-2">
+        {tip.description}
+      </p>
+
+      {/* Pro Tip */}
+      <div className="p-4 bg-zinc-50 rounded border border-zinc-200">
+        <div className="flex gap-3">
+          <Lightbulb className="w-5 h-5 text-zinc-400 flex-shrink-0" />
+          <div>
+            <span className="block text-sm font-medium text-zinc-900 mb-1">Pro Tip</span>
+            <p className="text-sm text-zinc-600">{tip.authorTip}</p>
           </div>
         </div>
-
-        {/* Enhanced Tags with Icons */}
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full 
-                         bg-white text-sm text-[#8C7E6A]">
-            <Clock className="w-3.5 h-3.5" />
-            {tip.readTime}
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full 
-                         bg-white text-sm text-[#8C7E6A]">
-            <Target className="w-3.5 h-3.5" />
-            {tip.difficulty}
-          </span>
-        </div>
-
-        {/* Description */}
-        <p className="text-[#8C7E6A] mb-4">
-          {tip.description}
-        </p>
-
-        {/* Pro Tip Box */}
-        <div className="bg-white p-4 rounded-lg border border-[#B5A48B]/20">
-          <div className="flex items-start gap-2">
-            <Lightbulb className="w-5 h-5 text-[#9C826B] mt-1 flex-shrink-0" />
-            <div>
-              <p className="font-medium text-[#6B5E4C] mb-1">Pro Tip</p>
-              <p className="text-sm text-[#8C7E6A]">
-                {tip.authorTip}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Metadata */}
-        {(tip.seasons || tip.roomTypes) && (
-          <div className="mt-4 pt-4 border-t border-[#B5A48B]/20">
-            <div className="flex flex-wrap gap-4">
-              {tip.seasons && (
-                <div className="flex items-center gap-2">
-                  <Sun className="w-4 h-4 text-[#B5A48B]" />
-                  <span className="text-sm text-[#8C7E6A]">
-                    {tip.seasons.join(", ")}
-                  </span>
-                </div>
-              )}
-              {tip.roomTypes && (
-                <div className="flex items-center gap-2">
-                  <Home className="w-4 h-4 text-[#B5A48B]" />
-                  <span className="text-sm text-[#8C7E6A]">
-                    {tip.roomTypes.join(", ")}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
 });
+
+// Define the props type for IconButton
+interface IconButtonProps {
+  icon: React.FC<{ className?: string }>; // Allow className as a prop
+  onClick: () => void;
+  active: boolean;
+}
+
+const IconButton: React.FC<IconButtonProps> = ({ icon: Icon, onClick, active }) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "p-2 rounded-full transition-all",
+      "hover:bg-zinc-100",
+      "focus:outline-none focus:ring-2 focus:ring-zinc-200",
+      active && "text-zinc-900"
+    )}
+  >
+    <Icon className="w-4 h-4" /> {/* This now accepts className */}
+  </button>
+);
+
+// Define the props type for Tag
+interface TagProps {
+  icon: React.FC<{ className?: string }>; // Allow className as a prop
+  children: React.ReactNode; // Define children type
+}
+
+const Tag: React.FC<TagProps> = ({ icon: Icon, children }) => (
+  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 
+                   text-xs text-zinc-600 bg-zinc-100 rounded-md">
+    <Icon className="w-3.5 h-3.5" />
+    {children}
+  </span>
+);
 
 const InteriorTipsSection = () => {
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>(CategoryId.Lighting);
@@ -1226,62 +1244,54 @@ const InteriorTipsSection = () => {
 
     return (
       <div className="flex justify-center items-center gap-2 mt-8">
-        <button
+        <PaginationButton
           onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
-          className={`p-2 rounded-lg ${
-            currentPage === 1
-              ? 'text-[#B5A48B]/50 cursor-not-allowed'
-              : 'text-[#8C7E6A] hover:bg-[#EBE7E0]'
-          }`}
-          aria-label="Previous page"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
+          icon={<ChevronLeft className="w-5 h-5" />}
+        />
         
         {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
           <button
             key={pageNum}
             onClick={() => setCurrentPage(pageNum)}
-            className={`w-8 h-8 rounded-lg ${
+            className={cn(
+              "w-8 h-8 rounded-lg",
+              styleSystem.transitions,
               currentPage === pageNum
-                ? 'bg-[#9C826B] text-white'
-                : 'text-[#8C7E6A] hover:bg-[#EBE7E0]'
-            }`}
+                ? styleSystem.colors.button.active
+                : styleSystem.colors.button.inactive
+            )}
           >
             {pageNum}
           </button>
         ))}
         
-        <button
+        <PaginationButton
           onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
-          className={`p-2 rounded-lg ${
-            currentPage === totalPages
-              ? 'text-[#B5A48B]/50 cursor-not-allowed'
-              : 'text-[#8C7E6A] hover:bg-[#EBE7E0]'
-          }`}
-          aria-label="Next page"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
+          icon={<ChevronRight className="w-5 h-5" />}
+        />
       </div>
     );
   };
 
   return (
-    <section className="py-16 bg-[#FAF7F2]">
+    <section className={cn("py-16", styleSystem.colors.bg)}>
       <div className="container mx-auto px-4">
+        {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-2xl mx-auto text-center mb-16"
         >
-          <h2 className="text-4xl font-serif text-[#6B5E4C] mb-4">
+          <h2 className={cn("text-4xl font-medium mb-4", styleSystem.colors.text.primary)}>
             Interior Design Inspiration
           </h2>
-          <div className="h-0.5 w-24 mx-auto mb-6 bg-gradient-to-r from-[#B5A48B]/20 via-[#B5A48B]/40 to-[#B5A48B]/20" />
-          <p className="text-[#8C7E6A]">
+          <div className={cn(
+            "h-px w-24 mx-auto mb-6",
+            "bg-gradient-to-r from-zinc-200 via-zinc-300 to-zinc-200"
+          )} />
+          <p className={styleSystem.colors.text.secondary}>
             Discover expert tips and creative ideas to transform your space
           </p>
         </motion.div>
@@ -1294,10 +1304,18 @@ const InteriorTipsSection = () => {
               placeholder="Search tips..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 pl-12 rounded-lg bg-white border border-[#B5A48B]/20 
-                       focus:outline-none focus:border-[#9C826B] transition-colors"
+              className={cn(
+                "w-full px-4 py-3 pl-12 rounded-lg",
+                styleSystem.colors.card,
+                styleSystem.colors.border,
+                "border focus:outline-none focus:ring-2 focus:ring-zinc-200",
+                styleSystem.transitions
+              )}
             />
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#B5A48B]" />
+            <Search className={cn(
+              "absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5",
+              styleSystem.colors.text.tertiary
+            )} />
           </div>
         </div>
 
@@ -1310,18 +1328,23 @@ const InteriorTipsSection = () => {
             >
               {categories.map((category) => {
                 const Icon = category.icon;
+                const isSelected = selectedCategory === category.id;
+                
                 return (
                   <button
                     key={category.id}
                     onClick={() => handleCategoryChange(category.id)}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-full whitespace-nowrap transition-colors ${
-                      selectedCategory === category.id
-                        ? 'bg-[#9C826B] text-white'
-                        : 'bg-white text-[#8C7E6A] hover:bg-[#EBE7E0]'
-                    }`}
+                    className={cn(
+                      "flex items-center gap-2 px-6 py-3 rounded-lg",
+                      "border border-zinc-200",
+                      styleSystem.transitions,
+                      isSelected 
+                        ? styleSystem.colors.button.active 
+                        : styleSystem.colors.button.inactive
+                    )}
                   >
                     <Icon className="w-5 h-5" />
-                    {category.name}
+                    <span className="whitespace-nowrap">{category.name}</span>
                   </button>
                 );
               })}
@@ -1331,29 +1354,65 @@ const InteriorTipsSection = () => {
             {canScrollLeft && (
               <button
                 onClick={() => scroll('left')}
-                className="group absolute left-0 top-1/2 z-20 hidden [@media(min-width:700px)]:flex h-10 w-10 -translate-x-full -translate-y-1/2 items-center justify-center rounded-full bg-[#FAF7F2] shadow-md transition-all duration-300 hover:bg-white"
+                className={cn(
+                  "group absolute left-0 top-1/2 z-20",
+                  "hidden [@media(min-width:700px)]:flex",
+                  "h-10 w-10 -translate-x-full -translate-y-1/2",
+                  "items-center justify-center rounded-lg",
+                  styleSystem.colors.card,
+                  styleSystem.colors.border,
+                  "border",
+                  styleSystem.transitions,
+                  styleSystem.shadows.sm,
+                  styleSystem.colors.hover
+                )}
                 aria-label="Scroll categories left"
               >
-                <ChevronLeft className="h-5 w-5 text-[#8C7E6A] transition-transform group-hover:-translate-x-0.5" />
+                <ChevronLeft className={cn(
+                  "h-5 w-5",
+                  styleSystem.colors.text.secondary,
+                  "transition-transform group-hover:-translate-x-0.5"
+                )} />
               </button>
             )}
 
             {canScrollRight && (
               <button
                 onClick={() => scroll('right')}
-                className="group absolute right-0 top-1/2 z-20 hidden [@media(min-width:700px)]:flex h-10 w-10 translate-x-full -translate-y-1/2 items-center justify-center rounded-full bg-[#FAF7F2] shadow-md transition-all duration-300 hover:bg-white"
+                className={cn(
+                  "group absolute right-0 top-1/2 z-20",
+                  "hidden [@media(min-width:700px)]:flex",
+                  "h-10 w-10 translate-x-full -translate-y-1/2",
+                  "items-center justify-center rounded-lg",
+                  styleSystem.colors.card,
+                  styleSystem.colors.border,
+                  "border",
+                  styleSystem.transitions,
+                  styleSystem.shadows.sm,
+                  styleSystem.colors.hover
+                )}
                 aria-label="Scroll categories right"
               >
-                <ChevronRight className="h-5 w-5 text-[#8C7E6A] transition-transform group-hover:translate-x-0.5" />
+                <ChevronRight className={cn(
+                  "h-5 w-5",
+                  styleSystem.colors.text.secondary,
+                  "transition-transform group-hover:translate-x-0.5"
+                )} />
               </button>
             )}
 
             {/* Gradient Fades */}
             {canScrollLeft && (
-              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-20 bg-gradient-to-r from-[#FAF7F2] to-transparent" />
+              <div className={cn(
+                "pointer-events-none absolute left-0 top-0 z-10 h-full w-20",
+                "bg-gradient-to-r from-zinc-50 to-transparent"
+              )} />
             )}
             {canScrollRight && (
-              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-20 bg-gradient-to-l from-[#FAF7F2] to-transparent" />
+              <div className={cn(
+                "pointer-events-none absolute right-0 top-0 z-10 h-full w-20",
+                "bg-gradient-to-l from-zinc-50 to-transparent"
+              )} />
             )}
           </div>
         </div>
@@ -1363,15 +1422,14 @@ const InteriorTipsSection = () => {
           <select
             value={selectedCategory}
             onChange={(e) => handleCategoryChange(e.target.value as CategoryId)}
-            className="w-full px-4 py-3 rounded-lg bg-white border border-[#B5A48B]/20 
-                     focus:outline-none focus:border-[#9C826B] transition-colors
-                     text-[#8C7E6A] appearance-none"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238C7E6A'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 1rem center',
-              backgroundSize: '1.5em 1.5em'
-            }}
+            className={cn(
+              "w-full px-4 py-3 rounded-lg",
+              styleSystem.colors.card,
+              styleSystem.colors.border,
+              "border focus:outline-none focus:ring-2 focus:ring-zinc-200",
+              styleSystem.transitions,
+              styleSystem.colors.text.secondary
+            )}
           >
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
@@ -1400,5 +1458,28 @@ const InteriorTipsSection = () => {
     </section>
   );
 };
+
+// Define the props type for PaginationButton
+interface PaginationButtonProps {
+  onClick: () => void; // Function type for onClick
+  disabled: boolean; // Boolean type for disabled
+  icon: React.ReactNode; // Type for the icon
+}
+
+const PaginationButton: React.FC<PaginationButtonProps> = ({ onClick, disabled, icon }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={cn(
+      "p-2 rounded-lg",
+      styleSystem.transitions,
+      disabled
+        ? "text-zinc-300 cursor-not-allowed"
+        : cn(styleSystem.colors.text.secondary, styleSystem.colors.hover)
+    )}
+  >
+    {icon}
+  </button>
+);
 
 export default InteriorTipsSection;

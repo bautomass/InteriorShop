@@ -21,7 +21,7 @@ export async function GET() {
         handle: 'news', // Your blog handle
         first: 20 // Number of articles to fetch
       },
-      cache: 'force-cache'
+      cache: 'no-store'
     });
 
     // Type assertion just for the response.body
