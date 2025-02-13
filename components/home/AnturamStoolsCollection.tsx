@@ -11,7 +11,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, LayoutGrid, LayoutList, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
@@ -40,6 +40,7 @@ interface ViewControlsProps {
   onViewChange: (value: boolean) => void;
 }
 
+// Constants moved outside component
 const SWIPER_CONFIG = {
   spaceBetween: 16,
   speed: 1000,
@@ -49,11 +50,17 @@ const SWIPER_CONFIG = {
     pauseOnMouseEnter: true
   },
   breakpoints: {
-    0: { slidesPerView: 1, spaceBetween: 16 },
+    0: { slidesPerView: 1.2, spaceBetween: 16 },
     480: { slidesPerView: 2, spaceBetween: 16 },
     768: { slidesPerView: 3, spaceBetween: 16 },
-    1024: { slidesPerView: 'auto' as const, spaceBetween: 16 }
+    1024: { slidesPerView: 'auto', spaceBetween: 16 }
   }
+} as const;
+
+const VIEW_SETTINGS = {
+  minCards: 4,
+  maxCards: 6,
+  defaultCards: 4
 } as const;
 
 const ERROR_MESSAGES = {
@@ -71,42 +78,50 @@ const useCardsView = (settings: ViewSettings) => {
   return { cardsToShow, handleViewChange }
 }
 
-const ViewControls = ({ current, min, max, onChange, isGridView, onViewChange }: ViewControlsProps) => (
-  <div className="flex items-center gap-2 mb-4 absolute right-0 top-0 z-10">
-    <button
-      onClick={() => onViewChange(!isGridView)}
-      className={cn(
-        "px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200",
-        "hover:bg-primary-800/10 dark:hover:bg-primary-100/10",
-        "focus:outline-none focus:ring-2 focus:ring-primary-500",
-        "border border-primary-900/20 dark:border-primary-100/20",
-        isGridView
-          ? "bg-primary-900 dark:bg-primary-100 text-white dark:text-primary-900 border-transparent"
-          : "bg-primary-100/50 dark:bg-primary-800/50 text-primary-900 dark:text-primary-100"
-      )}
-    >
-      <div className="flex items-center gap-2">
-        {isGridView ? (
-          <>
-            <LayoutList className="w-4 h-4" />
-            <span>Carousel View</span>
-          </>
-        ) : (
-          <>
-            <LayoutGrid className="w-4 h-4" />
-            <span>Grid View</span>
-          </>
-        )}
-      </div>
-    </button>
-
-    <div className="h-8 w-px bg-primary-900/20 dark:bg-primary-100/20" />
-
-    {[...Array(max - min + 1)].map((_, idx) => {
+// Optimized ViewControls with memoization
+const ViewControls = memo(({ current, min, max, onChange, isGridView, onViewChange }: ViewControlsProps) => {
+  const buttons = useMemo(() => 
+    [...Array(max - min + 1)].map((_, idx) => {
       const value = min + idx;
-      return (
+      return { value, key: `view-control-${value}` };
+    }), 
+    [min, max]
+  );
+
+  return (
+    <div className="flex items-center gap-2 mb-4 absolute right-0 top-0 z-10">
+      <button
+        onClick={() => onViewChange(!isGridView)}
+        className={cn(
+          "px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200",
+          "hover:bg-primary-800/10 dark:hover:bg-primary-100/10",
+          "focus:outline-none focus:ring-2 focus:ring-primary-500",
+          "border border-primary-900/20 dark:border-primary-100/20",
+          isGridView
+            ? "bg-primary-900 dark:bg-primary-100 text-white dark:text-primary-900 border-transparent"
+            : "bg-primary-100/50 dark:bg-primary-800/50 text-primary-900 dark:text-primary-100"
+        )}
+      >
+        <div className="flex items-center gap-2">
+          {isGridView ? (
+            <>
+              <LayoutList className="w-4 h-4" />
+              <span>Carousel View</span>
+            </>
+          ) : (
+            <>
+              <LayoutGrid className="w-4 h-4" />
+              <span>Grid View</span>
+            </>
+          )}
+        </div>
+      </button>
+
+      <div className="h-8 w-px bg-primary-900/20 dark:bg-primary-100/20" />
+
+      {buttons.map(({ value, key }) => (
         <button
-          key={value}
+          key={key}
           onClick={() => onChange(value)}
           className={cn(
             "px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200",
@@ -120,27 +135,35 @@ const ViewControls = ({ current, min, max, onChange, isGridView, onViewChange }:
         >
           {value}
         </button>
-      );
-    })}
-  </div>
-);
+      ))}
+    </div>
+  );
+});
 
+ViewControls.displayName = 'ViewControls';
+
+// Optimized GridView
 const GridView = memo(({ products, cardsToShow, onQuickView }: GridViewProps) => {
   const [visibleRows, setVisibleRows] = useState(2);
   const productsPerRow = cardsToShow;
   const totalRows = Math.ceil(products.length / productsPerRow);
-  const visibleProducts = products.slice(0, visibleRows * productsPerRow);
+  
+  const visibleProducts = useMemo(() => 
+    products.slice(0, visibleRows * productsPerRow),
+    [products, visibleRows, productsPerRow]
+  );
 
-  const showMoreRows = () => {
+  const showMoreRows = useCallback(() => {
     setVisibleRows(prev => Math.min(prev + 2, totalRows));
-  }
+  }, [totalRows]);
+
+  const gridStyle = useMemo(() => ({
+    gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))`
+  }), [cardsToShow]);
 
   return (
     <div className="space-y-12">
-      <div 
-        className="grid gap-6 md:gap-8 w-full"
-        style={{ gridTemplateColumns: `repeat(${cardsToShow}, minmax(0, 1fr))` }}
-      >
+      <div className="grid gap-6 md:gap-8 w-full" style={gridStyle}>
         {visibleProducts.map((product) => (
           <motion.div
             key={product.id}
@@ -148,16 +171,10 @@ const GridView = memo(({ products, cardsToShow, onQuickView }: GridViewProps) =>
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Link 
-              href={`/product/${product.handle}`}
-              className="block h-full w-full"
-            >
+            <Link href={`/product/${product.handle}`} className="block h-full w-full">
               <ProductCard 
                 product={product}
-                onQuickView={(e) => {
-                  e.preventDefault();
-                  onQuickView(e);
-                }}
+                onQuickView={onQuickView}
                 cardsToShow={cardsToShow}
               />
             </Link>
@@ -187,10 +204,10 @@ const GridView = memo(({ products, cardsToShow, onQuickView }: GridViewProps) =>
         </div>
       )}
     </div>
-  )
-})
+  );
+});
 
-GridView.displayName = 'GridView'
+GridView.displayName = 'GridView';
 
 const useProductsFetch = () => {
   const [state, setState] = useState<{
@@ -367,85 +384,243 @@ const SimpleContentGrid = () => {
   );
 };
 
-export default function AnturamStoolsCollection() {
-  const quickView = useQuickView()
-  const { products: fetchedProducts, loading, error } = useProductsFetch()
-  const { products, sortProducts } = useProducts(fetchedProducts)
-  const [isSlideHovered, setIsSlideHovered] = useState(false)
-  const { ref, inView } = useInView({
-    threshold: 0.1,
-    triggerOnce: false
-  })
-  const [swiper, setSwiper] = useState<SwiperType | null>(null);
-  const [isBeginning, setIsBeginning] = useState(true);
-  const [isEnd, setIsEnd] = useState(false);
-  const [isGridView, setIsGridView] = useState(false)
+// Define SwiperState interface
+interface SwiperState {
+  main: SwiperType | null;
+  thumb: SwiperType | null;
+  isBeginning: boolean;
+  isEnd: boolean;
+  activeIndex: number;
+}
+
+// Fix for Image component type issue
+const ImageWithLoader = memo(({ 
+  src, 
+  alt, 
+  ...props 
+}: { 
+  src: string; 
+  alt: string; 
+  [key: string]: any; 
+}) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  return (
+    <div className="relative w-full h-full">
+      <Image
+        src={src}
+        alt={alt}
+        onLoadingComplete={() => setIsLoading(false)}
+        onError={() => setError(true)}
+        {...props}
+      />
+      {isLoading && !error && (
+        <div className="absolute inset-0 bg-primary-100/10 animate-pulse" />
+      )}
+    </div>
+  );
+});
+
+ImageWithLoader.displayName = 'ImageWithLoader';
+
+// Optimized swiper state management
+const useSwiperState = () => {
+  const [state, setState] = useState<SwiperState>({
+    main: null,
+    thumb: null,
+    isBeginning: true,
+    isEnd: false,
+    activeIndex: 0
+  });
+
+  const updateSwiperState = useCallback((updates: Partial<SwiperState>) => {
+    setState(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const handleMainSwiper = useCallback((swiper: SwiperType) => {
+    updateSwiperState({
+      main: swiper,
+      isBeginning: swiper.isBeginning,
+      isEnd: swiper.isEnd
+    });
+  }, [updateSwiperState]);
+
+  const handleThumbSwiper = useCallback((swiper: SwiperType) => {
+    updateSwiperState({ thumb: swiper });
+  }, [updateSwiperState]);
+
+  const handleSlideChange = useCallback((swiper: SwiperType) => {
+    updateSwiperState({
+      isBeginning: swiper.isBeginning,
+      isEnd: swiper.isEnd,
+      activeIndex: swiper.activeIndex
+    });
+  }, [updateSwiperState]);
+
+  return {
+    state,
+    handleMainSwiper,
+    handleThumbSwiper,
+    handleSlideChange,
+  };
+};
+
+// Safe swiper update function
+const useSwiperUpdate = (swiper: SwiperType | null, dependencies: any[]) => {
+  useEffect(() => {
+    if (!swiper) return;
+
+    const updateSwiper = () => {
+      requestAnimationFrame(() => {
+        try {
+          swiper.update();
+        } catch (error) {
+          console.error('Swiper update failed:', error);
+        }
+      });
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateSwiper();
+    });
+
+    resizeObserver.observe(swiper.el);
+    updateSwiper();
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [swiper, ...dependencies]);
+};
+
+// Type-safe product preloader hook
+const useProductPreloader = (products: Product[]) => {
+  const preloadedUrls = useRef(new Set<string>());
+  const abortController = useRef(new AbortController());
+
+  useEffect(() => {
+    return () => {
+      abortController.current.abort();
+      abortController.current = new AbortController();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!products?.length) return;
+
+    const signal = abortController.current.signal;
+    const validImageUrls = products
+      .map(product => product.featuredImage?.url)
+      .filter((url): url is string => {
+        if (!url) return false;
+        try {
+          new URL(url);
+          return !preloadedUrls.current.has(url);
+        } catch {
+          return false;
+        }
+      });
+
+    if (!validImageUrls.length) return;
+
+    const preloadImage = async (url: string): Promise<void> => {
+      if (signal.aborted) return;
+
+      return new Promise<void>((resolve, reject) => {
+        const img = new window.Image();
+        const timeoutId = window.setTimeout(() => {
+          reject(new Error('Image load timeout'));
+        }, 5000);
+
+        img.onload = () => {
+          window.clearTimeout(timeoutId);
+          if (!signal.aborted) {
+            preloadedUrls.current.add(url);
+          }
+          resolve();
+        };
+
+        img.onerror = () => {
+          window.clearTimeout(timeoutId);
+          reject(new Error(`Failed to load image: ${url}`));
+        };
+
+        img.src = url;
+      });
+    };
+
+    const preloadChunk = async (urls: string[]) => {
+      const CHUNK_SIZE = 3;
+      const DELAY_BETWEEN_CHUNKS = 100;
+
+      for (let i = 0; i < urls.length; i += CHUNK_SIZE) {
+        if (signal.aborted) break;
+
+        const chunk = urls.slice(i, i + CHUNK_SIZE);
+        await Promise.allSettled(chunk.map(preloadImage));
+
+        if (i + CHUNK_SIZE < urls.length && !signal.aborted) {
+          await new Promise(resolve => window.setTimeout(resolve, DELAY_BETWEEN_CHUNKS));
+        }
+      }
+    };
+
+    void preloadChunk(validImageUrls).catch(error => {
+      if (!signal.aborted) {
+        console.error('Error during image preloading:', error);
+      }
+    });
+
+    return () => {
+      abortController.current.abort();
+    };
+  }, [products]);
+
+  const clearPreloadedUrls = useCallback(() => {
+    preloadedUrls.current.clear();
+  }, []);
+
+  return {
+    preloadedUrls: preloadedUrls.current,
+    clearPreloadedUrls
+  };
+};
+
+// Main component optimization
+const AnturamStoolsCollection = () => {
+  const quickView = useQuickView();
+  const { products: fetchedProducts, loading, error } = useProductsFetch();
+  const { products, sortProducts } = useProducts(fetchedProducts);
+  const [isGridView, setIsGridView] = useState(false);
   const [activeThumbIndex, setActiveThumbIndex] = useState(0);
-  const [thumbSwiper, setThumbSwiper] = useState<SwiperType | null>(null);
-  const [mainSwiper, setMainSwiper] = useState<SwiperType | null>(null);
+
+  // Use custom hook for swiper state management
+  const {
+    state: swiperState,
+    handleMainSwiper,
+    handleThumbSwiper,
+    handleSlideChange
+  } = useSwiperState();
+
+  const { cardsToShow, handleViewChange } = useCardsView(VIEW_SETTINGS);
 
   const handlePriceSort = useCallback((direction: 'asc' | 'desc') => {
     sortProducts(direction);
   }, [sortProducts]);
 
-  const viewSettings: ViewSettings = {
-    minCards: 4,
-    maxCards: 6,
-    defaultCards: 4
-  }
+  const handleQuickView = useCallback((product: Product) => {
+    quickView.openQuickView(product);
+  }, [quickView]);
 
-  const { cardsToShow, handleViewChange } = useCardsView(viewSettings)
+  // Use custom hook for image preloading
+  const { preloadedUrls, clearPreloadedUrls } = useProductPreloader(products);
 
-  const LoadingSkeleton = () => (
-    <div className="w-full py-12 bg-primary-50 dark:bg-primary-900">
-      <div className="container mx-auto px-4">
-        <div className="animate-pulse space-y-12">
-          <div className="flex items-center justify-center gap-3">
-            <div className="h-6 w-6 bg-primary-200 dark:bg-primary-700 rounded" />
-            <div className="h-8 w-64 bg-primary-200 dark:bg-primary-700 rounded" />
-          </div>
-          
-          <div className="grid grid-cols-3 gap-4">
-            {[...Array(3)].map((_, index) => (
-              <div key={index} className="aspect-[3/4] bg-primary-200 dark:bg-primary-700 rounded-lg" />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
-  const handleSwiperInit = (swiperInstance: SwiperType) => {
-    setSwiper(swiperInstance);
-    setIsBeginning(swiperInstance.isBeginning);
-    setIsEnd(swiperInstance.isEnd);
-  };
-
-  useEffect(() => {
-    if (swiper) {
-      swiper.update();
-      setIsEnd(swiper.isEnd);
-    }
-  }, [swiper, products]);
-
-  if (loading) return <LoadingSkeleton />
-  
-  if (error) {
-    return (
-      <div className="w-full py-12 bg-primary-50 dark:bg-primary-900">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-red-500">{error}</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!products?.length) return null;
+  if (loading || error || !products?.length) return null;
 
   return (
     <>
       <section 
-        ref={ref}
         className="w-full py-12 bg-primary-50 dark:bg-primary-900 overflow-hidden relative" 
         aria-label="Anturam Eco Wooden Stools Collection"
       >
@@ -464,8 +639,8 @@ export default function AnturamStoolsCollection() {
 
                   <ViewControls
                     current={cardsToShow}
-                    min={viewSettings.minCards}
-                    max={viewSettings.maxCards}
+                    min={VIEW_SETTINGS.minCards}
+                    max={VIEW_SETTINGS.maxCards}
                     onChange={handleViewChange}
                     isGridView={isGridView}
                     onViewChange={setIsGridView}
@@ -503,9 +678,9 @@ export default function AnturamStoolsCollection() {
                 {/* Pagination Dots */}
                 <div className="flex items-center">
                   <button
-                    onClick={() => swiper?.slidePrev()}
+                    onClick={() => swiperState.main?.slidePrev()}
                     className="mr-2 flex h-6 w-6 items-center justify-center rounded-full text-primary-600 transition-colors hover:bg-primary-50"
-                    disabled={isBeginning}
+                    disabled={swiperState.isBeginning}
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
@@ -522,7 +697,7 @@ export default function AnturamStoolsCollection() {
                           <button
                             key={idx}
                             onClick={() => {
-                              swiper?.slideTo(idx);
+                              swiperState.main?.slideTo(idx);
                               setActiveThumbIndex(idx);
                             }}
                             className={cn(
@@ -540,9 +715,9 @@ export default function AnturamStoolsCollection() {
                   </div>
 
                   <button
-                    onClick={() => swiper?.slideNext()}
+                    onClick={() => swiperState.main?.slideNext()}
                     className="ml-2 flex h-6 w-6 items-center justify-center rounded-full text-primary-600 transition-colors hover:bg-primary-50"
-                    disabled={isEnd}
+                    disabled={swiperState.isEnd}
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>
@@ -560,7 +735,7 @@ export default function AnturamStoolsCollection() {
                     if (target.dataset.product) {
                       const product = products.find(p => p.id === target.dataset.product);
                       if (product) {
-                        quickView.openQuickView(product);
+                        handleQuickView(product);
                       }
                     }
                   }}
@@ -568,8 +743,6 @@ export default function AnturamStoolsCollection() {
               ) : (
                 <div 
                   className="relative"
-                  onMouseEnter={() => setIsSlideHovered(true)}
-                  onMouseLeave={() => setIsSlideHovered(false)}
                 >
                   <Swiper
                     modules={[Autoplay, Navigation]}
@@ -607,15 +780,14 @@ export default function AnturamStoolsCollection() {
                     }}
                     className="px-0"
                     onSwiper={(swiper) => {
-                      setMainSwiper(swiper);
-                      handleSwiperInit(swiper);
+                      swiperState.main = swiper;
+                      handleMainSwiper(swiper);
                     }}
                     onSlideChange={(swiper) => {
-                      setIsBeginning(swiper.isBeginning);
-                      setIsEnd(swiper.isEnd);
+                      handleSlideChange(swiper);
                       setActiveThumbIndex(swiper.activeIndex);
-                      if (thumbSwiper && thumbSwiper.activeIndex !== swiper.activeIndex) {
-                        thumbSwiper.slideTo(swiper.activeIndex);
+                      if (swiperState.thumb && swiperState.thumb.activeIndex !== swiper.activeIndex) {
+                        swiperState.thumb.slideTo(swiper.activeIndex);
                       }
                     }}
                   >
@@ -625,7 +797,7 @@ export default function AnturamStoolsCollection() {
                           product={product} 
                           onQuickView={(e) => {
                             e.preventDefault();
-                            quickView.openQuickView(product);
+                            handleQuickView(product);
                           }}
                           cardsToShow={cardsToShow}
                         />
@@ -637,12 +809,12 @@ export default function AnturamStoolsCollection() {
                   <button 
                     className="custom-swiper-button-prev group absolute left-0 top-1/2 isolate z-20 hidden [@media(min-width:700px)]:flex h-14 w-10 -translate-x-full -translate-y-1/2 cursor-pointer items-center justify-center overflow-hidden rounded-l-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50"
                     aria-label="Previous slide"
-                    disabled={isBeginning}
+                    disabled={swiperState.isBeginning}
                   >
                     <div className="relative z-20 transition-all duration-300 
                                     group-hover:-translate-x-0.5 group-active:scale-90
                                     group-hover:drop-shadow-[0_0_8px_rgba(199,186,168,0.5)]">
-                      {isBeginning ? (
+                      {swiperState.isBeginning ? (
                         <div className="relative">
                           <ChevronLeft className="h-6 w-6 text-primary-100 dark:text-primary-900
                                                  group-hover:opacity-0 transition-opacity duration-200" />
@@ -671,12 +843,12 @@ export default function AnturamStoolsCollection() {
                   <button 
                     className="custom-swiper-button-next group absolute right-0 top-1/2 isolate z-20 hidden [@media(min-width:700px)]:flex h-14 w-10 -translate-y-1/2 translate-x-full cursor-pointer items-center justify-center overflow-hidden rounded-r-md bg-primary-800/95 shadow-[0_0_10px_rgba(83,66,56,0.3)] backdrop-blur-sm transition-all duration-300 ease-out hover:w-12 hover:shadow-[0_0_20px_rgba(83,66,56,0.5)] active:scale-95 active:shadow-inner disabled:cursor-default disabled:opacity-50"
                     aria-label="Next slide"
-                    disabled={isEnd}
+                    disabled={swiperState.isEnd}
                   >
                     <div className="relative z-20 transition-all duration-300 
                                     group-hover:translate-x-0.5 group-active:scale-90
                                     group-hover:drop-shadow-[0_0_8px_rgba(199,186,168,0.5)]">
-                      {isEnd ? (
+                      {swiperState.isEnd ? (
                         <div className="relative">
                           <ChevronRight className="h-6 w-6 text-primary-100 dark:text-primary-900
                                                  group-hover:opacity-0 transition-opacity duration-200" />
@@ -722,11 +894,13 @@ export default function AnturamStoolsCollection() {
                     }}
                     centeredSlides={true}
                     slideToClickedSlide={true}
-                    onSwiper={setThumbSwiper}
+                    onSwiper={(swiper) => {
+                      swiperState.thumb = swiper;
+                    }}
                     onSlideChange={(swiper) => {
                       setActiveThumbIndex(swiper.activeIndex);
                       if (swiper && swiper.activeIndex !== activeThumbIndex) {
-                        mainSwiper?.slideTo(swiper.activeIndex);
+                        swiperState.main?.slideTo(swiper.activeIndex);
                       }
                     }}
                   >
@@ -734,7 +908,7 @@ export default function AnturamStoolsCollection() {
                       <SwiperSlide key={`thumb-${product.id}`}>
                         <button
                           onClick={() => {
-                            swiper?.slideTo(index);
+                            swiperState.main?.slideTo(index);
                             setActiveThumbIndex(index);
                           }}
                           className={cn(
@@ -792,4 +966,7 @@ export default function AnturamStoolsCollection() {
     </>
   )
 }
+
+export default memo(AnturamStoolsCollection);
+
 
