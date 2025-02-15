@@ -24,7 +24,8 @@ const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1
+  maximumScale: 1,
+  themeColor: '#ffffff'
 };
 
 export const metadata = {
@@ -43,8 +44,7 @@ export const metadata = {
     follow: true,
     'max-snippet': 155,
     'max-image-preview': 'large',
-    'max-video-preview': -1,
-    nocache: true
+    'max-video-preview': -1
   },
   alternates: {
     canonical: baseUrl
@@ -73,6 +73,31 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <AuthProvider>
       <html lang="en" className={GeistSans.variable}>
         <head>
+        {/* Preload mobile hero image with high priority */}
+        <link 
+          rel="preload" 
+          as="image"
+          href="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
+          type="image/webp"
+          media="(max-width: 1023px)"
+          data-fetchpriority="high"
+        />
+        
+        {/* Preload desktop hero image with high priority for larger screens */}
+        <link 
+          rel="preload" 
+          as="image"
+          href="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2_624ad208-26bc-4437-a2d2-857726a8a421.png?v=1738429094"
+          type="image/png"
+          media="(min-width: 1024px)"
+          data-fetchpriority="high"
+        />
+        
+        {/* CDN optimizations */}
+        <link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://cdn.shopify.com" />
+      </head>
+        {/* <head>
           <meta name="format-detection" content="telephone=no" />
           <link 
             rel="preload" 
@@ -83,7 +108,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           />
           <link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous" />
           <link rel="dns-prefetch" href="https://cdn.shopify.com" />
-        </head>
+        </head> */}
         <body className="bg-primary-50 text-primary-900 selection:bg-accent-200">
           <ThemeProvider>
             <QueryProvider>
