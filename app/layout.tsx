@@ -74,29 +74,25 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <AuthProvider>
       <html lang="en" className={GeistSans.variable}>
       <head>
+          {/* Critical preload for both heroes */}
           <link 
             rel="preload" 
-            as="image" 
+            as="image"
             href="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
             type="image/webp"
             media="(max-width: 1023px)"
+            data-fetchpriority="high"
           />
           <link 
             rel="preload" 
-            as="image" 
+            as="image"
             href="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2_624ad208-26bc-4437-a2d2-857726a8a421.png?v=1738429094"
             type="image/png"
             media="(min-width: 1024px)"
+            data-fetchpriority="high"
           />
-          <link 
-            rel="preconnect" 
-            href="https://cdn.shopify.com" 
-            crossOrigin="anonymous" 
-          />
-          <link 
-            rel="dns-prefetch" 
-            href="https://cdn.shopify.com" 
-          />
+          <link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous" />
+          <link rel="dns-prefetch" href="https://cdn.shopify.com" />
         </head>
         <body className="bg-primary-50 text-primary-900 selection:bg-accent-200">
           <ThemeProvider>

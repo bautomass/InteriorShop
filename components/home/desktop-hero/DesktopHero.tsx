@@ -149,7 +149,7 @@ const DesktopHero = () => {
 
   return (
     <section 
-      className="relative w-full h-screen overflow-hidden"
+      className="relative w-full h-screen overflow-hidden bg-[#f5f5f4]"
       role="region" 
       aria-label="Hero image carousel"
     >
@@ -165,22 +165,14 @@ const DesktopHero = () => {
           <Image
             src={heroImages[currentIndex]?.src || ''}
             alt={heroImages[currentIndex]?.alt || ''}
-            {...(currentIndex === 0 
-              ? {
-                  width: FIRST_SLIDE_DIMENSIONS.width,
-                  height: FIRST_SLIDE_DIMENSIONS.height,
-                  priority: true,
-                  fetchPriority: "high",
-                  loading: "eager",
-                }
-              : {
-                  fill: true,
-                  loading: "eager",
-                }
-            )}
+            width={FIRST_SLIDE_DIMENSIONS.width}
+            height={FIRST_SLIDE_DIMENSIONS.height}
+            priority
+            fetchPriority="high"
+            loading="eager"
             quality={85}
             sizes="100vw"
-            className={`object-cover ${currentIndex === 0 ? 'w-full h-full' : ''}`}
+            className="object-cover w-full h-full"
           />
 
           {currentIndex === 0 && (
@@ -279,7 +271,7 @@ const DesktopHero = () => {
                     px-6 py-3.5
                     bg-[#6B5E4C] text-[#eaeadf] text-sm
                     border border-[#B5A48B]/20
-hover:bg-[#7B6E5C] hover:border-[#B5A48B]/40 
+                    hover:bg-[#7B6E5C] hover:border-[#B5A48B]/40 
                     transition-all duration-300 
                     transform hover:-translate-y-0.5
                     overflow-hidden"
