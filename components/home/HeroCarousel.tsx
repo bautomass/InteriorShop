@@ -47,34 +47,20 @@ const HeroCarousel = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [checkIsDesktop]);
 
-  // Before mount, show loading placeholders
   if (!mounted) {
     return (
-      <div>
-        <div 
-          className="block lg:hidden h-screen bg-[#f5f5f4]" 
-          role="presentation" 
-          aria-hidden="true"
-        />
-        <div 
-          className="hidden lg:block h-screen bg-[#f5f5f4]" 
-          role="presentation" 
-          aria-hidden="true"
-        />
+      <div role="presentation" aria-label="Loading hero section">
+        <div className="block lg:hidden h-screen bg-[#f5f5f4]" />
+        <div className="hidden lg:block h-screen bg-[#f5f5f4]" />
       </div>
     );
   }
 
-  // After mount, show appropriate hero based on screen size
-  return (
-    <>
-      {isDesktop ? <DesktopHero /> : <MobileHero />}
-    </>
-  );
+  // Conditionally render based on screen size
+  return isDesktop ? <DesktopHero /> : <MobileHero />;
 };
 
 export default HeroCarousel;
-
 
 
 // 'use client';
