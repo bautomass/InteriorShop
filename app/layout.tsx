@@ -1,5 +1,5 @@
-import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import MobileHeader from '@/components/home/mobile-header-hero/MobileHeader';
+import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { Footer } from '@/components/layout/site-footer';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { CurrencyProvider } from '@/providers/CurrencyProvider';
@@ -72,36 +72,21 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <AuthProvider>
       <html lang="en" className={GeistSans.variable}>
-        <head>
-          {/* Hero images preload - optimized with srcset */}
+      <head>
           <link 
             rel="preload" 
-            as="image"
+            as="image" 
             href="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
             type="image/webp"
             media="(max-width: 1023px)"
-            data-fetchpriority="high"
-            imageSrcSet="
-              https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557 828w,
-              https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557&width=750 750w,
-              https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557&width=640 640w"
-            imageSizes="(max-width: 1023px) 100vw, 0vw"
           />
-          
           <link 
             rel="preload" 
-            as="image"
+            as="image" 
             href="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2_624ad208-26bc-4437-a2d2-857726a8a421.png?v=1738429094"
             type="image/png"
             media="(min-width: 1024px)"
-            data-fetchpriority="high"
-            imageSrcSet="
-              https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2_624ad208-26bc-4437-a2d2-857726a8a421.png?v=1738429094 1920w,
-              https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2_624ad208-26bc-4437-a2d2-857726a8a421.png?v=1738429094&width=1600 1600w,
-              https://cdn.shopify.com/s/files/1/0640/6868/1913/files/2_624ad208-26bc-4437-a2d2-857726a8a421.png?v=1738429094&width=1366 1366w"
-            imageSizes="(min-width: 1024px) 100vw, 0vw"
           />
-          {/* CDN optimization */}
           <link 
             rel="preconnect" 
             href="https://cdn.shopify.com" 

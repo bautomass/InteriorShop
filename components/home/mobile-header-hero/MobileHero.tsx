@@ -33,7 +33,7 @@ HeroButtons.displayName = 'HeroButtons';
 
 const MobileHero = memo(() => {
   return (
-    <div className="relative h-[100vh] lg:hidden">
+    <div className="relative h-[100vh] block lg:hidden">
       <HeroButtons />
       <div className="relative h-full w-full">
         <Image
@@ -44,7 +44,7 @@ const MobileHero = memo(() => {
           priority
           fetchPriority="high"
           className="object-cover translate-y-[-50px]"
-          sizes="(max-width: 1023px) 100vw, 0vw"
+          sizes="(max-width: 1023px) 100vw"
           quality={85}
           loading="eager"
           placeholder="blur"
@@ -83,8 +83,6 @@ const MobileHero = memo(() => {
 MobileHero.displayName = 'MobileHero';
 
 export default MobileHero;
-
-
 
 
 

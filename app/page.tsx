@@ -1,10 +1,9 @@
 // app/page.tsx
-import Hero from '@/components/home/DesktopHero';
+import Hero from '@/components/home/HeroCarousel';
 import LoyaltyTeaser from '@/components/home/LoyaltyTeaser';
 import type { Metadata } from 'next';
 import { Suspense, lazy } from 'react';
 
-// Lazy load all other components
 const AboutHero = lazy(() => import('@/components/home/about-hero/about-hero'));
 const PendantLightSection = lazy(() => import('@/components/home/PendantLightSection/PendantLightSectionIndex'));
 const InfiniteProductBanner = lazy(() => import('@/components/home/InfiniteProductBanner/InfiniteProductBannerIndex'));
@@ -14,7 +13,6 @@ const NewArrivalsCollection = lazy(() => import('@/components/home/NewArrivalsCo
 const AnturamStoolsCollection = lazy(() => import('@/components/home/AnturamStoolsCollection'));
 const CanvasCollection = lazy(() => import('@/components/home/CanvasCollection'));
 const BlogSection = lazy(() => import('@/components/home/BlogSection'));
-// const CeramicVaseSection = lazy(() => import('@/components/home/CeramicVaseSection'));
 const WishboneChairSection = lazy(() => import('@/components/home/WishboneChairSection'));
 const InteriorTipsSection = lazy(() => import('@/components/home/InteriorTipsSection'));
 const InstagramBanner = lazy(() => import('@/components/home/InstagramBanner'));
@@ -83,9 +81,6 @@ export default function HomePage() {
         <Suspense fallback={<LoadingSpinner />}>
           <BlogSection />
         </Suspense>
-        {/* <Suspense fallback={<LoadingSpinner />}>
-          <CeramicVaseSection />
-        </Suspense> */}
         <Suspense fallback={<LoadingSpinner />}>
           <WishboneChairSection />
         </Suspense>
