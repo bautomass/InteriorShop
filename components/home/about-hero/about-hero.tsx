@@ -37,7 +37,7 @@ const AboutHero = memo(function AboutHero() {
                   <p>
                     Welcome to our store dedicated to those who find beauty in simplicity and warmth in the minimalist approach.
                   </p>
-                  <p className="text-base">
+                  <p className="text-lg">
                     We source unique, handmade decors made from eco-friendly materials, working with artisans and small businesses who prioritize quality and sustainability.
                   </p>
                 </div>
@@ -123,7 +123,7 @@ const AboutHero = memo(function AboutHero() {
               </div>
 
               {/* Collections section */}
-              <div className="flex items-center justify-center order-4 lg:order-5">
+              <div className="flex items-center justify-center order-4 py-4 lg:order-5">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 items-center w-full sm:w-auto">
                   <h2 className="relative text-[#6B5E4C] text-3xl sm:text-2xl font-medium sm:font-light text-center sm:text-left">
                     <span className="relative px-4 py-2">
@@ -160,15 +160,6 @@ const AboutHero = memo(function AboutHero() {
                   </Link>
                 </div>
               </div>
-
-              {/* Quote section */}
-              <blockquote className="relative pl-6 order-5 lg:order-4 hidden lg:block">
-                <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#B5A48B] to-transparent" />
-                <p className="italic text-[#8C7E6A] text-base sm:text-lg">
-                  "Simplicity is the ultimate sophistication"
-                </p>
-                <cite className="block mt-2 text-[#6B5E4C] not-italic">— Leonardo da Vinci</cite>
-              </blockquote>
             </div>
 
             {/* Desktop Image Gallery - Right Column */}
