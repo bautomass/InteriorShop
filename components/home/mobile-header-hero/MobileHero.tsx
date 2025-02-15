@@ -4,10 +4,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { memo } from 'react';
 
-// Define image dimensions based on common mobile viewport sizes
 const MOBILE_HERO_DIMENSIONS = {
-  width: 828, // iPhone+ width
-  height: 1792 // Proportional height
+  width: 828,
+  height: 1792
 } as const;
 
 const HeroButtons = memo(() => (
@@ -37,7 +36,6 @@ const MobileHero = memo(() => {
     <div className="relative h-[100vh] lg:hidden">
       <HeroButtons />
       <div className="relative h-full w-full">
-        {/* Hero Image - Optimized */}
         <Image
           src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
           alt="Mobile Hero"
@@ -46,7 +44,7 @@ const MobileHero = memo(() => {
           priority
           fetchPriority="high"
           className="object-cover translate-y-[-50px]"
-          sizes="100vw"
+          sizes="(max-width: 1023px) 100vw, 0vw"
           quality={85}
           loading="eager"
           placeholder="blur"
@@ -96,12 +94,19 @@ export default MobileHero;
 
 
 
-// //appcomponents/home/mobile-header-hero/MobileHero
+
+// //MOBILE HERO FILE
+
 // 'use client';
 
 // import Image from 'next/image';
 // import Link from 'next/link';
 // import { memo } from 'react';
+
+// const MOBILE_HERO_DIMENSIONS = {
+//   width: 828,
+//   height: 1792
+// } as const;
 
 // const HeroButtons = memo(() => (
 //   <div className="absolute bottom-0 left-0 right-0 z-10 grid grid-cols-2">
@@ -133,13 +138,16 @@ export default MobileHero;
 //         <Image
 //           src="https://cdn.shopify.com/s/files/1/0640/6868/1913/files/mobile-hero-image.webp?v=1736699557"
 //           alt="Mobile Hero"
-//           fill
+//           width={MOBILE_HERO_DIMENSIONS.width}
+//           height={MOBILE_HERO_DIMENSIONS.height}
 //           priority
 //           fetchPriority="high"
 //           className="object-cover translate-y-[-50px]"
 //           sizes="100vw"
-//           quality={100}
+//           quality={85}
 //           loading="eager"
+//           placeholder="blur"
+//           blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQrJx8nKzQvNzY2NDQ2NzZEREVEPTc+UFlXWj04WmFiYGQ4XHJghGps/2wBDAgXFx8eHR4kJCQ8NDQ8bEZsRGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGz/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
 //         />
         
 //         {/* Quote Overlay */}

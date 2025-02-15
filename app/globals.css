@@ -155,3 +155,20 @@ img.opacity-100 {
     padding-top: 4rem;
   }
 }
+/* Prevent flash of wrong content during hydration */
+@media (max-width: 1023px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hidden-desktop {
+    display: none !important;
+  }
+}
+
+/* Optional: Add a smooth background color during load */
+.hero-placeholder {
+  background: linear-gradient(to right, #f3f4f6, #e5e7eb);
+}

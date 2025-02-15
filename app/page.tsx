@@ -1,5 +1,5 @@
 // app/page.tsx
-import Hero from '@/components/home/hero';
+import Hero from '@/components/home/DesktopHero';
 import LoyaltyTeaser from '@/components/home/LoyaltyTeaser';
 import type { Metadata } from 'next';
 import { Suspense, lazy } from 'react';
