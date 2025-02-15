@@ -1,3 +1,4 @@
+//DesktopHero.tsx
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';

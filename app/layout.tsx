@@ -1,3 +1,4 @@
+//app/layout.tsx
 import MobileHeader from '@/components/home/mobile-header-hero/MobileHeader';
 import LargeScreenNavBar from '@/components/layout/navbar/LargeScreenNavBar';
 import { Footer } from '@/components/layout/site-footer';
@@ -23,8 +24,8 @@ const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 5, // Changed from 1 to 5 for better accessibility
-  themeColor: '#6B5E4C', // Changed to your brand color
+  maximumScale: 5,
+  themeColor: '#6B5E4C',
   colorScheme: 'light'
 };
 
